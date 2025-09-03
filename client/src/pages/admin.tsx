@@ -86,7 +86,8 @@ export default function Admin() {
     enabled: !!user,
     // Auto-refresh every 5 seconds if there are plants generating images
     refetchInterval: (data) => {
-      return (data as any)?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') ? 5000 : false;
+      if (!data || !Array.isArray(data)) return false;
+      return data.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') ? 5000 : false;
     },
   });
 
