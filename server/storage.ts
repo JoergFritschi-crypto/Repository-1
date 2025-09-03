@@ -213,13 +213,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingPlants(): Promise<Plant[]> {
-    return await db.select().from(plants).where(eq(plants.verification_status, "pending"));
+    return await db.select().from(plants).where(eq(plants.verificationStatus, "pending"));
   }
 
   async verifyPlant(id: string): Promise<Plant> {
     const [verifiedPlant] = await db
       .update(plants)
-      .set({ verification_status: "verified", updatedAt: new Date() })
+      .set({ verificationStatus: "verified", updatedAt: new Date() })
       .where(eq(plants.id, id))
       .returning();
     return verifiedPlant;

@@ -448,7 +448,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   <SelectValue placeholder="Select toxicity level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="0">Safe (0)</SelectItem>
                   <SelectItem value="1">Very Mild (1)</SelectItem>
                   <SelectItem value="2">Mild (2)</SelectItem>
@@ -468,7 +468,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   <SelectValue placeholder="Select toxicity level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="0">Safe (0)</SelectItem>
                   <SelectItem value="1">Very Mild (1)</SelectItem>
                   <SelectItem value="2">Mild (2)</SelectItem>
