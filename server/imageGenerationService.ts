@@ -201,6 +201,11 @@ export class ImageGenerationService {
       } else if (queueItem.queue.imageType === "detail") {
         updateData.detailImage = imagePath;
       }
+      
+      // Cleanup old queue items periodically
+      if (Math.random() < 0.1) { // 10% chance on each completion
+        this.cleanupOldQueueItems();
+      }
 
       // Check if all images are complete
       const remainingItems = await db.select()
@@ -442,6 +447,51 @@ export class ImageGenerationService {
       .leftJoin(plants, eq(imageGenerationQueue.plantId, plants.id))
       .orderBy(desc(imageGenerationQueue.createdAt))
       .limit(limit);
+  }
+
+  // Clean up old completed and failed queue items
+  async cleanupOldQueueItems() {
+    try {
+      // Keep only the last 50 completed/failed items or items from last 24 hours
+      const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+      
+      // Get all completed/failed items
+      const oldItems = await db.select({ id: imageGenerationQueue.id })
+        .from(imageGenerationQueue)
+        .where(and(
+          or(
+            eq(imageGenerationQueue.status, "completed"),
+            eq(imageGenerationQueue.status, "failed")
+          ),
+          lt(imageGenerationQueue.completedAt!, cutoffDate)
+        ))
+        .orderBy(desc(imageGenerationQueue.completedAt))
+        .offset(50); // Keep the most recent 50 items
+      
+      if (oldItems.length > 0) {
+        // Delete old items
+        await db.delete(imageGenerationQueue)
+          .where(sql`id IN (${sql.join(oldItems.map(item => sql`${item.id}`), sql`, `)})`);        
+        console.log(`Cleaned up ${oldItems.length} old queue items`);
+      }
+      
+      return oldItems.length;
+    } catch (error) {
+      console.error('Error cleaning up queue:', error);
+      return 0;
+    }
+  }
+
+  // Clear all completed and failed items
+  async clearCompletedAndFailed() {
+    const result = await db.delete(imageGenerationQueue)
+      .where(or(
+        eq(imageGenerationQueue.status, "completed"),
+        eq(imageGenerationQueue.status, "failed")
+      ))
+      .returning({ id: imageGenerationQueue.id });
+    
+    return result.length;
   }
 
   private sleep(ms: number): Promise<void> {

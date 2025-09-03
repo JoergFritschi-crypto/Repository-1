@@ -14,7 +14,8 @@ import {
   Pause,
   Play,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Trash2
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -94,6 +95,29 @@ export function ImageGenerationMonitor() {
       toast({
         title: "Error",
         description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Clear queue mutation
+  const clearQueueMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/image-generation/clear-queue');
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Queue Cleared",
+        description: `Removed ${data.cleared} completed/failed items from the queue`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/image-generation/queue"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/image-generation/status"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to clear queue",
         variant: "destructive",
       });
     },
@@ -199,7 +223,29 @@ export function ImageGenerationMonitor() {
       {/* Queue Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Generation Queue</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Generation Queue</span>
+            {queue?.items && queue.items.some((item: any) => item.status === 'completed' || item.status === 'failed') && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => clearQueueMutation.mutate()}
+                disabled={clearQueueMutation.isPending}
+              >
+                {clearQueueMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    Clearing...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Clear Completed
+                  </>
+                )}
+              </Button>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {queue?.items && queue.items.length > 0 ? (

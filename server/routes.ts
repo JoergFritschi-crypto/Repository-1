@@ -553,6 +553,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear completed and failed items from the queue
+  app.post('/api/admin/image-generation/clear-queue', isAuthenticated, async (req: any, res) => {
+    try {
+      const clearedCount = await imageGenerationService.clearCompletedAndFailed();
+      res.json({ 
+        message: `Cleared ${clearedCount} items from the queue`,
+        cleared: clearedCount
+      });
+    } catch (error) {
+      console.error("Error clearing queue:", error);
+      res.status(500).json({ 
+        message: "Failed to clear queue", 
+        error: error.message 
+      });
+    }
+  });
+
   // User plant collection routes
   app.get('/api/my-collection', isAuthenticated, async (req: any, res) => {
     try {
