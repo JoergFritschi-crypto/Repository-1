@@ -269,39 +269,65 @@ export class ImageGenerationService {
     const [totalPlantsResult] = await db.select({ count: sql<number>`count(*)` })
       .from(plants);
     
+    // Count plants with ALL images (thumbnail, full, and detail)
     const [withImagesResult] = await db.select({ count: sql<number>`count(*)` })
       .from(plants)
-      .where(or(
+      .where(and(
         sql`${plants.thumbnailImage} IS NOT NULL`,
         sql`${plants.fullImage} IS NOT NULL`,
         sql`${plants.detailImage} IS NOT NULL`
       ));
-
-    const [completedResult] = await db.select({ count: sql<number>`count(*)` })
+    
+    // Count plants without ANY images
+    const [withoutImagesResult] = await db.select({ count: sql<number>`count(*)` })
       .from(plants)
-      .where(eq(plants.imageGenerationStatus, "completed"));
+      .where(and(
+        sql`${plants.thumbnailImage} IS NULL`,
+        sql`${plants.fullImage} IS NULL`,
+        sql`${plants.detailImage} IS NULL`
+      ));
 
-    const [generatingResult] = await db.select({ count: sql<number>`count(*)` })
-      .from(plants)
-      .where(eq(plants.imageGenerationStatus, "generating"));
-
+    // Get queue counts
     const [queuedResult] = await db.select({ count: sql<number>`count(*)` })
       .from(imageGenerationQueue)
       .where(eq(imageGenerationQueue.status, "pending"));
-
-    const [failedResult] = await db.select({ count: sql<number>`count(*)` })
-      .from(plants)
-      .where(eq(plants.imageGenerationStatus, "failed"));
+      
+    const [processingResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(imageGenerationQueue)
+      .where(eq(imageGenerationQueue.status, "processing"));
+    
+    const [completedQueueResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(imageGenerationQueue)
+      .where(eq(imageGenerationQueue.status, "completed"));
+      
+    const [failedQueueResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(imageGenerationQueue)
+      .where(eq(imageGenerationQueue.status, "failed"));
 
     const recentActivity = await this.getRecentActivity(10);
 
+    const totalPlants = totalPlantsResult?.count || 0;
+    const withImages = withImagesResult?.count || 0;
+    const withoutImages = withoutImagesResult?.count || 0;
+    const queued = queuedResult?.count || 0;
+    const processing = processingResult?.count || 0;
+    const completedQueue = completedQueueResult?.count || 0;
+    const failedQueue = failedQueueResult?.count || 0;
+
+    // Calculate actual completed plants (those with ALL their images done)
+    const completed = withImages;
+    
+    // Calculate plants currently generating (have pending or processing items)
+    const generating = processing > 0 ? 1 : 0; // Simplified: if anything is processing
+
     return {
-      totalPlants: totalPlantsResult?.count || 0,
-      withImages: withImagesResult?.count || 0,
-      completed: completedResult?.count || 0,
-      generating: generatingResult?.count || 0,
-      queued: queuedResult?.count || 0,
-      failed: failedResult?.count || 0,
+      totalPlants,
+      withImages,
+      withoutImages,
+      completed,
+      generating,
+      queued,
+      failed: failedQueue,
       recentActivity: recentActivity.map(a => ({
         type: a.status === "completed" ? "success" : a.status === "failed" ? "error" : "info",
         message: `${a.plantName || "Plant"} ${a.imageType} image ${a.status}`,
