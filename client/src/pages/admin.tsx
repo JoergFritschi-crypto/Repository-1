@@ -194,6 +194,32 @@ export default function Admin() {
                           <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">{(pendingPlants as any)?.length || 0}</p>
                         </div>
                         <div className="ml-auto flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            data-testid="button-seed-plants"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest('POST', '/api/admin/plants/seed');
+                                const data = await response.json();
+                                toast({
+                                  title: "Plants Added!",
+                                  description: data.message,
+                                });
+                                queryClient.invalidateQueries({ queryKey: ['/api/plants/search'] });
+                                queryClient.invalidateQueries({ queryKey: ['/api/admin/plants/pending'] });
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to seed plants",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <Leaf className="w-4 h-4 mr-1" />
+                            Seed 3 Plants
+                          </Button>
                           <Button size="sm" variant="outline" data-testid="button-add-plant">
                             <Plus className="w-4 h-4 mr-1" />
                             Add Plant

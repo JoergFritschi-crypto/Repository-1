@@ -246,6 +246,160 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Seed plants endpoint (temporary for testing)
+  app.post('/api/admin/plants/seed', isAuthenticated, async (req, res, next) => {
+    try {
+      const samplePlants = [
+        {
+          id: 'lavender-' + Date.now(),
+          commonName: 'English Lavender',
+          scientificName: 'Lavandula angustifolia',
+          cultivar: 'Hidcote',
+          plantType: 'herbaceous perennial',
+          heightMin: 12,
+          heightMax: 24,
+          spreadMin: 18,
+          spreadMax: 24,
+          sunRequirements: 'full sun',
+          wateringNeeds: 'low',
+          soilType: 'well-drained, sandy, alkaline',
+          phMin: 6.5,
+          phMax: 8.0,
+          hardinessZoneMin: 5,
+          hardinessZoneMax: 9,
+          bloomTime: 'summer',
+          flowerColor: 'purple',
+          foliage: 'evergreen',
+          growthRate: 'moderate',
+          pruningNeeds: 'light',
+          propagationMethods: ['cuttings', 'division'],
+          nativeRegion: 'Mediterranean',
+          uses: ['ornamental', 'fragrance', 'pollinator', 'medicinal', 'culinary'],
+          companionPlants: ['roses', 'sage', 'thyme'],
+          problemsSolutions: 'Root rot in heavy soils; ensure good drainage',
+          poisonousToHumans: 0,
+          poisonousToPets: 0,
+          edible: true,
+          medicinalUses: 'Calming, aromatherapy, antiseptic',
+          maintenanceLevel: 'low',
+          droughtTolerant: true,
+          saltTolerant: false,
+          deerResistant: true,
+          rabbitResistant: true,
+          attractsButterflies: true,
+          attractsHummingbirds: false,
+          attractsBees: true,
+          fragrant: true,
+          cycle: 'perennial',
+          careInstructions: 'Plant in full sun with well-draining soil. Water sparingly once established. Prune after flowering to maintain shape.',
+          interestingSeason: 'summer',
+          verificationStatus: 'verified'
+        },
+        {
+          id: 'hosta-' + Date.now() + 1,
+          commonName: 'Hosta',
+          scientificName: 'Hosta sieboldiana',
+          cultivar: 'Elegans',
+          plantType: 'herbaceous perennial',
+          heightMin: 24,
+          heightMax: 36,
+          spreadMin: 48,
+          spreadMax: 60,
+          sunRequirements: 'partial shade',
+          wateringNeeds: 'medium',
+          soilType: 'rich, moist, well-drained',
+          phMin: 6.0,
+          phMax: 7.5,
+          hardinessZoneMin: 3,
+          hardinessZoneMax: 9,
+          bloomTime: 'summer',
+          flowerColor: 'lavender',
+          foliage: 'deciduous',
+          growthRate: 'moderate',
+          pruningNeeds: 'minimal',
+          propagationMethods: ['division'],
+          nativeRegion: 'Asia',
+          uses: ['ornamental', 'shade garden', 'ground cover'],
+          companionPlants: ['ferns', 'astilbe', 'bleeding heart'],
+          problemsSolutions: 'Slugs and snails; use organic slug control',
+          poisonousToHumans: 1,
+          poisonousToPets: 3,
+          edible: false,
+          medicinalUses: '',
+          maintenanceLevel: 'low',
+          droughtTolerant: false,
+          saltTolerant: false,
+          deerResistant: false,
+          rabbitResistant: false,
+          attractsButterflies: false,
+          attractsHummingbirds: true,
+          attractsBees: false,
+          fragrant: true,
+          cycle: 'perennial',
+          careInstructions: 'Plant in partial to full shade. Keep soil consistently moist. Divide every 3-5 years. Remove flower stalks after blooming.',
+          interestingSeason: 'spring, summer',
+          verificationStatus: 'verified'
+        },
+        {
+          id: 'japanese-maple-' + Date.now() + 2,
+          commonName: 'Japanese Maple',
+          scientificName: 'Acer palmatum',
+          cultivar: 'Bloodgood',
+          plantType: 'ornamental tree',
+          heightMin: 180,
+          heightMax: 300,
+          spreadMin: 180,
+          spreadMax: 300,
+          sunRequirements: 'partial sun',
+          wateringNeeds: 'medium',
+          soilType: 'slightly acidic, well-drained, moist',
+          phMin: 5.5,
+          phMax: 6.8,
+          hardinessZoneMin: 5,
+          hardinessZoneMax: 8,
+          bloomTime: 'spring',
+          flowerColor: 'red',
+          foliage: 'deciduous',
+          growthRate: 'slow',
+          pruningNeeds: 'light',
+          propagationMethods: ['cuttings', 'grafting'],
+          nativeRegion: 'Japan, Korea, China',
+          uses: ['ornamental', 'specimen', 'container'],
+          companionPlants: ['azaleas', 'rhododendrons', 'ferns'],
+          problemsSolutions: 'Leaf scorch in hot sun; provide afternoon shade',
+          poisonousToHumans: 0,
+          poisonousToPets: 0,
+          edible: false,
+          medicinalUses: '',
+          maintenanceLevel: 'medium',
+          droughtTolerant: false,
+          saltTolerant: false,
+          deerResistant: false,
+          rabbitResistant: true,
+          attractsButterflies: false,
+          attractsHummingbirds: false,
+          attractsBees: false,
+          fragrant: false,
+          cycle: 'perennial',
+          careInstructions: 'Plant in dappled shade with protection from hot afternoon sun. Keep soil moist but not waterlogged. Prune in late fall to early winter.',
+          interestingSeason: 'spring, fall',
+          verificationStatus: 'verified'
+        }
+      ];
+
+      const createdPlants = [];
+      for (const plant of samplePlants) {
+        const created = await storage.createPlant(plant);
+        createdPlants.push(created);
+      }
+
+      res.json({ message: `Successfully added ${createdPlants.length} plants`, plants: createdPlants });
+    } catch (error) {
+      console.error('Error seeding plants:', error);
+      next(error);
+    }
+  });
+
   // Admin plant routes
   app.post('/api/admin/plants', isAuthenticated, async (req: any, res) => {
     try {
