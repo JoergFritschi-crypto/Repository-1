@@ -1,4 +1,5 @@
-import { replitImageGenerator } from './replitImageGenerator';
+// Production AI Image Generation - Fast & Reliable
+import { productionImageGenerator } from './productionImageGenerator';
 
 interface GenerateImageOptions {
   prompt: string;
@@ -7,11 +8,9 @@ interface GenerateImageOptions {
 }
 
 export async function generateImage(options: GenerateImageOptions): Promise<string> {
-  const { prompt, oneLine, aspectRatio = "1:1" } = options;
+  const { prompt, oneLine } = options;
   
-  console.log(`Production image generation for: ${oneLine}`);
-  
-  // Determine image type from the context
+  // Determine image type from context
   let imageType: 'thumbnail' | 'full' | 'detail' = 'thumbnail';
   const lowerLine = oneLine.toLowerCase();
   
@@ -21,32 +20,22 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     imageType = 'detail';
   }
   
-  // Extract plant name from the oneLine
+  // Extract plant name
   const plantName = oneLine
     .replace(/thumbnail|full|detail|garden view/gi, '')
-    .trim();
+    .trim() || oneLine;
   
-  // Use the production-ready image generator
-  try {
-    const imagePath = await replitImageGenerator.generatePlantImage({
-      prompt,
-      plantName: plantName || oneLine,
-      imageType,
-      aspectRatio
-    });
-    
-    console.log(`Successfully generated: ${imagePath}`);
-    return imagePath;
-  } catch (error) {
-    console.error('Image generation failed:', error);
-    
-    // Emergency fallback - return a simple placeholder path
-    // This should rarely happen with our robust pipeline
-    return `/generated-images/placeholder-${Date.now()}.png`;
-  }
+  // Generate production image
+  const imagePath = await productionImageGenerator.generateImage({
+    prompt: prompt || plantName,
+    plantName,
+    imageType
+  });
+  
+  return imagePath;
 }
 
-// Helper function to delete old images when generating new ones
+// Helper function to delete old images
 export async function deleteOldImages(imagePaths: (string | null)[]): Promise<void> {
   const fs = await import('fs/promises');
   const path = await import('path');
@@ -59,8 +48,7 @@ export async function deleteOldImages(imagePaths: (string | null)[]): Promise<vo
       await fs.unlink(fullPath);
       console.log(`Deleted old image: ${imagePath}`);
     } catch (error) {
-      // Image might not exist, that's okay
-      console.log(`Could not delete old image: ${imagePath}`);
+      console.log(`Could not delete: ${imagePath}`);
     }
   }
 }
