@@ -227,16 +227,16 @@ export class ImageGenerationService {
     
     switch (imageType) {
       case "thumbnail":
-        return `Professional botanical illustration of ${baseInfo}, clean white background, single specimen, botanical art style, detailed leaves and structure, scientific accuracy`;
+        return `Professional botanical illustration of ${baseInfo}, isolated on pure white background, single healthy specimen, botanical art style with detailed leaf veins and structure, scientific accuracy, watercolor style, no text or labels`;
       
       case "full":
-        return `Full plant view of ${baseInfo} in natural garden setting, showing entire plant from ground to top, ${plant.dimension ? `approximately ${JSON.stringify(plant.dimension)} in size,` : ""} ${plant.flowerColor ? `with ${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} flowers,` : ""} photorealistic, garden photography style`;
+        return `Beautiful mature ${baseInfo} growing in an English cottage garden, showing entire plant from soil to top, ${plant.dimension ? `approximately ${JSON.stringify(plant.dimension)} in size,` : ""} ${plant.flowerColor ? `vibrant ${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} flowers in full bloom,` : ""} ${plant.leafColor ? `healthy ${Array.isArray(plant.leafColor) ? plant.leafColor.join(" and ") : plant.leafColor} foliage,` : ""} photorealistic, golden hour lighting, professional garden photography`;
       
       case "detail":
-        return `Close-up detailed view of ${baseInfo} flowers and leaves, macro photography, showing botanical details, ${plant.flowerColor ? `featuring ${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} colored blooms,` : ""} ${plant.leafColor ? `${Array.isArray(plant.leafColor) ? plant.leafColor.join(" and ") : plant.leafColor} foliage,` : ""} sharp focus, natural lighting`;
+        return `Stunning macro close-up of ${baseInfo} ${plant.flowerColor ? `showing ${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} colored flowers` : "flowers"} and ${plant.leafColor ? `${Array.isArray(plant.leafColor) ? plant.leafColor.join(" and ") : plant.leafColor}` : ""} leaves, extreme detail showing texture and veins, bokeh background, professional macro lens photography, morning dew drops, ultra sharp focus`;
       
       default:
-        return `Beautiful ${baseInfo} plant in garden setting`;
+        return `Beautiful ${baseInfo} plant in English garden setting, photorealistic, professional photography`;
     }
   }
 
