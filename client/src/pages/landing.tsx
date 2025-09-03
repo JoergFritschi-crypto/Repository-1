@@ -45,7 +45,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-[600px] overflow-hidden">
+      <section className="relative h-[450px] overflow-hidden">
         <img 
           src={gardenImage} 
           alt="Beautiful perennial garden with yarrow, daylilies, catmint and more" 
@@ -54,21 +54,21 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div className="max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-serif font-bold mb-4 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" data-testid="text-hero-title">
+              <h1 className="text-2xl md:text-3xl font-serif font-bold mb-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" data-testid="text-hero-title">
                 Design Your Dream Garden with AI
               </h1>
-              <p className="text-lg mb-6 text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-testid="text-hero-subtitle">
+              <p className="text-base mb-4 text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-testid="text-hero-subtitle">
                 Professional garden design tools with expert plant knowledge
               </p>
               <div className="flex gap-3">
-                <Button asChild size="lg" className="btn-gold shadow-xl hover:shadow-2xl transition-all duration-300" data-testid="button-start-designing">
+                <Button asChild size="default" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300" data-testid="button-start-designing">
                   {!isAuthenticated ? (
                     <a href="/api/login">Start Designing</a>
                   ) : (
                     <Link href="/garden-properties">Start Designing</Link>
                   )}
                 </Button>
-                <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-xl hover:shadow-2xl transition-all duration-300" data-testid="button-watch-demo">
+                <Button variant="outline" size="default" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300" data-testid="button-watch-demo">
                   View Examples
                 </Button>
               </div>
@@ -78,47 +78,47 @@ export default function Landing() {
       </section>
 
       {/* Features Overview */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-8 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-serif font-bold text-foreground mb-3" data-testid="text-features-title">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-serif font-bold text-foreground mb-2" data-testid="text-features-title">
               Professional Garden Design Tools
             </h2>
-            <p className="text-base text-muted-foreground max-w-xl mx-auto" data-testid="text-features-subtitle">
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto" data-testid="text-features-subtitle">
               AI-powered tools for every step of garden planning
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Brain className="w-6 h-6 text-primary" />
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className="text-center">
+              <CardContent className="pt-4 pb-4 px-4">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Brain className="w-5 h-5 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2" data-testid="text-feature-ai-title">AI Garden Design</h3>
-                <p className="text-muted-foreground" data-testid="text-feature-ai-description">
-                  Intelligent plant selection and layout optimization based on your garden conditions and preferences.
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-ai-title">AI Garden Design</h3>
+                <p className="text-xs text-muted-foreground" data-testid="text-feature-ai-description">
+                  Intelligent plant selection and layout optimization based on your garden conditions
                 </p>
               </CardContent>
             </Card>
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Eye className="w-6 h-6 text-secondary" />
+            <Card className="text-center">
+              <CardContent className="pt-4 pb-4 px-4">
+                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Eye className="w-5 h-5 text-secondary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2" data-testid="text-feature-3d-title">3D Visualization</h3>
-                <p className="text-muted-foreground" data-testid="text-feature-3d-description">
-                  See your garden through the seasons with photorealistic AI-generated imagery from multiple angles.
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-3d-title">3D Visualization</h3>
+                <p className="text-xs text-muted-foreground" data-testid="text-feature-3d-description">
+                  See your garden through the seasons with AI-generated imagery
                 </p>
               </CardContent>
             </Card>
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Stethoscope className="w-6 h-6 text-accent" />
+            <Card className="text-center">
+              <CardContent className="pt-4 pb-4 px-4">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Stethoscope className="w-5 h-5 text-accent" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2" data-testid="text-feature-doctor-title">Plant Doctor</h3>
-                <p className="text-muted-foreground" data-testid="text-feature-doctor-description">
-                  Identify plants, weeds, and diseases with AI-powered image recognition and get expert care advice.
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-doctor-title">Plant Doctor</h3>
+                <p className="text-xs text-muted-foreground" data-testid="text-feature-doctor-description">
+                  Identify plants and diseases with AI-powered image recognition
                 </p>
               </CardContent>
             </Card>
@@ -127,39 +127,39 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-16">
+      <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-serif font-bold text-foreground mb-3" data-testid="text-pricing-title">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-serif font-bold text-foreground mb-2" data-testid="text-pricing-title">
               Simple Pricing
             </h2>
-            <p className="text-base text-muted-foreground" data-testid="text-pricing-subtitle">
+            <p className="text-sm text-muted-foreground" data-testid="text-pricing-subtitle">
               Choose the plan that works for you
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="p-6">
-              <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-2" data-testid="text-plan-free-title">Free</h3>
-                <p className="text-3xl font-bold mb-4" data-testid="text-plan-free-price">
-                  $0<span className="text-lg font-normal text-muted-foreground">/month</span>
+          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+            <Card>
+              <CardContent className="pt-4 pb-4 px-4">
+                <h3 className="text-base font-semibold mb-1" data-testid="text-plan-free-title">Free</h3>
+                <p className="text-xl font-bold mb-3" data-testid="text-plan-free-price">
+                  $0<span className="text-sm font-normal text-muted-foreground">/month</span>
                 </p>
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-1 mb-3">
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Basic plant library access</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Basic plant library access</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Plant identification (5/month)</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Plant identification (5/month)</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Community support</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Community support</span>
                   </li>
                 </ul>
-                <Button variant="outline" className="w-full" asChild data-testid="button-plan-free">
+                <Button size="sm" variant="outline" className="w-full" asChild data-testid="button-plan-free">
                   {!isAuthenticated ? (
                     <a href="/api/login">Get Started</a>
                   ) : (
@@ -169,34 +169,34 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            <Card className="p-6 border-2 border-primary relative">
-              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
+            <Card className="border-2 border-primary relative">
+              <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-primary text-xs">
                 Most Popular
               </Badge>
-              <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-2" data-testid="text-plan-design-title">Pay-per-Design</h3>
-                <p className="text-3xl font-bold mb-4" data-testid="text-plan-design-price">
-                  $6<span className="text-lg font-normal text-muted-foreground">/design</span>
+              <CardContent className="pt-6 pb-4 px-4">
+                <h3 className="text-base font-semibold mb-1" data-testid="text-plan-design-title">Pay-per-Design</h3>
+                <p className="text-xl font-bold mb-3" data-testid="text-plan-design-price">
+                  $6<span className="text-sm font-normal text-muted-foreground">/design</span>
                 </p>
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-1 mb-3">
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Complete garden design</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Complete garden design</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">3D seasonal visualization</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">3D seasonal visualization</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Plant shopping list</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Plant shopping list</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Priority support</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Priority support</span>
                   </li>
                 </ul>
-                <Button className="w-full" asChild data-testid="button-plan-design">
+                <Button size="sm" className="w-full" asChild data-testid="button-plan-design">
                   {!isAuthenticated ? (
                     <a href="/api/login">Create Design</a>
                   ) : (
@@ -206,35 +206,35 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            <Card className="p-6">
-              <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-2" data-testid="text-plan-premium-title">Premium</h3>
-                <p className="text-3xl font-bold mb-4" data-testid="text-plan-premium-price">
-                  $12<span className="text-lg font-normal text-muted-foreground">/month</span>
+            <Card>
+              <CardContent className="pt-4 pb-4 px-4">
+                <h3 className="text-base font-semibold mb-1" data-testid="text-plan-premium-title">Premium</h3>
+                <p className="text-xl font-bold mb-3" data-testid="text-plan-premium-price">
+                  $12<span className="text-sm font-normal text-muted-foreground">/month</span>
                 </p>
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-1 mb-3">
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Unlimited designs</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Unlimited designs</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Advanced plant database</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Advanced plant database</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Personal plant collection</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Personal plant collection</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">AI garden advisor</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">AI garden advisor</span>
                   </li>
                   <li className="flex items-center">
-                    <Check className="w-5 h-5 text-accent mr-2" />
-                    <span className="text-sm">Premium dashboard</span>
+                    <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
+                    <span className="text-xs">Premium dashboard</span>
                   </li>
                 </ul>
-                <Button variant="secondary" className="w-full" asChild data-testid="button-plan-premium">
+                <Button size="sm" variant="secondary" className="w-full" asChild data-testid="button-plan-premium">
                   {!isAuthenticated ? (
                     <a href="/api/login">Start Premium</a>
                   ) : (
