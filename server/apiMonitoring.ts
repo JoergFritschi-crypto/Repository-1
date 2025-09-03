@@ -333,7 +333,7 @@ export class APIMonitoringService {
       });
     }
 
-    // HuggingFace API Health Check
+    // HuggingFace API Health Check (Flux Schnell)
     if (process.env.HUGGINGFACE_API_KEY) {
       this.services.push({
         name: 'huggingface',
@@ -341,31 +341,55 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
+            // Test with Flux Schnell model that we're actually using
             const response = await fetch(
-              'https://api-inference.huggingface.co/models/gpt2',
+              'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
               {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ inputs: 'test', parameters: { max_length: 10 } })
+                body: JSON.stringify({ 
+                  inputs: 'A simple test image',
+                  parameters: {
+                    guidance_scale: 7.5,
+                    num_inference_steps: 4  // Schnell uses fewer steps
+                  }
+                })
               }
             );
             const responseTime = Date.now() - startTime;
             
-            return {
-              service: 'huggingface',
-              status: response.ok ? 'healthy' : 'down',
-              responseTime,
-              errorMessage: !response.ok ? `Status: ${response.status}` : undefined
-            };
+            if (response.ok) {
+              return {
+                service: 'huggingface',
+                status: 'healthy',
+                responseTime,
+                metadata: { model: 'FLUX.1-schnell' }
+              };
+            } else {
+              const errorText = await response.text();
+              let errorDetails = errorText;
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorDetails = errorJson.error || errorText;
+              } catch (e) {
+                // Keep errorText as is
+              }
+              return {
+                service: 'huggingface',
+                status: response.status === 503 ? 'degraded' : 'down',
+                responseTime,
+                errorMessage: `Status ${response.status}: ${errorDetails}`
+              };
+            }
           } catch (error) {
             return {
               service: 'huggingface',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: `Connection failed: ${error.message}`
             };
           }
         }
@@ -380,24 +404,55 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
-            // Note: This is a hypothetical endpoint - adjust based on actual Runware API
-            const response = await fetch('https://api.runware.ai/v1/health', {
-              headers: { 'Authorization': `Bearer ${process.env.RUNWARE_API_KEY}` }
+            // Test with minimal image generation request
+            const response = await fetch('https://api.runware.ai/v1/images/generate', {
+              method: 'POST',
+              headers: { 
+                'Authorization': `Bearer ${process.env.RUNWARE_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                prompt: 'Test image',
+                model: 'runware-v1',
+                style: 'photorealistic',
+                aspect_ratio: '1:1',
+                num_images: 1,
+                guidance_scale: 7.5,
+                steps: 1  // Minimal steps for health check
+              })
             });
             const responseTime = Date.now() - startTime;
             
-            return {
-              service: 'runware',
-              status: response.ok ? 'healthy' : 'down',
-              responseTime,
-              errorMessage: !response.ok ? `Status: ${response.status}` : undefined
-            };
+            if (response.ok) {
+              const data = await response.json();
+              return {
+                service: 'runware',
+                status: 'healthy',
+                responseTime,
+                metadata: { model: 'runware-v1' }
+              };
+            } else {
+              const errorText = await response.text();
+              let errorDetails = errorText;
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorDetails = errorJson.error?.message || errorJson.detail || errorText;
+              } catch (e) {
+                // Keep errorText as is
+              }
+              return {
+                service: 'runware',
+                status: response.status === 429 ? 'degraded' : 'down',
+                responseTime,
+                errorMessage: `Status ${response.status}: ${errorDetails}`
+              };
+            }
           } catch (error) {
             return {
               service: 'runware',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: `Connection failed: ${error.message}`
             };
           }
         }
