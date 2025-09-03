@@ -142,7 +142,6 @@ export default function InteractiveCanvas({
     if (!isVisible) return null;
 
     const commonProps = {
-      key: element.id,
       onClick: (e: React.MouseEvent) => handleElementClick(element.id, e),
       className: `absolute cursor-pointer transition-all ${isSelected ? 'ring-2 ring-primary' : ''}`,
       style: {
@@ -157,6 +156,7 @@ export default function InteractiveCanvas({
     if (element.type === 'plant') {
       return (
         <div
+          key={element.id}
           {...commonProps}
           style={{
             ...commonProps.style,
@@ -177,6 +177,7 @@ export default function InteractiveCanvas({
 
     return (
       <div
+        key={element.id}
         {...commonProps}
         style={{
           ...commonProps.style,
