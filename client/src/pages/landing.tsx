@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sprout, Brain, Eye, Stethoscope, Star, Check } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import gardenImage from '@assets/generated_images/Mixed_perennial_garden_scene_5872224a.png';
 
 export default function Landing() {
   const { isAuthenticated } = useAuth();
@@ -44,27 +45,33 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-20 lg:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6" data-testid="text-hero-title">
-              Design Your Dream Garden with AI
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90" data-testid="text-hero-subtitle">
-              Create stunning ornamental gardens with photorealistic visualization, expert plant recommendations, and seasonal planning.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="bg-canary text-primary hover:bg-gold" data-testid="button-start-designing">
-                {!isAuthenticated ? (
-                  <a href="/api/login">Start Your Garden Design</a>
-                ) : (
-                  <Link href="/garden-properties">Start Your Garden Design</Link>
-                )}
-              </Button>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10" data-testid="button-watch-demo">
-                Watch Demo
-              </Button>
+      <section className="relative h-[600px] overflow-hidden">
+        <img 
+          src={gardenImage} 
+          alt="Beautiful perennial garden with yarrow, daylilies, catmint and more" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+            <div className="max-w-2xl">
+              <h1 className="text-3xl md:text-4xl font-serif font-bold mb-4 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" data-testid="text-hero-title">
+                Design Your Dream Garden with AI
+              </h1>
+              <p className="text-lg mb-6 text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-testid="text-hero-subtitle">
+                Professional garden design tools with expert plant knowledge
+              </p>
+              <div className="flex gap-3">
+                <Button asChild size="default" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg" data-testid="button-start-designing">
+                  {!isAuthenticated ? (
+                    <a href="/api/login">Start Designing</a>
+                  ) : (
+                    <Link href="/garden-properties">Start Designing</Link>
+                  )}
+                </Button>
+                <Button variant="outline" size="default" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg" data-testid="button-watch-demo">
+                  View Examples
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -74,11 +81,11 @@ export default function Landing() {
       <section className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif font-bold text-foreground mb-4" data-testid="text-features-title">
-              Everything You Need to Create Beautiful Gardens
+            <h2 className="text-2xl font-serif font-bold text-foreground mb-3" data-testid="text-features-title">
+              Professional Garden Design Tools
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto" data-testid="text-features-subtitle">
-              From initial planning to final visualization, our AI-powered tools guide you through every step of garden design.
+            <p className="text-base text-muted-foreground max-w-xl mx-auto" data-testid="text-features-subtitle">
+              AI-powered tools for every step of garden planning
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -123,11 +130,11 @@ export default function Landing() {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif font-bold text-foreground mb-4" data-testid="text-pricing-title">
-              Choose Your Plan
+            <h2 className="text-2xl font-serif font-bold text-foreground mb-3" data-testid="text-pricing-title">
+              Simple Pricing
             </h2>
-            <p className="text-lg text-muted-foreground" data-testid="text-pricing-subtitle">
-              From hobby gardening to professional landscaping
+            <p className="text-base text-muted-foreground" data-testid="text-pricing-subtitle">
+              Choose the plan that works for you
             </p>
           </div>
 
@@ -136,7 +143,7 @@ export default function Landing() {
               <CardContent className="pt-6">
                 <h3 className="text-xl font-semibold mb-2" data-testid="text-plan-free-title">Free</h3>
                 <p className="text-3xl font-bold mb-4" data-testid="text-plan-free-price">
-                  £0<span className="text-lg font-normal text-muted-foreground">/month</span>
+                  $0<span className="text-lg font-normal text-muted-foreground">/month</span>
                 </p>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center">
@@ -169,7 +176,7 @@ export default function Landing() {
               <CardContent className="pt-6">
                 <h3 className="text-xl font-semibold mb-2" data-testid="text-plan-design-title">Pay-per-Design</h3>
                 <p className="text-3xl font-bold mb-4" data-testid="text-plan-design-price">
-                  £15<span className="text-lg font-normal text-muted-foreground">/design</span>
+                  $6<span className="text-lg font-normal text-muted-foreground">/design</span>
                 </p>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center">
@@ -203,7 +210,7 @@ export default function Landing() {
               <CardContent className="pt-6">
                 <h3 className="text-xl font-semibold mb-2" data-testid="text-plan-premium-title">Premium</h3>
                 <p className="text-3xl font-bold mb-4" data-testid="text-plan-premium-price">
-                  £29<span className="text-lg font-normal text-muted-foreground">/month</span>
+                  $12<span className="text-lg font-normal text-muted-foreground">/month</span>
                 </p>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center">
@@ -241,9 +248,9 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-12">
+      <footer className="bg-primary text-primary-foreground py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Sprout className="w-6 h-6" />
@@ -257,29 +264,19 @@ export default function Landing() {
                 <li><Link href="/garden-properties" className="hover:underline">Garden Design</Link></li>
                 <li><Link href="/plant-library" className="hover:underline">Plant Library</Link></li>
                 <li><Link href="/plant-doctor" className="hover:underline">Plant Doctor</Link></li>
-                <li><span className="text-muted-foreground">3D Visualization</span></li>
+                <li><Link href="/premium" className="hover:underline">Premium Features</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-3">Support</h4>
+              <h4 className="font-semibold mb-3">Legal</h4>
               <ul className="space-y-2 text-sm opacity-90">
-                <li><span className="text-muted-foreground">Help Center</span></li>
-                <li><span className="text-muted-foreground">Contact Us</span></li>
-                <li><span className="text-muted-foreground">Community</span></li>
-                <li><span className="text-muted-foreground">API Documentation</span></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Company</h4>
-              <ul className="space-y-2 text-sm opacity-90">
-                <li><span className="text-muted-foreground">About</span></li>
                 <li><span className="text-muted-foreground">Privacy Policy</span></li>
                 <li><span className="text-muted-foreground">Terms of Service</span></li>
-                <li><span className="text-muted-foreground">Careers</span></li>
+                <li><span className="text-muted-foreground">Contact</span></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
+          <div className="border-t border-primary-foreground/20 mt-8 pt-6 text-center">
             <p className="text-sm opacity-90">&copy; 2024 GardenScape Pro. All rights reserved.</p>
           </div>
         </div>
