@@ -36,7 +36,7 @@ export default function Home() {
                 Welcome to GardenScape Pro
               </h1>
               <p className="text-2xl text-white mb-8 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] max-w-3xl mx-auto">
-                Design stunning British gardens with professional tools and expert plant knowledge
+                Design stunning gardens with professional tools and expert plant knowledge
               </p>
               <div className="flex gap-4 justify-center">
                 <Button size="lg" className="btn-gold shadow-xl hover:shadow-2xl transition-all duration-300" asChild>
