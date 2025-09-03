@@ -10,6 +10,7 @@ import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
 import { apiMonitoring } from "./apiMonitoring";
 import { imageGenerationService } from "./imageGenerationService";
+import path from "path";
 
 // Initialize Stripe if API key is available
 let stripe: Stripe | null = null;
@@ -68,6 +69,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Body parser middleware (MUST come after auth setup)
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+  
+  // Serve generated images
+  app.use('/generated-images', express.static(path.join(process.cwd(), 'public/generated-images')));
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
