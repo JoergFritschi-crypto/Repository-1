@@ -85,7 +85,9 @@ export default function Admin() {
     queryKey: [`/api/plants/search?q=${searchQuery || ''}`],
     enabled: !!user,
     // Auto-refresh every 5 seconds if there are plants generating images
-    refetchInterval: (plants as any)?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') ? 5000 : false,
+    refetchInterval: (data) => {
+      return (data as any)?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') ? 5000 : false;
+    },
   });
 
   const verifyPlantMutation = useMutation({
