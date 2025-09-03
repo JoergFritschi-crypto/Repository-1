@@ -137,7 +137,7 @@ export function ImageGenerationMonitor() {
                 size="sm" 
                 variant="default"
                 onClick={() => generateAllMutation.mutate()}
-                disabled={generateAllMutation.isPending || ((status?.queued ?? 0) > 0) || ((status?.generating ?? 0) > 0)}
+                disabled={generateAllMutation.isPending || ((status?.generating ?? 0) > 0) || ((plants as any[])?.filter((p: any) => !p.thumbnailImage && !p.fullImage && !p.detailImage).length === 0)}
               >
                 {generateAllMutation.isPending ? (
                   <>
@@ -150,14 +150,6 @@ export function ImageGenerationMonitor() {
                     Generate All Missing
                   </>
                 )}
-              </Button>
-              <Button size="sm" variant="outline" disabled>
-                <Pause className="w-4 h-4 mr-1" />
-                Pause Queue
-              </Button>
-              <Button size="sm" variant="outline" disabled>
-                <RefreshCw className="w-4 h-4 mr-1" />
-                Retry Failed
               </Button>
             </div>
           </CardTitle>
