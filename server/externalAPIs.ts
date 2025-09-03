@@ -246,6 +246,10 @@ export class HuggingFaceAPI {
 
   async generateImage(prompt: string, model: string = 'black-forest-labs/FLUX.1-schnell'): Promise<Buffer | null> {
     try {
+      // Add timeout using AbortController
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch(`${this.baseUrl}/${model}`, {
         method: 'POST',
         headers: {
@@ -258,8 +262,11 @@ export class HuggingFaceAPI {
             guidance_scale: 7.5,
             num_inference_steps: 50,
           }
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const error = await response.text();
@@ -268,8 +275,12 @@ export class HuggingFaceAPI {
 
       const buffer = await response.arrayBuffer();
       return Buffer.from(buffer);
-    } catch (error) {
-      console.error('Error generating image with HuggingFace:', error);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('HuggingFace API request timed out after 30 seconds');
+      } else {
+        console.error('Error generating image with HuggingFace:', error);
+      }
       return null;
     }
   }

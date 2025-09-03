@@ -126,7 +126,7 @@ export class ImageGenerationService {
         .leftJoin(plants, eq(imageGenerationQueue.plantId, plants.id))
         .where(eq(imageGenerationQueue.id, queueId));
 
-      if (!queueItem.plant) {
+      if (!queueItem || !queueItem.plant) {
         throw new Error("Plant not found for queue item");
       }
 
