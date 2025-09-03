@@ -30,7 +30,22 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
   console.log(`Plant: ${plantName}`);
   console.log(`Type: ${imageType}`);
   
-  // Try HuggingFace first (optimized approach)
+  // Try Runware first since user has added credits
+  if (process.env.RUNWARE_API_KEY) {
+    try {
+      const imagePath = await runwareImageGenerator.generateImage({
+        prompt: prompt || plantName,
+        plantName,
+        imageType
+      });
+      console.log(`✅ Success with Runware`);
+      return imagePath;
+    } catch (error: any) {
+      console.log(`Runware failed: ${error.message}, trying fallback...`);
+    }
+  }
+  
+  // Fallback to HuggingFace if Runware fails
   if (process.env.HUGGINGFACE_API_KEY) {
     try {
       const imagePath = await huggingfaceOptimized.generateImage({
@@ -42,21 +57,6 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
       return imagePath;
     } catch (error: any) {
       console.log(`HuggingFace failed: ${error.message}`);
-    }
-  }
-  
-  // Try Runware if available (requires credits)
-  if (process.env.RUNWARE_API_KEY) {
-    try {
-      const imagePath = await runwareImageGenerator.generateImage({
-        prompt: prompt || plantName,
-        plantName,
-        imageType
-      });
-      console.log(`✅ Success with Runware`);
-      return imagePath;
-    } catch (error: any) {
-      console.log(`Runware failed: ${error.message}`);
     }
   }
   
