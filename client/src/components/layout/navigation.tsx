@@ -34,10 +34,10 @@ export default function Navigation() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-sm font-medium transition-colors",
+                    "text-sm font-medium transition-all duration-200 px-2 py-1 rounded-md",
                     location === item.href
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-primary"
+                      ? "text-canary bg-primary/10 font-semibold"
+                      : "text-muted-foreground hover:text-canary hover:bg-canary/10"
                   )}
                   data-testid={`link-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
@@ -78,10 +78,10 @@ export default function Navigation() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-sm font-medium transition-colors py-2",
+                    "text-sm font-medium transition-all duration-200 py-2 px-3 rounded-md",
                     location === item.href
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-primary"
+                      ? "text-canary bg-primary/10 font-semibold"
+                      : "text-muted-foreground hover:text-canary hover:bg-canary/10"
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid={`mobile-link-${item.label.toLowerCase().replace(' ', '-')}`}

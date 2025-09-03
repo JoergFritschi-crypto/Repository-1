@@ -107,6 +107,43 @@
     background-size: 100px 100px;
     background-position: 0 0, 50px 50px;
   }
+  
+  /* Icon buttons hover states */
+  svg {
+    transition: all 0.2s ease;
+  }
+  
+  button:hover svg {
+    transform: scale(1.1);
+    filter: drop-shadow(0 2px 4px rgba(255, 213, 0, 0.4));
+  }
+  
+  /* Logo hover animation */
+  [data-testid="link-home"]:hover svg {
+    transform: rotate(5deg) scale(1.1);
+    filter: drop-shadow(0 4px 8px rgba(255, 213, 0, 0.6));
+  }
+  
+  [data-testid="link-home"]:hover span {
+    color: hsl(51, 100%, 57%) !important;
+    text-shadow: 0 2px 8px rgba(255, 213, 0, 0.3);
+  }
+  
+  /* Input focus states with color */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: hsl(51, 100%, 57%) !important;
+    outline: 2px solid hsl(51, 100%, 57%, 0.2) !important;
+    outline-offset: 2px;
+  }
+  
+  /* Badge hover effects */
+  .badge:hover {
+    background-color: hsl(51, 100%, 57%) !important;
+    color: hsl(155, 100%, 8%) !important;
+    transition: all 0.2s ease;
+  }
   .garden-canvas {
     background-image: radial-gradient(circle at 25px 25px, rgba(16, 120, 56, 0.1) 2px, transparent 0);
     background-size: 50px 50px;
@@ -210,14 +247,50 @@
     opacity: 0.1;
   }
 
-  /* Button Press Animation */
+  /* Enhanced Button Hover States */
   button {
     position: relative;
     transition: all 0.2s ease;
   }
 
+  button:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 64, 37, 0.15);
+  }
+
   button:active {
     transform: scale(0.98);
+  }
+  
+  /* Primary button enhanced hover with glow */
+  button[class*="bg-primary"]:not(:disabled):hover {
+    background: linear-gradient(135deg, hsl(131, 69%, 41%) 0%, hsl(145, 56%, 26%) 100%) !important;
+    box-shadow: 
+      0 6px 20px rgba(0, 64, 37, 0.25),
+      0 0 20px rgba(255, 213, 0, 0.3);
+    border: 1px solid hsl(51, 100%, 57%, 0.5);
+  }
+  
+  /* Secondary button enhanced hover */
+  button[class*="secondary"]:not(:disabled):hover {
+    background-color: hsl(51, 100%, 57%) !important;
+    color: hsl(155, 100%, 8%) !important;
+    border-color: hsl(45, 100%, 50%) !important;
+    box-shadow: 0 4px 16px rgba(255, 213, 0, 0.3);
+  }
+  
+  /* Outline button enhanced hover */
+  button[class*="outline"]:not(:disabled):hover {
+    background-color: hsl(51, 100%, 57%) !important;
+    color: hsl(155, 100%, 8%) !important;
+    border-color: hsl(45, 100%, 50%) !important;
+    box-shadow: 0 4px 12px rgba(255, 213, 0, 0.25);
+  }
+  
+  /* Ghost button enhanced hover */
+  button[class*="ghost"]:not(:disabled):hover {
+    background-color: hsl(51, 100%, 57%, 0.1) !important;
+    color: hsl(155, 100%, 8%) !important;
   }
 
   button::after {
@@ -264,7 +337,54 @@
   }
 
   .btn-gold:hover {
-    box-shadow: 0 6px 20px rgba(255, 213, 0, 0.4);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, hsl(45, 100%, 50%) 0%, hsl(51, 100%, 60%) 100%);
+    box-shadow: 0 8px 25px rgba(255, 213, 0, 0.5);
+    transform: translateY(-2px) scale(1.02);
+  }
+  
+  /* Navigation link hover effects */
+  a:not(.btn-gold):hover {
+    color: hsl(51, 100%, 57%);
+    transition: color 0.2s ease;
+  }
+  
+  /* Card hover effects with rotation */
+  .card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card:hover {
+    border-color: hsl(51, 100%, 57%, 0.5);
+    box-shadow: 
+      0 10px 40px rgba(255, 213, 0, 0.15),
+      0 0 0 1px hsl(51, 100%, 57%, 0.2);
+    transform: translateY(-2px) rotate(-0.5deg);
+  }
+  
+  /* Quick action cards special hover */
+  [data-testid*="quick-actions"] .card:hover {
+    background: linear-gradient(135deg, 
+      hsl(60, 20%, 98%) 0%, 
+      hsl(51, 100%, 97%) 100%);
+  }
+  
+  /* Interactive element hover */
+  [role="button"]:not(:disabled):hover,
+  .clickable:hover,
+  [data-testid*="button"]:hover {
+    cursor: pointer;
+    filter: brightness(1.1);
+  }
+  
+  /* Navigation menu items enhanced hover */
+  nav a:hover {
+    color: hsl(51, 100%, 57%) !important;
+    text-shadow: 0 0 8px rgba(255, 213, 0, 0.4);
+    transition: all 0.2s ease;
+  }
+  
+  nav a.active {
+    color: hsl(45, 100%, 50%) !important;
+    font-weight: 600;
   }
 }
