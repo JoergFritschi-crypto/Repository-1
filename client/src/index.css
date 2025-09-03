@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(47, 20%, 97%);
+  --foreground: hsl(158, 100%, 8%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(158, 100%, 8%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(158, 100%, 8%);
+  --primary: hsl(158, 100%, 8%);
+  --primary-foreground: hsl(47, 96%, 89%);
+  --secondary: hsl(158, 63%, 25%);
+  --secondary-foreground: hsl(47, 96%, 89%);
+  --muted: hsl(47, 20%, 90%);
+  --muted-foreground: hsl(158, 10%, 45%);
+  --accent: hsl(130, 75%, 41%);
+  --accent-foreground: hsl(47, 96%, 89%);
+  --destructive: hsl(0, 65%, 51%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(158, 20%, 88%);
+  --input: hsl(158, 20%, 95%);
+  --ring: hsl(158, 100%, 8%);
+  --canary: hsl(51, 100%, 58%);
+  --gold: hsl(51, 100%, 50%);
+  --radius: 8px;
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+.dark {
+  --background: hsl(158, 100%, 8%);
+  --foreground: hsl(47, 20%, 95%);
+  --card: hsl(158, 15%, 10%);
+  --card-foreground: hsl(47, 20%, 95%);
+  --popover: hsl(158, 100%, 8%);
+  --popover-foreground: hsl(47, 20%, 95%);
+  --primary: hsl(130, 75%, 41%);
+  --primary-foreground: hsl(158, 100%, 8%);
+  --secondary: hsl(158, 63%, 25%);
+  --secondary-foreground: hsl(47, 20%, 95%);
+  --muted: hsl(158, 15%, 12%);
+  --muted-foreground: hsl(47, 20%, 65%);
+  --accent: hsl(158, 100%, 8%);
+  --accent-foreground: hsl(47, 20%, 95%);
+  --destructive: hsl(0, 62%, 52%);
+  --destructive-foreground: hsl(47, 20%, 95%);
+  --border: hsl(158, 15%, 18%);
+  --input: hsl(158, 15%, 18%);
+  --ring: hsl(130, 75%, 41%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .text-canary {
+    color: var(--canary);
+  }
+
+  .text-gold {
+    color: var(--gold);
+  }
+
+  .bg-canary {
+    background-color: var(--canary);
+  }
+
+  .bg-gold {
+    background-color: var(--gold);
+  }
+
+  .border-canary {
+    border-color: var(--canary);
+  }
+
+  .border-gold {
+    border-color: var(--gold);
+  }
+}
+
+@layer components {
+  .garden-canvas {
+    background-image: radial-gradient(circle at 25px 25px, rgba(16, 120, 56, 0.1) 2px, transparent 0);
+    background-size: 50px 50px;
+  }
+
+  .plant-card-hover {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .plant-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 64, 37, 0.15), 0 10px 10px -5px rgba(0, 64, 37, 0.08);
+  }
+
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(158, 100%, 8%) 0%, hsl(158, 63%, 25%) 100%);
+  }
+
+  .step-indicator {
+    @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold;
+  }
+
+  .step-indicator.active {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .step-indicator.completed {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  .step-indicator.pending {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  .shape-option {
+    @apply border-2 rounded-lg p-4 cursor-pointer transition-all duration-200;
+  }
+
+  .shape-option.selected {
+    @apply border-primary bg-primary/10 text-primary;
+  }
+
+  .shape-option:not(.selected) {
+    @apply border-border hover:border-accent;
+  }
+
+  .compass-button {
+    @apply px-3 py-1 rounded-full text-sm font-medium transition-colors;
+  }
+
+  .compass-button.selected {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  .compass-button:not(.selected) {
+    @apply bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground;
+  }
+}

@@ -1,0 +1,51 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
+import NotFound from "@/pages/not-found";
+import Landing from "@/pages/landing";
+import Home from "@/pages/home";
+import GardenProperties from "@/pages/garden-properties";
+import GardenDesign from "@/pages/garden-design";
+import PlantLibrary from "@/pages/plant-library";
+import PlantDoctor from "@/pages/plant-doctor";
+import PremiumDashboard from "@/pages/premium-dashboard";
+import Admin from "@/pages/admin";
+
+function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  return (
+    <Switch>
+      {isLoading || !isAuthenticated ? (
+        <Route path="/" component={Landing} />
+      ) : (
+        <>
+          <Route path="/" component={Home} />
+          <Route path="/garden-properties" component={GardenProperties} />
+          <Route path="/garden-design/:id?" component={GardenDesign} />
+          <Route path="/plant-library" component={PlantLibrary} />
+          <Route path="/plant-doctor" component={PlantDoctor} />
+          <Route path="/premium" component={PremiumDashboard} />
+          <Route path="/admin" component={Admin} />
+        </>
+      )}
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

@@ -1,0 +1,317 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import Navigation from "@/components/layout/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import PlantCard from "@/components/plant/plant-card";
+import PlantSearch from "@/components/plant/plant-search";
+import { Sprout, Search, Filter, Heart, Grid, List } from "lucide-react";
+import type { Plant, PlantSearchFilters } from "@/types/plant";
+
+export default function PlantLibrary() {
+  const [activeTab, setActiveTab] = useState("browse");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<PlantSearchFilters>({});
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const { data: plants, isLoading: plantsLoading } = useQuery({
+    queryKey: ["/api/plants/search", { q: searchQuery, ...filters }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchQuery) params.append("q", searchQuery);
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, value.toString());
+      });
+      
+      const response = await fetch(`/api/plants/search?${params}`);
+      return response.json();
+    },
+  });
+
+  const { data: myCollection, isLoading: collectionLoading } = useQuery({
+    queryKey: ["/api/my-collection"],
+  });
+
+  const handleFilterChange = (newFilters: Partial<PlantSearchFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+    setSearchQuery("");
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-serif font-bold text-foreground mb-2" data-testid="text-plant-library-title">
+            Plant Library
+          </h1>
+          <p className="text-lg text-muted-foreground" data-testid="text-plant-library-subtitle">
+            Explore our comprehensive botanical database with over 2,000 ornamental plants
+          </p>
+        </div>
+
+        {/* Main Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3" data-testid="tabs-plant-library">
+            <TabsTrigger value="browse" data-testid="tab-browse-plants">
+              <Sprout className="w-4 h-4 mr-2" />
+              Browse Plants
+            </TabsTrigger>
+            <TabsTrigger value="collection" data-testid="tab-my-collection">
+              <Heart className="w-4 h-4 mr-2" />
+              My Collection ({myCollection?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="search" className="hidden lg:flex" data-testid="tab-advanced-search">
+              <Search className="w-4 h-4 mr-2" />
+              Advanced Search
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Browse Plants Tab */}
+          <TabsContent value="browse" className="mt-8">
+            <div className="grid lg:grid-cols-4 gap-8">
+              {/* Filters Sidebar */}
+              <div className="lg:col-span-1">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Filters</span>
+                      <Button variant="ghost" size="sm" onClick={clearFilters} data-testid="button-clear-filters">
+                        Clear
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Search */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Search Plants</label>
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+                        <Input
+                          placeholder="Search by name..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10"
+                          data-testid="input-plant-search"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Plant Type Filter */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Plant Type</label>
+                      <Select onValueChange={(value) => handleFilterChange({ type: value })}>
+                        <SelectTrigger data-testid="select-plant-type">
+                          <SelectValue placeholder="All Types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Types</SelectItem>
+                          <SelectItem value="perennial">Perennials</SelectItem>
+                          <SelectItem value="annual">Annuals</SelectItem>
+                          <SelectItem value="shrub">Shrubs</SelectItem>
+                          <SelectItem value="tree">Trees</SelectItem>
+                          <SelectItem value="bulb">Bulbs</SelectItem>
+                          <SelectItem value="grass">Ornamental Grasses</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Sun Requirements Filter */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Sun Requirements</label>
+                      <Select onValueChange={(value) => handleFilterChange({ sun_requirements: value })}>
+                        <SelectTrigger data-testid="select-sun-requirements">
+                          <SelectValue placeholder="Any Sun Exposure" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any Sun Exposure</SelectItem>
+                          <SelectItem value="full_sun">Full Sun</SelectItem>
+                          <SelectItem value="partial_sun">Partial Sun</SelectItem>
+                          <SelectItem value="partial_shade">Partial Shade</SelectItem>
+                          <SelectItem value="full_shade">Full Shade</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Special Features */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Special Features</label>
+                      <div className="space-y-2">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={filters.pet_safe || false}
+                            onChange={(e) => handleFilterChange({ pet_safe: e.target.checked || undefined })}
+                            data-testid="checkbox-pet-safe"
+                          />
+                          <span className="text-sm">Pet Safe</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={filters.drought_tolerant || false}
+                            onChange={(e) => handleFilterChange({ drought_tolerant: e.target.checked || undefined })}
+                            data-testid="checkbox-drought-tolerant"
+                          />
+                          <span className="text-sm">Drought Tolerant</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={filters.fragrant || false}
+                            onChange={(e) => handleFilterChange({ fragrant: e.target.checked || undefined })}
+                            data-testid="checkbox-fragrant"
+                          />
+                          <span className="text-sm">Fragrant</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={filters.attracts_pollinators || false}
+                            onChange={(e) => handleFilterChange({ attracts_pollinators: e.target.checked || undefined })}
+                            data-testid="checkbox-attracts-pollinators"
+                          />
+                          <span className="text-sm">Attracts Pollinators</span>
+                        </label>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Plants Grid */}
+              <div className="lg:col-span-3">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center space-x-4">
+                    <p className="text-sm text-muted-foreground" data-testid="text-results-count">
+                      {plantsLoading ? "Loading..." : `${plants?.length || 0} plants found`}
+                    </p>
+                    {Object.keys(filters).length > 0 && (
+                      <Badge variant="secondary" data-testid="badge-filters-applied">
+                        {Object.keys(filters).length} filter(s) applied
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant={viewMode === "grid" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      data-testid="button-grid-view"
+                    >
+                      <Grid className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === "list" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      data-testid="button-list-view"
+                    >
+                      <List className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {plantsLoading ? (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <Card key={i} className="animate-pulse" data-testid={`skeleton-plant-${i}`}>
+                        <div className="h-48 bg-muted"></div>
+                        <CardContent className="pt-4">
+                          <div className="h-4 bg-muted rounded mb-2"></div>
+                          <div className="h-3 bg-muted rounded w-2/3"></div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : plants && plants.length > 0 ? (
+                  <div className={viewMode === "grid" 
+                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                    : "space-y-4"
+                  }>
+                    {plants.map((plant: Plant) => (
+                      <PlantCard
+                        key={plant.id}
+                        plant={plant}
+                        viewMode={viewMode}
+                        showActions={true}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12" data-testid="empty-plants-state">
+                    <Sprout className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No plants found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Try adjusting your search criteria or clearing filters
+                    </p>
+                    <Button onClick={clearFilters} data-testid="button-clear-search">
+                      Clear Search & Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* My Collection Tab */}
+          <TabsContent value="collection" className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>My Plant Collection</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {collectionLoading ? (
+                  <div className="text-center py-8" data-testid="loading-collection">
+                    <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading your collection...</p>
+                  </div>
+                ) : myCollection && myCollection.length > 0 ? (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {myCollection.map((item: any) => (
+                      <PlantCard
+                        key={item.id}
+                        plant={item.plant}
+                        viewMode="grid"
+                        showActions={true}
+                        isInCollection={true}
+                        collectionNotes={item.notes}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12" data-testid="empty-collection-state">
+                    <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Your collection is empty</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start building your personal plant collection by browsing our database
+                    </p>
+                    <Button onClick={() => setActiveTab("browse")} data-testid="button-browse-to-add">
+                      Browse Plants
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Advanced Search Tab */}
+          <TabsContent value="search" className="mt-8">
+            <PlantSearch onResults={(results) => console.log(results)} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
