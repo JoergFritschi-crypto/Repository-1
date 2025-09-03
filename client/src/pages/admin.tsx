@@ -15,6 +15,7 @@ import { APIMonitoring } from "@/components/admin/api-monitoring";
 import { APIKeysManager } from "@/components/admin/api-keys-manager";
 import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { PlantCard } from "@/components/admin/plant-card";
+import { ImageGenerationMonitor } from "@/components/admin/image-generation-monitor";
 import { 
   Settings, 
   Database, 
@@ -33,7 +34,8 @@ import {
   Plus,
   FolderSync,
   FolderOutput,
-  Leaf
+  Leaf,
+  ImageIcon
 } from "lucide-react";
 
 export default function Admin() {
@@ -128,6 +130,7 @@ export default function Admin() {
 
   const adminTabs = [
     { id: "plants", label: "Plant Database", icon: Database },
+    { id: "image-gen", label: "Image Generation", icon: ImageIcon },
     { id: "api-monitor", label: "API Monitor", icon: Server },
     { id: "import", label: "Import Wizard", icon: Upload },
     { id: "testing", label: "Testing Tools", icon: FlaskConical },
@@ -270,10 +273,28 @@ export default function Admin() {
                                 key={plant.id}
                                 plant={plant}
                                 showActions={true}
+                                isAdmin={true}
                                 onVerify={() => verifyPlantMutation.mutate(plant.id)}
                                 onReject={() => console.log('Reject plant:', plant.id)}
                                 onEdit={() => console.log('Edit plant:', plant.id)}
                                 onDelete={() => console.log('Delete plant:', plant.id)}
+                                onGenerateImages={async () => {
+                                  try {
+                                    const response = await apiRequest('POST', `/api/admin/plants/${plant.id}/generate-images`);
+                                    const data = await response.json();
+                                    toast({
+                                      title: "Image Generation Started",
+                                      description: "Images are being generated. This may take a few minutes.",
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: [`/api/plants/search?q=${searchQuery || ''}`] });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to start image generation",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
                               />
                             ))}
                             
@@ -283,8 +304,26 @@ export default function Admin() {
                                 key={plant.id}
                                 plant={plant}
                                 showActions={true}
+                                isAdmin={true}
                                 onEdit={() => console.log('Edit plant:', plant.id)}
                                 onDelete={() => console.log('Delete plant:', plant.id)}
+                                onGenerateImages={async () => {
+                                  try {
+                                    const response = await apiRequest('POST', `/api/admin/plants/${plant.id}/generate-images`);
+                                    const data = await response.json();
+                                    toast({
+                                      title: "Image Generation Started",
+                                      description: "Images are being generated. This may take a few minutes.",
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: [`/api/plants/search?q=${searchQuery || ''}`] });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to start image generation",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
                               />
                             ))}
                           </div>
@@ -346,6 +385,10 @@ export default function Admin() {
                 </Card>
               </TabsContent>
 
+
+              <TabsContent value="image-gen" className="mt-8">
+                <ImageGenerationMonitor />
+              </TabsContent>
 
               <TabsContent value="api-monitor" className="mt-8">
                 <APIMonitoring />

@@ -161,8 +161,19 @@ export const plants = pgTable("plants", {
   description: text("description"), // Full plant description
   careGuides: varchar("care_guides"), // URL to care guides
   
+  // Image generation fields
+  thumbnailImage: varchar("thumbnail_image"), // Card thumbnail
+  fullImage: varchar("full_image"), // Full plant view
+  detailImage: varchar("detail_image"), // Detailed closeup view
+  imageGenerationStatus: varchar("image_generation_status").default("pending"), // pending, queued, generating, completed, failed, stuck
+  imageGenerationStartedAt: timestamp("image_generation_started_at"),
+  imageGenerationCompletedAt: timestamp("image_generation_completed_at"),
+  imageGenerationError: text("image_generation_error"),
+  imageGenerationAttempts: integer("image_generation_attempts").default(0),
+  lastImageGenerationAt: timestamp("last_image_generation_at"),
+  
   // System fields
-  generatedImageUrl: varchar("generated_image_url"), // Our FLUX generated images
+  generatedImageUrl: varchar("generated_image_url"), // Legacy field, kept for compatibility
   dataSource: varchar("data_source").default("perenual"), // perenual, manual, etc.
   importedAt: timestamp("imported_at"),
   verificationStatus: varchar("verification_status").default("pending"),
@@ -218,6 +229,23 @@ export const climateData = pgTable("climate_data", {
   monthly_data: jsonb("monthly_data"),
   data_source: varchar("data_source").default("visual_crossing"),
   lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
+// Image generation queue for managing bulk generation with rate limiting
+export const imageGenerationQueue = pgTable("image_generation_queue", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  plantId: varchar("plant_id").notNull().references(() => plants.id),
+  imageType: varchar("image_type").notNull(), // thumbnail, full, detail
+  status: varchar("status").default("pending"), // pending, processing, completed, failed
+  priority: integer("priority").default(0), // Higher priority = processed first
+  retryCount: integer("retry_count").default(0),
+  maxRetries: integer("max_retries").default(3),
+  errorMessage: text("error_message"),
+  generatedImagePath: varchar("generated_image_path"),
+  scheduledFor: timestamp("scheduled_for"), // When to process this item
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // API health monitoring
@@ -279,6 +307,8 @@ export type ApiUsageStat = typeof apiUsageStats.$inferSelect;
 export type InsertApiUsageStat = typeof apiUsageStats.$inferInsert;
 export type ApiAlert = typeof apiAlerts.$inferSelect;
 export type InsertApiAlert = typeof apiAlerts.$inferInsert;
+export type ImageGenerationQueue = typeof imageGenerationQueue.$inferSelect;
+export type InsertImageGenerationQueue = typeof imageGenerationQueue.$inferInsert;
 
 // Schema exports for validation
 export const insertGardenSchema = createInsertSchema(gardens);
@@ -290,3 +320,4 @@ export const insertClimateDataSchema = createInsertSchema(climateData);
 export const insertApiHealthCheckSchema = createInsertSchema(apiHealthChecks);
 export const insertApiUsageStatSchema = createInsertSchema(apiUsageStats);
 export const insertApiAlertSchema = createInsertSchema(apiAlerts);
+export const insertImageGenerationQueueSchema = createInsertSchema(imageGenerationQueue);

@@ -19,7 +19,9 @@ import {
   Sprout,
   Calendar,
   Bug,
-  Scissors
+  Scissors,
+  ImageIcon,
+  Loader2
 } from "lucide-react";
 import type { Plant } from "@shared/schema";
 
@@ -29,7 +31,9 @@ interface PlantCardProps {
   onDelete?: () => void;
   onVerify?: () => void;
   onReject?: () => void;
+  onGenerateImages?: () => void;
   showActions?: boolean;
+  isAdmin?: boolean;
 }
 
 export function PlantCard({ 
@@ -38,7 +42,9 @@ export function PlantCard({
   onDelete, 
   onVerify,
   onReject,
-  showActions = false 
+  onGenerateImages,
+  showActions = false,
+  isAdmin = false 
 }: PlantCardProps) {
   // Safety level mapping
   const getToxicityBadge = (level: number | undefined, type: string) => {
@@ -104,16 +110,28 @@ export function PlantCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Image Placeholder (for future FLUX generated images) */}
-        {plant.generatedImageUrl ? (
-          <img 
-            src={plant.generatedImageUrl} 
-            alt={plant.scientificName}
-            className="w-full h-48 object-cover rounded-lg"
-          />
+        {/* Image display with generation status */}
+        {plant.thumbnailImage || plant.fullImage || plant.generatedImageUrl ? (
+          <div className="relative">
+            <img 
+              src={plant.thumbnailImage || plant.fullImage || plant.generatedImageUrl} 
+              alt={plant.scientificName || plant.commonName}
+              className="w-full h-48 object-cover rounded-lg"
+            />
+            {plant.imageGenerationStatus === "generating" && (
+              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+              </div>
+            )}
+          </div>
         ) : (
-          <div className="w-full h-48 bg-muted rounded-lg flex items-center justify-center">
-            <Leaf className="w-12 h-12 text-muted-foreground" />
+          <div className="w-full h-48 bg-muted rounded-lg flex flex-col items-center justify-center">
+            <Leaf className="w-12 h-12 text-muted-foreground mb-2" />
+            {plant.imageGenerationStatus && (
+              <Badge variant="outline" className="text-xs">
+                {plant.imageGenerationStatus}
+              </Badge>
+            )}
           </div>
         )}
 
@@ -297,6 +315,21 @@ export function PlantCard({
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
                 </Button>
+                {isAdmin && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={onGenerateImages}
+                    disabled={plant.imageGenerationStatus === "generating"}
+                    className="flex-1"
+                  >
+                    {plant.imageGenerationStatus === "generating" ? (
+                      <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating</>
+                    ) : (
+                      <><ImageIcon className="w-4 h-4 mr-1" /> Generate</>
+                    )}
+                  </Button>
+                )}
                 <Button 
                   size="sm" 
                   variant="ghost"

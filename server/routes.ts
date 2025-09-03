@@ -9,6 +9,7 @@ import AnthropicAI from "./anthropicAI";
 import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
 import { apiMonitoring } from "./apiMonitoring";
+import { imageGenerationService } from "./imageGenerationService";
 
 // Initialize Stripe if API key is available
 let stripe: Stripe | null = null;
@@ -438,6 +439,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error verifying plant:", error);
       res.status(500).json({ message: "Failed to verify plant" });
+    }
+  });
+
+  // Image generation endpoints
+  app.post('/api/admin/plants/:id/generate-images', isAuthenticated, async (req: any, res) => {
+    try {
+      const plantId = req.params.id;
+      const plant = await storage.getPlant(plantId);
+      
+      if (!plant) {
+        return res.status(404).json({ message: "Plant not found" });
+      }
+
+      // Queue the plant for image generation
+      await imageGenerationService.queuePlantForGeneration(plantId);
+      
+      res.json({ 
+        message: "Image generation queued", 
+        plantId,
+        status: "queued" 
+      });
+    } catch (error) {
+      console.error("Error starting image generation:", error);
+      res.status(500).json({ 
+        message: "Failed to start image generation", 
+        error: error.message 
+      });
+    }
+  });
+
+  app.get('/api/admin/image-generation/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const status = await imageGenerationService.getGenerationStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Error getting image generation status:", error);
+      res.status(500).json({ 
+        message: "Failed to get generation status", 
+        error: error.message 
+      });
+    }
+  });
+
+  app.get('/api/admin/image-generation/queue', isAuthenticated, async (req: any, res) => {
+    try {
+      const queue = await imageGenerationService.getQueueStatus();
+      res.json(queue);
+    } catch (error) {
+      console.error("Error getting queue status:", error);
+      res.status(500).json({ 
+        message: "Failed to get queue status", 
+        error: error.message 
+      });
     }
   });
 
