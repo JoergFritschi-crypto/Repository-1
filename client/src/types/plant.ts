@@ -25,6 +25,9 @@ export interface Plant {
   care_notes?: string;
   planting_instructions?: string;
   image_url?: string;
+  thumbnailImage?: string;
+  fullImage?: string;
+  detailImage?: string;
   data_source?: string;
   verification_status?: 'pending' | 'verified' | 'rejected';
   createdAt: string;
