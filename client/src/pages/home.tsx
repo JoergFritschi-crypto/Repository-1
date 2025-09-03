@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
 import { PlusCircle, Palette, Sprout, Download, Crown, Stethoscope } from "lucide-react";
-import heroImage from '@assets/generated_images/British_cottage_garden_scene_e1b2e411.png';
+import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
 
 export default function Home() {
   const { user } = useAuth();
@@ -23,27 +23,35 @@ export default function Home() {
       <Navigation />
       
       {/* Hero Section */}
-      <div className="relative h-[600px] overflow-hidden">
+      <div className="relative h-[700px] overflow-hidden">
         <img 
           src={heroImage} 
-          alt="British cottage garden with colorful lupines" 
+          alt="Rudbeckia, Delphinium and Salvia garden flowers" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90">
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="max-w-7xl mx-auto">
-              <h1 className="text-5xl font-serif font-bold text-white mb-4 drop-shadow-lg">
-                Welcome to Your Garden Paradise
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="max-w-4xl mx-auto px-8 text-center">
+              <h1 className="text-6xl font-serif font-bold text-white mb-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                Welcome to GardenScape Pro
               </h1>
-              <p className="text-xl text-white/90 mb-6 drop-shadow-md max-w-2xl">
-                Design beautiful British gardens with our professional tools and expert plant knowledge
+              <p className="text-2xl text-white mb-8 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] max-w-3xl mx-auto">
+                Design stunning British gardens with professional tools and expert plant knowledge
               </p>
-              <Button size="lg" className="gold-accent text-primary font-semibold shadow-lg hover:shadow-xl transition-all duration-300" asChild>
-                <Link href="/garden-properties">
-                  <Palette className="w-5 h-5 mr-2" />
-                  Start Designing Your Garden
-                </Link>
-              </Button>
+              <div className="flex gap-4 justify-center">
+                <Button size="lg" className="btn-gold shadow-xl hover:shadow-2xl transition-all duration-300" asChild>
+                  <Link href="/garden-properties">
+                    <Palette className="w-5 h-5 mr-2" />
+                    Start Designing
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="bg-white/90 hover:bg-white text-primary border-2 shadow-xl hover:shadow-2xl transition-all duration-300" asChild>
+                  <Link href="/plant-library">
+                    <Sprout className="w-5 h-5 mr-2" />
+                    Browse Plants
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
