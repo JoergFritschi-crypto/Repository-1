@@ -1,5 +1,6 @@
-// Production AI Image Generation - Fast & Reliable
-import { productionImageGenerator } from './productionImageGenerator';
+// AI Image Generation with Multiple Fallback Options
+import { huggingfaceOptimized } from './huggingfaceOptimized';
+import { runwareImageGenerator } from './runwareImageGenerator';
 
 interface GenerateImageOptions {
   prompt: string;
@@ -25,30 +26,39 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     .replace(/thumbnail|full|detail|garden view/gi, '')
     .trim() || oneLine;
   
-  // Generate production image
-  const imagePath = await productionImageGenerator.generateImage({
-    prompt: prompt || plantName,
-    plantName,
-    imageType
-  });
+  console.log(`=== AI Image Generation ===`);
+  console.log(`Plant: ${plantName}`);
+  console.log(`Type: ${imageType}`);
   
-  return imagePath;
-}
-
-// Helper function to delete old images
-export async function deleteOldImages(imagePaths: (string | null)[]): Promise<void> {
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  
-  for (const imagePath of imagePaths) {
-    if (!imagePath) continue;
-    
+  // Try HuggingFace first (optimized approach)
+  if (process.env.HUGGINGFACE_API_KEY) {
     try {
-      const fullPath = path.join(process.cwd(), "client", "public", imagePath.replace(/^\//, ""));
-      await fs.unlink(fullPath);
-      console.log(`Deleted old image: ${imagePath}`);
-    } catch (error) {
-      console.log(`Could not delete: ${imagePath}`);
+      const imagePath = await huggingfaceOptimized.generateImage({
+        prompt: prompt || plantName,
+        plantName,
+        imageType
+      });
+      console.log(`✅ Success with HuggingFace`);
+      return imagePath;
+    } catch (error: any) {
+      console.log(`HuggingFace failed: ${error.message}`);
     }
   }
+  
+  // Try Runware if available (requires credits)
+  if (process.env.RUNWARE_API_KEY) {
+    try {
+      const imagePath = await runwareImageGenerator.generateImage({
+        prompt: prompt || plantName,
+        plantName,
+        imageType
+      });
+      console.log(`✅ Success with Runware`);
+      return imagePath;
+    } catch (error: any) {
+      console.log(`Runware failed: ${error.message}`);
+    }
+  }
+  
+  throw new Error("No image generation service available or all services failed. Please ensure HuggingFace API key is set or add credits to Runware.");
 }
