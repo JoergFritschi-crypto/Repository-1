@@ -97,25 +97,60 @@ export class APIMonitoringService {
               },
               body: JSON.stringify({
                 model: 'llama-3.1-sonar-small-128k-online',
-                messages: [{ role: 'user', content: 'test' }],
+                messages: [
+                  {
+                    role: 'system',
+                    content: 'You are a helpful assistant.'
+                  },
+                  { 
+                    role: 'user', 
+                    content: 'Reply with just the word test' 
+                  }
+                ],
                 max_tokens: 10,
-                stream: false
+                temperature: 0.2,
+                top_p: 0.9,
+                stream: false,
+                presence_penalty: 0,
+                frequency_penalty: 1
               })
             });
             const responseTime = Date.now() - startTime;
             
-            return {
-              service: 'perplexity',
-              status: response.ok ? 'healthy' : 'down',
-              responseTime,
-              errorMessage: !response.ok ? `Status: ${response.status}` : undefined
-            };
+            if (response.ok) {
+              const data = await response.json();
+              return {
+                service: 'perplexity',
+                status: 'healthy',
+                responseTime,
+                metadata: {
+                  model: data.model,
+                  usage: data.usage
+                }
+              };
+            } else {
+              const errorText = await response.text();
+              let errorDetails = errorText;
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorDetails = errorJson.error?.message || errorJson.detail || errorText;
+              } catch (e) {
+                // Keep errorText as is if not JSON
+              }
+              
+              return {
+                service: 'perplexity',
+                status: response.status === 429 ? 'degraded' : 'down',
+                responseTime,
+                errorMessage: `Status ${response.status}: ${errorDetails}`
+              };
+            }
           } catch (error) {
             return {
               service: 'perplexity',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: `Connection failed: ${error.message}`
             };
           }
         }
