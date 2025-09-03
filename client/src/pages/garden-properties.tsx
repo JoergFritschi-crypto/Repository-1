@@ -564,7 +564,8 @@ export default function GardenProperties() {
               </Button>
 
               <Button
-                type="submit"
+                type={currentStep === 7 ? "submit" : "button"}
+                onClick={currentStep < 7 ? nextStep : undefined}
                 disabled={createGardenMutation.isPending}
                 className={currentStep === 7 ? "btn-gold shadow-lg hover:shadow-xl" : "bg-primary hover:bg-primary/90 transition-all duration-300"}
                 data-testid="button-next-or-create"
