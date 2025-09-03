@@ -244,7 +244,7 @@ export class HuggingFaceAPI {
     this.apiKey = apiKey;
   }
 
-  async generateImage(prompt: string, model: string = 'black-forest-labs/FLUX.1-schnell'): Promise<Buffer | null> {
+  async generateImage(prompt: string, model: string = 'stabilityai/stable-diffusion-2-1'): Promise<Buffer | null> {
     try {
       // Add timeout using AbortController
       const controller = new AbortController();
@@ -260,7 +260,9 @@ export class HuggingFaceAPI {
           inputs: prompt,
           parameters: {
             guidance_scale: 7.5,
-            num_inference_steps: 50,
+            num_inference_steps: 25, // Reduced for faster generation
+            width: 512,
+            height: 512
           }
         }),
         signal: controller.signal
