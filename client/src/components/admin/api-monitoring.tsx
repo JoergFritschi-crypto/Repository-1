@@ -101,16 +101,16 @@ export function APIMonitoring() {
     return icons[service] || "🔧";
   };
 
-  const criticalServices = healthStatus?.filter((s: any) => 
+  const criticalServices = (healthStatus as any[])?.filter((s: any) => 
     ['anthropic', 'perplexity', 'stripe'].includes(s.service)
   ) || [];
 
-  const nonCriticalServices = healthStatus?.filter((s: any) => 
+  const nonCriticalServices = (healthStatus as any[])?.filter((s: any) => 
     !['anthropic', 'perplexity', 'stripe'].includes(s.service)
   ) || [];
 
-  const healthyCount = healthStatus?.filter((s: any) => s.status === 'healthy').length || 0;
-  const totalServices = healthStatus?.length || 0;
+  const healthyCount = (healthStatus as any[])?.filter((s: any) => s.status === 'healthy').length || 0;
+  const totalServices = (healthStatus as any[])?.length || 0;
   const healthPercentage = totalServices > 0 ? (healthyCount / totalServices) * 100 : 0;
 
   return (
@@ -184,7 +184,7 @@ export function APIMonitoring() {
                     {getStatusBadge(service.status)}
                   </div>
                   <CardDescription>
-                    {apiConfig?.[service.service]?.purpose || 'API Service'}
+                    {(apiConfig as any)?.[service.service]?.purpose || 'API Service'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -272,7 +272,7 @@ export function APIMonitoring() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {usageStats?.map((stat: any) => (
+                {(usageStats as any[])?.map((stat: any) => (
                   <div key={stat.service} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{getServiceIcon(stat.service)}</span>
@@ -317,7 +317,7 @@ export function APIMonitoring() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-            {healthStatus?.map((service: any) => {
+            {(healthStatus as any[])?.map((service: any) => {
               const isHealthy = service.status === 'healthy';
               const isDegraded = service.status === 'degraded';
               const isDown = service.status === 'down';

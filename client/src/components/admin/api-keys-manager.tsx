@@ -146,7 +146,7 @@ export function APIKeysManager() {
   };
 
   const getKeyStatus = (service: string) => {
-    const info = keyStatus?.find((k: any) => k.service === service);
+    const info = (keyStatus as any[])?.find((k: any) => k.service === service);
     if (!info) return { configured: false, status: 'untested' as const };
     return {
       configured: info.configured,
@@ -274,7 +274,7 @@ export function APIKeysManager() {
     );
   }
 
-  const configuredCount = keyStatus?.filter((k: any) => k.configured).length || 0;
+  const configuredCount = (keyStatus as any[])?.filter((k: any) => k.configured).length || 0;
   const totalCount = Object.keys(SERVICE_INFO).length;
 
   return (
