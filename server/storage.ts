@@ -30,6 +30,8 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
+  updateUser(userId: string, data: Partial<User>): Promise<User>;
+  getAllUsers(): Promise<User[]>;
   
   // Garden operations
   getGarden(id: string): Promise<Garden | undefined>;
@@ -106,6 +108,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async updateUser(userId: string, data: Partial<User>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        ...data,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   // Garden operations

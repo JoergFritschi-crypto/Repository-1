@@ -37,6 +37,7 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   subscriptionStatus: varchar("subscription_status"),
+  isAdmin: boolean("is_admin").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -181,6 +182,44 @@ export const climateData = pgTable("climate_data", {
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
 
+// API health monitoring
+export const apiHealthChecks = pgTable("api_health_checks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  service: varchar("service").notNull(), // anthropic, perplexity, gemini, etc.
+  status: varchar("status").notNull(), // healthy, degraded, down
+  responseTime: integer("response_time"), // in milliseconds
+  errorMessage: text("error_message"),
+  quotaUsed: integer("quota_used"),
+  quotaLimit: integer("quota_limit"),
+  lastChecked: timestamp("last_checked").defaultNow(),
+  metadata: jsonb("metadata"), // additional service-specific data
+});
+
+// API usage statistics
+export const apiUsageStats = pgTable("api_usage_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  service: varchar("service").notNull(),
+  endpoint: varchar("endpoint"),
+  userId: varchar("user_id").references(() => users.id),
+  requestCount: integer("request_count").default(1),
+  tokensUsed: integer("tokens_used"),
+  cost: decimal("cost", { precision: 10, scale: 4 }),
+  date: timestamp("date").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Alert configurations
+export const apiAlerts = pgTable("api_alerts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  service: varchar("service").notNull(),
+  alertType: varchar("alert_type").notNull(), // quota_warning, service_down, slow_response
+  threshold: integer("threshold"),
+  isActive: boolean("is_active").default(true),
+  lastTriggered: timestamp("last_triggered"),
+  notificationsSent: integer("notifications_sent").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Type exports
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -196,6 +235,12 @@ export type PlantDoctorSession = typeof plantDoctorSessions.$inferSelect;
 export type InsertPlantDoctorSession = typeof plantDoctorSessions.$inferInsert;
 export type ClimateData = typeof climateData.$inferSelect;
 export type InsertClimateData = typeof climateData.$inferInsert;
+export type ApiHealthCheck = typeof apiHealthChecks.$inferSelect;
+export type InsertApiHealthCheck = typeof apiHealthChecks.$inferInsert;
+export type ApiUsageStat = typeof apiUsageStats.$inferSelect;
+export type InsertApiUsageStat = typeof apiUsageStats.$inferInsert;
+export type ApiAlert = typeof apiAlerts.$inferSelect;
+export type InsertApiAlert = typeof apiAlerts.$inferInsert;
 
 // Schema exports for validation
 export const insertGardenSchema = createInsertSchema(gardens);
@@ -204,3 +249,6 @@ export const insertUserPlantCollectionSchema = createInsertSchema(userPlantColle
 export const insertGardenPlantSchema = createInsertSchema(gardenPlants);
 export const insertPlantDoctorSessionSchema = createInsertSchema(plantDoctorSessions);
 export const insertClimateDataSchema = createInsertSchema(climateData);
+export const insertApiHealthCheckSchema = createInsertSchema(apiHealthChecks);
+export const insertApiUsageStatSchema = createInsertSchema(apiUsageStats);
+export const insertApiAlertSchema = createInsertSchema(apiAlerts);

@@ -8,6 +8,7 @@ import PerplexityAI from "./perplexityAI";
 import AnthropicAI from "./anthropicAI";
 import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
+import { apiMonitoring } from "./apiMonitoring";
 
 // Initialize Stripe if API key is available
 let stripe: Stripe | null = null;
@@ -591,6 +592,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching climate data:", error);
       res.status(500).json({ message: "Failed to fetch climate data" });
+    }
+  });
+
+  // Admin API Monitoring Routes
+  app.get('/api/admin/api-health', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const healthStatus = await apiMonitoring.getHealthStatus();
+      res.json(healthStatus);
+    } catch (error) {
+      console.error("Error fetching API health status:", error);
+      res.status(500).json({ message: "Failed to fetch health status" });
+    }
+  });
+
+  app.post('/api/admin/api-health/check', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const results = await apiMonitoring.runHealthChecks();
+      res.json(results);
+    } catch (error) {
+      console.error("Error running health checks:", error);
+      res.status(500).json({ message: "Failed to run health checks" });
+    }
+  });
+
+  app.get('/api/admin/api-usage', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const startDate = req.query.startDate 
+        ? new Date(req.query.startDate as string) 
+        : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+      const endDate = req.query.endDate 
+        ? new Date(req.query.endDate as string)
+        : new Date();
+
+      const usageStats = await apiMonitoring.getUsageStats(startDate, endDate);
+      res.json(usageStats);
+    } catch (error) {
+      console.error("Error fetching API usage stats:", error);
+      res.status(500).json({ message: "Failed to fetch usage stats" });
+    }
+  });
+
+  app.get('/api/admin/api-config', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const config = apiMonitoring.getServiceConfiguration();
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching API configuration:", error);
+      res.status(500).json({ message: "Failed to fetch configuration" });
+    }
+  });
+
+  // Set user as admin (one-time setup route - should be removed in production)
+  app.post('/api/admin/make-admin', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Only allow first user to become admin
+      const allUsers = await storage.getAllUsers();
+      if (allUsers.length > 1 && !user.isAdmin) {
+        return res.status(403).json({ message: "Admin already exists" });
+      }
+
+      await storage.updateUser(userId, { isAdmin: true });
+      res.json({ message: "Admin privileges granted" });
+    } catch (error) {
+      console.error("Error setting admin:", error);
+      res.status(500).json({ message: "Failed to set admin" });
     }
   });
 

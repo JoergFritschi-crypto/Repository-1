@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { APIMonitoring } from "@/components/admin/api-monitoring";
 import { 
   Settings, 
   Database, 
@@ -38,7 +39,7 @@ export default function Admin() {
   const [filterStatus, setFilterStatus] = useState("all");
   const { toast } = useToast();
 
-  // Admin access check
+  // Admin access check and make admin
   useEffect(() => {
     if (!authLoading && !user) {
       toast({
@@ -52,8 +53,19 @@ export default function Admin() {
       return;
     }
     
-    // In a real implementation, you would check for admin role here
-    // For demo purposes, we'll allow access for authenticated users
+    // Make yourself admin on first access
+    if (user && !user.isAdmin) {
+      apiRequest("POST", "/api/admin/make-admin")
+        .then(response => response.json())
+        .then(() => {
+          toast({
+            title: "Admin Access Granted",
+            description: "You now have admin privileges",
+          });
+          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        })
+        .catch(error => console.log("Admin setup:", error));
+    }
   }, [user, authLoading, toast]);
 
   const { data: pendingPlants, isLoading: pendingPlantsLoading } = useQuery({
@@ -112,11 +124,11 @@ export default function Admin() {
 
   const adminTabs = [
     { id: "plants", label: "Plant Database", icon: Database },
+    { id: "api-monitor", label: "API Monitor", icon: Server },
     { id: "import", label: "Import Wizard", icon: Upload },
     { id: "testing", label: "Testing Tools", icon: FlaskConical },
     { id: "security", label: "Security", icon: Shield },
-    { id: "system", label: "System", icon: Server },
-    { id: "api-keys", label: "API Manager", icon: Key },
+    { id: "api-keys", label: "API Keys", icon: Key },
     { id: "users", label: "User Management", icon: Users },
   ];
 
@@ -428,21 +440,9 @@ export default function Admin() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="system" className="mt-8">
-                <Card>
-                  <CardHeader>
-                    <CardTitle data-testid="text-system-title">System Status</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12" data-testid="system-placeholder">
-                      <Server className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">System Status</h3>
-                      <p className="text-muted-foreground">
-                        Monitor system health and performance
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+
+              <TabsContent value="api-monitor" className="mt-8">
+                <APIMonitoring />
               </TabsContent>
 
               <TabsContent value="api-keys" className="mt-8">
