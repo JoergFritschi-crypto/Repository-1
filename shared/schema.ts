@@ -98,36 +98,73 @@ export const gardens = pgTable("gardens", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Plants table
+// Plants table - Based on botanical naming (genus, species, cultivar)
 export const plants = pgTable("plants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  scientificName: varchar("scientific_name").notNull().unique(),
+  perenualId: integer("perenual_id").unique(), // Perenual's ID for reference
+  
+  // Core botanical identity - THE PRIMARY FOCUS OF THE APP
+  scientificName: varchar("scientific_name").notNull().unique(), // Full botanical name
+  genus: varchar("genus").notNull(), // First part of botanical name
+  species: varchar("species"), // Second part of botanical name  
+  cultivar: varchar("cultivar"), // Third part if exists (cultivar or variety)
   commonName: varchar("common_name").notNull(),
   family: varchar("family"),
-  genus: varchar("genus"),
-  species: varchar("species"),
+  
+  // Basic characteristics
   type: varchar("type"), // perennial, annual, shrub, tree, bulb, etc.
-  hardiness_zones: varchar("hardiness_zones"),
-  sun_requirements: sunExposureEnum("sun_requirements"),
-  soil_requirements: jsonb("soil_requirements"),
-  water_requirements: varchar("water_requirements"),
-  mature_height: varchar("mature_height"),
-  mature_width: varchar("mature_width"),
-  bloom_time: varchar("bloom_time"),
-  bloom_color: varchar("bloom_color"),
-  foliage_color: varchar("foliage_color"),
-  fragrant: boolean("fragrant").default(false),
-  deer_resistant: boolean("deer_resistant").default(false),
-  drought_tolerant: boolean("drought_tolerant").default(false),
-  pet_safe: boolean("pet_safe").default(true),
-  toxic_to_children: boolean("toxic_to_children").default(false),
-  attracts_pollinators: boolean("attracts_pollinators").default(false),
-  native_regions: varchar("native_regions"),
-  care_notes: text("care_notes"),
-  planting_instructions: text("planting_instructions"),
-  image_url: varchar("image_url"),
-  data_source: varchar("data_source"), // perenual, inaturalist, gbif, manual
-  verification_status: varchar("verification_status").default("pending"), // pending, verified, rejected
+  dimension: jsonb("dimension"), // Size/dimension info from Perenual
+  cycle: varchar("cycle"), // Growth cycle
+  
+  // Growing conditions - detailed for gardener advice
+  hardiness: varchar("hardiness"), // Hardiness zones
+  sunlight: jsonb("sunlight"), // Their 4-tiered system as array
+  soil: jsonb("soil"), // Soil requirements
+  watering: varchar("watering"), // Basic watering needs
+  wateringGeneralBenchmark: jsonb("watering_general_benchmark"), // Detailed frequency
+  wateringPeriod: varchar("watering_period"), // When to water
+  depthWaterRequirement: jsonb("depth_water_requirement"), // How deep
+  volumeWaterRequirement: jsonb("volume_water_requirement"), // How much
+  
+  // Plant characteristics
+  growthRate: varchar("growth_rate"),
+  droughtTolerant: boolean("drought_tolerant").default(false),
+  saltTolerant: boolean("salt_tolerant").default(false),
+  thorny: boolean("thorny").default(false),
+  tropical: boolean("tropical").default(false),
+  careLevel: varchar("care_level"), // Easy, moderate, hard
+  maintenance: varchar("maintenance"), // Low, moderate, high
+  
+  // Appearance
+  leaf: jsonb("leaf"), // Leaf information
+  leafColor: jsonb("leaf_color"), // Array of colors
+  flowerColor: jsonb("flower_color"), // Array of colors
+  floweringSeason: varchar("flowering_season"), // When it blooms
+  
+  // Safety - VERY IMPORTANT
+  poisonousToHumans: integer("poisonous_to_humans").default(0), // 0-5 scale
+  poisonousToPets: integer("poisonous_to_pets").default(0), // 0-5 scale
+  cuisine: boolean("cuisine").default(false), // Culinary uses
+  medicinal: boolean("medicinal").default(false), // Medicinal uses
+  
+  // Garden information
+  attracts: jsonb("attracts"), // What it attracts (butterflies, birds, etc.)
+  propagation: jsonb("propagation"), // How to propagate
+  pruningMonth: jsonb("pruning_month"), // Array of months
+  pruningCount: jsonb("pruning_count"), // Frequency info
+  seeds: integer("seeds"), // Seed count/info
+  pestSusceptibility: jsonb("pest_susceptibility"), // Common pests array
+  pestSusceptibilityApi: varchar("pest_susceptibility_api"), // API endpoint
+  
+  // Content and guides
+  description: text("description"), // Full plant description
+  careGuides: varchar("care_guides"), // URL to care guides
+  
+  // System fields
+  generatedImageUrl: varchar("generated_image_url"), // Our FLUX generated images
+  dataSource: varchar("data_source").default("perenual"), // perenual, manual, etc.
+  importedAt: timestamp("imported_at"),
+  verificationStatus: varchar("verification_status").default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
