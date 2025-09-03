@@ -2,7 +2,8 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sprout, Brain, Eye, Stethoscope, Star, Check } from "lucide-react";
+import { Star, Check } from "lucide-react";
+import { GardenScapeIcon, GardenDesignIcon, SeasonIcon, PlantDoctorIcon } from "@/components/ui/brand-icons";
 import { useAuth } from "@/hooks/useAuth";
 import gardenImage from '@assets/generated_images/Mixed_perennial_garden_scene_5872224a.png';
 
@@ -16,7 +17,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <Sprout className="w-8 h-8 text-primary" />
+              <GardenScapeIcon className="w-8 h-8" />
               <span className="text-xl font-serif font-bold text-primary">GardenScape Pro</span>
             </div>
             <div className="flex items-center space-x-4">
@@ -45,7 +46,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-[450px] overflow-hidden">
+      <section className="relative h-[550px] overflow-hidden">
         <img 
           src={gardenImage} 
           alt="Beautiful perennial garden with yarrow, daylilies, catmint and more" 
@@ -92,7 +93,7 @@ export default function Landing() {
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
                 <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Brain className="w-5 h-5 text-primary" />
+                  <GardenDesignIcon className="w-5 h-5" />
                 </div>
                 <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-ai-title">AI Garden Design</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-ai-description">
@@ -103,7 +104,7 @@ export default function Landing() {
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
                 <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Eye className="w-5 h-5 text-secondary" />
+                  <SeasonIcon className="w-5 h-5" />
                 </div>
                 <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-3d-title">3D Visualization</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-3d-description">
@@ -114,7 +115,7 @@ export default function Landing() {
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
                 <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Stethoscope className="w-5 h-5 text-accent" />
+                  <PlantDoctorIcon className="w-5 h-5" />
                 </div>
                 <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-doctor-title">Plant Doctor</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-doctor-description">
@@ -253,7 +254,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Sprout className="w-6 h-6" />
+                <GardenScapeIcon className="w-6 h-6" />
                 <span className="text-lg font-serif font-bold">GardenScape Pro</span>
               </div>
               <p className="text-sm opacity-90">AI-powered garden design for beautiful ornamental landscapes.</p>

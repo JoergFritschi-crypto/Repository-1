@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Sprout, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { GardenScapeIcon } from "@/components/ui/brand-icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2" data-testid="link-home">
-              <Sprout className="w-8 h-8 text-primary" />
+              <GardenScapeIcon className="w-8 h-8" />
               <span className="text-xl font-serif font-bold text-primary">GardenScape Pro</span>
             </Link>
             

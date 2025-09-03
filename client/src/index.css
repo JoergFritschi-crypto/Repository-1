@@ -100,6 +100,13 @@
 }
 
 @layer components {
+  .garden-pattern {
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsl(142, 70%, 97%) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(47, 100%, 96%) 0%, transparent 50%);
+    background-size: 100px 100px;
+    background-position: 0 0, 50px 50px;
+  }
   .garden-canvas {
     background-image: radial-gradient(circle at 25px 25px, rgba(16, 120, 56, 0.1) 2px, transparent 0);
     background-size: 50px 50px;

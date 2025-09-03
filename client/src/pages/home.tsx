@@ -4,7 +4,8 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
-import { PlusCircle, Palette, Sprout, Download, Crown, Stethoscope } from "lucide-react";
+import { PlusCircle, Palette, Download } from "lucide-react";
+import { GardenDesignIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
 import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
 
 export default function Home() {
@@ -19,11 +20,11 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background garden-pattern">
       <Navigation />
       
       {/* Hero Section */}
-      <div className="relative h-[400px] overflow-hidden">
+      <div className="relative h-[500px] overflow-hidden">
         <img 
           src={heroImage} 
           alt="Rudbeckia, Delphinium and Salvia garden flowers" 
@@ -41,13 +42,13 @@ export default function Home() {
               <div className="flex gap-3 justify-center">
                 <Button size="default" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300" asChild>
                   <Link href="/garden-properties">
-                    <Palette className="w-4 h-4 mr-2" />
+                    <GardenDesignIcon className="w-4 h-4 mr-2" />
                     Start Designing
                   </Link>
                 </Button>
                 <Button size="default" variant="outline" className="bg-white/90 hover:bg-white text-primary border shadow-lg hover:shadow-xl transition-all duration-300" asChild>
                   <Link href="/plant-library">
-                    <Sprout className="w-4 h-4 mr-2" />
+                    <PlantLibraryIcon className="w-4 h-4 mr-2" />
                     Browse Plants
                   </Link>
                 </Button>
@@ -57,19 +58,19 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         {/* Welcome Section */}
-        <div className="mb-4">
-          <h1 className="text-xl font-serif font-bold text-foreground mb-1" data-testid="text-welcome-title">
+        <div className="mb-3">
+          <h1 className="text-lg font-serif font-bold text-foreground" data-testid="text-welcome-title">
             Welcome back, {user?.firstName || 'Gardener'}!
           </h1>
-          <p className="text-sm text-muted-foreground" data-testid="text-welcome-subtitle">
+          <p className="text-xs text-muted-foreground" data-testid="text-welcome-subtitle">
             Ready to create something beautiful in your garden?
           </p>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid md:grid-cols-4 gap-3 mb-4">
+        <div className="grid md:grid-cols-4 gap-2 mb-3">
           <Card>
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center justify-between">
@@ -93,7 +94,7 @@ export default function Home() {
                   </p>
                   <p className="text-xs text-muted-foreground">Plants in Collection</p>
                 </div>
-                <Sprout className="w-6 h-6 text-secondary" />
+                <PlantLibraryIcon className="w-6 h-6" />
               </div>
             </CardContent>
           </Card>
@@ -117,13 +118,13 @@ export default function Home() {
                   <p className="text-lg font-bold" data-testid="text-stat-membership">Free</p>
                   <p className="text-xs text-muted-foreground">Membership</p>
                 </div>
-                <Crown className="w-6 h-6 text-canary" />
+                <PremiumIcon className="w-6 h-6" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-4">
+        <div className="grid lg:grid-cols-3 gap-3">
           {/* Recent Gardens */}
           <div className="lg:col-span-2">
             <Card>
@@ -198,19 +199,19 @@ export default function Home() {
               <CardContent className="space-y-2">
                 <Button size="sm" asChild className="w-full justify-start" data-testid="button-plant-doctor">
                   <Link href="/plant-doctor">
-                    <Stethoscope className="w-4 h-4 mr-2" />
+                    <PlantDoctorIcon className="w-4 h-4 mr-2" />
                     Plant Doctor
                   </Link>
                 </Button>
                 <Button size="sm" asChild variant="secondary" className="w-full justify-start" data-testid="button-browse-plants">
                   <Link href="/plant-library">
-                    <Sprout className="w-4 h-4 mr-2" />
+                    <PlantLibraryIcon className="w-4 h-4 mr-2" />
                     Browse Plants
                   </Link>
                 </Button>
                 <Button size="sm" asChild variant="outline" className="w-full justify-start" data-testid="button-premium-features">
                   <Link href="/premium">
-                    <Crown className="w-4 h-4 mr-2" />
+                    <PremiumIcon className="w-4 h-4 mr-2" />
                     Premium Features
                   </Link>
                 </Button>
@@ -252,7 +253,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="text-center py-3" data-testid="empty-collection">
-                    <Sprout className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                    <PlantLibraryIcon className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
                     <p className="text-xs text-muted-foreground">No plants in collection</p>
                     <Button variant="ghost" size="sm" asChild className="mt-2" data-testid="button-browse-to-add">
                       <Link href="/plant-library">Browse Plants</Link>
