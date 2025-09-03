@@ -18,17 +18,51 @@ import {
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+// Type definitions for API responses
+interface QueueItem {
+  id: string;
+  plantId: string;
+  plantName?: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  error?: string;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  attempts: number;
+  imageType: 'thumbnail' | 'full' | 'detail';
+}
+
+interface GenerationQueue {
+  items: QueueItem[];
+}
+
+interface GenerationStatus {
+  totalPlants: number;
+  withImages: number;
+  withoutImages: number;
+  completed: number;
+  generating: number;
+  queued: number;
+  failed: number;
+  recentActivity?: Array<{
+    timestamp: string;
+    plantName: string;
+    action: string;
+    status: 'success' | 'error' | 'info';
+  }>;
+}
+
 export function ImageGenerationMonitor() {
   const { toast } = useToast();
   
   // Get generation status
-  const { data: status, isLoading: statusLoading } = useQuery({
+  const { data: status, isLoading: statusLoading } = useQuery<GenerationStatus>({
     queryKey: ["/api/admin/image-generation/status"],
     refetchInterval: 5000, // Poll every 5 seconds
   });
 
   // Get queue status
-  const { data: queue, isLoading: queueLoading } = useQuery({
+  const { data: queue, isLoading: queueLoading } = useQuery<GenerationQueue>({
     queryKey: ["/api/admin/image-generation/queue"],
     refetchInterval: 5000,
   });
@@ -103,7 +137,7 @@ export function ImageGenerationMonitor() {
                 size="sm" 
                 variant="default"
                 onClick={() => generateAllMutation.mutate()}
-                disabled={generateAllMutation.isPending || (status?.queued > 0) || (status?.generating > 0)}
+                disabled={generateAllMutation.isPending || ((status?.queued ?? 0) > 0) || ((status?.generating ?? 0) > 0)}
               >
                 {generateAllMutation.isPending ? (
                   <>
@@ -152,19 +186,19 @@ export function ImageGenerationMonitor() {
           {plants && (
             <div className="mb-4 p-3 bg-muted/50 rounded-lg">
               <p className="text-sm text-muted-foreground">
-                <strong>{(plants as any)?.filter((p: any) => !p.thumbnailImage && !p.fullImage && !p.detailImage).length || 0}</strong> plants need images generated
+                <strong>{((plants as any[])?.filter((p: any) => !p.thumbnailImage && !p.fullImage && !p.detailImage).length || 0)}</strong> plants need images generated
               </p>
             </div>
           )}
 
           {/* Progress Bar */}
-          {status?.totalPlants > 0 && (
+          {(status?.totalPlants ?? 0) > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Overall Progress</span>
-                <span>{Math.round((status.completed / status.totalPlants) * 100)}%</span>
+                <span>{Math.round(((status?.completed ?? 0) / (status?.totalPlants ?? 1)) * 100)}%</span>
               </div>
-              <Progress value={(status.completed / status.totalPlants) * 100} className="h-2" />
+              <Progress value={((status?.completed ?? 0) / (status?.totalPlants ?? 1)) * 100} className="h-2" />
             </div>
           )}
         </CardContent>
