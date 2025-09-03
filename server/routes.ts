@@ -69,9 +69,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Body parser middleware (MUST come after auth setup)
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
-  
-  // Serve generated images
-  app.use('/generated-images', express.static(path.join(process.cwd(), 'client/public/generated-images')));
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
