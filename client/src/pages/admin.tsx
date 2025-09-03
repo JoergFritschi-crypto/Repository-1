@@ -32,7 +32,8 @@ import {
   Trash,
   Plus,
   FolderSync,
-  FolderOutput
+  FolderOutput,
+  Leaf
 } from "lucide-react";
 
 export default function Admin() {
@@ -57,7 +58,7 @@ export default function Admin() {
     }
     
     // Make yourself admin on first access
-    if (user && !user.isAdmin) {
+    if (user && !(user as any).isAdmin) {
       apiRequest("POST", "/api/admin/make-admin")
         .then(response => response.json())
         .then(() => {
@@ -190,7 +191,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Pending</p>
-                          <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">{pendingPlants?.length || 0}</p>
+                          <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">{(pendingPlants as any)?.length || 0}</p>
                         </div>
                         <div className="ml-auto flex gap-2">
                           <Button size="sm" variant="outline" data-testid="button-add-plant">
@@ -212,7 +213,7 @@ export default function Admin() {
                       console.log('Searching with filters:', filters);
                       // TODO: Implement search with filters
                     }}
-                    totalResults={plants?.length || 0}
+                    totalResults={(plants as any)?.length || 0}
                   />
 
                   {/* Plant Cards Grid */}
@@ -223,7 +224,7 @@ export default function Admin() {
                     <CardContent>
 
                         {/* Plants Display */}
-                        {(!plants || plants.length === 0) && (!pendingPlants || pendingPlants.length === 0) ? (
+                        {(!(plants as any) || (plants as any).length === 0) && (!(pendingPlants as any) || (pendingPlants as any).length === 0) ? (
                           <div className="text-center py-12">
                             <Leaf className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                             <h3 className="text-xl font-semibold mb-2">No Plants Yet</h3>
@@ -238,7 +239,7 @@ export default function Admin() {
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {/* Render pending plants as cards */}
-                            {pendingPlants && pendingPlants.map((plant: any) => (
+                            {(pendingPlants as any) && (pendingPlants as any).map((plant: any) => (
                               <PlantCard
                                 key={plant.id}
                                 plant={plant}
@@ -251,7 +252,7 @@ export default function Admin() {
                             ))}
                             
                             {/* Render verified plants as cards */}
-                            {plants && plants.map((plant: any) => (
+                            {(plants as any) && (plants as any).map((plant: any) => (
                               <PlantCard
                                 key={plant.id}
                                 plant={plant}
@@ -265,7 +266,6 @@ export default function Admin() {
                       </CardContent>
                     </Card>
                   </div>
-                </div>
               </TabsContent>
 
               {/* Other admin tabs would be implemented similarly */}
