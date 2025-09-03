@@ -143,21 +143,37 @@ export default function GardenProperties() {
             <h1 className="text-3xl font-serif font-bold text-foreground" data-testid="text-garden-setup-title">
               Garden Setup
             </h1>
-            <span className="text-sm text-muted-foreground" data-testid="text-step-counter">
+            <span className="text-sm font-medium px-3 py-1 bg-accent/20 text-accent-foreground rounded-full" data-testid="text-step-counter">
               Step {currentStep} of 7
             </span>
           </div>
-          <ProgressBar value={progress} className="mb-2" data-testid="progress-bar" />
-          <p className="text-sm text-muted-foreground" data-testid="text-current-step-title">
-            {GARDEN_STEPS[currentStep - 1]?.title}
-          </p>
+          <ProgressBar value={progress} className="mb-4 h-2" data-testid="progress-bar" />
+          <div className="flex justify-between items-center">
+            <p className="text-lg font-medium text-primary" data-testid="text-current-step-title">
+              {GARDEN_STEPS[currentStep - 1]?.title}
+            </p>
+            <div className="flex gap-1">
+              {[...Array(7)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    i < currentStep 
+                      ? 'bg-accent shadow-sm shadow-accent' 
+                      : i === currentStep - 1 
+                      ? 'bg-primary animate-pulse' 
+                      : 'bg-border'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* Step 1: Location & Units */}
             {currentStep === 1 && (
-              <Card data-testid="step-location-units">
+              <Card className="garden-card-frame" data-testid="step-location-units">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <MapPin className="w-5 h-5 mr-2 text-accent" />
@@ -220,7 +236,7 @@ export default function GardenProperties() {
 
             {/* Step 2: Garden Shape */}
             {currentStep === 2 && (
-              <Card data-testid="step-garden-shape">
+              <Card className="garden-card-frame" data-testid="step-garden-shape">
                 <CardHeader>
                   <CardTitle>Garden Shape & Dimensions</CardTitle>
                 </CardHeader>
@@ -238,7 +254,7 @@ export default function GardenProperties() {
 
             {/* Step 3: Slope & Direction */}
             {currentStep === 3 && (
-              <Card data-testid="step-slope-direction">
+              <Card className="garden-card-frame" data-testid="step-slope-direction">
                 <CardHeader>
                   <CardTitle>Slope & Cardinal Direction</CardTitle>
                 </CardHeader>
@@ -302,7 +318,7 @@ export default function GardenProperties() {
 
             {/* Step 4: Interactive Canvas */}
             {currentStep === 4 && (
-              <Card data-testid="step-interactive-canvas">
+              <Card className="garden-card-frame" data-testid="step-interactive-canvas">
                 <CardHeader>
                   <CardTitle>Garden Layout Canvas</CardTitle>
                 </CardHeader>
@@ -318,7 +334,7 @@ export default function GardenProperties() {
 
             {/* Step 5: Climate Report */}
             {currentStep === 5 && (
-              <Card data-testid="step-climate-report">
+              <Card className="garden-card-frame" data-testid="step-climate-report">
                 <CardHeader>
                   <CardTitle>Climate Report & Hardiness Zone</CardTitle>
                 </CardHeader>
@@ -334,7 +350,7 @@ export default function GardenProperties() {
 
             {/* Step 6: Sun & Soil */}
             {currentStep === 6 && (
-              <Card data-testid="step-sun-soil">
+              <Card className="garden-card-frame" data-testid="step-sun-soil">
                 <CardHeader>
                   <CardTitle>Sun Exposure & Soil Properties</CardTitle>
                 </CardHeader>
@@ -421,7 +437,7 @@ export default function GardenProperties() {
 
             {/* Step 7: Plant Preferences */}
             {currentStep === 7 && (
-              <Card data-testid="step-plant-preferences">
+              <Card className="garden-card-frame" data-testid="step-plant-preferences">
                 <CardHeader>
                   <CardTitle>Plant Preferences</CardTitle>
                 </CardHeader>
@@ -540,6 +556,7 @@ export default function GardenProperties() {
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
+                className="hover:bg-secondary/10 hover:border-secondary transition-all duration-300"
                 data-testid="button-previous"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -549,6 +566,7 @@ export default function GardenProperties() {
               <Button
                 type="submit"
                 disabled={createGardenMutation.isPending}
+                className={currentStep === 7 ? "btn-gold shadow-lg hover:shadow-xl" : "bg-primary hover:bg-primary/90 transition-all duration-300"}
                 data-testid="button-next-or-create"
               >
                 {createGardenMutation.isPending ? (

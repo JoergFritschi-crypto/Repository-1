@@ -14,15 +14,17 @@ const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
       <div
         ref={ref}
         className={cn(
-          "w-full bg-muted rounded-full h-2 overflow-hidden",
+          "w-full bg-muted rounded-full h-2 overflow-hidden shadow-inner",
           className
         )}
         {...props}
       >
         <div
-          className="h-full bg-primary transition-all duration-300 ease-in-out"
+          className="h-full gold-accent transition-all duration-500 ease-out relative overflow-hidden"
           style={{ width: `${percentage}%` }}
-        />
+        >
+          <div className="absolute inset-0 shimmer opacity-30" />
+        </div>
       </div>
     );
   }
