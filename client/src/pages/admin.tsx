@@ -78,7 +78,7 @@ export default function Admin() {
   });
 
   const { data: plants, isLoading: plantsLoading } = useQuery({
-    queryKey: ["/api/plants/search", { q: searchQuery }],
+    queryKey: [`/api/plants/search?q=${searchQuery || ''}`],
     enabled: !!user,
   });
 
@@ -206,7 +206,7 @@ export default function Admin() {
                                   title: "Plants Added!",
                                   description: data.message,
                                 });
-                                queryClient.invalidateQueries({ queryKey: ['/api/plants/search'] });
+                                queryClient.invalidateQueries({ queryKey: [`/api/plants/search?q=${searchQuery || ''}`] });
                                 queryClient.invalidateQueries({ queryKey: ['/api/admin/plants/pending'] });
                               } catch (error) {
                                 toast({
