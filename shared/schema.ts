@@ -112,9 +112,10 @@ export const plants = pgTable("plants", {
   family: varchar("family"),
   
   // Basic characteristics
-  type: varchar("type"), // perennial, annual, shrub, tree, bulb, etc.
-  dimension: jsonb("dimension"), // Size/dimension info from Perenual
+  type: varchar("type"), // annuals, perennials, herbaceous perennials, biennials, shrubs, ornamental trees, bulbs, climbers, ground covers, ornamental grasses, herbs-medicinal, herbs-culinary, succulents, cacti, aquatic plants, ferns, alpine rock garden plants
+  dimension: jsonb("dimension"), // {height: {min, max}, spread: {min, max}} - critical for garden design
   cycle: varchar("cycle"), // Growth cycle
+  foliage: varchar("foliage"), // variegated, deciduous, evergreen
   
   // Growing conditions - detailed for gardener advice
   hardiness: varchar("hardiness"), // Hardiness zones
