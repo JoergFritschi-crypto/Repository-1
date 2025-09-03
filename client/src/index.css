@@ -3,52 +3,58 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(47, 20%, 97%);
-  --foreground: hsl(158, 100%, 8%);
+  --background: hsl(60, 20%, 98%);
+  --foreground: hsl(155, 100%, 8%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(158, 100%, 8%);
+  --card-foreground: hsl(155, 100%, 8%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(158, 100%, 8%);
-  --primary: hsl(158, 100%, 8%);
-  --primary-foreground: hsl(47, 96%, 89%);
-  --secondary: hsl(158, 63%, 25%);
-  --secondary-foreground: hsl(47, 96%, 89%);
-  --muted: hsl(47, 20%, 90%);
-  --muted-foreground: hsl(158, 10%, 45%);
-  --accent: hsl(130, 75%, 41%);
-  --accent-foreground: hsl(47, 96%, 89%);
+  --popover-foreground: hsl(155, 100%, 8%);
+  --primary: hsl(155, 100%, 8%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(145, 56%, 26%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(145, 20%, 94%);
+  --muted-foreground: hsl(145, 30%, 35%);
+  --accent: hsl(51, 100%, 57%);
+  --accent-foreground: hsl(155, 100%, 8%);
   --destructive: hsl(0, 65%, 51%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --border: hsl(158, 20%, 88%);
-  --input: hsl(158, 20%, 95%);
-  --ring: hsl(158, 100%, 8%);
-  --canary: hsl(51, 100%, 58%);
-  --gold: hsl(51, 100%, 50%);
+  --border: hsl(145, 20%, 88%);
+  --input: hsl(145, 20%, 95%);
+  --ring: hsl(45, 100%, 50%);
+  --canary: hsl(51, 100%, 57%);
+  --gold: hsl(45, 100%, 50%);
+  --british-racing-green: hsl(155, 100%, 8%);
+  --dark-spring-green: hsl(145, 56%, 26%);
+  --dark-pastel-green: hsl(131, 69%, 41%);
   --radius: 8px;
   --font-sans: 'Inter', sans-serif;
   --font-serif: 'Playfair Display', serif;
 }
 
 .dark {
-  --background: hsl(158, 100%, 8%);
+  --background: hsl(155, 100%, 8%);
   --foreground: hsl(47, 20%, 95%);
-  --card: hsl(158, 15%, 10%);
+  --card: hsl(155, 50%, 12%);
   --card-foreground: hsl(47, 20%, 95%);
-  --popover: hsl(158, 100%, 8%);
+  --popover: hsl(155, 100%, 8%);
   --popover-foreground: hsl(47, 20%, 95%);
-  --primary: hsl(130, 75%, 41%);
-  --primary-foreground: hsl(158, 100%, 8%);
-  --secondary: hsl(158, 63%, 25%);
+  --primary: hsl(131, 69%, 41%);
+  --primary-foreground: hsl(155, 100%, 8%);
+  --secondary: hsl(145, 56%, 26%);
   --secondary-foreground: hsl(47, 20%, 95%);
-  --muted: hsl(158, 15%, 12%);
+  --muted: hsl(155, 30%, 15%);
   --muted-foreground: hsl(47, 20%, 65%);
-  --accent: hsl(158, 100%, 8%);
-  --accent-foreground: hsl(47, 20%, 95%);
+  --accent: hsl(51, 100%, 57%);
+  --accent-foreground: hsl(155, 100%, 8%);
   --destructive: hsl(0, 62%, 52%);
   --destructive-foreground: hsl(47, 20%, 95%);
-  --border: hsl(158, 15%, 18%);
-  --input: hsl(158, 15%, 18%);
-  --ring: hsl(130, 75%, 41%);
+  --border: hsl(155, 30%, 20%);
+  --input: hsl(155, 30%, 20%);
+  --ring: hsl(45, 100%, 50%);
+  --british-racing-green: hsl(155, 100%, 8%);
+  --dark-spring-green: hsl(145, 56%, 26%);
+  --dark-pastel-green: hsl(131, 69%, 41%);
 }
 
 @layer base {
@@ -106,10 +112,11 @@
   .plant-card-hover:hover {
     transform: translateY(-4px);
     box-shadow: 0 20px 25px -5px rgba(0, 64, 37, 0.15), 0 10px 10px -5px rgba(0, 64, 37, 0.08);
+    border-color: hsl(45, 100%, 50%);
   }
 
   .hero-gradient {
-    background: linear-gradient(135deg, hsl(158, 100%, 8%) 0%, hsl(158, 63%, 25%) 100%);
+    background: linear-gradient(135deg, hsl(155, 100%, 8%) 0%, hsl(145, 56%, 26%) 100%);
   }
 
   .step-indicator {
@@ -122,6 +129,20 @@
 
   .step-indicator.completed {
     @apply bg-accent text-accent-foreground;
+  }
+
+  .gold-accent {
+    background: linear-gradient(135deg, hsl(51, 100%, 57%) 0%, hsl(45, 100%, 50%) 100%);
+  }
+
+  .green-gradient {
+    background: linear-gradient(135deg, hsl(155, 100%, 8%) 0%, hsl(131, 69%, 41%) 100%);
+  }
+
+  .card-border-gold {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, hsl(45, 100%, 50%), hsl(51, 100%, 57%)) border-box;
   }
 
   .step-indicator.pending {
