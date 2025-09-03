@@ -35,7 +35,9 @@ import {
   FolderSync,
   FolderOutput,
   Leaf,
-  ImageIcon
+  ImageIcon,
+  RefreshCw,
+  Loader2
 } from "lucide-react";
 
 export default function Admin() {
@@ -79,9 +81,11 @@ export default function Admin() {
     enabled: !!user,
   });
 
-  const { data: plants, isLoading: plantsLoading } = useQuery({
+  const { data: plants, isLoading: plantsLoading, refetch: refetchPlants } = useQuery({
     queryKey: [`/api/plants/search?q=${searchQuery || ''}`],
     enabled: !!user,
+    // Auto-refresh every 5 seconds if there are plants generating images
+    refetchInterval: (plants as any)?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') ? 5000 : false,
   });
 
   const verifyPlantMutation = useMutation({
@@ -196,7 +200,33 @@ export default function Admin() {
                           <p className="text-sm text-muted-foreground">Pending</p>
                           <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">{(pendingPlants as any)?.length || 0}</p>
                         </div>
+                        {(plants as any)?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') && (
+                          <div>
+                            <p className="text-sm text-muted-foreground">Generating</p>
+                            <p className="text-xl font-semibold text-blue-500 flex items-center gap-1">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              {(plants as any)?.filter((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued').length || 0}
+                            </p>
+                          </div>
+                        )}
                         <div className="ml-auto flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            data-testid="button-refresh-plants"
+                            onClick={() => {
+                              refetchPlants();
+                              queryClient.invalidateQueries({ queryKey: ['/api/admin/plants/pending'] });
+                              toast({
+                                title: "Refreshed",
+                                description: "Plant database has been refreshed",
+                              });
+                            }}
+                            disabled={plantsLoading}
+                          >
+                            <RefreshCw className={`w-4 h-4 mr-1 ${plantsLoading ? 'animate-spin' : ''}`} />
+                            Refresh
+                          </Button>
                           <Button 
                             size="sm" 
                             variant="outline" 
