@@ -404,14 +404,14 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
-            // Test with minimal image generation request
+            // Test with minimal image generation request (Runware requires array format)
             const response = await fetch('https://api.runware.ai/v1/images/generate', {
               method: 'POST',
               headers: { 
                 'Authorization': `Bearer ${process.env.RUNWARE_API_KEY}`,
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({
+              body: JSON.stringify([{  // Note: Runware requires array of requests
                 prompt: 'Test image',
                 model: 'runware-v1',
                 style: 'photorealistic',
@@ -419,7 +419,7 @@ export class APIMonitoringService {
                 num_images: 1,
                 guidance_scale: 7.5,
                 steps: 1  // Minimal steps for health check
-              })
+              }])
             });
             const responseTime = Date.now() - startTime;
             

@@ -309,22 +309,55 @@ export function APIMonitoring() {
         </TabsContent>
       </Tabs>
 
-      {/* Configuration Status */}
+      {/* Live Service Status */}
       <Card>
         <CardHeader>
-          <CardTitle>Service Configuration</CardTitle>
-          <CardDescription>Current API service configuration status</CardDescription>
+          <CardTitle>Live Service Status</CardTitle>
+          <CardDescription>Real-time connectivity status for all configured services</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-            {apiConfig && Object.entries(apiConfig).map(([service, config]: [string, any]) => (
-              <div key={service} className="flex items-center justify-between p-2 border rounded">
-                <span className="capitalize text-sm">{service}</span>
-                <Badge variant={config.enabled ? "default" : "secondary"}>
-                  {config.enabled ? "Enabled" : "Disabled"}
-                </Badge>
+            {healthStatus?.map((service: any) => {
+              const isHealthy = service.status === 'healthy';
+              const isDegraded = service.status === 'degraded';
+              const isDown = service.status === 'down';
+              
+              return (
+                <div 
+                  key={service.service} 
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className={`w-3 h-3 rounded-full animate-pulse ${
+                        isHealthy ? 'bg-green-500' : 
+                        isDegraded ? 'bg-yellow-500' : 
+                        'bg-red-500'
+                      }`}
+                      title={isHealthy ? 'Connected' : isDegraded ? 'Degraded' : 'Disconnected'}
+                    />
+                    <span className="capitalize text-sm font-medium">{service.service}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {service.responseTime && (
+                      <span className="text-xs text-muted-foreground">
+                        {service.responseTime}ms
+                      </span>
+                    )}
+                    <Badge 
+                      variant={isHealthy ? "default" : isDegraded ? "outline" : "destructive"}
+                      className={isHealthy ? "bg-green-500" : ""}
+                    >
+                      {isHealthy ? "Live" : isDegraded ? "Slow" : "Down"}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            }) || (
+              <div className="col-span-full text-center text-muted-foreground py-4">
+                Click "Run Health Check" to see live status
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
