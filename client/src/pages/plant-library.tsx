@@ -110,12 +110,12 @@ export default function PlantLibrary() {
                     {/* Plant Type Filter */}
                     <div>
                       <label className="text-sm font-medium mb-2 block">Plant Type</label>
-                      <Select onValueChange={(value) => handleFilterChange({ type: value })}>
+                      <Select onValueChange={(value) => handleFilterChange({ type: value === 'all' ? undefined : value })}>
                         <SelectTrigger data-testid="select-plant-type">
                           <SelectValue placeholder="All Types" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Types</SelectItem>
+                          <SelectItem value="all">All Types</SelectItem>
                           <SelectItem value="perennial">Perennials</SelectItem>
                           <SelectItem value="annual">Annuals</SelectItem>
                           <SelectItem value="shrub">Shrubs</SelectItem>
@@ -129,12 +129,12 @@ export default function PlantLibrary() {
                     {/* Sun Requirements Filter */}
                     <div>
                       <label className="text-sm font-medium mb-2 block">Sun Requirements</label>
-                      <Select onValueChange={(value) => handleFilterChange({ sun_requirements: value })}>
+                      <Select onValueChange={(value) => handleFilterChange({ sun_requirements: value === 'any' ? undefined : value })}>
                         <SelectTrigger data-testid="select-sun-requirements">
                           <SelectValue placeholder="Any Sun Exposure" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any Sun Exposure</SelectItem>
+                          <SelectItem value="any">Any Sun Exposure</SelectItem>
                           <SelectItem value="full_sun">Full Sun</SelectItem>
                           <SelectItem value="partial_sun">Partial Sun</SelectItem>
                           <SelectItem value="partial_shade">Partial Shade</SelectItem>

@@ -28,7 +28,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
       if (searchQuery.trim()) params.append("q", searchQuery.trim());
       
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
+        if (value !== undefined && value !== null && value !== "" && value !== "any") {
           params.append(key, value.toString());
         }
       });
@@ -45,7 +45,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
   const updateFilter = (key: keyof PlantSearchFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
-      [key]: value === "" ? undefined : value,
+      [key]: value === "" || value === "any" ? undefined : value,
     }));
   };
 
@@ -131,7 +131,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
                       <SelectValue placeholder="Any type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any type</SelectItem>
+                      <SelectItem value="any">Any type</SelectItem>
                       <SelectItem value="perennial">Perennials</SelectItem>
                       <SelectItem value="annual">Annuals</SelectItem>
                       <SelectItem value="shrub">Shrubs</SelectItem>
@@ -152,7 +152,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
                       <SelectValue placeholder="Any sun exposure" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any sun exposure</SelectItem>
+                      <SelectItem value="any">Any sun exposure</SelectItem>
                       <SelectItem value="full_sun">Full Sun (6+ hours)</SelectItem>
                       <SelectItem value="partial_sun">Partial Sun (4-6 hours)</SelectItem>
                       <SelectItem value="partial_shade">Partial Shade (2-4 hours)</SelectItem>
@@ -169,7 +169,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
                       <SelectValue placeholder="Any zone" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any zone</SelectItem>
+                      <SelectItem value="any">Any zone</SelectItem>
                       {Array.from({ length: 11 }, (_, i) => i + 1).map(zone => (
                         <SelectItem key={zone} value={zone.toString()}>Zone {zone}</SelectItem>
                       ))}
