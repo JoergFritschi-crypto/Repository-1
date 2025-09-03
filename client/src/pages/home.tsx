@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
-import { PlusCircle, Palette, Sprout, Download, Crown } from "lucide-react";
+import { PlusCircle, Palette, Sprout, Download, Crown, Stethoscope } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
