@@ -61,28 +61,64 @@ export class ImageGenerationService {
     }
 
     this.isProcessing = true;
+    console.log("Queue processor started");
     
-    while (true) {
-      if (this.processingCount >= MAX_CONCURRENT_GENERATIONS) {
-        await this.sleep(1000);
-        continue;
+    // Keep a retry counter to prevent infinite loops
+    let emptyQueueCount = 0;
+    const MAX_EMPTY_CHECKS = 3;
+    
+    while (this.isProcessing) {
+      try {
+        if (this.processingCount >= MAX_CONCURRENT_GENERATIONS) {
+          await this.sleep(1000);
+          continue;
+        }
+
+        const nextItem = await this.getNextQueueItem();
+        if (!nextItem) {
+          emptyQueueCount++;
+          if (emptyQueueCount >= MAX_EMPTY_CHECKS) {
+            // No items after multiple checks, stop processing
+            console.log("Queue empty after multiple checks, stopping processor");
+            this.isProcessing = false;
+            break;
+          }
+          // Wait and check again
+          await this.sleep(5000);
+          continue;
+        }
+        
+        // Reset empty counter since we found an item
+        emptyQueueCount = 0;
+
+        // Process item asynchronously with proper error handling
+        this.processQueueItem(nextItem.id)
+          .catch(err => {
+            console.error("Error processing queue item:", err);
+            // Mark item as failed so it doesn't block the queue
+            db.update(imageGenerationQueue)
+              .set({
+                status: "failed",
+                errorMessage: err.message,
+                completedAt: new Date()
+              })
+              .where(eq(imageGenerationQueue.id, nextItem.id))
+              .catch(updateErr => console.error("Failed to mark item as failed:", updateErr));
+          })
+          .finally(() => {
+            this.processingCount = Math.max(0, this.processingCount - 1);
+          });
+
+        // Wait before checking for next item
+        await this.sleep(GENERATION_DELAY_MS);
+      } catch (error) {
+        console.error("Error in queue processing loop:", error);
+        // Don't let errors stop the queue processor
+        await this.sleep(5000);
       }
-
-      const nextItem = await this.getNextQueueItem();
-      if (!nextItem) {
-        // No items to process, stop processing
-        this.isProcessing = false;
-        break;
-      }
-
-      // Process item asynchronously
-      this.processQueueItem(nextItem.id).catch(err => {
-        console.error("Error processing queue item:", err);
-      });
-
-      // Wait before checking for next item
-      await this.sleep(GENERATION_DELAY_MS);
     }
+    
+    console.log("Queue processor stopped");
   }
 
   // Get the next item from the queue
