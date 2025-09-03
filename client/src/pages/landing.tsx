@@ -3,8 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sprout, Brain, Eye, Stethoscope, Star, Check } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Landing() {
+  const { isAuthenticated } = useAuth();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -16,12 +19,25 @@ export default function Landing() {
               <span className="text-xl font-serif font-bold text-primary">GardenScape Pro</span>
             </div>
             <div className="flex items-center space-x-4">
-              <a href="/api/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                Sign In
-              </a>
-              <Button asChild data-testid="button-get-started">
-                <a href="/api/login">Get Started</a>
-              </Button>
+              {!isAuthenticated ? (
+                <>
+                  <a href="/api/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    Sign In
+                  </a>
+                  <Button asChild data-testid="button-get-started">
+                    <a href="/api/login">Get Started</a>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    Dashboard
+                  </Link>
+                  <Button asChild data-testid="button-go-to-dashboard">
+                    <Link href="/garden-properties">New Garden</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -40,7 +56,11 @@ export default function Landing() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button asChild size="lg" className="bg-canary text-primary hover:bg-gold" data-testid="button-start-designing">
-                <a href="/api/login">Start Your Garden Design</a>
+                {!isAuthenticated ? (
+                  <a href="/api/login">Start Your Garden Design</a>
+                ) : (
+                  <Link href="/garden-properties">Start Your Garden Design</Link>
+                )}
               </Button>
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10" data-testid="button-watch-demo">
                 Watch Demo
@@ -133,7 +153,11 @@ export default function Landing() {
                   </li>
                 </ul>
                 <Button variant="outline" className="w-full" asChild data-testid="button-plan-free">
-                  <a href="/api/login">Get Started</a>
+                  {!isAuthenticated ? (
+                    <a href="/api/login">Get Started</a>
+                  ) : (
+                    <Link href="/">Go to Dashboard</Link>
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -166,7 +190,11 @@ export default function Landing() {
                   </li>
                 </ul>
                 <Button className="w-full" asChild data-testid="button-plan-design">
-                  <a href="/api/login">Create Design</a>
+                  {!isAuthenticated ? (
+                    <a href="/api/login">Create Design</a>
+                  ) : (
+                    <Link href="/garden-properties">Create Design</Link>
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -200,7 +228,11 @@ export default function Landing() {
                   </li>
                 </ul>
                 <Button variant="secondary" className="w-full" asChild data-testid="button-plan-premium">
-                  <a href="/api/login">Start Premium</a>
+                  {!isAuthenticated ? (
+                    <a href="/api/login">Start Premium</a>
+                  ) : (
+                    <Link href="/premium">View Premium</Link>
+                  )}
                 </Button>
               </CardContent>
             </Card>
