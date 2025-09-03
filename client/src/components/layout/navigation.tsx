@@ -9,7 +9,8 @@ export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigationItems = [
-    { href: "/", label: "Home" },
+    { href: "/welcome", label: "Welcome" },
+    { href: "/", label: "Dashboard" },
     { href: "/plant-library", label: "Plant Library" },
     { href: "/plant-doctor", label: "Plant Doctor" },
     { href: "/premium", label: "Premium" },

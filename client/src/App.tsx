@@ -19,6 +19,9 @@ function Router() {
 
   return (
     <Switch>
+      {/* Landing page always accessible at /welcome */}
+      <Route path="/welcome" component={Landing} />
+      
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
