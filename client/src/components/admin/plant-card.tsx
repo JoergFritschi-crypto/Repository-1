@@ -61,7 +61,7 @@ export function PlantCard({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="plant-card-frame">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">

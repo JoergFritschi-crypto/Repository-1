@@ -172,4 +172,92 @@
   .compass-button:not(.selected) {
     @apply bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground;
   }
+
+  /* Sophisticated Garden Card Frames */
+  .garden-card-frame {
+    border: 2px solid hsl(145, 20%, 88%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .garden-card-frame::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, hsl(45, 100%, 50%), hsl(51, 100%, 57%));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+
+  .garden-card-frame:hover {
+    border-color: hsl(45, 100%, 50%);
+    transform: translateY(-2px);
+  }
+
+  .garden-card-frame:hover::before {
+    opacity: 0.1;
+  }
+
+  /* Button Press Animation */
+  button {
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  button:active {
+    transform: scale(0.98);
+  }
+
+  button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle, hsl(45, 100%, 50%) 0%, transparent 70%);
+    opacity: 0;
+    transform: scale(0);
+    transition: transform 0.5s, opacity 0.5s;
+    pointer-events: none;
+  }
+
+  button:active::after {
+    transform: scale(1.5);
+    opacity: 0.3;
+    transition: transform 0s, opacity 0s;
+  }
+
+  /* Enhanced Plant Card Hover */
+  .plant-card-frame {
+    border: 2px solid hsl(145, 20%, 88%);
+    background: linear-gradient(to bottom right, white, hsl(60, 20%, 99%));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .plant-card-frame:hover {
+    border-color: hsl(45, 100%, 50%);
+    box-shadow: 
+      0 10px 30px -10px rgba(0, 64, 37, 0.2),
+      0 0 0 1px hsl(45, 100%, 50%),
+      inset 0 0 30px rgba(255, 213, 0, 0.05);
+    transform: translateY(-4px);
+  }
+
+  /* Gold Button Variant */
+  .btn-gold {
+    background: linear-gradient(135deg, hsl(51, 100%, 57%) 0%, hsl(45, 100%, 50%) 100%);
+    color: hsl(155, 100%, 8%);
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 213, 0, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .btn-gold:hover {
+    box-shadow: 0 6px 20px rgba(255, 213, 0, 0.4);
+    transform: translateY(-1px);
+  }
 }

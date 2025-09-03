@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
 import { PlusCircle, Palette, Sprout, Download, Crown, Stethoscope } from "lucide-react";
+import heroImage from '@assets/generated_images/British_cottage_garden_scene_e1b2e411.png';
 
 export default function Home() {
   const { user } = useAuth();
@@ -20,6 +21,33 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+      
+      {/* Hero Section */}
+      <div className="relative h-[600px] overflow-hidden">
+        <img 
+          src={heroImage} 
+          alt="British cottage garden with colorful lupines" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90">
+          <div className="absolute bottom-0 left-0 right-0 p-8">
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-5xl font-serif font-bold text-white mb-4 drop-shadow-lg">
+                Welcome to Your Garden Paradise
+              </h1>
+              <p className="text-xl text-white/90 mb-6 drop-shadow-md max-w-2xl">
+                Design beautiful British gardens with our professional tools and expert plant knowledge
+              </p>
+              <Button size="lg" className="gold-accent text-primary font-semibold shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+                <Link href="/garden-properties">
+                  <Palette className="w-5 h-5 mr-2" />
+                  Start Designing Your Garden
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
