@@ -61,14 +61,14 @@ export default function Landing() {
                 Professional garden design tools with expert plant knowledge
               </p>
               <div className="flex gap-3">
-                <Button asChild size="default" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg" data-testid="button-start-designing">
+                <Button asChild size="lg" className="btn-gold shadow-xl hover:shadow-2xl transition-all duration-300" data-testid="button-start-designing">
                   {!isAuthenticated ? (
                     <a href="/api/login">Start Designing</a>
                   ) : (
                     <Link href="/garden-properties">Start Designing</Link>
                   )}
                 </Button>
-                <Button variant="outline" size="default" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg" data-testid="button-watch-demo">
+                <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-xl hover:shadow-2xl transition-all duration-300" data-testid="button-watch-demo">
                   View Examples
                 </Button>
               </div>
