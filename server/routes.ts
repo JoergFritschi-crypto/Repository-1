@@ -531,6 +531,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/image-generation/queue', isAuthenticated, async (req: any, res) => {
     try {
       const queue = await imageGenerationService.getQueueStatus();
+      
+      // Check if there are pending items and nothing is processing
+      const hasPending = queue.counts.pending > 0;
+      const nothingProcessing = queue.counts.processing === 0;
+      
+      if (hasPending && nothingProcessing) {
+        // Restart the queue processor if it has stopped
+        console.log("Restarting queue processor - found pending items with nothing processing");
+        imageGenerationService.startProcessing();
+      }
+      
       res.json(queue);
     } catch (error) {
       console.error("Error getting queue status:", error);
