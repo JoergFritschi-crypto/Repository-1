@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { APIMonitoring } from "@/components/admin/api-monitoring";
+import { APIKeysManager } from "@/components/admin/api-keys-manager";
 import { 
   Settings, 
   Database, 
@@ -446,20 +447,7 @@ export default function Admin() {
               </TabsContent>
 
               <TabsContent value="api-keys" className="mt-8">
-                <Card>
-                  <CardHeader>
-                    <CardTitle data-testid="text-api-keys-title">API Key Manager</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12" data-testid="api-keys-placeholder">
-                      <Key className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">API Key Manager</h3>
-                      <p className="text-muted-foreground">
-                        Manage external API keys and integrations
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <APIKeysManager />
               </TabsContent>
 
               <TabsContent value="users" className="mt-8">

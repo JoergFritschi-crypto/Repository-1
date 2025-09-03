@@ -667,6 +667,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API Key Management Routes
+  app.get('/api/admin/api-keys/status', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const keyStatus = [
+        {
+          service: 'anthropic',
+          configured: !!process.env.ANTHROPIC_API_KEY,
+          status: process.env.ANTHROPIC_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'stripe',
+          configured: !!process.env.STRIPE_SECRET_KEY && !!process.env.VITE_STRIPE_PUBLIC_KEY,
+          status: (process.env.STRIPE_SECRET_KEY && process.env.VITE_STRIPE_PUBLIC_KEY) ? 'active' : 'untested',
+        },
+        {
+          service: 'mapbox',
+          configured: !!process.env.MAPBOX_API_KEY,
+          status: process.env.MAPBOX_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'perenual',
+          configured: !!process.env.PERENUAL_API_KEY,
+          status: process.env.PERENUAL_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'visual_crossing',
+          configured: !!process.env.VISUAL_CROSSING_API_KEY,
+          status: process.env.VISUAL_CROSSING_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'huggingface',
+          configured: !!process.env.HUGGINGFACE_API_KEY,
+          status: process.env.HUGGINGFACE_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'runware',
+          configured: !!process.env.RUNWARE_API_KEY,
+          status: process.env.RUNWARE_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'perplexity',
+          configured: !!process.env.PERPLEXITY_API_KEY,
+          status: process.env.PERPLEXITY_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'gemini',
+          configured: !!process.env.GEMINI_API_KEY,
+          status: process.env.GEMINI_API_KEY ? 'active' : 'untested',
+        },
+        {
+          service: 'gbif',
+          configured: !!(process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD),
+          status: (process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD) ? 'active' : 'untested',
+        },
+      ];
+
+      res.json(keyStatus);
+    } catch (error) {
+      console.error("Error fetching API key status:", error);
+      res.status(500).json({ message: "Failed to fetch API key status" });
+    }
+  });
+
+  app.post('/api/admin/api-keys/test/:service', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { service } = req.params;
+      
+      // Run a simple test for the specific service
+      const serviceTests = apiMonitoring.services.find(s => s.name === service);
+      if (!serviceTests) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+
+      try {
+        const result = await serviceTests.testFunction();
+        res.json({ 
+          valid: result.status === 'healthy', 
+          status: result.status,
+          message: result.errorMessage || 'Key is valid' 
+        });
+      } catch (error) {
+        res.json({ 
+          valid: false, 
+          status: 'invalid',
+          message: error.message 
+        });
+      }
+    } catch (error) {
+      console.error(`Error testing API key for ${req.params.service}:`, error);
+      res.status(500).json({ message: "Failed to test API key" });
+    }
+  });
+
   // Set user as admin (one-time setup route - should be removed in production)
   app.post('/api/admin/make-admin', isAuthenticated, async (req: any, res) => {
     try {
