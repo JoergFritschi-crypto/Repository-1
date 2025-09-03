@@ -154,9 +154,9 @@ export default function PlantCard({
           <div className="flex items-center space-x-4">
             {/* Plant Image/Icon */}
             <div className="w-16 h-16 bg-accent/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              {plant.image_url ? (
+              {plant.thumbnailImage || plant.fullImage ? (
                 <img 
-                  src={plant.image_url} 
+                  src={plant.thumbnailImage || plant.fullImage} 
                   alt={plant.commonName}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -306,9 +306,9 @@ export default function PlantCard({
     <Card className="plant-card-hover overflow-hidden" data-testid={`plant-card-${plant.id}`}>
       {/* Plant Image */}
       <div className="h-48 bg-muted relative">
-        {plant.image_url ? (
+        {plant.thumbnailImage || plant.fullImage ? (
           <img 
-            src={plant.image_url} 
+            src={plant.thumbnailImage || plant.fullImage} 
             alt={plant.commonName}
             className="w-full h-full object-cover"
           />
