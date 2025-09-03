@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import ProgressBar from "@/components/ui/progress-bar";
@@ -23,7 +25,10 @@ import { MapPin, ArrowLeft, ArrowRight } from "lucide-react";
 
 const gardenSchema = z.object({
   name: z.string().min(1, "Garden name is required"),
-  location: z.string().min(1, "Location is required"),
+  location: z.string().optional(), // Combined location for API
+  city: z.string().optional(),
+  country: z.string().optional(),
+  zipCode: z.string().optional(),
   units: z.enum(["metric", "imperial"]),
   shape: z.enum(["rectangle", "circle", "oval", "rhomboid", "l_shaped"]),
   dimensions: z.record(z.number()),
@@ -57,7 +62,7 @@ export default function GardenProperties() {
   const form = useForm<GardenFormData>({
     resolver: zodResolver(gardenSchema),
     defaultValues: {
-      units: "metric",
+      units: undefined, // No default - must be selected
       shape: "rectangle",
       dimensions: { length: 10, width: 8 },
       slopePercentage: 5,
@@ -80,11 +85,17 @@ export default function GardenProperties() {
   });
 
   const watchedLocation = form.watch("location");
+  const watchedCity = form.watch("city");
+  const watchedCountry = form.watch("country");
+  const watchedZipCode = form.watch("zipCode");
+
+  // Combine location fields for API
+  const combinedLocation = `${watchedCity || ''} ${watchedCountry || ''} ${watchedZipCode || ''}`.trim();
 
   // Fetch climate data when location changes
   const { data: climateData, isLoading: climateLoading } = useQuery({
-    queryKey: ["/api/climate", watchedLocation],
-    enabled: !!watchedLocation && watchedLocation.length > 3,
+    queryKey: ["/api/climate", combinedLocation || watchedLocation],
+    enabled: !!(combinedLocation || watchedLocation) && (combinedLocation || watchedLocation).length > 3,
   });
 
   const createGardenMutation = useMutation({
@@ -113,11 +124,29 @@ export default function GardenProperties() {
     if (currentStep < 7) {
       setCurrentStep(currentStep + 1);
     } else {
-      createGardenMutation.mutate(data);
+      // Combine location fields before submission
+      const submissionData = {
+        ...data,
+        location: combinedLocation || data.location || 'Not specified',
+      };
+      createGardenMutation.mutate(submissionData);
     }
   };
 
   const nextStep = () => {
+    // Validate required fields for Step 1
+    if (currentStep === 1) {
+      const units = form.getValues('units');
+      const name = form.getValues('name');
+      if (!units || !name) {
+        toast({
+          title: "Required Fields",
+          description: "Please select measurement units and enter a garden name.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     if (currentStep < 7) {
       setCurrentStep(currentStep + 1);
     }
@@ -173,65 +202,148 @@ export default function GardenProperties() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* Step 1: Location & Units */}
             {currentStep === 1 && (
-              <Card className="garden-card-frame" data-testid="step-location-units">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <MapPin className="w-5 h-5 mr-2 text-accent" />
-                    Location & Preferences
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Garden Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="My Beautiful Garden" {...field} data-testid="input-garden-name" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <div className="space-y-6">
+                <Card className="garden-card-frame" data-testid="step-location-units">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <MapPin className="w-5 h-5 mr-2 text-accent" />
+                      Garden Setup & Location
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Measurement Units - Required */}
+                    <FormField
+                      control={form.control}
+                      name="units"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Measurement Units <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger data-testid="select-units" className={!field.value ? "border-destructive" : ""}>
+                                <SelectValue placeholder="Please select measurement units" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="metric">Metric (meters, centimeters)</SelectItem>
+                                <SelectItem value="imperial">Imperial (feet, inches)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground">
+                            ⚠️ Important: Units cannot be changed once this garden design is created
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Garden Location</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter city, postcode, or address" {...field} data-testid="input-location" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    {/* Garden Name - Required */}
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Garden Name <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="My Beautiful Garden" 
+                              {...field} 
+                              data-testid="input-garden-name" 
+                              className={!field.value ? "border-destructive" : ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="units"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Measurement Units</FormLabel>
-                        <FormControl>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger data-testid="select-units">
-                              <SelectValue placeholder="Select units" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="metric">Metric (m, cm)</SelectItem>
-                              <SelectItem value="imperial">Imperial (ft, in)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                    {/* Location Fields - Optional */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-medium">Garden Location (Optional)</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Providing location helps us determine your climate zone and give personalized recommendations
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="city"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., London" {...field} data-testid="input-city" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="country"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., United Kingdom" {...field} data-testid="input-country" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="zipCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Postal/Zip Code</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., SW1A 1AA" {...field} data-testid="input-zip-code" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Combined location field for API */}
+                      <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem className="hidden">
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Climate Report - moved from Step 5 */}
+                {combinedLocation && (
+                  <Card className="garden-card-frame" data-testid="step-climate-report">
+                    <CardHeader>
+                      <CardTitle>Climate Report & Hardiness Zone</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ClimateReport
+                        location={combinedLocation}
+                        climateData={climateData}
+                        isLoading={climateLoading}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             )}
 
             {/* Step 2: Garden Shape */}
@@ -332,17 +444,63 @@ export default function GardenProperties() {
               </Card>
             )}
 
-            {/* Step 5: Climate Report */}
+            {/* Step 5: Design Approach */}
             {currentStep === 5 && (
-              <Card className="garden-card-frame" data-testid="step-climate-report">
+              <Card className="garden-card-frame" data-testid="step-design-approach">
                 <CardHeader>
-                  <CardTitle>Climate Report & Hardiness Zone</CardTitle>
+                  <CardTitle>Garden Design Approach</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <ClimateReport
-                    location={watchedLocation}
-                    climateData={climateData}
-                    isLoading={climateLoading}
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="design_approach"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>How would you like to design your garden?</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="space-y-4"
+                          >
+                            <div className="flex items-start space-x-3">
+                              <RadioGroupItem value="ai" id="ai" />
+                              <div>
+                                <Label htmlFor="ai" className="font-medium">
+                                  AI-Powered Design
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                  Let our AI create a beautiful garden design based on your preferences and climate
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-start space-x-3">
+                              <RadioGroupItem value="manual" id="manual" />
+                              <div>
+                                <Label htmlFor="manual" className="font-medium">
+                                  Manual Design
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                  Design your garden yourself using our interactive canvas
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-start space-x-3">
+                              <RadioGroupItem value="hybrid" id="hybrid" />
+                              <div>
+                                <Label htmlFor="hybrid" className="font-medium">
+                                  Hybrid Approach
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                  Start with AI suggestions and customize them to your liking
+                                </p>
+                              </div>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </CardContent>
               </Card>

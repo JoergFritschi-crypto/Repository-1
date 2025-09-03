@@ -86,8 +86,8 @@ export interface GardenStep {
 export const GARDEN_STEPS: GardenStep[] = [
   {
     id: 1,
-    title: "Location & Units",
-    description: "Set your garden location and measurement preferences",
+    title: "Setup & Location",
+    description: "Set measurement units, name, and location for climate data",
     completed: false,
   },
   {
@@ -110,8 +110,8 @@ export const GARDEN_STEPS: GardenStep[] = [
   },
   {
     id: 5,
-    title: "Climate Report",
-    description: "Get climate analysis and hardiness zone information",
+    title: "Design Approach",
+    description: "Choose how you want to design your garden",
     completed: false,
   },
   {
