@@ -13,6 +13,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { APIMonitoring } from "@/components/admin/api-monitoring";
 import { APIKeysManager } from "@/components/admin/api-keys-manager";
+import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
+import { PlantCard } from "@/components/admin/plant-card";
 import { 
   Settings, 
   Database, 
@@ -173,216 +175,93 @@ export default function Admin() {
 
               {/* Plant Database Management */}
               <TabsContent value="plants" className="mt-8">
-                <div className="grid lg:grid-cols-4 gap-8">
-                  {/* Database Stats */}
-                  <div className="lg:col-span-1 space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle data-testid="text-database-overview">Database Overview</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Total Plants:</span>
-                          <span className="font-bold text-xl" data-testid="text-total-plants">2,847</span>
+                <div className="space-y-6">
+                  {/* Database Overview Bar */}
+                  <Card>
+                    <CardContent className="py-4">
+                      <div className="flex flex-wrap gap-8 items-center">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Plants</p>
+                          <p className="text-2xl font-bold" data-testid="text-total-plants">0</p>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Verified Entries:</span>
-                          <span className="font-bold text-lg text-accent" data-testid="text-verified-plants">2,692</span>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Verified</p>
+                          <p className="text-xl font-semibold text-accent" data-testid="text-verified-plants">0</p>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Pending Review:</span>
-                          <span className="font-bold text-lg text-canary" data-testid="text-pending-plants">{pendingPlants?.length || 155}</span>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Pending</p>
+                          <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">{pendingPlants?.length || 0}</p>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Last Import:</span>
-                          <span className="text-sm" data-testid="text-last-import">March 20, 2024</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle data-testid="text-data-sources">Data Sources</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-muted rounded">
-                          <span className="font-medium">Perenual API</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-accent rounded-full"></div>
-                            <span className="text-sm text-accent">Active</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-muted rounded">
-                          <span className="font-medium">iNaturalist</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-accent rounded-full"></div>
-                            <span className="text-sm text-accent">Active</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-muted rounded">
-                          <span className="font-medium">GBIF</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-canary rounded-full"></div>
-                            <span className="text-sm text-canary">Syncing</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle data-testid="text-quick-actions">Quick Actions</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <Button className="w-full justify-start" data-testid="button-add-plant">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add New Plant
-                        </Button>
-                        <Button variant="secondary" className="w-full justify-start" data-testid="button-sync-sources">
-                          <FolderSync className="w-4 h-4 mr-2" />
-                          FolderSync All Sources
-                        </Button>
-                        <Button variant="outline" className="w-full justify-start" data-testid="button-export-database">
-                          <FolderOutput className="w-4 h-4 mr-2" />
-                          Export Database
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Main Management Interface */}
-                  <div className="lg:col-span-3">
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle data-testid="text-plant-management-title">Plant Database Management</CardTitle>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm" data-testid="button-filter-plants">
-                            <Filter className="w-4 h-4 mr-1" />
-                            Filter
+                        <div className="ml-auto flex gap-2">
+                          <Button size="sm" variant="outline" data-testid="button-add-plant">
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Plant
                           </Button>
-                          <Select value={filterStatus} onValueChange={setFilterStatus}>
-                            <SelectTrigger className="w-32" data-testid="select-plant-status">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Status</SelectItem>
-                              <SelectItem value="verified">Verified</SelectItem>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Button size="sm" variant="outline" data-testid="button-export-database">
+                            <FolderOutput className="w-4 h-4 mr-1" />
+                            Export
+                          </Button>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        {/* Search */}
-                        <div className="mb-6">
-                          <div className="relative">
-                            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-                            <Input
-                              placeholder="Search plants..."
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="pl-10"
-                              data-testid="input-search-plants"
-                            />
-                          </div>
-                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                        {/* Plants List */}
-                        <div className="space-y-3">
-                          {/* Pending plants first */}
-                          {pendingPlants && pendingPlants.length > 0 && (
-                            <>
-                              <h3 className="font-semibold text-lg mb-4" data-testid="text-pending-review">
-                                Pending Review ({pendingPlants.length})
-                              </h3>
-                              {pendingPlants.map((plant: any) => (
-                                <div key={plant.id} className="flex items-center justify-between p-4 border-2 border-canary bg-canary/10 rounded-lg hover:shadow-sm" data-testid={`pending-plant-${plant.id}`}>
-                                  <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 bg-canary rounded-lg flex items-center justify-center">
-                                      <Database className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <div>
-                                      <h4 className="font-medium" data-testid={`text-plant-scientific-${plant.id}`}>{plant.scientificName}</h4>
-                                      <p className="text-sm text-muted-foreground" data-testid={`text-plant-common-${plant.id}`}>
-                                        {plant.commonName} | {plant.type} | {plant.data_source}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Badge className="bg-canary text-primary" data-testid={`badge-pending-${plant.id}`}>Pending</Badge>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => verifyPlantMutation.mutate(plant.id)}
-                                      disabled={verifyPlantMutation.isPending}
-                                      data-testid={`button-verify-${plant.id}`}
-                                    >
-                                      <Check className="w-4 h-4" />
-                                    </Button>
-                                    <Button size="sm" variant="outline" data-testid={`button-edit-plant-${plant.id}`}>
-                                      <Edit className="w-4 h-4" />
-                                    </Button>
-                                    <Button size="sm" variant="destructive" data-testid={`button-reject-plant-${plant.id}`}>
-                                      <X className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                            </>
-                          )}
+                  {/* Advanced Search */}
+                  <PlantAdvancedSearch 
+                    onSearch={(filters) => {
+                      console.log('Searching with filters:', filters);
+                      // TODO: Implement search with filters
+                    }}
+                    totalResults={plants?.length || 0}
+                  />
 
-                          {/* Regular plants */}
-                          {plants && plants.length > 0 && (
-                            <>
-                              <h3 className="font-semibold text-lg mb-4 mt-8" data-testid="text-all-plants">
-                                All Plants ({plants.length})
-                              </h3>
-                              {plants.slice(0, 10).map((plant: any) => (
-                                <div key={plant.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:shadow-sm" data-testid={`plant-${plant.id}`}>
-                                  <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center">
-                                      <Database className="w-6 h-6 text-accent-foreground" />
-                                    </div>
-                                    <div>
-                                      <h4 className="font-medium" data-testid={`text-verified-plant-scientific-${plant.id}`}>{plant.scientificName}</h4>
-                                      <p className="text-sm text-muted-foreground" data-testid={`text-verified-plant-common-${plant.id}`}>
-                                        {plant.commonName} | {plant.type} | {plant.verification_status}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Badge 
-                                      variant={plant.verification_status === 'verified' ? 'default' : 'secondary'}
-                                      data-testid={`badge-status-${plant.id}`}
-                                    >
-                                      {plant.verification_status}
-                                    </Badge>
-                                    <Button size="sm" variant="outline" data-testid={`button-edit-verified-plant-${plant.id}`}>
-                                      <Edit className="w-4 h-4" />
-                                    </Button>
-                                    <Button size="sm" variant="destructive" data-testid={`button-delete-plant-${plant.id}`}>
-                                      <Trash className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                            </>
-                          )}
-                        </div>
+                  {/* Plant Cards Grid */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Plant Database</CardTitle>
+                    </CardHeader>
+                    <CardContent>
 
-                        {/* Pagination */}
-                        <div className="flex items-center justify-between mt-6">
-                          <div className="text-sm text-muted-foreground" data-testid="text-pagination-info">
-                            Showing 1-10 of 2,847 plants
+                        {/* Plants Display */}
+                        {(!plants || plants.length === 0) && (!pendingPlants || pendingPlants.length === 0) ? (
+                          <div className="text-center py-12">
+                            <Leaf className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold mb-2">No Plants Yet</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Start by importing plants from Perenual or adding them manually
+                            </p>
+                            <Button>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Your First Plant
+                            </Button>
                           </div>
-                          <div className="flex space-x-2">
-                            <Button variant="outline" size="sm" data-testid="button-previous-page">Previous</Button>
-                            <Button size="sm" data-testid="button-page-1">1</Button>
-                            <Button variant="outline" size="sm" data-testid="button-page-2">2</Button>
-                            <Button variant="outline" size="sm" data-testid="button-page-3">3</Button>
-                            <Button variant="outline" size="sm" data-testid="button-next-page">Next</Button>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {/* Render pending plants as cards */}
+                            {pendingPlants && pendingPlants.map((plant: any) => (
+                              <PlantCard
+                                key={plant.id}
+                                plant={plant}
+                                showActions={true}
+                                onVerify={() => verifyPlantMutation.mutate(plant.id)}
+                                onReject={() => console.log('Reject plant:', plant.id)}
+                                onEdit={() => console.log('Edit plant:', plant.id)}
+                                onDelete={() => console.log('Delete plant:', plant.id)}
+                              />
+                            ))}
+                            
+                            {/* Render verified plants as cards */}
+                            {plants && plants.map((plant: any) => (
+                              <PlantCard
+                                key={plant.id}
+                                plant={plant}
+                                showActions={true}
+                                onEdit={() => console.log('Edit plant:', plant.id)}
+                                onDelete={() => console.log('Delete plant:', plant.id)}
+                              />
+                            ))}
                           </div>
-                        </div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
