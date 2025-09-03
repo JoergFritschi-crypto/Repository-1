@@ -178,8 +178,8 @@ export function ImageGenerationMonitor() {
         <CardContent>
           {queue?.items && queue.items.length > 0 ? (
             <div className="space-y-3">
-              {queue.items.map((item: any) => (
-                <div key={item.plantId} className="flex items-center justify-between p-3 border rounded-lg">
+              {queue.items.map((item: any, index: number) => (
+                <div key={`${item.id}-${index}`} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     {getStatusBadge(item.status)}
                     <div>
