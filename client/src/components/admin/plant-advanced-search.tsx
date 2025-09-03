@@ -20,7 +20,7 @@ import {
   AlertTriangle,
   ChefHat,
   Pill,
-  Butterfly
+  Bird
 } from "lucide-react";
 
 interface PlantAdvancedSearchProps {
@@ -271,12 +271,12 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>Foliage Type</Label>
-                <Select value={filters.foliage} onValueChange={(v) => updateFilter('foliage', v)}>
+                <Select value={filters.foliage || 'any'} onValueChange={(v) => updateFilter('foliage', v === 'any' ? '' : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select foliage type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="any">Any</SelectItem>
                     {foliageTypes.map(type => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
@@ -285,12 +285,12 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </div>
               <div>
                 <Label>Growth Cycle</Label>
-                <Select value={filters.cycle} onValueChange={(v) => updateFilter('cycle', v)}>
+                <Select value={filters.cycle || 'any'} onValueChange={(v) => updateFilter('cycle', v === 'any' ? '' : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select cycle" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="any">Any</SelectItem>
                     <SelectItem value="annual">Annual</SelectItem>
                     <SelectItem value="biennial">Biennial</SelectItem>
                     <SelectItem value="perennial">Perennial</SelectItem>
@@ -318,12 +318,12 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </div>
             <div>
               <Label>Watering Needs</Label>
-              <Select value={filters.watering} onValueChange={(v) => updateFilter('watering', v)}>
+              <Select value={filters.watering || 'any'} onValueChange={(v) => updateFilter('watering', v === 'any' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select watering needs" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   {wateringOptions.map(opt => (
                     <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                   ))}
@@ -332,12 +332,12 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </div>
             <div>
               <Label>Care Level</Label>
-              <Select value={filters.careLevel} onValueChange={(v) => updateFilter('careLevel', v)}>
+              <Select value={filters.careLevel || 'any'} onValueChange={(v) => updateFilter('careLevel', v === 'any' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select care level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   {careLevels.map(level => (
                     <SelectItem key={level} value={level}>{level}</SelectItem>
                   ))}
@@ -423,7 +423,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   className="cursor-pointer"
                   onClick={() => toggleArrayFilter('attracts', opt)}
                 >
-                  <Butterfly className="w-3 h-3 mr-1" />
+                  <Bird className="w-3 h-3 mr-1" />
                   {opt}
                 </Badge>
               ))}
@@ -441,8 +441,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             <div>
               <Label>Toxicity to Humans</Label>
               <Select 
-                value={filters.poisonousToHumans?.toString() || ''} 
-                onValueChange={(v) => updateFilter('poisonousToHumans', v ? parseInt(v) : undefined)}
+                value={filters.poisonousToHumans?.toString() || 'any'} 
+                onValueChange={(v) => updateFilter('poisonousToHumans', v === 'any' ? undefined : parseInt(v))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select toxicity level" />
@@ -461,8 +461,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             <div>
               <Label>Toxicity to Pets</Label>
               <Select 
-                value={filters.poisonousToPets?.toString() || ''} 
-                onValueChange={(v) => updateFilter('poisonousToPets', v ? parseInt(v) : undefined)}
+                value={filters.poisonousToPets?.toString() || 'any'} 
+                onValueChange={(v) => updateFilter('poisonousToPets', v === 'any' ? undefined : parseInt(v))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select toxicity level" />

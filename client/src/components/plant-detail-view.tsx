@@ -24,8 +24,7 @@ import {
   Scissors,
   Calendar,
   Flower2,
-  Bird,
-  Butterfly
+  Bird
 } from "lucide-react";
 import type { Plant } from "@shared/schema";
 
