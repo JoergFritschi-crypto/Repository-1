@@ -42,6 +42,7 @@ export interface IStorage {
   
   // Plant operations
   getPlant(id: string): Promise<Plant | undefined>;
+  getAllPlants(): Promise<Plant[]>;
   searchPlants(query: string, filters?: {
     type?: string;
     hardiness_zone?: string;
@@ -158,6 +159,10 @@ export class DatabaseStorage implements IStorage {
   async getPlant(id: string): Promise<Plant | undefined> {
     const [plant] = await db.select().from(plants).where(eq(plants.id, id));
     return plant;
+  }
+
+  async getAllPlants(): Promise<Plant[]> {
+    return await db.select().from(plants);
   }
 
   async searchPlants(query: string, filters?: {

@@ -469,6 +469,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk generate images for all plants without images
+  app.post('/api/admin/plants/generate-all-images', isAuthenticated, async (req: any, res) => {
+    try {
+      const allPlants = await storage.getAllPlants();
+      const plantsWithoutImages = allPlants.filter(plant => 
+        !plant.thumbnailImage && !plant.fullImage && !plant.detailImage
+      );
+
+      if (plantsWithoutImages.length === 0) {
+        return res.json({ 
+          message: "All plants already have images", 
+          queued: 0, 
+          total: allPlants.length 
+        });
+      }
+
+      // Queue all plants for generation
+      const queuePromises = plantsWithoutImages.map(plant => 
+        imageGenerationService.queuePlantForGeneration(plant.id)
+          .catch(err => {
+            console.error(`Failed to queue ${plant.commonName}:`, err);
+            return null;
+          })
+      );
+
+      await Promise.all(queuePromises);
+      
+      res.json({ 
+        message: `Queued ${plantsWithoutImages.length} plants for image generation`, 
+        queued: plantsWithoutImages.length,
+        total: allPlants.length,
+        plantsQueued: plantsWithoutImages.map(p => ({ id: p.id, name: p.commonName || p.scientificName }))
+      });
+    } catch (error) {
+      console.error("Error starting bulk image generation:", error);
+      res.status(500).json({ 
+        message: "Failed to start bulk image generation", 
+        error: error.message 
+      });
+    }
+  });
+
   app.get('/api/admin/image-generation/status', isAuthenticated, async (req: any, res) => {
     try {
       const status = await imageGenerationService.getGenerationStatus();

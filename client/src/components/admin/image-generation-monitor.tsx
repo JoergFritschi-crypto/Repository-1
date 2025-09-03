@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 import { 
   ImageIcon, 
   Clock, 
@@ -12,11 +13,14 @@ import {
   AlertCircle,
   Pause,
   Play,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export function ImageGenerationMonitor() {
+  const { toast } = useToast();
+  
   // Get generation status
   const { data: status, isLoading: statusLoading } = useQuery({
     queryKey: ["/api/admin/image-generation/status"],
@@ -27,6 +31,38 @@ export function ImageGenerationMonitor() {
   const { data: queue, isLoading: queueLoading } = useQuery({
     queryKey: ["/api/admin/image-generation/queue"],
     refetchInterval: 5000,
+  });
+
+  // Get all plants without images
+  const { data: plants } = useQuery({
+    queryKey: ["/api/plants/search?q="],
+  });
+
+  // Bulk generation mutation
+  const generateAllMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/plants/generate-all-images');
+      const data = await response.json();
+      if (data.queued === 0) {
+        throw new Error(data.message || "No plants need image generation");
+      }
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Bulk Generation Started",
+        description: `Successfully queued ${data.queued} out of ${data.total} plants for image generation`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/image-generation/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/image-generation/queue"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   if (statusLoading || queueLoading) {
@@ -63,11 +99,29 @@ export function ImageGenerationMonitor() {
               Image Generation Status
             </span>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline">
+              <Button 
+                size="sm" 
+                variant="default"
+                onClick={() => generateAllMutation.mutate()}
+                disabled={generateAllMutation.isPending || (status?.queued > 0) || (status?.generating > 0)}
+              >
+                {generateAllMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    Queueing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    Generate All Missing
+                  </>
+                )}
+              </Button>
+              <Button size="sm" variant="outline" disabled>
                 <Pause className="w-4 h-4 mr-1" />
                 Pause Queue
               </Button>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" disabled>
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Retry Failed
               </Button>
@@ -93,6 +147,15 @@ export function ImageGenerationMonitor() {
               <p className="text-sm text-muted-foreground">In Queue</p>
             </div>
           </div>
+
+          {/* Missing Images Count */}
+          {plants && (
+            <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>{(plants as any)?.filter((p: any) => !p.thumbnailImage && !p.fullImage && !p.detailImage).length || 0}</strong> plants need images generated
+              </p>
+            </div>
+          )}
 
           {/* Progress Bar */}
           {status?.totalPlants > 0 && (
