@@ -169,15 +169,7 @@ export class ImageGenerationService {
       // Generate appropriate prompt based on image type
       const prompt = this.generatePrompt(queueItem.plant, queueItem.queue.imageType);
 
-      // Delete old image if it exists
-      const { deleteOldImages } = await import("./generateImage");
-      if (queueItem.queue.imageType === "thumbnail" && queueItem.plant.thumbnailImage) {
-        await deleteOldImages([queueItem.plant.thumbnailImage]);
-      } else if (queueItem.queue.imageType === "full" && queueItem.plant.fullImage) {
-        await deleteOldImages([queueItem.plant.fullImage]);
-      } else if (queueItem.queue.imageType === "detail" && queueItem.plant.detailImage) {
-        await deleteOldImages([queueItem.plant.detailImage]);
-      }
+      // Skip deleting old images for now - just generate new ones
 
       // Generate the image
       const imagePath = await generateImage({
