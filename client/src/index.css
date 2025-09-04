@@ -19,7 +19,7 @@
   --accent-foreground: hsl(155, 100%, 8%);
   --destructive: hsl(0, 65%, 51%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --border: hsl(145, 20%, 88%);
+  --border: hsl(145, 56%, 45%);
   --input: hsl(145, 20%, 95%);
   --ring: hsl(45, 100%, 50%);
   --canary: hsl(51, 100%, 57%);
@@ -49,7 +49,7 @@
   --accent-foreground: hsl(155, 100%, 8%);
   --destructive: hsl(0, 62%, 52%);
   --destructive-foreground: hsl(47, 20%, 95%);
-  --border: hsl(155, 30%, 20%);
+  --border: hsl(145, 56%, 35%);
   --input: hsl(155, 30%, 20%);
   --ring: hsl(45, 100%, 50%);
   --british-racing-green: hsl(155, 100%, 8%);
@@ -64,6 +64,42 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  /* Make all borders more prominent throughout the app */
+  .border {
+    @apply border-2;
+  }
+  
+  .border-t {
+    @apply border-t-2;
+  }
+  
+  .border-b {
+    @apply border-b-2;
+  }
+  
+  .border-l {
+    @apply border-l-2;
+  }
+  
+  .border-r {
+    @apply border-r-2;
+  }
+  
+  /* Default card borders in RHS green */
+  .card {
+    @apply border-2 border-green-600/40;
+  }
+  
+  /* Input borders */
+  input, textarea, select {
+    @apply border-2;
+  }
+  
+  /* Button borders */
+  button[class*="border"] {
+    @apply border-2;
   }
 
   .font-serif {
