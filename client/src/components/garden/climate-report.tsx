@@ -18,6 +18,73 @@ interface ClimateReportProps {
   isLoading: boolean;
 }
 
+// 4-Tiered Hardiness System with temperature ranges
+const hardinessCategories = [
+  { 
+    name: "Very Hardy", 
+    minTemp: "<-10°C", 
+    zones: "1-5", 
+    description: "Survives extreme cold",
+    color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+  },
+  { 
+    name: "Hardy", 
+    minTemp: "-10 to -5°C", 
+    zones: "6-7",
+    description: "Tolerates normal frosts",
+    color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+  },
+  { 
+    name: "Half Hardy", 
+    minTemp: "-5 to 0°C", 
+    zones: "8-9",
+    description: "Survives light frost",
+    color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+  },
+  { 
+    name: "Tender", 
+    minTemp: ">0°C", 
+    zones: "10+",
+    description: "No frost tolerance",
+    color: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+  }
+];
+
+// Convert USDA zone to 4-tier category
+function getHardinessInfo(zone: string | undefined) {
+  if (!zone) return hardinessCategories[2]; // Default to Half Hardy
+  
+  const match = zone.match(/\d+/);
+  if (!match) return hardinessCategories[2];
+  
+  const zoneNum = parseInt(match[0]);
+  
+  if (zoneNum <= 5) return hardinessCategories[0]; // Very Hardy
+  if (zoneNum <= 7) return hardinessCategories[1]; // Hardy
+  if (zoneNum <= 9) return hardinessCategories[2]; // Half Hardy
+  return hardinessCategories[3]; // Tender
+}
+
+// Get zone temperature range
+function getZoneTemperature(zone: string): string {
+  const zoneTemps: { [key: string]: string } = {
+    "3": "-40 to -34°C",
+    "4": "-34 to -29°C",
+    "5": "-29 to -23°C",
+    "6": "-23 to -18°C",
+    "7": "-18 to -12°C",
+    "8": "-12 to -7°C",
+    "9": "-7 to -1°C",
+    "10": "-1 to 4°C",
+    "11": "4 to 10°C"
+  };
+  
+  const match = zone?.match(/\d+/);
+  if (!match) return "";
+  
+  return zoneTemps[match[0]] || "";
+}
+
 export default function ClimateReport({ location, climateData, isLoading }: ClimateReportProps) {
   if (!location || location.length < 3) {
     return (
@@ -118,11 +185,32 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Hardiness Zone:</span>
-              <Badge variant="default" data-testid="badge-hardiness-zone">
-                {climateData.hardiness_zone || 'Zone 9a'}
-              </Badge>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Hardiness Zone:</span>
+                <div className="flex items-center gap-2">
+                  <Badge variant="default" data-testid="badge-hardiness-zone">
+                    {climateData.hardiness_zone || 'Zone 9a'}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {getZoneTemperature(climateData.hardiness_zone || '9a')}
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Category:</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded font-medium ${getHardinessInfo(climateData.hardiness_zone).color}`}>
+                    {getHardinessInfo(climateData.hardiness_zone).name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {getHardinessInfo(climateData.hardiness_zone).minTemp}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                {getHardinessInfo(climateData.hardiness_zone).description}
+              </p>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Min Winter Temp:</span>
@@ -187,6 +275,32 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
         </Card>
       </div>
 
+      {/* Hardiness Zone Guide */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center" data-testid="text-hardiness-guide-title">
+            <Thermometer className="w-5 h-5 mr-2 text-primary" />
+            Understanding Hardiness Categories
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-4 gap-4">
+            {hardinessCategories.map((category) => (
+              <div key={category.name} className="space-y-2">
+                <div className={`text-sm font-medium px-3 py-2 rounded text-center ${category.color}`}>
+                  {category.name}
+                </div>
+                <div className="text-xs space-y-1">
+                  <p><span className="font-medium">Min Temp:</span> {category.minTemp}</p>
+                  <p><span className="font-medium">USDA Zones:</span> {category.zones}</p>
+                  <p className="text-muted-foreground italic">{category.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* AI Recommendations */}
       <Card className="border-accent bg-accent/5">
         <CardHeader>
@@ -202,7 +316,14 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-accent rounded-full mr-3"></span>
-                  Hardy perennials (Lavender, Rosemary)
+                  {getHardinessInfo(climateData?.hardiness_zone).name === "Very Hardy" ? 
+                    "Cold-hardy perennials (Peonies, Hostas)" :
+                    getHardinessInfo(climateData?.hardiness_zone).name === "Hardy" ?
+                    "Hardy perennials (Lavender, Rosemary)" :
+                    getHardinessInfo(climateData?.hardiness_zone).name === "Half Hardy" ?
+                    "Mediterranean plants (Olive, Citrus in pots)" :
+                    "Tropical plants (Palms, Bougainvillea)"
+                  }
                 </li>
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-accent rounded-full mr-3"></span>
