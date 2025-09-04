@@ -272,7 +272,7 @@ export default function GardenProperties() {
                               <SelectTrigger data-testid="select-units" className={`h-9 text-xs border-2 ${!field.value ? "border-destructive" : "border-[#004025]"}`}>
                                 <SelectValue placeholder="Please select measurement units" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-white border-2 border-[#004025]">
                                 <SelectItem value="metric">Metric (meters, centimeters)</SelectItem>
                                 <SelectItem value="imperial">Imperial (feet, inches)</SelectItem>
                               </SelectContent>
