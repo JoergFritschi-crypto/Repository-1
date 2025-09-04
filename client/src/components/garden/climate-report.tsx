@@ -86,6 +86,9 @@ function getZoneTemperature(zone: string): string {
 }
 
 export default function ClimateReport({ location, climateData, isLoading }: ClimateReportProps) {
+  // Use new zone data if available, otherwise fall back to old format
+  const hardiness_zone = climateData?.usda_zone || climateData?.hardiness_zone;
+
   if (!location || location.length < 3) {
     return (
       <div className="text-center py-12" data-testid="no-location-state">
@@ -187,30 +190,53 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Hardiness Zone:</span>
+                <span className="text-muted-foreground">USDA Zone:</span>
                 <div className="flex items-center gap-2">
                   <Badge variant="default" data-testid="badge-hardiness-zone">
-                    {climateData.hardiness_zone || 'Zone 9a'}
+                    {hardiness_zone || 'Zone 9a'}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {getZoneTemperature(climateData.hardiness_zone || '9a')}
+                    {climateData?.temperature_range || getZoneTemperature(hardiness_zone || '9a')}
                   </span>
                 </div>
               </div>
+              {climateData?.rhs_zone && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">RHS Rating:</span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" data-testid="badge-rhs-zone">
+                      {climateData.rhs_zone}
+                    </Badge>
+                    {climateData.rhsDescription && (
+                      <span className="text-xs text-muted-foreground">
+                        {climateData.rhsDescription}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Category:</span>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded font-medium ${getHardinessInfo(climateData.hardiness_zone).color}`}>
-                    {getHardinessInfo(climateData.hardiness_zone).name}
+                  <span className={`text-xs px-2 py-1 rounded font-medium ${getHardinessInfo(hardiness_zone).color}`}>
+                    {climateData?.hardiness_category || getHardinessInfo(hardiness_zone).name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {getHardinessInfo(climateData.hardiness_zone).minTemp}
+                    {getHardinessInfo(hardiness_zone).minTemp}
                   </span>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground italic">
-                {getHardinessInfo(climateData.hardiness_zone).description}
+                {getHardinessInfo(hardiness_zone).description}
               </p>
+              {climateData?.coordinates && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Location:</span>
+                  <span className="text-xs">
+                    {climateData.coordinates.latitude.toFixed(4)}, {climateData.coordinates.longitude.toFixed(4)}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Min Winter Temp:</span>
@@ -301,6 +327,28 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
         </CardContent>
       </Card>
 
+      {/* Gardening Advice */}
+      {climateData?.gardening_advice && climateData.gardening_advice.length > 0 && (
+        <Card className="border-primary bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center" data-testid="text-gardening-advice-title">
+              <Droplets className="w-5 h-5 mr-2 text-primary" />
+              Personalized Gardening Advice
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm">
+              {climateData.gardening_advice.map((advice, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="w-2 h-2 bg-primary rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                  <span>{advice}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {/* AI Recommendations */}
       <Card className="border-accent bg-accent/5">
         <CardHeader>
@@ -316,11 +364,11 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-accent rounded-full mr-3"></span>
-                  {getHardinessInfo(climateData?.hardiness_zone).name === "Very Hardy" ? 
+                  {getHardinessInfo(hardiness_zone).name === "Very Hardy" ? 
                     "Cold-hardy perennials (Peonies, Hostas)" :
-                    getHardinessInfo(climateData?.hardiness_zone).name === "Hardy" ?
+                    getHardinessInfo(hardiness_zone).name === "Hardy" ?
                     "Hardy perennials (Lavender, Rosemary)" :
-                    getHardinessInfo(climateData?.hardiness_zone).name === "Half Hardy" ?
+                    getHardinessInfo(hardiness_zone).name === "Half Hardy" ?
                     "Mediterranean plants (Olive, Citrus in pots)" :
                     "Tropical plants (Palms, Bougainvillea)"
                   }

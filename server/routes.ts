@@ -112,6 +112,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Climate data endpoint with Mapbox geocoding
+  app.get('/api/climate', async (req, res) => {
+    const location = req.query.location as string;
+    
+    if (!location || location.length < 3) {
+      return res.status(400).json({ message: "Location is required" });
+    }
+
+    try {
+      // First, geocode the location using Mapbox
+      let coordinates = null;
+      if (process.env.MAPBOX_API_KEY) {
+        const mapboxApi = new MapboxAPI(process.env.MAPBOX_API_KEY);
+        const geocodeResult = await mapboxApi.geocode(location);
+        if (geocodeResult) {
+          coordinates = {
+            latitude: geocodeResult.latitude,
+            longitude: geocodeResult.longitude,
+            placeName: geocodeResult.placeName,
+            country: geocodeResult.country,
+            region: geocodeResult.region
+          };
+        }
+      }
+
+      // Fetch climate data using coordinates if available, otherwise use location string
+      const climateData = await fetchClimateDataWithCoordinates(
+        coordinates ? `${coordinates.latitude},${coordinates.longitude}` : location,
+        coordinates
+      );
+
+      if (!climateData) {
+        return res.status(404).json({ message: "Climate data not available for this location" });
+      }
+
+      res.json({
+        ...climateData,
+        coordinates,
+        location: coordinates ? coordinates.placeName : location
+      });
+    } catch (error) {
+      console.error("Error fetching climate data:", error);
+      res.status(500).json({ message: "Failed to fetch climate data" });
+    }
+  });
+
   app.post('/api/gardens', isAuthenticated, async (req: any, res) => {
     try {
       const gardenData = insertGardenSchema.parse({
@@ -1303,15 +1349,20 @@ function isClimateDataStale(lastUpdated: Date): boolean {
   return daysSinceUpdate > 30; // Update every 30 days
 }
 
-async function fetchClimateData(location: string, coordinates?: { latitude: number; longitude: number } | null): Promise<any> {
+async function fetchClimateDataWithCoordinates(location: string, coordinates?: { latitude: number; longitude: number } | null): Promise<any> {
   if (!process.env.VISUAL_CROSSING_API_KEY) {
     console.warn("Visual Crossing API key not configured");
     return null;
   }
 
   try {
+    // Use coordinates if available for more accurate data
+    const queryLocation = coordinates 
+      ? `${coordinates.latitude},${coordinates.longitude}`
+      : location;
+    
     const response = await fetch(
-      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(location)}?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
+      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
     );
     
     if (!response.ok) {
@@ -1320,16 +1371,24 @@ async function fetchClimateData(location: string, coordinates?: { latitude: numb
     
     const data = await response.json();
     
+    // Calculate accurate hardiness zones based on temperature data
+    const minTemp = calculateAverageTemp(data.days, 'tempmin');
+    const zones = determineHardinessZones(minTemp, coordinates);
+    
     // Process and structure the climate data
     return {
-      hardiness_zone: determineHardinessZone(data.address),
+      usda_zone: zones.usda,
+      rhs_zone: zones.rhs,
+      hardiness_category: zones.category,
+      temperature_range: zones.tempRange,
       annual_rainfall: calculateAnnualRainfall(data.days),
-      avg_temp_min: calculateAverageTemp(data.days, 'tempmin'),
+      avg_temp_min: minTemp,
       avg_temp_max: calculateAverageTemp(data.days, 'tempmax'),
       frost_dates: calculateFrostDates(data.days),
       growing_season: calculateGrowingSeason(data.days),
       monthly_data: processMonthlyData(data.days),
-      data_source: 'visual_crossing'
+      gardening_advice: generateGardeningAdvice(zones, data),
+      data_source: 'visual_crossing_with_mapbox'
     };
   } catch (error) {
     console.error("Error fetching climate data:", error);
@@ -1337,13 +1396,126 @@ async function fetchClimateData(location: string, coordinates?: { latitude: numb
   }
 }
 
-function determineHardinessZone(address: string): string {
-  // Simplified hardiness zone determination for UK locations
-  // In a real implementation, this would use proper mapping data
-  if (address.includes('Scotland')) return '7a';
-  if (address.includes('Northern Ireland')) return '8a';
-  if (address.includes('Wales')) return '8b';
-  return '9a'; // Default for most of England
+// Keep old function for backward compatibility
+async function fetchClimateData(location: string, coordinates?: { latitude: number; longitude: number } | null): Promise<any> {
+  return fetchClimateDataWithCoordinates(location, coordinates);
+}
+
+function determineHardinessZones(avgMinTemp: number, coordinates?: { latitude: number } | null) {
+  // USDA Hardiness Zone mapping based on average minimum temperature (in Celsius)
+  const usdaZones = [
+    { zone: '1a', min: -51.1, max: -48.3 },
+    { zone: '1b', min: -48.3, max: -45.6 },
+    { zone: '2a', min: -45.6, max: -42.8 },
+    { zone: '2b', min: -42.8, max: -40 },
+    { zone: '3a', min: -40, max: -37.2 },
+    { zone: '3b', min: -37.2, max: -34.4 },
+    { zone: '4a', min: -34.4, max: -31.7 },
+    { zone: '4b', min: -31.7, max: -28.9 },
+    { zone: '5a', min: -28.9, max: -26.1 },
+    { zone: '5b', min: -26.1, max: -23.3 },
+    { zone: '6a', min: -23.3, max: -20.6 },
+    { zone: '6b', min: -20.6, max: -17.8 },
+    { zone: '7a', min: -17.8, max: -15 },
+    { zone: '7b', min: -15, max: -12.2 },
+    { zone: '8a', min: -12.2, max: -9.4 },
+    { zone: '8b', min: -9.4, max: -6.7 },
+    { zone: '9a', min: -6.7, max: -3.9 },
+    { zone: '9b', min: -3.9, max: -1.1 },
+    { zone: '10a', min: -1.1, max: 1.7 },
+    { zone: '10b', min: 1.7, max: 4.4 },
+    { zone: '11a', min: 4.4, max: 7.2 },
+    { zone: '11b', min: 7.2, max: 10 },
+    { zone: '12a', min: 10, max: 12.8 },
+    { zone: '12b', min: 12.8, max: 15.6 },
+    { zone: '13a', min: 15.6, max: 18.3 },
+    { zone: '13b', min: 18.3, max: 21.1 }
+  ];
+
+  // RHS Hardiness Rating (UK-specific)
+  const rhsRatings = [
+    { rating: 'H1a', min: 15, max: 99, desc: 'Under glass all year (>15°C)' },
+    { rating: 'H1b', min: 10, max: 15, desc: 'Can be grown outside in summer (10-15°C)' },
+    { rating: 'H1c', min: 5, max: 10, desc: 'Can be grown outside in summer (5-10°C)' },
+    { rating: 'H2', min: 1, max: 5, desc: 'Tolerant of low temps but not surviving being frozen (1-5°C)' },
+    { rating: 'H3', min: -5, max: 1, desc: 'Hardy in coastal/mild areas (-5 to 1°C)' },
+    { rating: 'H4', min: -10, max: -5, desc: 'Hardy through most of UK (-10 to -5°C)' },
+    { rating: 'H5', min: -15, max: -10, desc: 'Hardy in most places (-15 to -10°C)' },
+    { rating: 'H6', min: -20, max: -15, desc: 'Hardy everywhere (-20 to -15°C)' },
+    { rating: 'H7', min: -99, max: -20, desc: 'Very hardy (< -20°C)' }
+  ];
+
+  // Find USDA zone
+  let usdaZone = '9a'; // Default
+  for (const zone of usdaZones) {
+    if (avgMinTemp >= zone.min && avgMinTemp < zone.max) {
+      usdaZone = zone.zone;
+      break;
+    }
+  }
+
+  // Find RHS rating
+  let rhsRating = 'H4'; // Default for UK
+  let rhsDesc = '';
+  for (const rating of rhsRatings) {
+    if (avgMinTemp >= rating.min && avgMinTemp < rating.max) {
+      rhsRating = rating.rating;
+      rhsDesc = rating.desc;
+      break;
+    }
+  }
+
+  // Determine hardiness category
+  let category = 'Half Hardy';
+  const zoneNum = parseInt(usdaZone.match(/\d+/)?.[0] || '9');
+  if (zoneNum <= 5) category = 'Very Hardy';
+  else if (zoneNum <= 7) category = 'Hardy';
+  else if (zoneNum <= 9) category = 'Half Hardy';
+  else category = 'Tender';
+
+  return {
+    usda: usdaZone,
+    rhs: rhsRating,
+    rhsDescription: rhsDesc,
+    category,
+    tempRange: `${avgMinTemp.toFixed(1)}°C average minimum`,
+    zoneNumber: zoneNum
+  };
+}
+
+function generateGardeningAdvice(zones: any, weatherData: any) {
+  const advice = [];
+  
+  // Based on hardiness zone
+  if (zones.zoneNumber <= 6) {
+    advice.push("Your cold climate is ideal for many temperate plants but requires winter protection for tender species.");
+    advice.push("Consider cold frames or greenhouses for extending the growing season.");
+  } else if (zones.zoneNumber <= 8) {
+    advice.push("Your moderate climate supports a wide variety of plants including most UK natives.");
+    advice.push("Protect half-hardy plants during unexpected frosts.");
+  } else {
+    advice.push("Your mild climate allows for year-round gardening with many Mediterranean plants thriving.");
+    advice.push("Focus on drought-tolerant species and provide shade for cool-season crops.");
+  }
+
+  // Based on RHS rating
+  switch(zones.rhs) {
+    case 'H7':
+    case 'H6':
+      advice.push("Hardy perennials and alpines will thrive. Choose plants rated H6 or hardier.");
+      break;
+    case 'H5':
+    case 'H4':
+      advice.push("Most common garden plants will be suitable. Protect H3-rated plants in winter.");
+      break;
+    case 'H3':
+      advice.push("Coastal and Mediterranean plants work well. Provide winter protection for tender species.");
+      break;
+    default:
+      advice.push("Consider using fleece, cloches, or bringing tender plants indoors during winter.");
+  }
+
+  return advice;
 }
 
 function calculateAnnualRainfall(days: any[]): number {
