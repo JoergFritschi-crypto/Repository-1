@@ -22,6 +22,7 @@ import ClimateReport from "@/components/garden/climate-report";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
 import { GARDEN_STEPS } from "@/types/garden";
 import { MapPin, ArrowLeft, ArrowRight } from "lucide-react";
+import flowerBorderImg from "@/assets/flower-border.png";
 
 const gardenSchema = z.object({
   name: z.string().min(1, "Garden name is required"),
@@ -349,8 +350,17 @@ export default function GardenProperties() {
             {/* Step 2: Garden Shape */}
             {currentStep === 2 && (
               <Card className="garden-card-frame" data-testid="step-garden-shape">
-                <CardHeader>
-                  <CardTitle>Garden Shape & Dimensions</CardTitle>
+                <CardHeader 
+                  className="relative overflow-hidden h-[60px]"
+                  style={{
+                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundRepeat: 'repeat-x'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                  <CardTitle className="relative z-10">Garden Shape & Dimensions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ShapeSelector
@@ -367,8 +377,17 @@ export default function GardenProperties() {
             {/* Step 3: Slope & Direction */}
             {currentStep === 3 && (
               <Card className="garden-card-frame" data-testid="step-slope-direction">
-                <CardHeader>
-                  <CardTitle>Slope & Cardinal Direction</CardTitle>
+                <CardHeader 
+                  className="relative overflow-hidden h-[60px]"
+                  style={{
+                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundRepeat: 'repeat-x'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                  <CardTitle className="relative z-10">Slope & Cardinal Direction</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <FormField
@@ -431,8 +450,17 @@ export default function GardenProperties() {
             {/* Step 4: Interactive Canvas */}
             {currentStep === 4 && (
               <Card className="garden-card-frame" data-testid="step-interactive-canvas">
-                <CardHeader>
-                  <CardTitle>Garden Layout Canvas</CardTitle>
+                <CardHeader 
+                  className="relative overflow-hidden h-[60px]"
+                  style={{
+                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundRepeat: 'repeat-x'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                  <CardTitle className="relative z-10">Garden Layout Canvas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <InteractiveCanvas
@@ -447,8 +475,17 @@ export default function GardenProperties() {
             {/* Step 5: Design Approach */}
             {currentStep === 5 && (
               <Card className="garden-card-frame" data-testid="step-design-approach">
-                <CardHeader>
-                  <CardTitle>Garden Design Approach</CardTitle>
+                <CardHeader 
+                  className="relative overflow-hidden h-[60px]"
+                  style={{
+                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundRepeat: 'repeat-x'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                  <CardTitle className="relative z-10">Garden Design Approach</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <FormField
