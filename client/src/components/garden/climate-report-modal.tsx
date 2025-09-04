@@ -125,10 +125,10 @@ export default function ClimateReportModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="no-print">
-          <DialogTitle>Climate Report</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white climate-modal-content">
+        <DialogHeader className="no-print bg-white text-gray-900">
+          <DialogTitle className="text-gray-900">Climate Report</DialogTitle>
+          <DialogDescription className="text-gray-600">
             Comprehensive climate analysis for {location}
           </DialogDescription>
           <div className="flex gap-2 pt-4">
@@ -147,11 +147,11 @@ export default function ClimateReportModal({
           </div>
         </DialogHeader>
 
-        <div ref={reportRef} className="space-y-6 pt-4">
-          <div className="header">
-            <h1>Climate Report</h1>
-            <p className="text-lg font-medium">{location}</p>
-            <p className="date">Generated on {new Date().toLocaleDateString()}</p>
+        <div ref={reportRef} className="space-y-6 pt-4 bg-white text-gray-900">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Climate Report</h1>
+            <p className="text-lg font-medium text-gray-800">{location}</p>
+            <p className="text-sm text-gray-600">Generated on {new Date().toLocaleDateString()}</p>
             {climateData.data_range && (
               <p className="text-sm text-gray-600 mt-2">
                 Based on {climateData.data_range.total_years} years of historical data 
@@ -160,65 +160,65 @@ export default function ClimateReportModal({
             )}
           </div>
 
-          <div className="section">
-            <h2>Hardiness Zones</h2>
-            <div className="data-grid">
-              <div className="data-item">
-                <div className="label">USDA Zone</div>
-                <div className="value zone-badge">{climateData.usda_zone || 'N/A'}</div>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Hardiness Zones</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">USDA Zone</div>
+                <div className="text-lg font-semibold text-green-700">{climateData.usda_zone || 'N/A'}</div>
               </div>
-              <div className="data-item">
-                <div className="label">RHS Rating</div>
-                <div className="value zone-badge">{climateData.rhs_zone || 'N/A'}</div>
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">RHS Rating</div>
+                <div className="text-lg font-semibold text-green-700">{climateData.rhs_zone || 'N/A'}</div>
               </div>
-              <div className="data-item">
-                <div className="label">Category</div>
-                <div className="value">{climateData.hardiness_category || 'N/A'}</div>
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">Category</div>
+                <div className="text-lg font-semibold text-gray-900">{climateData.hardiness_category || 'N/A'}</div>
               </div>
-              <div className="data-item">
-                <div className="label">Temperature Range</div>
-                <div className="value">{climateData.temperature_range || 'N/A'}</div>
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">Temperature Range</div>
+                <div className="text-lg font-semibold text-gray-900">{climateData.temperature_range || 'N/A'}</div>
               </div>
             </div>
           </div>
 
-          <div className="section">
-            <h2>Climate Overview</h2>
-            <div className="data-grid">
-              <div className="data-item">
-                <div className="label">Annual Rainfall (Historical Average)</div>
-                <div className="value">{Math.round(climateData.annual_rainfall || 0)}mm</div>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Climate Overview</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">Annual Rainfall (Historical Average)</div>
+                <div className="text-lg font-semibold text-gray-900">{Math.round(climateData.annual_rainfall || 0)}mm</div>
               </div>
-              <div className="data-item">
-                <div className="label">Average Min Temperature (Historical)</div>
-                <div className="value">{typeof climateData.avg_temp_min === 'number' ? climateData.avg_temp_min.toFixed(1) : climateData.avg_temp_min}°C</div>
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">Average Min Temperature (Historical)</div>
+                <div className="text-lg font-semibold text-gray-900">{typeof climateData.avg_temp_min === 'number' ? climateData.avg_temp_min.toFixed(1) : climateData.avg_temp_min}°C</div>
               </div>
-              <div className="data-item">
-                <div className="label">Average Max Temperature (Historical)</div>
-                <div className="value">{typeof climateData.avg_temp_max === 'number' ? climateData.avg_temp_max.toFixed(1) : climateData.avg_temp_max}°C</div>
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">Average Max Temperature (Historical)</div>
+                <div className="text-lg font-semibold text-gray-900">{typeof climateData.avg_temp_max === 'number' ? climateData.avg_temp_max.toFixed(1) : climateData.avg_temp_max}°C</div>
               </div>
-              <div className="data-item">
-                <div className="label">Growing Season</div>
-                <div className="value">{climateData.growing_season?.length || 0} days</div>
+              <div className="bg-white p-3 rounded border border-gray-200">
+                <div className="text-sm text-gray-600 mb-1">Growing Season</div>
+                <div className="text-lg font-semibold text-gray-900">{climateData.growing_season?.length || 0} days</div>
               </div>
             </div>
           </div>
 
           {climateData.frost_dates && (
-            <div className="section">
-              <h2>Frost Information</h2>
-              <div className="data-grid">
-                <div className="data-item">
-                  <div className="label">Typical Last Frost</div>
-                  <div className="value">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">Frost Information</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white p-3 rounded border border-gray-200">
+                  <div className="text-sm text-gray-600 mb-1">Typical Last Frost</div>
+                  <div className="text-lg font-semibold text-gray-900">
                     {climateData.frost_dates.last_frost 
                       ? new Date(climateData.frost_dates.last_frost).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
                       : 'No frost risk'}
                   </div>
                 </div>
-                <div className="data-item">
-                  <div className="label">Typical First Frost</div>
-                  <div className="value">
+                <div className="bg-white p-3 rounded border border-gray-200">
+                  <div className="text-sm text-gray-600 mb-1">Typical First Frost</div>
+                  <div className="text-lg font-semibold text-gray-900">
                     {climateData.frost_dates.first_frost
                       ? new Date(climateData.frost_dates.first_frost).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
                       : 'No frost risk'}
@@ -229,21 +229,21 @@ export default function ClimateReportModal({
           )}
 
           {climateData.monthly_data && (
-            <div className="section">
-              <h2>Monthly Averages</h2>
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">Monthly Averages</h2>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2">Month</th>
-                      <th className="text-right py-2">Avg Temp (°C)</th>
-                      <th className="text-right py-2">Rainfall (mm)</th>
+                <table className="w-full text-sm bg-white">
+                  <thead className="bg-gray-50">
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 text-gray-700">Month</th>
+                      <th className="text-right py-2 text-gray-700">Avg Temp (°C)</th>
+                      <th className="text-right py-2 text-gray-700">Rainfall (mm)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {Object.entries(climateData.monthly_data).map(([month, data]: [string, any]) => (
-                      <tr key={month} className="border-b">
-                        <td className="py-2">{month}</td>
+                      <tr key={month} className="border-b border-gray-200">
+                        <td className="py-2 text-gray-900">{month}</td>
                         <td className="text-right">{typeof data.avg_temp === 'number' ? data.avg_temp.toFixed(1) : data.avg_temp}</td>
                         <td className="text-right">{Math.round(data.total_rainfall || 0)}</td>
                       </tr>
@@ -255,9 +255,9 @@ export default function ClimateReportModal({
           )}
 
           {climateData.gardening_advice && (
-            <div className="section">
-              <h2>Gardening Recommendations</h2>
-              <p className="text-sm leading-relaxed">{climateData.gardening_advice}</p>
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">Gardening Recommendations</h2>
+              <p className="text-sm leading-relaxed text-gray-700">{climateData.gardening_advice}</p>
             </div>
           )}
         </div>
