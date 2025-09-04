@@ -99,9 +99,9 @@ export function CompactPlantCard({
 
   return (
     <>
-      <Card className="group overflow-hidden hover:shadow-lg transition-shadow h-[280px] relative">
-        {/* Image - 70% of card height */}
-        <div className="relative h-[196px] bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
+      <Card className="group overflow-hidden hover:shadow-lg transition-shadow relative">
+        {/* Image section */}
+        <div className="relative h-48 bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
           {primaryImage ? (
             <img 
               src={primaryImage}
@@ -135,33 +135,39 @@ export function CompactPlantCard({
           )}
         </div>
 
-        {/* Info - 30% of card height */}
-        <div className="p-2 h-[84px] flex flex-col justify-between">
-          {/* Plant name and essential info */}
+        {/* Info section */}
+        <div className="p-3 space-y-2">
+          {/* Plant names */}
           <div>
-            <h3 className="font-semibold text-sm leading-tight">
+            <h3 className="font-semibold text-sm leading-snug break-words">
               {plant.scientificName || 'Unknown Species'}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground break-words">
               {plant.commonName || 'Unknown Plant'}
             </p>
             
-            {/* Quick info in one line */}
-            <div className="flex items-center gap-2 mt-1">
+            {/* Quick info */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
               {getSunIcon()}
               {plant.watering && (
-                <Droplets className="w-3 h-3 text-blue-500" />
+                <div className="flex items-center gap-0.5">
+                  <Droplets className="w-3 h-3 text-blue-500" />
+                  <span className="text-[10px] text-muted-foreground">{plant.watering}</span>
+                </div>
               )}
               {plant.hardiness && (
-                <span className="text-xs text-muted-foreground">
-                  Z{plant.hardiness}
+                <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded">
+                  Zone {plant.hardiness}
                 </span>
               )}
               {plant.poisonousToPets === 0 && (
-                <Shield className="w-3 h-3 text-green-500" />
+                <div className="flex items-center gap-0.5">
+                  <Shield className="w-3 h-3 text-green-500" />
+                  <span className="text-[10px] text-green-600">Safe</span>
+                </div>
               )}
               {plant.type && (
-                <span className="text-xs text-muted-foreground capitalize">
+                <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded capitalize">
                   {plant.type}
                 </span>
               )}
@@ -169,11 +175,11 @@ export function CompactPlantCard({
           </div>
           
           {/* Action buttons */}
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 h-7 text-xs"
+              className="flex-1 h-8 text-xs"
               onClick={() => setShowDetailsDialog(true)}
             >
               <Eye className="w-3 h-3 mr-1" />
@@ -182,7 +188,7 @@ export function CompactPlantCard({
             {!isInCollection ? (
               <Button
                 size="sm"
-                className="flex-1 h-7 text-xs"
+                className="flex-1 h-8 text-xs"
                 onClick={() => setShowAddDialog(true)}
               >
                 <Plus className="w-3 h-3 mr-1" />
@@ -192,7 +198,7 @@ export function CompactPlantCard({
               <Button
                 size="sm"
                 variant="destructive"
-                className="flex-1 h-7 text-xs"
+                className="flex-1 h-8 text-xs"
                 onClick={() => removeFromCollectionMutation.mutate(plant.id)}
               >
                 <Heart className="w-3 h-3 mr-1 fill-current" />
