@@ -22,7 +22,13 @@ import ClimateReport from "@/components/garden/climate-report";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
 import { GARDEN_STEPS } from "@/types/garden";
 import { MapPin, ArrowLeft, ArrowRight } from "lucide-react";
-import flowerBorderImg from "@/assets/flower-border.png";
+import flowerBand1 from "@/assets/flower-band-1.png";
+import flowerBand2 from "@/assets/flower-band-2.png";
+import flowerBand3 from "@/assets/flower-band-3.png";
+import flowerBand4 from "@/assets/flower-band-4.png";
+import flowerBand5 from "@/assets/flower-band-5.png";
+import flowerBand6 from "@/assets/flower-band-6.png";
+import flowerBand7 from "@/assets/flower-band-7.png";
 
 const gardenSchema = z.object({
   name: z.string().min(1, "Garden name is required"),
@@ -59,6 +65,13 @@ export default function GardenProperties() {
   const [currentStep, setCurrentStep] = useState(1);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // Check if user is admin
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
+  
+  const isAdmin = user?.isAdmin || false;
 
   const form = useForm<GardenFormData>({
     resolver: zodResolver(gardenSchema),
@@ -135,17 +148,20 @@ export default function GardenProperties() {
   };
 
   const nextStep = () => {
-    // Validate required fields for Step 1
-    if (currentStep === 1) {
-      const units = form.getValues('units');
-      const name = form.getValues('name');
-      if (!units || !name) {
-        toast({
-          title: "Required Fields",
-          description: "Please select measurement units and enter a garden name.",
-          variant: "destructive",
-        });
-        return;
+    // Skip validation for admins
+    if (!isAdmin) {
+      // Validate required fields for Step 1
+      if (currentStep === 1) {
+        const units = form.getValues('units');
+        const name = form.getValues('name');
+        if (!units || !name) {
+          toast({
+            title: "Required Fields",
+            description: "Please select measurement units and enter a garden name.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
     }
     if (currentStep < 7) {
@@ -186,13 +202,17 @@ export default function GardenProperties() {
               {[...Array(7)].map((_, i) => (
                 <div
                   key={i}
+                  onClick={() => isAdmin && setCurrentStep(i + 1)}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    isAdmin ? 'cursor-pointer hover:scale-150' : ''
+                  } ${
                     i < currentStep 
                       ? 'bg-accent shadow-sm shadow-accent' 
                       : i === currentStep - 1 
                       ? 'bg-primary animate-pulse' 
                       : 'bg-border'
                   }`}
+                  title={isAdmin ? `Jump to Step ${i + 1}` : ''}
                 />
               ))}
             </div>
@@ -205,8 +225,17 @@ export default function GardenProperties() {
             {currentStep === 1 && (
               <div className="space-y-4">
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-location-units">
-                  <CardHeader className="py-4">
-                    <CardTitle className="flex items-center text-lg">
+                  <CardHeader 
+                    className="relative overflow-hidden h-[60px] py-4"
+                    style={{
+                      backgroundImage: `url(${flowerBand1})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center center',
+                      backgroundRepeat: 'repeat-x'
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                    <CardTitle className="relative z-10 flex items-center text-lg">
                       <MapPin className="w-4 h-4 mr-2 text-[#004025]" />
                       Garden Setup & Location
                     </CardTitle>
@@ -353,7 +382,7 @@ export default function GardenProperties() {
                 <CardHeader 
                   className="relative overflow-hidden h-[60px]"
                   style={{
-                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundImage: `url(${flowerBand2})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                     backgroundRepeat: 'repeat-x'
@@ -380,7 +409,7 @@ export default function GardenProperties() {
                 <CardHeader 
                   className="relative overflow-hidden h-[60px]"
                   style={{
-                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundImage: `url(${flowerBand3})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                     backgroundRepeat: 'repeat-x'
@@ -453,7 +482,7 @@ export default function GardenProperties() {
                 <CardHeader 
                   className="relative overflow-hidden h-[60px]"
                   style={{
-                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundImage: `url(${flowerBand4})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                     backgroundRepeat: 'repeat-x'
@@ -478,7 +507,7 @@ export default function GardenProperties() {
                 <CardHeader 
                   className="relative overflow-hidden h-[60px]"
                   style={{
-                    backgroundImage: `url(${flowerBorderImg})`,
+                    backgroundImage: `url(${flowerBand5})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                     backgroundRepeat: 'repeat-x'
@@ -546,8 +575,17 @@ export default function GardenProperties() {
             {/* Step 6: Sun & Soil */}
             {currentStep === 6 && (
               <Card className="garden-card-frame" data-testid="step-sun-soil">
-                <CardHeader>
-                  <CardTitle>Sun Exposure & Soil Properties</CardTitle>
+                <CardHeader 
+                  className="relative overflow-hidden h-[60px]"
+                  style={{
+                    backgroundImage: `url(${flowerBand6})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundRepeat: 'repeat-x'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                  <CardTitle className="relative z-10">Sun Exposure & Soil Properties</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <FormField
@@ -633,8 +671,17 @@ export default function GardenProperties() {
             {/* Step 7: Plant Preferences */}
             {currentStep === 7 && (
               <Card className="garden-card-frame" data-testid="step-plant-preferences">
-                <CardHeader>
-                  <CardTitle>Plant Preferences</CardTitle>
+                <CardHeader 
+                  className="relative overflow-hidden h-[60px]"
+                  style={{
+                    backgroundImage: `url(${flowerBand7})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundRepeat: 'repeat-x'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                  <CardTitle className="relative z-10">Plant Preferences</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <div>
