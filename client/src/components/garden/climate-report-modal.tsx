@@ -191,11 +191,11 @@ export default function ClimateReportModal({
               </div>
               <div className="data-item">
                 <div className="label">Average Min Temperature (Historical)</div>
-                <div className="value">{climateData.avg_temp_min?.toFixed(1)}°C</div>
+                <div className="value">{typeof climateData.avg_temp_min === 'number' ? climateData.avg_temp_min.toFixed(1) : climateData.avg_temp_min}°C</div>
               </div>
               <div className="data-item">
                 <div className="label">Average Max Temperature (Historical)</div>
-                <div className="value">{climateData.avg_temp_max?.toFixed(1)}°C</div>
+                <div className="value">{typeof climateData.avg_temp_max === 'number' ? climateData.avg_temp_max.toFixed(1) : climateData.avg_temp_max}°C</div>
               </div>
               <div className="data-item">
                 <div className="label">Growing Season</div>
@@ -244,7 +244,7 @@ export default function ClimateReportModal({
                     {Object.entries(climateData.monthly_data).map(([month, data]: [string, any]) => (
                       <tr key={month} className="border-b">
                         <td className="py-2">{month}</td>
-                        <td className="text-right">{data.avg_temp?.toFixed(1)}</td>
+                        <td className="text-right">{typeof data.avg_temp === 'number' ? data.avg_temp.toFixed(1) : data.avg_temp}</td>
                         <td className="text-right">{Math.round(data.total_rainfall || 0)}</td>
                       </tr>
                     ))}
