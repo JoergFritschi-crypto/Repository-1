@@ -111,26 +111,23 @@ export default function GardenProperties() {
   // Combine location fields for API
   const combinedLocation = `${watchedCity || ''} ${watchedCountry || ''} ${watchedZipCode || ''}`.trim();
 
-  // Debounced location state to prevent excessive API calls
-  const [debouncedLocation, setDebouncedLocation] = useState("");
+  // Manual climate report fetching
+  const [shouldFetchClimate, setShouldFetchClimate] = useState(false);
+  const locationToFetch = combinedLocation || watchedLocation || '';
 
-  // Debounce location changes to only call API after user stops typing
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const location = combinedLocation || watchedLocation || '';
-      if (location.length > 3) {
-        setDebouncedLocation(location);
-      }
-    }, 800); // Wait 800ms after user stops typing
-
-    return () => clearTimeout(timer);
-  }, [combinedLocation, watchedLocation]);
-
-  // Fetch climate data when debounced location changes
-  const { data: climateData, isLoading: climateLoading } = useQuery({
-    queryKey: ["/api/climate", debouncedLocation],
-    enabled: debouncedLocation.length > 3,
+  // Fetch climate data only when manually triggered
+  const { data: climateData, isLoading: climateLoading, refetch: fetchClimate } = useQuery({
+    queryKey: ["/api/climate", locationToFetch],
+    enabled: shouldFetchClimate && locationToFetch.length > 3,
   });
+
+  // Handle manual climate fetch
+  const handleFetchClimate = () => {
+    if (locationToFetch.length > 3) {
+      setShouldFetchClimate(true);
+      fetchClimate();
+    }
+  };
 
   const createGardenMutation = useMutation({
     mutationFn: async (data: GardenFormData) => {
@@ -586,6 +583,40 @@ export default function GardenProperties() {
                           </FormItem>
                         )}
                       />
+
+                      {/* Climate Report Button */}
+                      {locationToFetch.length > 3 && (
+                        <div className="pt-3 border-t">
+                          <Button 
+                            type="button" 
+                            onClick={handleFetchClimate}
+                            disabled={climateLoading}
+                            variant="outline"
+                            className="w-full"
+                            data-testid="button-fetch-climate"
+                          >
+                            {climateLoading ? (
+                              <>Loading Climate Data...</>
+                            ) : (
+                              <>
+                                <CloudSun className="w-4 h-4 mr-2" />
+                                Get Climate Report for {locationToFetch}
+                              </>
+                            )}
+                          </Button>
+                          
+                          {/* Show climate report if data is available */}
+                          {climateData && (
+                            <div className="mt-4">
+                              <ClimateReport
+                                location={locationToFetch}
+                                climateData={climateData as any}
+                                isLoading={false}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
