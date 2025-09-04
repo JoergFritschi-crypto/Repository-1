@@ -254,23 +254,83 @@ export class ImageGenerationService {
     }
   }
 
-  // Generate appropriate prompt for the image type
+  // Generate botanically accurate prompts for each image type
   private generatePrompt(plant: any, imageType: string): string {
-    const baseInfo = `${plant.commonName || plant.scientificName}, ${plant.family || "ornamental plant"}`;
+    // Build detailed botanical description
+    const scientificName = plant.scientificName || '';
+    const commonName = plant.commonName || '';
+    const genus = plant.genus || '';
+    const species = plant.species || '';
+    const cultivar = plant.cultivar || '';
+    
+    // Create botanical identification string
+    let botanicalId = '';
+    if (scientificName) {
+      botanicalId = scientificName;
+      if (cultivar) botanicalId += ` '${cultivar}'`;
+    } else if (commonName) {
+      botanicalId = commonName;
+    } else {
+      botanicalId = 'ornamental plant';
+    }
+    
+    // Get specific botanical characteristics
+    const characteristics = this.getBotanicalCharacteristics(plant);
     
     switch (imageType) {
       case "thumbnail":
-        return `Professional botanical illustration of ${baseInfo}, isolated on pure white background, single healthy specimen, botanical art style with detailed leaf veins and structure, scientific accuracy, watercolor style, no text or labels`;
+        return `Botanical specimen photography of ${botanicalId}, ${characteristics}, isolated on pure white background, single healthy specimen showing accurate morphology, botanical reference photo, scientific accuracy, no text or labels, true to species characteristics`;
       
       case "full":
-        return `Beautiful mature ${baseInfo} growing in an English cottage garden, showing entire plant from soil to top, ${plant.dimension ? `approximately ${JSON.stringify(plant.dimension)} in size,` : ""} ${plant.flowerColor ? `vibrant ${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} flowers in full bloom,` : ""} ${plant.leafColor ? `healthy ${Array.isArray(plant.leafColor) ? plant.leafColor.join(" and ") : plant.leafColor} foliage,` : ""} photorealistic, golden hour lighting, professional garden photography`;
+        const gardenContext = `${botanicalId} growing in natural garden habitat, ${characteristics}, showing entire plant structure and growth habit, ${plant.dimension ? `mature size,` : ""} ${plant.flowerColor ? `${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} flowers,` : ""} ${plant.leafColor ? `${Array.isArray(plant.leafColor) ? plant.leafColor.join(" and ") : plant.leafColor} foliage,` : ""} photorealistic botanical photography, natural daylight, true to species`;
+        return gardenContext;
       
       case "detail":
-        return `Stunning macro close-up of ${baseInfo} ${plant.flowerColor ? `showing ${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} colored flowers` : "flowers"} and ${plant.leafColor ? `${Array.isArray(plant.leafColor) ? plant.leafColor.join(" and ") : plant.leafColor}` : ""} leaves, extreme detail showing texture and veins, bokeh background, professional macro lens photography, morning dew drops, ultra sharp focus`;
+        return `Macro botanical photography of ${botanicalId}, ${characteristics}, close-up showing ${plant.flowerColor ? `${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} flowers and` : ""} leaf detail with accurate venation pattern, botanical accuracy, sharp focus on diagnostic features, true to species morphology`;
       
       default:
-        return `Beautiful ${baseInfo} plant in English garden setting, photorealistic, professional photography`;
+        return `${botanicalId} in natural setting, ${characteristics}, botanically accurate, photorealistic`;
     }
+  }
+  
+  // Get specific botanical characteristics based on plant data
+  private getBotanicalCharacteristics(plant: any): string {
+    const chars = [];
+    
+    // Map common names to known botanical features
+    const botanicalFeatures: Record<string, string> = {
+      'japanese maple': 'Acer palmatum with palmate 5-7 lobed leaves, opposite leaf arrangement, red or purple foliage, delicate branching, smooth gray bark',
+      'english lavender': 'Lavandula angustifolia with opposite linear gray-green leaves, square stems, purple flower spikes in verticillasters, woody at base, aromatic',
+      'hosta': 'Hosta species with basal rosette of broad ovate to cordate leaves, parallel venation, long petioles, raceme inflorescence on tall scapes'
+    };
+    
+    // Check for specific botanical features
+    const lowerCommon = (plant.commonName || '').toLowerCase();
+    for (const [key, features] of Object.entries(botanicalFeatures)) {
+      if (lowerCommon.includes(key)) {
+        return features;
+      }
+    }
+    
+    // Build generic characteristics from available data
+    if (plant.type) chars.push(plant.type);
+    if (plant.foliage) chars.push(`${plant.foliage} foliage`);
+    if (plant.growthRate) chars.push(`${plant.growthRate} growth`);
+    if (plant.cycle) chars.push(plant.cycle);
+    
+    // Add leaf characteristics
+    if (plant.leafColor) {
+      const leafColors = Array.isArray(plant.leafColor) ? plant.leafColor.join('/') : plant.leafColor;
+      chars.push(`${leafColors} leaves`);
+    }
+    
+    // Add flower characteristics  
+    if (plant.flowerColor) {
+      const flowerColors = Array.isArray(plant.flowerColor) ? plant.flowerColor.join('/') : plant.flowerColor;
+      chars.push(`${flowerColors} flowers`);
+    }
+    
+    return chars.length > 0 ? chars.join(', ') : 'ornamental garden plant';
   }
 
   // Find and retry stuck images

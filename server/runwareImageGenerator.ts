@@ -23,6 +23,27 @@ export class RunwareImageGenerator {
     this.imagesDir = path.join(process.cwd(), "client", "public", "generated-images");
   }
   
+  // Botanical characteristics for accurate plant representation
+  private getBotanicalDetails(plantName: string): string {
+    const botanicalDescriptions: Record<string, string> = {
+      'japanese maple': 'Acer palmatum with distinctive palmate leaves having 5-7 pointed lobes, delicate branching structure, red or purple foliage, smooth gray bark, small red samaras (winged seeds)',
+      'english lavender': 'Lavandula angustifolia with narrow silvery-green linear leaves, purple flower spikes on long stems, bushy compact growth habit, aromatic Mediterranean shrub, square stems',
+      'hosta': 'Hosta plantaginea with large broad ovate leaves, prominent parallel veins, blue-green or variegated foliage, forms dense mounds, tall flower stalks with tubular white or purple flowers',
+      'rose': 'Rosa species with compound pinnate leaves, serrated leaflets, thorny stems, layered petals in spiral formation, green sepals, rose hips',
+      'tulip': 'Tulipa species with single bulb, broad lanceolate leaves, six tepals, cup-shaped flowers, straight stem, no branching',
+      'sunflower': 'Helianthus annuus with large rough heart-shaped leaves, thick hairy stem, composite flower head with yellow ray petals, dark center disk florets, heliotropic behavior'
+    };
+    
+    const normalizedName = plantName.toLowerCase();
+    for (const [key, description] of Object.entries(botanicalDescriptions)) {
+      if (normalizedName.includes(key)) {
+        return description;
+      }
+    }
+    
+    return plantName; // Fallback to original name if no specific description
+  }
+  
   async generateImage(request: ImageRequest): Promise<string> {
     await fs.mkdir(this.imagesDir, { recursive: true });
     
@@ -32,12 +53,15 @@ export class RunwareImageGenerator {
     
     console.log(`🌿 Generating with Runware: ${request.plantName} (${request.imageType})`);
     
-    // Create botanical photography prompt
-    const botanicalPrompt = `professional botanical photography of ${request.plantName}, ${
-      request.imageType === 'full' ? 'full plant in garden setting' :
-      request.imageType === 'detail' ? 'close-up detail of flowers or leaves' :
-      'centered specimen portrait'
-    }, natural lighting, high resolution nature photography, sharp focus, garden background`;
+    // Get botanically accurate description
+    const botanicalDescription = this.getBotanicalDetails(request.plantName);
+    
+    // Create botanically accurate prompt with specific characteristics
+    const botanicalPrompt = `photorealistic botanical specimen of ${botanicalDescription}, ${
+      request.imageType === 'full' ? 'full plant specimen showing growth habit and structure in natural garden environment' :
+      request.imageType === 'detail' ? 'macro close-up showing detailed botanical features, leaf venation, flower structure, or bark texture' :
+      'botanical illustration style centered specimen showing accurate morphology and characteristics'
+    }, scientifically accurate, natural daylight, high detail nature photography, sharp focus, true to species characteristics`;
     
     try {
       // Runware API requires taskUUID for each request
@@ -53,7 +77,12 @@ export class RunwareImageGenerator {
           taskType: "imageInference",
           taskUUID: taskUUID,
           positivePrompt: botanicalPrompt,
-          model: "runware:100@1",  // Runware's SDXL model
+          model: "runware:101@1",  // FLUX.1 [dev] - Better for realistic botanical results
+          // Note: We're using FLUX.1 [dev] which produces more realistic results than SDXL
+          // If you want to try other models:
+          // "runware:100@1" - Standard SDXL
+          // "civitai:288982@324619" - Realistic Vision (photorealistic model)
+          // Search CivitAI for specific botanical models and use their AIR ID
           numberOfImages: 1,
           height: 768,
           width: 768,
