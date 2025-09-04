@@ -55,8 +55,8 @@ export function CompactPlantCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const { toast } = useToast();
 
-  const primaryImage = plant.fullImage || plant.thumbnailImage;
-  const secondaryImage = plant.detailImage || plant.thumbnailImage;
+  const primaryImage = plant.full_image || plant.thumbnail_image;
+  const secondaryImage = plant.detail_image || plant.thumbnail_image;
 
   const addToCollectionMutation = useMutation({
     mutationFn: async (data: { plantId: string; notes?: string }) => {
@@ -66,7 +66,7 @@ export function CompactPlantCard({
     onSuccess: () => {
       toast({
         title: "Added to Collection",
-        description: `${plant.commonName} has been added to your garden!`,
+        description: `${plant.common_name} has been added to your garden!`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
       setShowAddDialog(false);
@@ -80,20 +80,21 @@ export function CompactPlantCard({
     onSuccess: () => {
       toast({
         title: "Removed",
-        description: `${plant.commonName} removed from collection.`,
+        description: `${plant.common_name} removed from collection.`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
     }
   });
 
   const getSunIcon = () => {
-    switch (plant.sun_requirements) {
-      case "full_sun": return <Sun className="w-3 h-3 text-yellow-500" />;
-      case "partial_sun":
-      case "partial_shade": return <CloudSun className="w-3 h-3 text-yellow-400" />;
-      case "full_shade": return <Cloud className="w-3 h-3 text-gray-400" />;
-      default: return null;
-    }
+    // Handle both string and array formats from database
+    const sunlight = Array.isArray(plant.sunlight) ? plant.sunlight[0] : plant.sunlight;
+    if (!sunlight) return null;
+    
+    if (sunlight.includes('full sun')) return <Sun className="w-3 h-3 text-yellow-500" />;
+    if (sunlight.includes('partial')) return <CloudSun className="w-3 h-3 text-yellow-400" />;
+    if (sunlight.includes('shade')) return <Cloud className="w-3 h-3 text-gray-400" />;
+    return null;
   };
 
   return (
@@ -104,7 +105,7 @@ export function CompactPlantCard({
           {primaryImage ? (
             <img 
               src={primaryImage}
-              alt={plant.commonName}
+              alt={plant.common_name}
               className={`w-full h-full object-cover ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity`}
               onLoad={() => setImageLoaded(true)}
             />
@@ -138,29 +139,29 @@ export function CompactPlantCard({
         <div className="p-2 h-[84px] flex flex-col justify-between">
           {/* Plant name and essential info */}
           <div>
-            <h3 className="font-semibold text-sm leading-tight truncate">
-              {plant.commonName}
+            <h3 className="font-semibold text-sm leading-tight">
+              {plant.scientific_name || 'Unknown Species'}
             </h3>
-            <p className="text-xs text-muted-foreground italic truncate">
-              {plant.scientificName}
+            <p className="text-xs text-muted-foreground">
+              {plant.common_name || 'Unknown Plant'}
             </p>
             
             {/* Quick info in one line */}
             <div className="flex items-center gap-2 mt-1">
               {getSunIcon()}
-              {plant.water_requirements && (
+              {plant.watering && (
                 <Droplets className="w-3 h-3 text-blue-500" />
               )}
-              {plant.hardiness_zones && (
+              {plant.hardiness && (
                 <span className="text-xs text-muted-foreground">
-                  Z{plant.hardiness_zones}
+                  Z{plant.hardiness}
                 </span>
               )}
-              {plant.pet_safe && (
+              {plant.poisonous_to_pets === 0 && (
                 <Shield className="w-3 h-3 text-green-500" />
               )}
               {plant.type && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground capitalize">
                   {plant.type}
                 </span>
               )}
@@ -211,21 +212,21 @@ export function CompactPlantCard({
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">{plant.commonName}</h4>
-                <p className="text-sm text-muted-foreground italic">{plant.scientificName}</p>
+                <h4 className="font-medium mb-2">{plant.scientific_name}</h4>
+                <p className="text-sm text-muted-foreground">{plant.common_name}</p>
               </div>
               
-              {plant.verificationStatus && (
+              {plant.verification_status && (
                 <Badge variant={
-                  plant.verificationStatus === 'verified' ? 'default' : 
-                  plant.verificationStatus === 'pending' ? 'outline' : 'destructive'
+                  plant.verification_status === 'verified' ? 'default' : 
+                  plant.verification_status === 'pending' ? 'outline' : 'destructive'
                 }>
-                  Status: {plant.verificationStatus}
+                  Status: {plant.verification_status}
                 </Badge>
               )}
 
               <div className="grid grid-cols-2 gap-2">
-                {plant.verificationStatus === 'pending' && (
+                {plant.verification_status === 'pending' && (
                   <>
                     <Button onClick={onVerify} className="w-full">
                       <Check className="w-4 h-4 mr-1" />
@@ -237,7 +238,7 @@ export function CompactPlantCard({
                     </Button>
                   </>
                 )}
-                {plant.verificationStatus === 'verified' && (
+                {plant.verification_status === 'verified' && (
                   <>
                     <Button onClick={onEdit} variant="outline" className="w-full">
                       <Edit className="w-4 h-4 mr-1" />
@@ -246,10 +247,10 @@ export function CompactPlantCard({
                     <Button 
                       onClick={onGenerateImages}
                       variant="outline"
-                      disabled={plant.imageGenerationStatus === "generating"}
+                      disabled={plant.image_generation_status === "generating"}
                       className="w-full"
                     >
-                      {plant.imageGenerationStatus === "generating" ? (
+                      {plant.image_generation_status === "generating" ? (
                         <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating</>
                       ) : (
                         <><ImageIcon className="w-4 h-4 mr-1" /> Generate</>
@@ -264,9 +265,9 @@ export function CompactPlantCard({
                 Delete Plant
               </Button>
 
-              {plant.dataSource && (
+              {plant.data_source && (
                 <p className="text-xs text-muted-foreground text-center">
-                  Source: {plant.dataSource} {plant.perenualId && `#${plant.perenualId}`}
+                  Source: {plant.data_source} {plant.perenual_id && `#${plant.perenual_id}`}
                 </p>
               )}
             </div>
@@ -279,9 +280,9 @@ export function CompactPlantCard({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {plant.commonName}
-              <span className="text-sm font-normal italic text-muted-foreground block">
-                {plant.scientificName}
+              {plant.scientific_name || 'Unknown Species'}
+              <span className="text-sm font-normal text-muted-foreground block">
+                {plant.common_name || 'Unknown Plant'}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -292,14 +293,14 @@ export function CompactPlantCard({
                 {primaryImage && (
                   <img 
                     src={primaryImage}
-                    alt={plant.commonName}
+                    alt={plant.common_name}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                 )}
                 {secondaryImage && secondaryImage !== primaryImage && (
                   <img 
                     src={secondaryImage}
-                    alt={`${plant.commonName} detail`}
+                    alt={`${plant.common_name} detail`}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                 )}
@@ -320,66 +321,62 @@ export function CompactPlantCard({
                   <span>{plant.type}</span>
                 </div>
               )}
-              {plant.sun_requirements && (
+              {plant.sunlight && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Sun:</span>
-                  <span>{plant.sun_requirements.replace(/_/g, ' ')}</span>
+                  <span>{Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight}</span>
                 </div>
               )}
-              {plant.water_requirements && (
+              {plant.watering && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Water:</span>
-                  <span>{plant.water_requirements}</span>
+                  <span>{plant.watering}</span>
                 </div>
               )}
-              {plant.hardiness_zones && (
+              {plant.hardiness && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Zones:</span>
-                  <span>{plant.hardiness_zones}</span>
+                  <span>{plant.hardiness}</span>
                 </div>
               )}
-              {plant.mature_height && (
+              {plant.dimension && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Height:</span>
-                  <span>{plant.mature_height}</span>
+                  <span className="text-muted-foreground">Size:</span>
+                  <span>{typeof plant.dimension === 'object' ? 
+                    `${plant.dimension.height || ''} ${plant.dimension.spread ? `× ${plant.dimension.spread}` : ''}`.trim() : 
+                    plant.dimension}</span>
                 </div>
               )}
-              {plant.bloom_time && (
+              {plant.flowering_season && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Bloom:</span>
-                  <span>{plant.bloom_time}</span>
+                  <span>{plant.flowering_season}</span>
                 </div>
               )}
-              {plant.bloom_color && (
+              {plant.flower_color && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Flowers:</span>
-                  <span>{plant.bloom_color}</span>
+                  <span>{Array.isArray(plant.flower_color) ? plant.flower_color.join(', ') : plant.flower_color}</span>
                 </div>
               )}
             </div>
             
             {/* Features */}
             <div className="flex flex-wrap gap-1">
-              {plant.pet_safe && <Badge variant="outline" className="text-xs">Pet Safe</Badge>}
+              {plant.poisonous_to_pets === 0 && <Badge variant="outline" className="text-xs">Pet Safe</Badge>}
               {plant.drought_tolerant && <Badge variant="outline" className="text-xs">Drought Tolerant</Badge>}
-              {plant.deer_resistant && <Badge variant="outline" className="text-xs">Deer Resistant</Badge>}
-              {plant.fragrant && <Badge variant="outline" className="text-xs">Fragrant</Badge>}
-              {plant.attracts_pollinators && <Badge variant="outline" className="text-xs">Pollinators</Badge>}
-              {plant.native_origin && <Badge variant="outline" className="text-xs">Native: {plant.native_origin}</Badge>}
+              {plant.salt_tolerant && <Badge variant="outline" className="text-xs">Salt Tolerant</Badge>}
+              {plant.medicinal && <Badge variant="outline" className="text-xs">Medicinal</Badge>}
+              {plant.cuisine && <Badge variant="outline" className="text-xs">Culinary</Badge>}
+              {plant.attracts && Array.isArray(plant.attracts) && plant.attracts.length > 0 && 
+                <Badge variant="outline" className="text-xs">Attracts: {plant.attracts.join(', ')}</Badge>}
             </div>
             
-            {/* Care Notes */}
-            {plant.care_notes && (
+            {/* Description */}
+            {plant.description && (
               <div>
-                <h4 className="font-medium mb-1">Care Notes</h4>
-                <p className="text-sm text-muted-foreground">{plant.care_notes}</p>
-              </div>
-            )}
-            
-            {plant.planting_instructions && (
-              <div>
-                <h4 className="font-medium mb-1">Planting Instructions</h4>
-                <p className="text-sm text-muted-foreground">{plant.planting_instructions}</p>
+                <h4 className="font-medium mb-1">Description</h4>
+                <p className="text-sm text-muted-foreground">{plant.description}</p>
               </div>
             )}
           </div>
@@ -393,7 +390,7 @@ export function CompactPlantCard({
             <DialogTitle>Add to Garden</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p>Add <strong>{plant.commonName}</strong> to your collection?</p>
+            <p>Add <strong>{plant.common_name}</strong> to your collection?</p>
             <div>
               <label className="block text-sm font-medium mb-2">Notes (optional)</label>
               <Textarea

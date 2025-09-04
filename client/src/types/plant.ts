@@ -1,37 +1,50 @@
 export interface Plant {
   id: string;
-  scientificName: string;
-  commonName: string;
+  perenual_id?: string;
+  scientific_name: string;
+  common_name: string;
   family?: string;
   genus?: string;
   species?: string;
+  cultivar?: string;
   type?: string;
-  hardiness_zones?: string;
-  sun_requirements?: 'full_sun' | 'partial_sun' | 'partial_shade' | 'full_shade';
-  soil_requirements?: any;
-  water_requirements?: string;
-  mature_height?: string;
-  mature_width?: string;
-  bloom_time?: string;
-  bloom_color?: string;
-  foliage_color?: string;
-  fragrant?: boolean;
-  deer_resistant?: boolean;
+  hardiness?: string;
+  sunlight?: any; // Can be array or string from JSON column
+  soil?: any; // JSON array
+  watering?: string;
+  watering_general_benchmark?: any;
+  dimension?: any; // JSON object with height/spread
+  cycle?: string;
+  growth_rate?: string;
+  flowering_season?: string;
+  flower_color?: any; // JSON array
+  leaf?: any; // JSON object
+  leaf_color?: any; // JSON array
   drought_tolerant?: boolean;
-  pet_safe?: boolean;
-  toxic_to_children?: boolean;
-  attracts_pollinators?: boolean;
-  native_regions?: string;
-  care_notes?: string;
-  planting_instructions?: string;
-  image_url?: string;
-  thumbnailImage?: string;
-  fullImage?: string;
-  detailImage?: string;
+  salt_tolerant?: boolean;
+  thorny?: boolean;
+  tropical?: boolean;
+  medicinal?: boolean;
+  cuisine?: boolean;
+  poisonous_to_humans?: number;
+  poisonous_to_pets?: number;
+  attracts?: any; // JSON array
+  propagation?: any; // JSON array
+  pruning_month?: any; // JSON array
+  pest_susceptibility?: any; // JSON array
+  care_level?: string;
+  maintenance?: string;
+  description?: string;
+  care_guides?: string;
+  generated_image_url?: string;
+  thumbnail_image?: string;
+  full_image?: string;
+  detail_image?: string;
+  image_generation_status?: string;
   data_source?: string;
   verification_status?: 'pending' | 'verified' | 'rejected';
-  createdAt: string;
-  updatedAt: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PlantSearchFilters {
