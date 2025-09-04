@@ -46,6 +46,9 @@ const gardenSchema = z.object({
   sunExposure: z.enum(["full_sun", "partial_sun", "partial_shade", "full_shade"]).optional(),
   soilType: z.enum(["clay", "loam", "sand", "silt", "chalk"]).optional(),
   soilPh: z.number().min(4).max(9).optional(),
+  usdaZone: z.string().optional(),
+  rhsZone: z.string().optional(),
+  hardinessCategory: z.string().optional(),
   preferences: z.object({
     colors: z.array(z.string()).optional(),
     plantTypes: z.array(z.string()).optional(),
@@ -73,7 +76,7 @@ export default function GardenProperties() {
     queryKey: ["/api/auth/user"],
   });
   
-  const isAdmin = user?.isAdmin || false;
+  const isAdmin = (user as any)?.isAdmin || false;
 
   const form = useForm<GardenFormData>({
     resolver: zodResolver(gardenSchema),
@@ -400,7 +403,7 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>USDA Hardiness Zone</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || climateData?.usda_zone}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.usda_zone}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-usda-zone">
                                     <SelectValue placeholder="Select your USDA zone" />
@@ -443,14 +446,14 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>RHS Hardiness Rating</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || climateData?.rhs_zone}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.rhs_zone}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-rhs-zone">
                                     <SelectValue placeholder="Select your RHS rating" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="H7">H7 - Very hardy (< -20°C)</SelectItem>
+                                  <SelectItem value="H7">H7 - Very hardy (&lt; -20°C)</SelectItem>
                                   <SelectItem value="H6">H6 - Hardy everywhere (-20 to -15°C)</SelectItem>
                                   <SelectItem value="H5">H5 - Hardy in most places (-15 to -10°C)</SelectItem>
                                   <SelectItem value="H4">H4 - Hardy through most of UK (-10 to -5°C)</SelectItem>
@@ -458,7 +461,7 @@ export default function GardenProperties() {
                                   <SelectItem value="H2">H2 - Tolerant of low temps (1 to 5°C)</SelectItem>
                                   <SelectItem value="H1c">H1c - Outside in summer (5 to 10°C)</SelectItem>
                                   <SelectItem value="H1b">H1b - Outside in summer (10 to 15°C)</SelectItem>
-                                  <SelectItem value="H1a">H1a - Under glass all year (>15°C)</SelectItem>
+                                  <SelectItem value="H1a">H1a - Under glass all year (&gt;15°C)</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormDescription className="text-xs">
@@ -477,17 +480,17 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Hardiness Category</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || climateData?.hardiness_category}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.hardiness_category}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-hardiness-category">
                                     <SelectValue placeholder="Select hardiness category" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="very-hardy">Very Hardy - Survives extreme cold (<-10°C)</SelectItem>
+                                  <SelectItem value="very-hardy">Very Hardy - Survives extreme cold (&lt;-10°C)</SelectItem>
                                   <SelectItem value="hardy">Hardy - Tolerates normal frosts (-10 to -5°C)</SelectItem>
                                   <SelectItem value="half-hardy">Half Hardy - Survives light frost (-5 to 0°C)</SelectItem>
-                                  <SelectItem value="tender">Tender - No frost tolerance (>0°C)</SelectItem>
+                                  <SelectItem value="tender">Tender - No frost tolerance (&gt;0°C)</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormDescription className="text-xs">
