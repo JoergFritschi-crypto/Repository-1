@@ -56,12 +56,12 @@ export class RunwareImageGenerator {
     // Get botanically accurate description
     const botanicalDescription = this.getBotanicalDetails(request.plantName);
     
-    // Create botanically accurate prompt with specific characteristics
-    const botanicalPrompt = `photorealistic botanical specimen of ${botanicalDescription}, ${
-      request.imageType === 'full' ? 'full plant specimen showing growth habit and structure in natural garden environment' :
-      request.imageType === 'detail' ? 'macro close-up showing detailed botanical features, leaf venation, flower structure, or bark texture' :
-      'botanical illustration style centered specimen showing accurate morphology and characteristics'
-    }, scientifically accurate, natural daylight, high detail nature photography, sharp focus, true to species characteristics`;
+    // Create natural garden-focused prompt (avoiding atlas/specimen style)
+    const botanicalPrompt = `beautiful ${botanicalDescription} growing naturally in garden setting, ${
+      request.imageType === 'full' ? 'entire plant or tree in landscaped garden, showing natural growth habit, garden path visible, other plants nearby, outdoor natural environment' :
+      request.imageType === 'detail' ? 'close-up of living flowers and leaves on the plant, natural garden background, soft bokeh, morning dew' :
+      'healthy plant portrait in garden bed, natural outdoor lighting, mulch and soil visible, garden setting'
+    }, photorealistic garden photography, natural colors, no white background, living plant in real garden environment`;
     
     try {
       // Runware API requires taskUUID for each request
@@ -77,16 +77,15 @@ export class RunwareImageGenerator {
           taskType: "imageInference",
           taskUUID: taskUUID,
           positivePrompt: botanicalPrompt,
-          model: "runware:101@1",  // FLUX.1 [dev] - Better for realistic botanical results
-          // Note: We're using FLUX.1 [dev] which produces more realistic results than SDXL
-          // If you want to try other models:
-          // "runware:100@1" - Standard SDXL
-          // "civitai:288982@324619" - Realistic Vision (photorealistic model)
-          // Search CivitAI for specific botanical models and use their AIR ID
+          model: "runware:100@1",  // FLUX Schnell - Fast & natural garden imagery
+          // FLUX Schnell is optimized for natural, garden-style botanical images
+          // rather than atlas/specimen style with white backgrounds
           numberOfImages: 1,
           height: 768,
           width: 768,
-          outputFormat: "PNG"
+          outputFormat: "PNG",
+          steps: 4,  // FLUX Schnell works best with 1-4 steps
+          CFGScale: 3.5  // Lower CFG for more natural results
         }])
       });
       
