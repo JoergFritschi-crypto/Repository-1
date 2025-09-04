@@ -1361,10 +1361,11 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       ? `${coordinates.latitude},${coordinates.longitude}`
       : location;
     
-    // Get full 5 years of continuous historical data for accurate climate analysis
+    // Get 3 years of continuous historical data for accurate climate analysis
+    // This balances accuracy with API rate limits
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 5); // 5 years of continuous data
+    startDate.setFullYear(endDate.getFullYear() - 3); // 3 years of continuous data
     
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
@@ -1374,6 +1375,10 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
     );
     
     if (!response.ok) {
+      if (response.status === 429) {
+        console.log("Visual Crossing API rate limit hit. Please wait a moment and try again.");
+        throw new Error(`API rate limit reached. Please wait 60 seconds and try again.`);
+      }
       throw new Error(`Visual Crossing API error: ${response.status}`);
     }
     
