@@ -183,15 +183,36 @@ export default function GardenProperties() {
       <Navigation />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Header - Compact */}
+        {/* Progress Header - Compact with Flower Band */}
         <div className="mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <h1 className="text-2xl font-serif font-semibold text-[#004025]" data-testid="text-garden-setup-title">
-              Garden Setup
-            </h1>
-            <span className="text-xs font-medium px-2 py-1 bg-[#004025]/10 text-[#004025] rounded-md border border-[#004025]" data-testid="text-step-counter">
-              Step {currentStep} of 7
-            </span>
+          {/* Flower Band Background */}
+          <div 
+            className="relative overflow-hidden rounded-lg mb-4 shadow-sm border-2 border-[#004025]"
+            style={{
+              backgroundImage: `url(${
+                currentStep === 1 ? flowerBand1 :
+                currentStep === 2 ? flowerBand2 :
+                currentStep === 3 ? flowerBand3 :
+                currentStep === 4 ? flowerBand4 :
+                currentStep === 5 ? flowerBand5 :
+                currentStep === 6 ? flowerBand6 :
+                flowerBand7
+              })`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'repeat-x',
+              height: '100px'
+            }}
+          >
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />
+            <div className="relative z-10 flex justify-between items-center h-full px-6">
+              <h1 className="text-3xl font-serif font-semibold text-[#004025]" data-testid="text-garden-setup-title">
+                Garden Setup
+              </h1>
+              <span className="text-sm font-medium px-3 py-1.5 bg-white/80 text-[#004025] rounded-md border-2 border-[#004025]" data-testid="text-step-counter">
+                Step {currentStep} of 7
+              </span>
+            </div>
           </div>
           <ProgressBar value={progress} className="mb-3 h-1.5 border border-[#004025]" data-testid="progress-bar" />
           <div className="flex justify-between items-center">
@@ -225,17 +246,8 @@ export default function GardenProperties() {
             {currentStep === 1 && (
               <div className="space-y-4">
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-location-units">
-                  <CardHeader 
-                    className="relative overflow-hidden h-[60px] py-4"
-                    style={{
-                      backgroundImage: `url(${flowerBand1})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center center',
-                      backgroundRepeat: 'repeat-x'
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
-                    <CardTitle className="relative z-10 flex items-center text-lg">
+                  <CardHeader className="py-4">
+                    <CardTitle className="flex items-center text-lg">
                       <MapPin className="w-4 h-4 mr-2 text-[#004025]" />
                       Garden Setup & Location
                     </CardTitle>
@@ -379,17 +391,8 @@ export default function GardenProperties() {
             {/* Step 2: Garden Shape */}
             {currentStep === 2 && (
               <Card className="garden-card-frame" data-testid="step-garden-shape">
-                <CardHeader 
-                  className="relative overflow-hidden h-[60px]"
-                  style={{
-                    backgroundImage: `url(${flowerBand2})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    backgroundRepeat: 'repeat-x'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
-                  <CardTitle className="relative z-10">Garden Shape & Dimensions</CardTitle>
+                <CardHeader>
+                  <CardTitle>Garden Shape & Dimensions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ShapeSelector
@@ -406,17 +409,8 @@ export default function GardenProperties() {
             {/* Step 3: Slope & Direction */}
             {currentStep === 3 && (
               <Card className="garden-card-frame" data-testid="step-slope-direction">
-                <CardHeader 
-                  className="relative overflow-hidden h-[60px]"
-                  style={{
-                    backgroundImage: `url(${flowerBand3})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    backgroundRepeat: 'repeat-x'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
-                  <CardTitle className="relative z-10">Slope & Cardinal Direction</CardTitle>
+                <CardHeader>
+                  <CardTitle>Slope & Cardinal Direction</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <FormField
@@ -479,17 +473,8 @@ export default function GardenProperties() {
             {/* Step 4: Interactive Canvas */}
             {currentStep === 4 && (
               <Card className="garden-card-frame" data-testid="step-interactive-canvas">
-                <CardHeader 
-                  className="relative overflow-hidden h-[60px]"
-                  style={{
-                    backgroundImage: `url(${flowerBand4})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    backgroundRepeat: 'repeat-x'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
-                  <CardTitle className="relative z-10">Garden Layout Canvas</CardTitle>
+                <CardHeader>
+                  <CardTitle>Garden Layout Canvas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <InteractiveCanvas
@@ -504,17 +489,8 @@ export default function GardenProperties() {
             {/* Step 5: Design Approach */}
             {currentStep === 5 && (
               <Card className="garden-card-frame" data-testid="step-design-approach">
-                <CardHeader 
-                  className="relative overflow-hidden h-[60px]"
-                  style={{
-                    backgroundImage: `url(${flowerBand5})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    backgroundRepeat: 'repeat-x'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
-                  <CardTitle className="relative z-10">Garden Design Approach</CardTitle>
+                <CardHeader>
+                  <CardTitle>Garden Design Approach</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <FormField
@@ -575,17 +551,8 @@ export default function GardenProperties() {
             {/* Step 6: Sun & Soil */}
             {currentStep === 6 && (
               <Card className="garden-card-frame" data-testid="step-sun-soil">
-                <CardHeader 
-                  className="relative overflow-hidden h-[60px]"
-                  style={{
-                    backgroundImage: `url(${flowerBand6})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    backgroundRepeat: 'repeat-x'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
-                  <CardTitle className="relative z-10">Sun Exposure & Soil Properties</CardTitle>
+                <CardHeader>
+                  <CardTitle>Sun Exposure & Soil Properties</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <FormField
@@ -671,17 +638,8 @@ export default function GardenProperties() {
             {/* Step 7: Plant Preferences */}
             {currentStep === 7 && (
               <Card className="garden-card-frame" data-testid="step-plant-preferences">
-                <CardHeader 
-                  className="relative overflow-hidden h-[60px]"
-                  style={{
-                    backgroundImage: `url(${flowerBand7})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    backgroundRepeat: 'repeat-x'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
-                  <CardTitle className="relative z-10">Plant Preferences</CardTitle>
+                <CardHeader>
+                  <CardTitle>Plant Preferences</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <div>
