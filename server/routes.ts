@@ -1346,7 +1346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 function isClimateDataStale(lastUpdated: Date): boolean {
   const now = new Date();
   const daysSinceUpdate = Math.floor((now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24));
-  return daysSinceUpdate > 30; // Update every 30 days
+  return daysSinceUpdate > 180; // Update every 6 months since we use 10-year averages
 }
 
 async function fetchClimateDataWithCoordinates(location: string, coordinates?: { latitude: number; longitude: number } | null): Promise<any> {
@@ -1361,10 +1361,11 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       ? `${coordinates.latitude},${coordinates.longitude}`
       : location;
     
-    // Get historical data for the past year to calculate accurate climate zones
+    // Get historical data for the past 10 years to calculate accurate climate zones
+    // This provides proper long-term averages for hardiness zones
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 1);
+    startDate.setFullYear(endDate.getFullYear() - 10); // 10 years of historical data
     
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
