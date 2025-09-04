@@ -234,7 +234,7 @@ export default function GardenProperties() {
                       backgroundRepeat: 'repeat-x'
                     }}
                   >
-                    <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
                     <CardTitle className="relative z-10 flex items-center text-lg">
                       <MapPin className="w-4 h-4 mr-2 text-[#004025]" />
                       Garden Setup & Location
