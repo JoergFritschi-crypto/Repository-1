@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -111,10 +111,25 @@ export default function GardenProperties() {
   // Combine location fields for API
   const combinedLocation = `${watchedCity || ''} ${watchedCountry || ''} ${watchedZipCode || ''}`.trim();
 
-  // Fetch climate data when location changes
+  // Debounced location state to prevent excessive API calls
+  const [debouncedLocation, setDebouncedLocation] = useState("");
+
+  // Debounce location changes to only call API after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const location = combinedLocation || watchedLocation || '';
+      if (location.length > 3) {
+        setDebouncedLocation(location);
+      }
+    }, 800); // Wait 800ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [combinedLocation, watchedLocation]);
+
+  // Fetch climate data when debounced location changes
   const { data: climateData, isLoading: climateLoading } = useQuery({
-    queryKey: ["/api/climate", combinedLocation || watchedLocation],
-    enabled: !!(combinedLocation || watchedLocation) && ((combinedLocation || watchedLocation) || '').length > 3,
+    queryKey: ["/api/climate", debouncedLocation],
+    enabled: debouncedLocation.length > 3,
   });
 
   const createGardenMutation = useMutation({

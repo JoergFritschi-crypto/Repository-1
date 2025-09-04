@@ -1365,7 +1365,7 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
     // This balances accuracy with API rate limits
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 3); // 3 years of continuous data
+    startDate.setFullYear(endDate.getFullYear() - 5); // 5 years of data (Professional plan)
     
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
