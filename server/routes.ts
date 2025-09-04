@@ -1361,8 +1361,16 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       ? `${coordinates.latitude},${coordinates.longitude}`
       : location;
     
+    // Get historical data for the past year to calculate accurate climate zones
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setFullYear(endDate.getFullYear() - 1);
+    
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    
     const response = await fetch(
-      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
+      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}/${startDateStr}/${endDateStr}?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
     );
     
     if (!response.ok) {
