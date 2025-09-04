@@ -55,8 +55,8 @@ export function CompactPlantCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const { toast } = useToast();
 
-  const primaryImage = plant.full_image || plant.thumbnail_image;
-  const secondaryImage = plant.detail_image || plant.thumbnail_image;
+  const primaryImage = plant.fullImage || plant.thumbnailImage;
+  const secondaryImage = plant.detailImage || plant.thumbnailImage;
 
   const addToCollectionMutation = useMutation({
     mutationFn: async (data: { plantId: string; notes?: string }) => {
@@ -66,7 +66,7 @@ export function CompactPlantCard({
     onSuccess: () => {
       toast({
         title: "Added to Collection",
-        description: `${plant.common_name} has been added to your garden!`,
+        description: `${plant.commonName} has been added to your garden!`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
       setShowAddDialog(false);
@@ -80,7 +80,7 @@ export function CompactPlantCard({
     onSuccess: () => {
       toast({
         title: "Removed",
-        description: `${plant.common_name} removed from collection.`,
+        description: `${plant.commonName} removed from collection.`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
     }
@@ -105,7 +105,7 @@ export function CompactPlantCard({
           {primaryImage ? (
             <img 
               src={primaryImage}
-              alt={plant.common_name}
+              alt={plant.commonName}
               className={`w-full h-full object-cover ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity`}
               onLoad={() => setImageLoaded(true)}
             />
@@ -140,10 +140,10 @@ export function CompactPlantCard({
           {/* Plant name and essential info */}
           <div>
             <h3 className="font-semibold text-sm leading-tight">
-              {plant.scientific_name || 'Unknown Species'}
+              {plant.scientificName || 'Unknown Species'}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {plant.common_name || 'Unknown Plant'}
+              {plant.commonName || 'Unknown Plant'}
             </p>
             
             {/* Quick info in one line */}
@@ -157,7 +157,7 @@ export function CompactPlantCard({
                   Z{plant.hardiness}
                 </span>
               )}
-              {plant.poisonous_to_pets === 0 && (
+              {plant.poisonousToPets === 0 && (
                 <Shield className="w-3 h-3 text-green-500" />
               )}
               {plant.type && (
@@ -212,21 +212,21 @@ export function CompactPlantCard({
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">{plant.scientific_name}</h4>
-                <p className="text-sm text-muted-foreground">{plant.common_name}</p>
+                <h4 className="font-medium mb-2">{plant.scientificName}</h4>
+                <p className="text-sm text-muted-foreground">{plant.commonName}</p>
               </div>
               
-              {plant.verification_status && (
+              {plant.verificationStatus && (
                 <Badge variant={
-                  plant.verification_status === 'verified' ? 'default' : 
-                  plant.verification_status === 'pending' ? 'outline' : 'destructive'
+                  plant.verificationStatus === 'verified' ? 'default' : 
+                  plant.verificationStatus === 'pending' ? 'outline' : 'destructive'
                 }>
-                  Status: {plant.verification_status}
+                  Status: {plant.verificationStatus}
                 </Badge>
               )}
 
               <div className="grid grid-cols-2 gap-2">
-                {plant.verification_status === 'pending' && (
+                {plant.verificationStatus === 'pending' && (
                   <>
                     <Button onClick={onVerify} className="w-full">
                       <Check className="w-4 h-4 mr-1" />
@@ -238,7 +238,7 @@ export function CompactPlantCard({
                     </Button>
                   </>
                 )}
-                {plant.verification_status === 'verified' && (
+                {plant.verificationStatus === 'verified' && (
                   <>
                     <Button onClick={onEdit} variant="outline" className="w-full">
                       <Edit className="w-4 h-4 mr-1" />
@@ -247,10 +247,10 @@ export function CompactPlantCard({
                     <Button 
                       onClick={onGenerateImages}
                       variant="outline"
-                      disabled={plant.image_generation_status === "generating"}
+                      disabled={plant.imageGenerationStatus === "generating"}
                       className="w-full"
                     >
-                      {plant.image_generation_status === "generating" ? (
+                      {plant.imageGenerationStatus === "generating" ? (
                         <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating</>
                       ) : (
                         <><ImageIcon className="w-4 h-4 mr-1" /> Generate</>
@@ -265,9 +265,9 @@ export function CompactPlantCard({
                 Delete Plant
               </Button>
 
-              {plant.data_source && (
+              {plant.dataSource && (
                 <p className="text-xs text-muted-foreground text-center">
-                  Source: {plant.data_source} {plant.perenual_id && `#${plant.perenual_id}`}
+                  Source: {plant.dataSource} {plant.perenualId && `#${plant.perenualId}`}
                 </p>
               )}
             </div>
@@ -280,9 +280,9 @@ export function CompactPlantCard({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {plant.scientific_name || 'Unknown Species'}
+              {plant.scientificName || 'Unknown Species'}
               <span className="text-sm font-normal text-muted-foreground block">
-                {plant.common_name || 'Unknown Plant'}
+                {plant.commonName || 'Unknown Plant'}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -293,14 +293,14 @@ export function CompactPlantCard({
                 {primaryImage && (
                   <img 
                     src={primaryImage}
-                    alt={plant.common_name}
+                    alt={plant.commonName}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                 )}
                 {secondaryImage && secondaryImage !== primaryImage && (
                   <img 
                     src={secondaryImage}
-                    alt={`${plant.common_name} detail`}
+                    alt={`${plant.commonName} detail`}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                 )}
@@ -347,25 +347,25 @@ export function CompactPlantCard({
                     plant.dimension}</span>
                 </div>
               )}
-              {plant.flowering_season && (
+              {plant.floweringSeason && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Bloom:</span>
-                  <span>{plant.flowering_season}</span>
+                  <span>{plant.floweringSeason}</span>
                 </div>
               )}
-              {plant.flower_color && (
+              {plant.flowerColor && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Flowers:</span>
-                  <span>{Array.isArray(plant.flower_color) ? plant.flower_color.join(', ') : plant.flower_color}</span>
+                  <span>{Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor}</span>
                 </div>
               )}
             </div>
             
             {/* Features */}
             <div className="flex flex-wrap gap-1">
-              {plant.poisonous_to_pets === 0 && <Badge variant="outline" className="text-xs">Pet Safe</Badge>}
-              {plant.drought_tolerant && <Badge variant="outline" className="text-xs">Drought Tolerant</Badge>}
-              {plant.salt_tolerant && <Badge variant="outline" className="text-xs">Salt Tolerant</Badge>}
+              {plant.poisonousToPets === 0 && <Badge variant="outline" className="text-xs">Pet Safe</Badge>}
+              {plant.droughtTolerant && <Badge variant="outline" className="text-xs">Drought Tolerant</Badge>}
+              {plant.saltTolerant && <Badge variant="outline" className="text-xs">Salt Tolerant</Badge>}
               {plant.medicinal && <Badge variant="outline" className="text-xs">Medicinal</Badge>}
               {plant.cuisine && <Badge variant="outline" className="text-xs">Culinary</Badge>}
               {plant.attracts && Array.isArray(plant.attracts) && plant.attracts.length > 0 && 
@@ -390,7 +390,7 @@ export function CompactPlantCard({
             <DialogTitle>Add to Garden</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p>Add <strong>{plant.common_name}</strong> to your collection?</p>
+            <p>Add <strong>{plant.commonName}</strong> to your collection?</p>
             <div>
               <label className="block text-sm font-medium mb-2">Notes (optional)</label>
               <Textarea

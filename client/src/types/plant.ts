@@ -1,8 +1,8 @@
 export interface Plant {
   id: string;
-  perenual_id?: string;
-  scientific_name: string;
-  common_name: string;
+  perenualId?: string;
+  scientificName: string;
+  commonName: string;
   family?: string;
   genus?: string;
   species?: string;
@@ -12,39 +12,39 @@ export interface Plant {
   sunlight?: any; // Can be array or string from JSON column
   soil?: any; // JSON array
   watering?: string;
-  watering_general_benchmark?: any;
+  wateringGeneralBenchmark?: any;
   dimension?: any; // JSON object with height/spread
   cycle?: string;
-  growth_rate?: string;
-  flowering_season?: string;
-  flower_color?: any; // JSON array
+  growthRate?: string;
+  floweringSeason?: string;
+  flowerColor?: any; // JSON array
   leaf?: any; // JSON object
-  leaf_color?: any; // JSON array
-  drought_tolerant?: boolean;
-  salt_tolerant?: boolean;
+  leafColor?: any; // JSON array
+  droughtTolerant?: boolean;
+  saltTolerant?: boolean;
   thorny?: boolean;
   tropical?: boolean;
   medicinal?: boolean;
   cuisine?: boolean;
-  poisonous_to_humans?: number;
-  poisonous_to_pets?: number;
+  poisonousToHumans?: number;
+  poisonousToPets?: number;
   attracts?: any; // JSON array
   propagation?: any; // JSON array
-  pruning_month?: any; // JSON array
-  pest_susceptibility?: any; // JSON array
-  care_level?: string;
+  pruningMonth?: any; // JSON array
+  pestSusceptibility?: any; // JSON array
+  careLevel?: string;
   maintenance?: string;
   description?: string;
-  care_guides?: string;
-  generated_image_url?: string;
-  thumbnail_image?: string;
-  full_image?: string;
-  detail_image?: string;
-  image_generation_status?: string;
-  data_source?: string;
-  verification_status?: 'pending' | 'verified' | 'rejected';
-  created_at?: string;
-  updated_at?: string;
+  careGuides?: string;
+  generatedImageUrl?: string;
+  thumbnailImage?: string;
+  fullImage?: string;
+  detailImage?: string;
+  imageGenerationStatus?: string;
+  dataSource?: string;
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface PlantSearchFilters {

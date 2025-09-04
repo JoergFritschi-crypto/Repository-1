@@ -235,7 +235,7 @@ export default function PlantLibrary() {
                       </Card>
                     ))}
                   </div>
-                ) : plants && plants.length > 0 ? (
+                ) : plants && Array.isArray(plants) && plants.length > 0 ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {plants.map((plant: Plant) => (
                       <CompactPlantCard
@@ -273,7 +273,7 @@ export default function PlantLibrary() {
                     <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                     <p className="text-muted-foreground">Loading your collection...</p>
                   </div>
-                ) : myCollection && myCollection.length > 0 ? (
+                ) : myCollection && Array.isArray(myCollection) && myCollection.length > 0 ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {myCollection.map((item: any) => (
                       <CompactPlantCard
