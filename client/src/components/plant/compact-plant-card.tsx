@@ -149,9 +149,9 @@ export function CompactPlantCard({
 
   return (
     <>
-      <Card className="group overflow-hidden hover:shadow-lg transition-shadow relative h-[380px] flex flex-col">
+      <Card className="group overflow-hidden hover:shadow-lg transition-shadow relative h-[460px] flex flex-col">
         {/* Image section */}
-        <div className="relative h-60 bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
+        <div className="relative h-80 bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
           {primaryImage ? (
             <img 
               src={primaryImage}
