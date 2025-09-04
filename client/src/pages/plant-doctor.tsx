@@ -22,13 +22,13 @@ import {
 } from "lucide-react";
 
 export default function PlantDoctor() {
-  const [activeService, setActiveService] = useState("identification");
+  const [activeService, setActiveService] = useState<"identification" | "disease" | "weed">("identification");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [additionalNotes, setAdditionalNotes] = useState("");
   const { toast } = useToast();
 
-  const { data: sessions, isLoading: sessionsLoading } = useQuery({
+  const { data: sessions = [], isLoading: sessionsLoading } = useQuery<any[]>({
     queryKey: ["/api/plant-doctor/sessions"],
   });
 
@@ -136,7 +136,7 @@ export default function PlantDoctor() {
                 <CardTitle className="text-lg">Select Service</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 pt-0">
-                {Object.entries(serviceConfig).map(([key, config]) => {
+                {(Object.entries(serviceConfig) as [keyof typeof serviceConfig, typeof serviceConfig[keyof typeof serviceConfig]][]).map(([key, config]) => {
                   const Icon = config.icon;
                   return (
                     <div
@@ -305,7 +305,7 @@ export default function PlantDoctor() {
                           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                           <p className="text-muted-foreground">Loading your analysis history...</p>
                         </div>
-                      ) : sessions && sessions.length > 0 ? (
+                      ) : sessions && (sessions as any[]).length > 0 ? (
                         <div className="space-y-4">
                           {sessions.slice(0, 5).map((session: any) => (
                             <div key={session.id} className="border-2 border-[#004025]/30 rounded-lg p-3 hover:border-[#004025] transition-all" data-testid={`session-${session.id}`}>

@@ -95,7 +95,7 @@ export default function GardenProperties() {
   // Fetch climate data when location changes
   const { data: climateData, isLoading: climateLoading } = useQuery({
     queryKey: ["/api/climate", combinedLocation || watchedLocation],
-    enabled: !!(combinedLocation || watchedLocation) && (combinedLocation || watchedLocation).length > 3,
+    enabled: !!(combinedLocation || watchedLocation) && ((combinedLocation || watchedLocation) || '').length > 3,
   });
 
   const createGardenMutation = useMutation({
@@ -337,7 +337,7 @@ export default function GardenProperties() {
                     <CardContent>
                       <ClimateReport
                         location={combinedLocation}
-                        climateData={climateData}
+                        climateData={climateData as any}
                         isLoading={climateLoading}
                       />
                     </CardContent>
@@ -357,8 +357,8 @@ export default function GardenProperties() {
                     shape={form.watch("shape")}
                     dimensions={form.watch("dimensions")}
                     units={form.watch("units")}
-                    onShapeChange={(shape) => form.setValue("shape", shape)}
-                    onDimensionsChange={(dimensions) => form.setValue("dimensions", dimensions)}
+                    onShapeChange={(shape) => form.setValue("shape", shape as any)}
+                    onDimensionsChange={(dimensions) => form.setValue("dimensions", dimensions as any)}
                   />
                 </CardContent>
               </Card>

@@ -32,7 +32,7 @@ export default function PlantLibrary() {
     },
   });
 
-  const { data: myCollection, isLoading: collectionLoading } = useQuery({
+  const { data: myCollection = [], isLoading: collectionLoading } = useQuery<any[]>({
     queryKey: ["/api/my-collection"],
   });
 
