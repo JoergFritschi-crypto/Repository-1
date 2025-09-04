@@ -53,6 +53,7 @@ export interface IStorage {
   updatePlant(id: string, plant: Partial<InsertPlant>): Promise<Plant>;
   getPendingPlants(): Promise<Plant[]>;
   verifyPlant(id: string): Promise<Plant>;
+  deletePlant(id: string): Promise<void>;
   
   // User plant collection operations
   getUserPlantCollection(userId: string): Promise<UserPlantCollection[]>;
@@ -228,6 +229,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(plants.id, id))
       .returning();
     return verifiedPlant;
+  }
+
+  async deletePlant(id: string): Promise<void> {
+    await db.delete(plants).where(eq(plants.id, id));
   }
 
   // User plant collection operations

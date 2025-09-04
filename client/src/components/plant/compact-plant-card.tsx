@@ -149,7 +149,7 @@ export function CompactPlantCard({
 
   return (
     <>
-      <Card className="group overflow-hidden hover:shadow-lg transition-shadow relative">
+      <Card className="group overflow-hidden hover:shadow-lg transition-shadow relative h-[320px] flex flex-col">
         {/* Image section */}
         <div className="relative h-48 bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
           {primaryImage ? (
@@ -186,18 +186,18 @@ export function CompactPlantCard({
         </div>
 
         {/* Info section */}
-        <div className="p-3 space-y-2">
+        <div className="flex-1 p-3 flex flex-col">
           {/* Plant names - centered */}
-          <div className="text-center">
-            <h3 className="font-semibold text-sm leading-snug break-words">
+          <div className="text-center mb-2">
+            <h3 className="font-semibold text-sm leading-snug line-clamp-1">
               {plant.scientificName || 'Unknown Species'}
             </h3>
-            <p className="text-xs text-muted-foreground break-words">
+            <p className="text-xs text-muted-foreground line-clamp-1">
               {plant.commonName || 'Unknown Plant'}
             </p>
             
             {/* Quick info - centered */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 flex-1">
               {getSunIcon()}
               {plant.watering && (
                 <div className="flex items-center gap-0.5">
@@ -232,8 +232,8 @@ export function CompactPlantCard({
             </div>
           </div>
           
-          {/* Action buttons - compact */}
-          <div className="flex gap-1">
+          {/* Action buttons - compact, always at bottom */}
+          <div className="flex gap-1 mt-auto">
             <Button
               size="sm"
               variant="outline"

@@ -136,6 +136,28 @@ export default function Admin() {
     );
   }
 
+  const deletePlantMutation = useMutation({
+    mutationFn: async (plantId: string) => {
+      const response = await apiRequest("DELETE", `/api/admin/plants/${plantId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Plant Deleted",
+        description: "Plant has been removed from the database.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/plants/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/plants/search"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete plant.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const adminTabs = [
     { id: "plants", label: "Plant Database", icon: Database },
     { id: "image-gen", label: "Image Generation", icon: ImageIcon },
@@ -282,9 +304,14 @@ export default function Admin() {
                                 plant={plant}
                                 isAdmin={true}
                                 onVerify={() => verifyPlantMutation.mutate(plant.id)}
-                                onReject={() => console.log('Reject plant:', plant.id)}
-                                onEdit={() => console.log('Edit plant:', plant.id)}
-                                onDelete={() => console.log('Delete plant:', plant.id)}
+                                onReject={() => deletePlantMutation.mutate(plant.id)}
+                                onEdit={() => {
+                                  toast({
+                                    title: "Edit Feature",
+                                    description: "Plant editing feature coming soon.",
+                                  });
+                                }}
+                                onDelete={() => deletePlantMutation.mutate(plant.id)}
                                 onGenerateImages={async () => {
                                   try {
                                     const response = await apiRequest('POST', `/api/admin/plants/${plant.id}/generate-images`);
@@ -311,8 +338,13 @@ export default function Admin() {
                                 key={plant.id}
                                 plant={plant}
                                 isAdmin={true}
-                                onEdit={() => console.log('Edit plant:', plant.id)}
-                                onDelete={() => console.log('Delete plant:', plant.id)}
+                                onEdit={() => {
+                                  toast({
+                                    title: "Edit Feature",
+                                    description: "Plant editing feature coming soon.",
+                                  });
+                                }}
+                                onDelete={() => deletePlantMutation.mutate(plant.id)}
                                 onGenerateImages={async () => {
                                   try {
                                     const response = await apiRequest('POST', `/api/admin/plants/${plant.id}/generate-images`);

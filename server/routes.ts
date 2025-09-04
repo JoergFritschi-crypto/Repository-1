@@ -448,6 +448,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/admin/plants/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      // TODO: Add admin role check
+      await storage.deletePlant(req.params.id);
+      res.json({ message: "Plant deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting plant:", error);
+      res.status(500).json({ message: "Failed to delete plant" });
+    }
+  });
+
   // Image generation endpoints
   app.post('/api/admin/plants/:id/generate-images', isAuthenticated, async (req: any, res) => {
     try {
