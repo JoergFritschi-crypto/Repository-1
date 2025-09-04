@@ -714,10 +714,9 @@ export default function GardenProperties() {
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="hover:bg-secondary/10 hover:border-secondary transition-all duration-300"
                 data-testid="button-previous"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
                 Previous
               </Button>
 
@@ -725,7 +724,7 @@ export default function GardenProperties() {
                 type={currentStep === 7 ? "submit" : "button"}
                 onClick={currentStep < 7 ? nextStep : undefined}
                 disabled={createGardenMutation.isPending}
-                className={currentStep === 7 ? "btn-gold shadow-lg hover:shadow-xl" : "bg-primary hover:bg-primary/90 transition-all duration-300"}
+                variant={currentStep === 7 ? "default" : "default"}
                 data-testid="button-next-or-create"
               >
                 {createGardenMutation.isPending ? (
@@ -735,7 +734,7 @@ export default function GardenProperties() {
                 ) : (
                   <>
                     Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                   </>
                 )}
               </Button>
