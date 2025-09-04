@@ -14,7 +14,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { APIMonitoring } from "@/components/admin/api-monitoring";
 import { APIKeysManager } from "@/components/admin/api-keys-manager";
 import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
-import { PlantCard } from "@/components/admin/plant-card";
+import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import { ImageGenerationMonitor } from "@/components/admin/image-generation-monitor";
 import { ImageComparisonTool } from "@/components/admin/image-comparison-tool";
 import { 
@@ -277,10 +277,9 @@ export default function Admin() {
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {/* Render pending plants as cards */}
                             {(pendingPlants as any) && (pendingPlants as any).map((plant: any) => (
-                              <PlantCard
+                              <CompactPlantCard
                                 key={plant.id}
                                 plant={plant}
-                                showActions={true}
                                 isAdmin={true}
                                 onVerify={() => verifyPlantMutation.mutate(plant.id)}
                                 onReject={() => console.log('Reject plant:', plant.id)}
@@ -308,10 +307,9 @@ export default function Admin() {
                             
                             {/* Render verified plants as cards */}
                             {(plants as any) && (plants as any).map((plant: any) => (
-                              <PlantCard
+                              <CompactPlantCard
                                 key={plant.id}
                                 plant={plant}
-                                showActions={true}
                                 isAdmin={true}
                                 onEdit={() => console.log('Edit plant:', plant.id)}
                                 onDelete={() => console.log('Delete plant:', plant.id)}

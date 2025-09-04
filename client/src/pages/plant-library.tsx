@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import PlantCard from "@/components/plant/plant-card";
+import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import PlantSearch from "@/components/plant/plant-search";
 import { Sprout, Search, Filter, Heart, Grid, List } from "lucide-react";
 import type { Plant, PlantSearchFilters } from "@/types/plant";
@@ -236,16 +236,12 @@ export default function PlantLibrary() {
                     ))}
                   </div>
                 ) : plants && plants.length > 0 ? (
-                  <div className={viewMode === "grid" 
-                    ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
-                    : "space-y-4"
-                  }>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {plants.map((plant: Plant) => (
-                      <PlantCard
+                      <CompactPlantCard
                         key={plant.id}
                         plant={plant}
-                        viewMode={viewMode}
-                        showActions={true}
+                        isAdmin={false}
                       />
                     ))}
                   </div>
@@ -278,15 +274,13 @@ export default function PlantLibrary() {
                     <p className="text-muted-foreground">Loading your collection...</p>
                   </div>
                 ) : myCollection && myCollection.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {myCollection.map((item: any) => (
-                      <PlantCard
+                      <CompactPlantCard
                         key={item.id}
                         plant={item.plant}
-                        viewMode="grid"
-                        showActions={true}
+                        isAdmin={false}
                         isInCollection={true}
-                        collectionNotes={item.notes}
                       />
                     ))}
                   </div>
