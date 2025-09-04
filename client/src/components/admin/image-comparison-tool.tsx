@@ -29,7 +29,7 @@ export function ImageComparisonTool() {
   
   const plants = ["Japanese Maple", "English Lavender", "Hosta"];
   const approaches = ["garden", "atlas", "hybrid"];
-  const models = ["schnell", "dev"];
+  const models = ["schnell"];
   const imageTypes = ["full", "detail"];
   
   // Load existing images
