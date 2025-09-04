@@ -233,7 +233,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Location:</span>
                   <span className="text-xs">
-                    {climateData.coordinates.latitude.toFixed(4)}, {climateData.coordinates.longitude.toFixed(4)}
+                    {Number(climateData.coordinates.latitude).toFixed(4)}, {Number(climateData.coordinates.longitude).toFixed(4)}
                   </span>
                 </div>
               )}
@@ -241,7 +241,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
             <div className="flex justify-between">
               <span className="text-muted-foreground">Min Winter Temp:</span>
               <span className="font-medium" data-testid="text-min-winter-temp">
-                {climateData.avg_temp_min?.toFixed(1)}°C
+                {climateData.avg_temp_min ? Number(climateData.avg_temp_min).toFixed(1) : 'N/A'}°C
               </span>
             </div>
             <div className="flex justify-between">
@@ -256,7 +256,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
             <div className="flex justify-between">
               <span className="text-muted-foreground">Annual Rainfall:</span>
               <span className="font-medium" data-testid="text-annual-rainfall">
-                {climateData.annual_rainfall?.toFixed(0)}mm
+                {climateData.annual_rainfall ? Number(climateData.annual_rainfall).toFixed(0) : 'N/A'}mm
               </span>
             </div>
             <div className="flex justify-between">
