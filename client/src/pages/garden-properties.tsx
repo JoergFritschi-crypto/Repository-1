@@ -19,6 +19,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import ProgressBar from "@/components/ui/progress-bar";
 import ShapeSelector from "@/components/garden/shape-selector";
 import ClimateReport from "@/components/garden/climate-report";
+import ClimateReportModal from "@/components/garden/climate-report-modal";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
 import { GARDEN_STEPS } from "@/types/garden";
 import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun } from "lucide-react";
@@ -113,6 +114,7 @@ export default function GardenProperties() {
 
   // Manual climate report fetching
   const [shouldFetchClimate, setShouldFetchClimate] = useState(false);
+  const [showClimateModal, setShowClimateModal] = useState(false);
   const locationToFetch = combinedLocation || watchedLocation || '';
 
   // Fetch climate data only when manually triggered
@@ -122,10 +124,19 @@ export default function GardenProperties() {
   });
 
   // Handle manual climate fetch
-  const handleFetchClimate = () => {
+  const handleFetchClimate = async () => {
     if (locationToFetch.length > 3) {
-      setShouldFetchClimate(true);
-      fetchClimate();
+      // If we already have data, just show the modal
+      if (climateData) {
+        setShowClimateModal(true);
+      } else {
+        // Otherwise fetch the data first
+        setShouldFetchClimate(true);
+        const result = await fetchClimate();
+        if (result.data) {
+          setShowClimateModal(true);
+        }
+      }
     }
   };
 
@@ -605,14 +616,10 @@ export default function GardenProperties() {
                             )}
                           </Button>
                           
-                          {/* Show climate report if data is available */}
-                          {climateData && (
-                            <div className="mt-4">
-                              <ClimateReport
-                                location={locationToFetch}
-                                climateData={climateData as any}
-                                isLoading={false}
-                              />
+                          {/* Show success message if report is ready */}
+                          {climateData && !showClimateModal && (
+                            <div className="mt-2 text-sm text-green-600">
+                              ✓ Climate report ready - Click button to view again
                             </div>
                           )}
                         </div>
@@ -1167,6 +1174,14 @@ export default function GardenProperties() {
             </div>
           </form>
         </Form>
+
+        {/* Climate Report Modal */}
+        <ClimateReportModal
+          open={showClimateModal}
+          onClose={() => setShowClimateModal(false)}
+          location={locationToFetch}
+          climateData={climateData}
+        />
       </div>
     </div>
   );

@@ -1388,6 +1388,10 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
     const minTemp = calculateAverageTemp(data.days, 'tempmin');
     const zones = determineHardinessZones(minTemp, coordinates);
     
+    // Calculate the actual years of data we received
+    const years = new Set(data.days.map(day => new Date(day.datetime).getFullYear()));
+    const yearsArray = Array.from(years).sort();
+    
     // Process and structure the climate data
     return {
       usda_zone: zones.usda,
@@ -1401,7 +1405,13 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       growing_season: calculateGrowingSeason(data.days),
       monthly_data: processMonthlyData(data.days),
       gardening_advice: generateGardeningAdvice(zones, data),
-      data_source: 'visual_crossing_with_mapbox'
+      data_source: 'visual_crossing_with_mapbox',
+      data_range: {
+        years_included: yearsArray,
+        total_years: years.size,
+        date_range: `${startDateStr} to ${endDateStr}`,
+        total_days: data.days.length
+      }
     };
   } catch (error) {
     console.error("Error fetching climate data:", error);
