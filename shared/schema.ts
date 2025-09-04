@@ -88,6 +88,9 @@ export const gardens = pgTable("gardens", {
   soilType: soilTypeEnum("soil_type"),
   soilPh: decimal("soil_ph", { precision: 3, scale: 1 }),
   hardiness_zone: varchar("hardiness_zone"),
+  usdaZone: varchar("usda_zone"),
+  rhsZone: varchar("rhs_zone"),
+  hardinessCategory: varchar("hardiness_category"),
   climate_data: jsonb("climate_data"),
   preferences: jsonb("preferences"), // colors, plant types, bloom times, safety requirements
   design_approach: varchar("design_approach").default("ai"), // ai, manual, hybrid

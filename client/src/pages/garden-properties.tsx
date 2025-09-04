@@ -21,7 +21,9 @@ import ShapeSelector from "@/components/garden/shape-selector";
 import ClimateReport from "@/components/garden/climate-report";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
 import { GARDEN_STEPS } from "@/types/garden";
-import { MapPin, ArrowLeft, ArrowRight } from "lucide-react";
+import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FormDescription } from "@/components/ui/form";
 import flowerBand1 from "@/assets/flower-band-1.png";
 import flowerBand2 from "@/assets/flower-band-2.png";
 import flowerBand3 from "@/assets/flower-band-3.png";
@@ -370,11 +372,144 @@ export default function GardenProperties() {
                   </CardContent>
                 </Card>
 
-                {/* Climate Report - moved from Step 5 */}
+                {/* Manual Hardiness Zone Selection */}
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-hardiness-zones">
+                  <CardHeader className="py-4">
+                    <CardTitle className="flex items-center text-lg">
+                      <Thermometer className="w-4 h-4 mr-2 text-[#004025]" />
+                      Hardiness Zone Selection
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-0">
+                    <p className="text-xs text-muted-foreground">
+                      Select your hardiness zone using one of the three systems below. Zones may be auto-filled if you provide location above.
+                    </p>
+                    
+                    {/* Zone Selection Tabs */}
+                    <Tabs defaultValue="usda" className="w-full">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="usda">USDA Zone</TabsTrigger>
+                        <TabsTrigger value="rhs">RHS Rating</TabsTrigger>
+                        <TabsTrigger value="category">Category</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="usda" className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="usdaZone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>USDA Hardiness Zone</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || climateData?.usda_zone}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-usda-zone">
+                                    <SelectValue placeholder="Select your USDA zone" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="3a">Zone 3a (-40 to -37°C)</SelectItem>
+                                  <SelectItem value="3b">Zone 3b (-37 to -34°C)</SelectItem>
+                                  <SelectItem value="4a">Zone 4a (-34 to -32°C)</SelectItem>
+                                  <SelectItem value="4b">Zone 4b (-32 to -29°C)</SelectItem>
+                                  <SelectItem value="5a">Zone 5a (-29 to -26°C)</SelectItem>
+                                  <SelectItem value="5b">Zone 5b (-26 to -23°C)</SelectItem>
+                                  <SelectItem value="6a">Zone 6a (-23 to -21°C)</SelectItem>
+                                  <SelectItem value="6b">Zone 6b (-21 to -18°C)</SelectItem>
+                                  <SelectItem value="7a">Zone 7a (-18 to -15°C)</SelectItem>
+                                  <SelectItem value="7b">Zone 7b (-15 to -12°C)</SelectItem>
+                                  <SelectItem value="8a">Zone 8a (-12 to -9°C)</SelectItem>
+                                  <SelectItem value="8b">Zone 8b (-9 to -7°C)</SelectItem>
+                                  <SelectItem value="9a">Zone 9a (-7 to -4°C)</SelectItem>
+                                  <SelectItem value="9b">Zone 9b (-4 to -1°C)</SelectItem>
+                                  <SelectItem value="10a">Zone 10a (-1 to 2°C)</SelectItem>
+                                  <SelectItem value="10b">Zone 10b (2 to 4°C)</SelectItem>
+                                  <SelectItem value="11a">Zone 11a (4 to 7°C)</SelectItem>
+                                  <SelectItem value="11b">Zone 11b (7 to 10°C)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription className="text-xs">
+                                USDA zones are based on average annual minimum winter temperatures
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="rhs" className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="rhsZone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>RHS Hardiness Rating</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || climateData?.rhs_zone}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-rhs-zone">
+                                    <SelectValue placeholder="Select your RHS rating" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="H7">H7 - Very hardy (< -20°C)</SelectItem>
+                                  <SelectItem value="H6">H6 - Hardy everywhere (-20 to -15°C)</SelectItem>
+                                  <SelectItem value="H5">H5 - Hardy in most places (-15 to -10°C)</SelectItem>
+                                  <SelectItem value="H4">H4 - Hardy through most of UK (-10 to -5°C)</SelectItem>
+                                  <SelectItem value="H3">H3 - Hardy in coastal/mild areas (-5 to 1°C)</SelectItem>
+                                  <SelectItem value="H2">H2 - Tolerant of low temps (1 to 5°C)</SelectItem>
+                                  <SelectItem value="H1c">H1c - Outside in summer (5 to 10°C)</SelectItem>
+                                  <SelectItem value="H1b">H1b - Outside in summer (10 to 15°C)</SelectItem>
+                                  <SelectItem value="H1a">H1a - Under glass all year (>15°C)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription className="text-xs">
+                                RHS ratings are UK-specific hardiness classifications
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="category" className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="hardinessCategory"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Hardiness Category</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || climateData?.hardiness_category}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-hardiness-category">
+                                    <SelectValue placeholder="Select hardiness category" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="very-hardy">Very Hardy - Survives extreme cold (<-10°C)</SelectItem>
+                                  <SelectItem value="hardy">Hardy - Tolerates normal frosts (-10 to -5°C)</SelectItem>
+                                  <SelectItem value="half-hardy">Half Hardy - Survives light frost (-5 to 0°C)</SelectItem>
+                                  <SelectItem value="tender">Tender - No frost tolerance (>0°C)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription className="text-xs">
+                                Simplified 4-tier classification for practical gardening
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+
+                {/* Climate Report - shows when location is provided */}
                 {combinedLocation && (
-                  <Card className="garden-card-frame" data-testid="step-climate-report">
-                    <CardHeader>
-                      <CardTitle>Climate Report & Hardiness Zone</CardTitle>
+                  <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-climate-report">
+                    <CardHeader className="py-4">
+                      <CardTitle className="flex items-center text-lg">
+                        <CloudSun className="w-4 h-4 mr-2 text-[#004025]" />
+                        Detailed Climate Report
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ClimateReport
