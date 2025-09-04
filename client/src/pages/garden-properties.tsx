@@ -336,9 +336,40 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Country</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g., United Kingdom" {...field} data-testid="input-country" />
-                              </FormControl>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-country">
+                                    <SelectValue placeholder="Select your country" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-white border-2 border-[#004025] max-h-60">
+                                  <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                                  <SelectItem value="United States">United States</SelectItem>
+                                  <SelectItem value="Canada">Canada</SelectItem>
+                                  <SelectItem value="Ireland">Ireland</SelectItem>
+                                  <SelectItem value="Australia">Australia</SelectItem>
+                                  <SelectItem value="New Zealand">New Zealand</SelectItem>
+                                  <SelectItem value="Germany">Germany</SelectItem>
+                                  <SelectItem value="France">France</SelectItem>
+                                  <SelectItem value="Netherlands">Netherlands</SelectItem>
+                                  <SelectItem value="Belgium">Belgium</SelectItem>
+                                  <SelectItem value="Switzerland">Switzerland</SelectItem>
+                                  <SelectItem value="Austria">Austria</SelectItem>
+                                  <SelectItem value="Sweden">Sweden</SelectItem>
+                                  <SelectItem value="Norway">Norway</SelectItem>
+                                  <SelectItem value="Denmark">Denmark</SelectItem>
+                                  <SelectItem value="Finland">Finland</SelectItem>
+                                  <SelectItem value="Spain">Spain</SelectItem>
+                                  <SelectItem value="Portugal">Portugal</SelectItem>
+                                  <SelectItem value="Italy">Italy</SelectItem>
+                                  <SelectItem value="Poland">Poland</SelectItem>
+                                  <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                                  <SelectItem value="Japan">Japan</SelectItem>
+                                  <SelectItem value="South Africa">South Africa</SelectItem>
+                                  <SelectItem value="India">India</SelectItem>
+                                  <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
