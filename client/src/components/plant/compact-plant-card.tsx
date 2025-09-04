@@ -71,6 +71,23 @@ function getHardinessBadgeColor(category: string | null): string {
   }
 }
 
+// Get flower color class
+function getFlowerColorClass(color: string): string {
+  const colorLower = color?.toLowerCase() || '';
+  
+  if (colorLower.includes('purple') || colorLower.includes('violet')) return 'bg-purple-500';
+  if (colorLower.includes('blue')) return 'bg-blue-500';
+  if (colorLower.includes('pink')) return 'bg-pink-500';
+  if (colorLower.includes('red')) return 'bg-red-500';
+  if (colorLower.includes('orange')) return 'bg-orange-500';
+  if (colorLower.includes('yellow') || colorLower.includes('gold')) return 'bg-yellow-500';
+  if (colorLower.includes('white')) return 'bg-white';
+  if (colorLower.includes('lavender')) return 'bg-purple-300';
+  if (colorLower.includes('green')) return 'bg-green-500';
+  
+  return 'bg-gray-400';
+}
+
 export function CompactPlantCard({ 
   plant,
   isAdmin = false,
@@ -148,12 +165,12 @@ export function CompactPlantCard({
             </div>
           )}
           
-          {/* Admin button - only visible in admin mode */}
+          {/* Admin button - always visible in admin mode */}
           {isAdmin && (
             <Button
               size="sm"
               variant="secondary"
-              className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-2 right-2 h-7 w-7 p-0 bg-white/80 hover:bg-white shadow-sm"
               onClick={() => setShowAdminDialog(true)}
             >
               <Settings className="w-4 h-4" />
@@ -170,8 +187,8 @@ export function CompactPlantCard({
 
         {/* Info section */}
         <div className="p-3 space-y-2">
-          {/* Plant names */}
-          <div>
+          {/* Plant names - centered */}
+          <div className="text-center">
             <h3 className="font-semibold text-sm leading-snug break-words">
               {plant.scientificName || 'Unknown Species'}
             </h3>
@@ -179,8 +196,8 @@ export function CompactPlantCard({
               {plant.commonName || 'Unknown Plant'}
             </p>
             
-            {/* Quick info */}
-            <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+            {/* Quick info - centered */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
               {getSunIcon()}
               {plant.watering && (
                 <div className="flex items-center gap-0.5">
@@ -192,6 +209,14 @@ export function CompactPlantCard({
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getHardinessBadgeColor(getHardinessCategory(plant.hardiness))}`}>
                   {getHardinessCategory(plant.hardiness)}
                 </span>
+              )}
+              {plant.flowerColor && Array.isArray(plant.flowerColor) && plant.flowerColor.length > 0 && (
+                <div className="flex items-center gap-0.5">
+                  <div className={`w-3 h-3 rounded-full border border-gray-300 ${getFlowerColorClass(plant.flowerColor[0])}`} />
+                  <span className="text-[10px] text-muted-foreground capitalize">
+                    {plant.flowerColor[0]}
+                  </span>
+                </div>
               )}
               {plant.poisonousToPets === 0 && (
                 <div className="flex items-center gap-0.5">
@@ -207,34 +232,34 @@ export function CompactPlantCard({
             </div>
           </div>
           
-          {/* Action buttons */}
-          <div className="flex gap-1.5">
+          {/* Action buttons - compact */}
+          <div className="flex gap-1">
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 h-8 text-xs"
+              className="flex-1 h-6 text-[10px] px-2"
               onClick={() => setShowDetailsDialog(true)}
             >
-              <Eye className="w-3 h-3 mr-1" />
+              <Eye className="w-3 h-3 mr-0.5" />
               Details
             </Button>
             {!isInCollection ? (
               <Button
                 size="sm"
-                className="flex-1 h-8 text-xs"
+                className="flex-1 h-6 text-[10px] px-2"
                 onClick={() => setShowAddDialog(true)}
               >
-                <Plus className="w-3 h-3 mr-1" />
+                <Plus className="w-3 h-3 mr-0.5" />
                 Add
               </Button>
             ) : (
               <Button
                 size="sm"
                 variant="destructive"
-                className="flex-1 h-8 text-xs"
+                className="flex-1 h-6 text-[10px] px-2"
                 onClick={() => removeFromCollectionMutation.mutate(plant.id)}
               >
-                <Heart className="w-3 h-3 mr-1 fill-current" />
+                <Heart className="w-3 h-3 mr-0.5 fill-current" />
                 Remove
               </Button>
             )}
