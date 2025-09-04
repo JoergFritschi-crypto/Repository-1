@@ -147,6 +147,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Climate data not available for this location" });
       }
 
+      // Add debug logging
+      console.log("Sending climate response with zones:", {
+        usda: climateData?.usda_zone,
+        rhs: climateData?.rhs_zone,
+        category: climateData?.hardiness_category
+      });
+      
       res.json({
         ...climateData,
         coordinates,
@@ -1384,13 +1391,21 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
     
     const data = await response.json();
     
-    // Calculate accurate hardiness zones based on temperature data
-    const minTemp = calculateAverageTemp(data.days, 'tempmin');
+    // Calculate accurate hardiness zones based on coldest winter temperatures
+    const minTemp = calculateColdestWinterTemp(data.days);
     const zones = determineHardinessZones(minTemp, coordinates);
     
     // Calculate the actual years of data we received
     const years = new Set(data.days.map(day => new Date(day.datetime).getFullYear()));
     const yearsArray = Array.from(years).sort();
+    
+    // Debug log to check data structure
+    console.log("Climate data summary:", {
+      location: data.resolvedAddress,
+      days_received: data.days.length,
+      years: yearsArray,
+      sample_day: data.days[0]
+    });
     
     // Process and structure the climate data
     return {
@@ -1551,6 +1566,45 @@ function calculateAnnualRainfall(days: any[]): number {
 function calculateAverageTemp(days: any[], field: string): number {
   const temps = days.map(day => day[field]).filter(temp => temp !== null);
   return temps.reduce((sum, temp) => sum + temp, 0) / temps.length;
+}
+
+function calculateColdestWinterTemp(days: any[]): number {
+  // Find the average of the coldest temperatures from winter months (Dec, Jan, Feb)
+  // This is how USDA zones are actually determined
+  const winterTemps: number[] = [];
+  
+  days.forEach(day => {
+    const date = new Date(day.datetime);
+    const month = date.getMonth();
+    // December (11), January (0), February (1)
+    if (month === 11 || month === 0 || month === 1) {
+      if (day.tempmin !== null && day.tempmin !== undefined) {
+        winterTemps.push(day.tempmin);
+      }
+    }
+  });
+  
+  // Sort to find the coldest temperatures
+  winterTemps.sort((a, b) => a - b);
+  
+  // Take the average of the coldest 10% of winter days (or at least 10 days)
+  const numColdestDays = Math.max(10, Math.floor(winterTemps.length * 0.1));
+  const coldestTemps = winterTemps.slice(0, numColdestDays);
+  
+  if (coldestTemps.length === 0) {
+    // If no winter data, fall back to overall minimum average
+    return calculateAverageTemp(days, 'tempmin');
+  }
+  
+  // Return average of the coldest winter temperatures
+  const avgColdest = coldestTemps.reduce((sum, temp) => sum + temp, 0) / coldestTemps.length;
+  console.log("Winter temperature analysis:", {
+    winterDaysCount: winterTemps.length,
+    coldestTemp: winterTemps[0],
+    avgColdestTemp: avgColdest,
+    sampleColdest: coldestTemps.slice(0, 5)
+  });
+  return avgColdest;
 }
 
 function calculateFrostDates(days: any[]): any {

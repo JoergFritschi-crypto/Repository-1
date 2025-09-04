@@ -22,6 +22,9 @@ export default function ClimateReportModal({
   const reportRef = useRef<HTMLDivElement>(null);
 
   if (!climateData) return null;
+  
+  // Debug log to see what data we actually have
+  console.log("Climate modal data:", climateData);
 
   const handlePrint = () => {
     const printContent = reportRef.current?.innerHTML || '';
@@ -228,31 +231,6 @@ export default function ClimateReportModal({
             </div>
           )}
 
-          {climateData.monthly_data && (
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Monthly Averages</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm bg-white">
-                  <thead className="bg-gray-50">
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 text-gray-700">Month</th>
-                      <th className="text-right py-2 text-gray-700">Avg Temp (°C)</th>
-                      <th className="text-right py-2 text-gray-700">Rainfall (mm)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(climateData.monthly_data).map(([month, data]: [string, any]) => (
-                      <tr key={month} className="border-b border-gray-200">
-                        <td className="py-2 text-gray-900">{month}</td>
-                        <td className="text-right">{typeof data.avg_temp === 'number' ? data.avg_temp.toFixed(1) : data.avg_temp}</td>
-                        <td className="text-right">{Math.round(data.total_rainfall || 0)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
 
           {climateData.gardening_advice && (
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
