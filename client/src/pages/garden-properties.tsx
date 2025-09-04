@@ -209,7 +209,7 @@ export default function GardenProperties() {
               height: '100px'
             }}
           >
-            <div className="absolute inset-0 bg-white/30" />
+            <div className="absolute inset-0 bg-white/60" />
             <div className="relative z-10 flex justify-between items-center h-full px-6">
               <h1 className="text-3xl font-serif font-semibold text-[#004025] bg-white/80 px-4 py-2 rounded-md border-2 border-[#004025] shadow-sm" data-testid="text-garden-setup-title">
                 Garden Setup
