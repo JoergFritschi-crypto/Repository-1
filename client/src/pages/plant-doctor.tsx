@@ -150,15 +150,15 @@ export default function PlantDoctor() {
                       data-testid={`service-${key}`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 ${config.bgColor} rounded-full flex items-center justify-center`}>
-                          <Icon className={`w-6 h-6 text-white`} />
+                        <div className="w-10 h-10 bg-[#004025]/10 rounded-full flex items-center justify-center border-2 border-[#004025]">
+                          <Icon className="w-5 h-5 text-[#004025]" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold">{config.title}</h3>
-                          <p className="text-sm text-muted-foreground">{config.description}</p>
+                          <h3 className="font-medium text-sm">{config.title}</h3>
+                          <p className="text-xs text-muted-foreground">{config.description}</p>
                         </div>
                         {activeService === key && (
-                          <CheckCircle className="w-5 h-5 text-primary" />
+                          <CheckCircle className="w-4 h-4 text-[#004025]" />
                         )}
                       </div>
                     </div>
@@ -168,30 +168,30 @@ export default function PlantDoctor() {
             </Card>
 
             {/* Premium Features */}
-            <Card className="border-canary bg-canary/5">
-              <CardContent className="pt-6">
+            <Card className="border-2 border-[#004025] bg-[#004025]/5">
+              <CardContent className="pt-4">
                 <div className="text-center">
-                  <Crown className="w-8 h-8 text-canary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-2">Premium Plant Doctor</h3>
-                  <div className="space-y-2 text-sm text-left mb-4">
+                  <Crown className="w-6 h-6 text-[#004025] mx-auto mb-2" />
+                  <h3 className="font-medium text-sm mb-2">Premium Plant Doctor</h3>
+                  <div className="space-y-1 text-xs text-left mb-3">
                     <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-accent mr-2" />
+                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
                       <span>Advanced disease diagnosis</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-accent mr-2" />
+                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
                       <span>Treatment recommendations</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-accent mr-2" />
+                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
                       <span>Seasonal care guides</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-accent mr-2" />
+                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
                       <span>Expert consultation</span>
                     </div>
                   </div>
-                  <Button className="w-full bg-canary text-primary hover:bg-gold" data-testid="button-upgrade-plant-doctor">
+                  <Button variant="default" className="w-full" size="sm" data-testid="button-upgrade-plant-doctor">
                     Upgrade Now
                   </Button>
                 </div>
@@ -201,26 +201,26 @@ export default function PlantDoctor() {
 
           {/* Main Interface */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <currentService.icon className={`w-5 h-5 mr-2 ${currentService.color}`} />
+            <Card className="border-2 border-[#004025]">
+              <CardHeader className="py-4">
+                <CardTitle className="flex items-center text-lg">
+                  <currentService.icon className="w-5 h-5 mr-2 text-[#004025]" />
                   {currentService.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="upload" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2" data-testid="tabs-plant-doctor">
-                    <TabsTrigger value="upload" data-testid="tab-upload">Upload Image</TabsTrigger>
-                    <TabsTrigger value="results" data-testid="tab-results">Recent Results</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 h-9" data-testid="tabs-plant-doctor">
+                    <TabsTrigger value="upload" className="text-xs" data-testid="tab-upload">Upload Image</TabsTrigger>
+                    <TabsTrigger value="results" className="text-xs" data-testid="tab-results">Recent Results</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="upload" className="mt-6">
-                    <div className="space-y-6">
+                  <TabsContent value="upload" className="mt-4">
+                    <div className="space-y-4">
                       {/* Image Upload */}
                       <div>
-                        <label className="block text-sm font-medium mb-2">Plant Photo</label>
-                        <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-accent transition-colors cursor-pointer">
+                        <label className="block text-xs font-medium mb-2">Plant Photo</label>
+                        <div className="border-2 border-dashed border-[#004025]/50 rounded-lg p-6 text-center hover:border-[#004025] transition-colors cursor-pointer">
                           <input
                             type="file"
                             accept="image/*"
@@ -242,12 +242,12 @@ export default function PlantDoctor() {
                               </div>
                             ) : (
                               <div>
-                                <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                                <h4 className="font-medium mb-2">Upload Plant Photo</h4>
-                                <p className="text-sm text-muted-foreground mb-4">
+                                <Upload className="w-10 h-10 text-[#004025]/50 mx-auto mb-3" />
+                                <h4 className="font-medium text-sm mb-1">Upload Plant Photo</h4>
+                                <p className="text-xs text-muted-foreground mb-3">
                                   Drag and drop or click to select a clear photo of your plant
                                 </p>
-                                <Button type="button" data-testid="button-choose-file">
+                                <Button type="button" size="sm" variant="outline" data-testid="button-choose-file">
                                   Choose File
                                 </Button>
                               </div>
@@ -258,7 +258,7 @@ export default function PlantDoctor() {
 
                       {/* Additional Notes */}
                       <div>
-                        <label className="block text-sm font-medium mb-2">Additional Notes (Optional)</label>
+                        <label className="block text-xs font-medium mb-2">Additional Notes (Optional)</label>
                         <Textarea
                           placeholder="Describe any symptoms, location, or other relevant details..."
                           value={additionalNotes}
@@ -273,7 +273,7 @@ export default function PlantDoctor() {
                         onClick={handleAnalyze}
                         disabled={!selectedImage || identificationMutation.isPending}
                         className="w-full"
-                        size="lg"
+                        size="default"
                         data-testid="button-analyze"
                       >
                         {identificationMutation.isPending ? (
@@ -291,10 +291,10 @@ export default function PlantDoctor() {
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="results" className="mt-6">
+                  <TabsContent value="results" className="mt-4">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <h3 className="font-semibold" data-testid="text-recent-results">Recent Analysis Results</h3>
+                        <h3 className="font-medium text-sm" data-testid="text-recent-results">Recent Analysis Results</h3>
                         <Badge variant="secondary" data-testid="badge-session-count">
                           {sessions?.length || 0} sessions
                         </Badge>
@@ -308,7 +308,7 @@ export default function PlantDoctor() {
                       ) : sessions && sessions.length > 0 ? (
                         <div className="space-y-4">
                           {sessions.slice(0, 5).map((session: any) => (
-                            <div key={session.id} className="border border-border rounded-lg p-4 hover:shadow-sm transition-shadow" data-testid={`session-${session.id}`}>
+                            <div key={session.id} className="border-2 border-[#004025]/30 rounded-lg p-3 hover:border-[#004025] transition-all" data-testid={`session-${session.id}`}>
                               <div className="flex items-start space-x-4">
                                 <div className="w-16 h-16 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">
                                   {session.imageUrl ? (

@@ -50,53 +50,53 @@ export default function PlantLibrary() {
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-foreground mb-2" data-testid="text-plant-library-title">
+        {/* Header - Compact */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-serif font-semibold text-[#004025] mb-2" data-testid="text-plant-library-title">
             Plant Library
           </h1>
-          <p className="text-lg text-muted-foreground" data-testid="text-plant-library-subtitle">
+          <p className="text-sm text-muted-foreground" data-testid="text-plant-library-subtitle">
             Explore our comprehensive botanical database with over 2,000 ornamental plants
           </p>
         </div>
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3" data-testid="tabs-plant-library">
-            <TabsTrigger value="browse" data-testid="tab-browse-plants">
-              <Sprout className="w-4 h-4 mr-2" />
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3 h-9" data-testid="tabs-plant-library">
+            <TabsTrigger value="browse" className="text-xs" data-testid="tab-browse-plants">
+              <Sprout className="w-3 h-3 mr-1.5" />
               Browse Plants
             </TabsTrigger>
-            <TabsTrigger value="collection" data-testid="tab-my-collection">
-              <Heart className="w-4 h-4 mr-2" />
+            <TabsTrigger value="collection" className="text-xs" data-testid="tab-my-collection">
+              <Heart className="w-3 h-3 mr-1.5" />
               My Collection ({myCollection?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="search" className="hidden lg:flex" data-testid="tab-advanced-search">
-              <Search className="w-4 h-4 mr-2" />
+            <TabsTrigger value="search" className="hidden lg:flex text-xs" data-testid="tab-advanced-search">
+              <Search className="w-3 h-3 mr-1.5" />
               Advanced Search
             </TabsTrigger>
           </TabsList>
 
           {/* Browse Plants Tab */}
-          <TabsContent value="browse" className="mt-8">
-            <div className="grid lg:grid-cols-4 gap-8">
+          <TabsContent value="browse" className="mt-6">
+            <div className="grid lg:grid-cols-4 gap-6">
               {/* Filters Sidebar */}
               <div className="lg:col-span-1">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
+                <Card className="border-2 border-[#004025]">
+                  <CardHeader className="py-4">
+                    <CardTitle className="flex items-center justify-between text-lg">
                       <span>Filters</span>
-                      <Button variant="ghost" size="sm" onClick={clearFilters} data-testid="button-clear-filters">
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 px-2 text-xs" data-testid="button-clear-filters">
                         Clear
                       </Button>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 pt-0">
                     {/* Search */}
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Search Plants</label>
+                      <label className="text-xs font-medium mb-1.5 block">Search Plants</label>
                       <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+                        <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#004025]/50" />
                         <Input
                           placeholder="Search by name..."
                           value={searchQuery}
@@ -109,7 +109,7 @@ export default function PlantLibrary() {
 
                     {/* Plant Type Filter */}
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Plant Type</label>
+                      <label className="text-xs font-medium mb-1.5 block">Plant Type</label>
                       <Select onValueChange={(value) => handleFilterChange({ type: value === 'all' ? undefined : value })}>
                         <SelectTrigger data-testid="select-plant-type">
                           <SelectValue placeholder="All Types" />
@@ -128,7 +128,7 @@ export default function PlantLibrary() {
 
                     {/* Sun Requirements Filter */}
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Sun Requirements</label>
+                      <label className="text-xs font-medium mb-1.5 block">Sun Requirements</label>
                       <Select onValueChange={(value) => handleFilterChange({ sun_requirements: value === 'any' ? undefined : value })}>
                         <SelectTrigger data-testid="select-sun-requirements">
                           <SelectValue placeholder="Any Sun Exposure" />
@@ -145,7 +145,7 @@ export default function PlantLibrary() {
 
                     {/* Special Features */}
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Special Features</label>
+                      <label className="text-xs font-medium mb-2 block">Special Features</label>
                       <div className="space-y-2">
                         <label className="flex items-center space-x-2">
                           <input
@@ -154,7 +154,7 @@ export default function PlantLibrary() {
                             onChange={(e) => handleFilterChange({ pet_safe: e.target.checked || undefined })}
                             data-testid="checkbox-pet-safe"
                           />
-                          <span className="text-sm">Pet Safe</span>
+                          <span className="text-xs">Pet Safe</span>
                         </label>
                         <label className="flex items-center space-x-2">
                           <input
@@ -163,7 +163,7 @@ export default function PlantLibrary() {
                             onChange={(e) => handleFilterChange({ drought_tolerant: e.target.checked || undefined })}
                             data-testid="checkbox-drought-tolerant"
                           />
-                          <span className="text-sm">Drought Tolerant</span>
+                          <span className="text-xs">Drought Tolerant</span>
                         </label>
                         <label className="flex items-center space-x-2">
                           <input
@@ -172,7 +172,7 @@ export default function PlantLibrary() {
                             onChange={(e) => handleFilterChange({ fragrant: e.target.checked || undefined })}
                             data-testid="checkbox-fragrant"
                           />
-                          <span className="text-sm">Fragrant</span>
+                          <span className="text-xs">Fragrant</span>
                         </label>
                         <label className="flex items-center space-x-2">
                           <input
@@ -181,7 +181,7 @@ export default function PlantLibrary() {
                             onChange={(e) => handleFilterChange({ attracts_pollinators: e.target.checked || undefined })}
                             data-testid="checkbox-attracts-pollinators"
                           />
-                          <span className="text-sm">Attracts Pollinators</span>
+                          <span className="text-xs">Attracts Pollinators</span>
                         </label>
                       </div>
                     </div>
