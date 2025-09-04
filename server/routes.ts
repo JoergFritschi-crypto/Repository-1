@@ -656,7 +656,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const parts = file.replace('.png', '').split('-');
             const timestampStr = parts[parts.length - 1];
             const imageType = parts[parts.length - 2];
-            const plantName = parts.slice(0, -2).join('-');
+            
+            // Check if the third-to-last part is an approach type
+            let approach = 'garden';
+            let plantNameEndIndex = -2;
+            
+            if (parts.length >= 4) {
+              const possibleApproach = parts[parts.length - 3];
+              if (['garden', 'atlas', 'hybrid'].includes(possibleApproach)) {
+                approach = possibleApproach;
+                plantNameEndIndex = -3;
+              }
+            }
+            
+            const plantName = parts.slice(0, plantNameEndIndex).join('-');
             
             // Try to parse timestamp
             let timestamp: Date;
@@ -667,18 +680,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               timestamp = new Date();
             }
             
-            // Infer approach from filename patterns
-            let approach = 'garden'; // default to garden
-            if (plantName.includes('atlas')) {
-              approach = 'atlas';
-            } else if (plantName.includes('hybrid')) {
-              approach = 'hybrid';
-            }
-            
             images.push({
               id: file,
               plantName: plantName
-                .replace(/-atlas|-hybrid|-garden/g, '')
                 .replace(/-/g, ' ')
                 .replace(/\b\w/g, l => l.toUpperCase()),
               imageType: imageType || 'full',

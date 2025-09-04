@@ -49,12 +49,12 @@ export class RunwareImageGenerator {
   async generateImage(request: ImageRequest): Promise<string> {
     await fs.mkdir(this.imagesDir, { recursive: true });
     
-    const timestamp = Date.now();
-    const filename = `${request.plantName.toLowerCase().replace(/\s+/g, '-')}-${request.imageType}-${timestamp}.png`;
-    const filepath = path.join(this.imagesDir, filename);
-    
     const approach = request.approach || 'garden';
     const modelChoice = request.modelChoice || 'schnell';
+    
+    const timestamp = Date.now();
+    const filename = `${request.plantName.toLowerCase().replace(/\s+/g, '-')}-${approach}-${request.imageType}-${timestamp}.png`;
+    const filepath = path.join(this.imagesDir, filename);
     
     console.log(`🌿 Generating with Runware: ${request.plantName} (${request.imageType}) - ${approach} approach, ${modelChoice} model`);
     
