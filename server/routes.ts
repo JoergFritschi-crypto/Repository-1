@@ -10,6 +10,7 @@ import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
 import { apiMonitoring } from "./apiMonitoring";
 import { imageGenerationService } from "./imageGenerationService";
+import { runwareImageGenerator } from "./runwareImageGenerator";
 import path from "path";
 
 // Initialize Stripe if API key is available
@@ -584,6 +585,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to reset stuck items", 
         error: error.message 
       });
+    }
+  });
+  
+  // Test endpoint for comparing different image generation approaches
+  app.post('/api/admin/test-generation', isAuthenticated, async (req: any, res) => {
+    try {
+      const { plantName, approach, modelChoice } = req.body;
+      
+      if (!plantName) {
+        return res.status(400).json({ error: 'Plant name is required' });
+      }
+      
+      console.log(`Testing generation: ${plantName} with ${approach || 'garden'} approach using ${modelChoice || 'schnell'}`);
+      
+      const results = [];
+      const imageTypes: ('thumbnail' | 'full' | 'detail')[] = ['thumbnail', 'full', 'detail'];
+      
+      for (const imageType of imageTypes) {
+        try {
+          const imagePath = await runwareImageGenerator.generateImage({
+            prompt: plantName,
+            plantName,
+            imageType,
+            approach: approach || 'garden',
+            modelChoice: modelChoice || 'schnell'
+          });
+          
+          results.push({
+            imageType,
+            path: imagePath,
+            approach: approach || 'garden',
+            model: modelChoice || 'schnell'
+          });
+        } catch (error) {
+          console.error(`Failed to generate ${imageType}:`, error);
+          results.push({
+            imageType,
+            error: error.message,
+            approach: approach || 'garden',
+            model: modelChoice || 'schnell'
+          });
+        }
+      }
+      
+      res.json({
+        message: 'Test generation complete',
+        plantName,
+        approach: approach || 'garden',
+        model: modelChoice || 'schnell',
+        results
+      });
+    } catch (error) {
+      console.error('Test generation error:', error);
+      res.status(500).json({ error: 'Test generation failed' });
     }
   });
 

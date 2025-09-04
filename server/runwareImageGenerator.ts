@@ -8,6 +8,8 @@ interface ImageRequest {
   prompt: string;
   plantName: string;
   imageType: 'thumbnail' | 'full' | 'detail';
+  approach?: 'garden' | 'atlas' | 'hybrid';  // Different generation approaches
+  modelChoice?: 'schnell' | 'dev' | 'sdxl';  // Model selection
 }
 
 export class RunwareImageGenerator {
@@ -51,17 +53,39 @@ export class RunwareImageGenerator {
     const filename = `${request.plantName.toLowerCase().replace(/\s+/g, '-')}-${request.imageType}-${timestamp}.png`;
     const filepath = path.join(this.imagesDir, filename);
     
-    console.log(`🌿 Generating with Runware: ${request.plantName} (${request.imageType})`);
+    const approach = request.approach || 'garden';
+    const modelChoice = request.modelChoice || 'schnell';
+    
+    console.log(`🌿 Generating with Runware: ${request.plantName} (${request.imageType}) - ${approach} approach, ${modelChoice} model`);
     
     // Get botanically accurate description
     const botanicalDescription = this.getBotanicalDetails(request.plantName);
     
-    // Create natural garden-focused prompt (avoiding atlas/specimen style)
-    const botanicalPrompt = `beautiful ${botanicalDescription} growing naturally in garden setting, ${
-      request.imageType === 'full' ? 'entire plant or tree in landscaped garden, showing natural growth habit, garden path visible, other plants nearby, outdoor natural environment' :
-      request.imageType === 'detail' ? 'close-up of living flowers and leaves on the plant, natural garden background, soft bokeh, morning dew' :
-      'healthy plant portrait in garden bed, natural outdoor lighting, mulch and soil visible, garden setting'
-    }, photorealistic garden photography, natural colors, no white background, living plant in real garden environment`;
+    // Create prompt based on approach
+    let botanicalPrompt = '';
+    
+    if (approach === 'atlas') {
+      // Atlas/specimen style (white background, scientific)
+      botanicalPrompt = `botanical illustration of ${botanicalDescription}, ${
+        request.imageType === 'full' ? 'complete specimen showing all parts, scientific botanical plate style' :
+        request.imageType === 'detail' ? 'detailed botanical close-up, scientific accuracy, morphological features' :
+        'herbarium specimen style, botanical reference'
+      }, white background, scientific botanical illustration, highly detailed, educational reference style`;
+    } else if (approach === 'hybrid') {
+      // Mix of natural and scientific (semi-natural background)
+      botanicalPrompt = `${botanicalDescription} botanical photography, ${
+        request.imageType === 'full' ? 'entire plant with natural soft background, botanical garden specimen' :
+        request.imageType === 'detail' ? 'macro botanical detail, soft natural background, scientific clarity' :
+        'plant portrait with blurred garden background'
+      }, professional botanical photography, soft natural lighting, semi-isolated specimen`;
+    } else {
+      // Default garden approach (natural setting)
+      botanicalPrompt = `beautiful ${botanicalDescription} growing naturally in garden setting, ${
+        request.imageType === 'full' ? 'entire plant or tree in landscaped garden, showing natural growth habit, garden path visible, other plants nearby, outdoor natural environment' :
+        request.imageType === 'detail' ? 'close-up of living flowers and leaves on the plant, natural garden background, soft bokeh, morning dew' :
+        'healthy plant portrait in garden bed, natural outdoor lighting, mulch and soil visible, garden setting'
+      }, photorealistic garden photography, natural colors, no white background, living plant in real garden environment`;
+    }
     
     try {
       // Runware API requires taskUUID for each request
@@ -77,15 +101,15 @@ export class RunwareImageGenerator {
           taskType: "imageInference",
           taskUUID: taskUUID,
           positivePrompt: botanicalPrompt,
-          model: "runware:100@1",  // FLUX Schnell - Fast & natural garden imagery
-          // FLUX Schnell is optimized for natural, garden-style botanical images
-          // rather than atlas/specimen style with white backgrounds
+          model: modelChoice === 'dev' ? "runware:101@1" : 
+                 modelChoice === 'sdxl' ? "runware:102@1" :
+                 "runware:100@1",  // Default to FLUX Schnell
           numberOfImages: 1,
           height: 768,
           width: 768,
           outputFormat: "PNG",
-          steps: 4,  // FLUX Schnell works best with 1-4 steps
-          CFGScale: 3.5  // Lower CFG for more natural results
+          steps: modelChoice === 'schnell' ? 4 : 25,  // Schnell needs fewer steps
+          CFGScale: modelChoice === 'schnell' ? 3.5 : 7.5  // Adjust CFG based on model
         }])
       });
       
