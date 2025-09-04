@@ -636,41 +636,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all test images from the generated folder
   app.get('/api/admin/test-images', isAuthenticated, async (req: any, res) => {
     try {
-      const fs = require('fs').promises;
+      const fs = await import('fs/promises');
       const imagesDir = path.join(process.cwd(), 'client', 'public', 'generated-images');
+      
+      try {
+        await fs.access(imagesDir);
+      } catch {
+        // Create directory if it doesn't exist
+        await fs.mkdir(imagesDir, { recursive: true });
+        return res.json({ images: [] });
+      }
       
       const files = await fs.readdir(imagesDir);
       const images = [];
       
       for (const file of files) {
         if (file.endsWith('.png')) {
-          const parts = file.replace('.png', '').split('-');
-          const timestamp = parts[parts.length - 1];
-          const imageType = parts[parts.length - 2];
-          const plantName = parts.slice(0, -2).join('-');
-          
-          // Try to infer approach from recent generations
-          let approach = 'unknown';
-          if (file.includes('175699906')) approach = 'garden';
-          else if (file.includes('175699907')) approach = 'atlas';
-          else if (file.includes('175699907')) approach = 'hybrid';
-          
-          images.push({
-            id: file,
-            plantName: plantName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            imageType: imageType as any,
-            approach: approach as any,
-            model: 'schnell',
-            url: `/generated-images/${file}`,
-            timestamp: new Date(parseInt(timestamp)).toISOString()
-          });
+          try {
+            const parts = file.replace('.png', '').split('-');
+            const timestampStr = parts[parts.length - 1];
+            const imageType = parts[parts.length - 2];
+            const plantName = parts.slice(0, -2).join('-');
+            
+            // Try to parse timestamp
+            let timestamp: Date;
+            const timestampNum = parseInt(timestampStr);
+            if (!isNaN(timestampNum) && timestampNum > 1000000000000) {
+              timestamp = new Date(timestampNum);
+            } else {
+              timestamp = new Date();
+            }
+            
+            // Infer approach from filename patterns
+            let approach = 'garden'; // default to garden
+            if (plantName.includes('atlas')) {
+              approach = 'atlas';
+            } else if (plantName.includes('hybrid')) {
+              approach = 'hybrid';
+            }
+            
+            images.push({
+              id: file,
+              plantName: plantName
+                .replace(/-atlas|-hybrid|-garden/g, '')
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase()),
+              imageType: imageType || 'full',
+              approach: approach,
+              model: 'schnell',
+              url: `/generated-images/${file}`,
+              timestamp: timestamp.toISOString()
+            });
+          } catch (err) {
+            console.error(`Error processing file ${file}:`, err);
+          }
         }
       }
       
       res.json({ images: images.sort((a, b) => b.timestamp.localeCompare(a.timestamp)) });
     } catch (error) {
       console.error('Error listing test images:', error);
-      res.status(500).json({ error: 'Failed to list test images' });
+      res.json({ images: [] }); // Return empty array instead of error
     }
   });
 
