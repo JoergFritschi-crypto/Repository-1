@@ -38,6 +38,39 @@ interface CompactPlantCardProps {
   onGenerateImages?: () => void;
 }
 
+// Convert USDA zones to 4-tier hardiness system
+function getHardinessCategory(hardiness: string | undefined): string | null {
+  if (!hardiness) return null;
+  
+  // Extract the lowest zone number (e.g., "5-8" → 5)
+  const match = hardiness.match(/\d+/);
+  if (!match) return null;
+  
+  const lowestZone = parseInt(match[0]);
+  
+  // Map USDA zones to 4-tier system based on minimum survivable temperature
+  // Zones 1-5: Very Hardy (<-10°C)
+  // Zones 6-7: Hardy (-10 to -5°C)  
+  // Zones 8-9: Half Hardy (-5 to 0°C)
+  // Zones 10+: Tender (>0°C)
+  
+  if (lowestZone <= 5) return "Very Hardy";
+  if (lowestZone <= 7) return "Hardy";
+  if (lowestZone <= 9) return "Half Hardy";
+  return "Tender";
+}
+
+// Get badge color for hardiness category
+function getHardinessBadgeColor(category: string | null): string {
+  switch (category) {
+    case "Very Hardy": return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
+    case "Hardy": return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
+    case "Half Hardy": return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
+    case "Tender": return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
+    default: return "bg-muted text-muted-foreground";
+  }
+}
+
 export function CompactPlantCard({ 
   plant,
   isAdmin = false,
@@ -156,8 +189,8 @@ export function CompactPlantCard({
                 </div>
               )}
               {plant.hardiness && (
-                <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded">
-                  Zone {plant.hardiness}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getHardinessBadgeColor(getHardinessCategory(plant.hardiness))}`}>
+                  {getHardinessCategory(plant.hardiness)}
                 </span>
               )}
               {plant.poisonousToPets === 0 && (
@@ -341,8 +374,11 @@ export function CompactPlantCard({
               )}
               {plant.hardiness && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Zones:</span>
-                  <span>{plant.hardiness}</span>
+                  <span className="text-muted-foreground">Hardiness:</span>
+                  <span>
+                    <span className="font-medium">{getHardinessCategory(plant.hardiness)}</span>
+                    <span className="text-xs text-muted-foreground ml-1">(Zone {plant.hardiness})</span>
+                  </span>
                 </div>
               )}
               {plant.dimension && (
