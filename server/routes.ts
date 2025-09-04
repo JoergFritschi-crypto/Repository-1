@@ -1527,7 +1527,10 @@ function generateGardeningAdvice(zones: any, weatherData: any) {
 }
 
 function calculateAnnualRainfall(days: any[]): number {
-  return days.reduce((total, day) => total + (day.precip || 0), 0);
+  // Calculate average annual rainfall when we have multiple years of data
+  const totalRainfall = days.reduce((total, day) => total + (day.precip || 0), 0);
+  const years = new Set(days.map(day => new Date(day.datetime).getFullYear())).size;
+  return totalRainfall / Math.max(1, years); // Average per year
 }
 
 function calculateAverageTemp(days: any[], field: string): number {
@@ -1536,21 +1539,117 @@ function calculateAverageTemp(days: any[], field: string): number {
 }
 
 function calculateFrostDates(days: any[]): any {
-  // Find first and last frost dates based on minimum temperatures
+  // Find typical first and last frost dates within a calendar year
   const frostDays = days.filter(day => day.tempmin <= 0);
+  
+  if (frostDays.length === 0) {
+    return { first_frost: null, last_frost: null };
+  }
+  
+  // Group by year and find the typical pattern
+  const frostByYear: { [year: number]: { first: string, last: string } } = {};
+  
+  frostDays.forEach(day => {
+    const date = new Date(day.datetime);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    
+    // Consider Dec as part of next year's winter for frost tracking
+    const frostYear = month === 11 ? year + 1 : year;
+    
+    if (!frostByYear[frostYear]) {
+      frostByYear[frostYear] = { first: day.datetime, last: day.datetime };
+    } else {
+      // Update first and last frost for this frost year
+      if (day.datetime < frostByYear[frostYear].first) {
+        frostByYear[frostYear].first = day.datetime;
+      }
+      if (day.datetime > frostByYear[frostYear].last) {
+        frostByYear[frostYear].last = day.datetime;
+      }
+    }
+  });
+  
+  // Calculate average dates
+  const validYears = Object.values(frostByYear).filter(y => y.first && y.last);
+  if (validYears.length === 0) return { first_frost: null, last_frost: null };
+  
+  // Find median dates for typical year
+  const lastFrostDates = validYears.map(y => new Date(y.last).getMonth() * 30 + new Date(y.last).getDate());
+  const firstFrostDates = validYears.map(y => {
+    const d = new Date(y.first);
+    return (d.getMonth() < 6 ? d.getMonth() + 12 : d.getMonth()) * 30 + d.getDate();
+  });
+  
+  const medianLast = lastFrostDates.sort((a, b) => a - b)[Math.floor(lastFrostDates.length / 2)];
+  const medianFirst = firstFrostDates.sort((a, b) => a - b)[Math.floor(firstFrostDates.length / 2)];
+  
+  // Convert back to approximate dates in current year
+  const currentYear = new Date().getFullYear();
+  const lastMonth = Math.floor(medianLast / 30);
+  const lastDay = medianLast % 30 || 15;
+  const firstMonth = Math.floor(medianFirst / 30) % 12;
+  const firstDay = medianFirst % 30 || 15;
+  
   return {
-    first_frost: frostDays.length > 0 ? frostDays[frostDays.length - 1].datetime : null,
-    last_frost: frostDays.length > 0 ? frostDays[0].datetime : null
+    last_frost: `${currentYear}-${String(lastMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+    first_frost: `${currentYear}-${String(firstMonth + 1).padStart(2, '0')}-${String(firstDay).padStart(2, '0')}`
   };
 }
 
 function calculateGrowingSeason(days: any[]): any {
-  // Determine growing season based on consistent temperatures above 5°C
+  // Calculate typical growing season within a calendar year
   const growingDays = days.filter(day => day.tempmin > 5);
+  
+  if (growingDays.length === 0) {
+    return { start: null, end: null, length_days: 0 };
+  }
+  
+  // Group by year to find typical pattern
+  const seasonByYear: { [year: number]: { start: string, end: string, days: number } } = {};
+  
+  days.forEach(day => {
+    const year = new Date(day.datetime).getFullYear();
+    const isGrowing = day.tempmin > 5;
+    
+    if (isGrowing) {
+      if (!seasonByYear[year]) {
+        seasonByYear[year] = { start: day.datetime, end: day.datetime, days: 1 };
+      } else {
+        if (day.datetime < seasonByYear[year].start) {
+          seasonByYear[year].start = day.datetime;
+        }
+        if (day.datetime > seasonByYear[year].end) {
+          seasonByYear[year].end = day.datetime;
+        }
+        seasonByYear[year].days++;
+      }
+    }
+  });
+  
+  // Calculate average season
+  const validYears = Object.values(seasonByYear).filter(y => y.start && y.end);
+  if (validYears.length === 0) return { start: null, end: null, length_days: 0 };
+  
+  // Find median dates
+  const startDates = validYears.map(y => new Date(y.start).getMonth() * 30 + new Date(y.start).getDate());
+  const endDates = validYears.map(y => new Date(y.end).getMonth() * 30 + new Date(y.end).getDate());
+  const avgDays = validYears.reduce((sum, y) => sum + y.days, 0) / validYears.length;
+  
+  const medianStart = startDates.sort((a, b) => a - b)[Math.floor(startDates.length / 2)];
+  const medianEnd = endDates.sort((a, b) => a - b)[Math.floor(endDates.length / 2)];
+  
+  // Convert to dates in current year
+  const currentYear = new Date().getFullYear();
+  const startMonth = Math.floor(medianStart / 30);
+  const startDay = medianStart % 30 || 15;
+  const endMonth = Math.floor(medianEnd / 30);
+  const endDay = medianEnd % 30 || 15;
+  
   return {
-    start: growingDays.length > 0 ? growingDays[0].datetime : null,
-    end: growingDays.length > 0 ? growingDays[growingDays.length - 1].datetime : null,
-    length_days: growingDays.length
+    start: `${currentYear}-${String(startMonth + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`,
+    end: `${currentYear}-${String(endMonth + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`,
+    length_days: Math.round(avgDays)
   };
 }
 
