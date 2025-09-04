@@ -19,25 +19,25 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 border-b-2 border-[#004025] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2" data-testid="link-home">
-              <GardenScapeIcon className="w-8 h-8" />
-              <span className="text-xl font-serif font-bold text-primary">GardenScape Pro</span>
+              <GardenScapeIcon className="w-7 h-7" />
+              <span className="text-lg font-serif font-semibold text-[#004025]">GardenScape Pro</span>
             </Link>
             
-            <div className="hidden md:flex items-center space-x-6 ml-8">
+            <div className="hidden md:flex items-center space-x-4 ml-6">
               {navigationItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-sm font-medium transition-all duration-200 px-2 py-1 rounded-md",
+                    "text-xs font-medium transition-all duration-200 px-3 py-1.5 rounded-md border",
                     location === item.href
-                      ? "text-canary bg-primary/10 font-semibold"
-                      : "text-muted-foreground hover:text-canary hover:bg-canary/10"
+                      ? "bg-[#004025] text-white border-[#004025]"
+                      : "text-[#004025] hover:bg-[#004025]/10 border-transparent hover:border-[#004025]"
                   )}
                   data-testid={`link-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
@@ -47,11 +47,11 @@ export default function Navigation() {
             </div>
           </div>
           
-          <div className="hidden md:flex items-center space-x-4">
-            <Button asChild data-testid="button-new-garden">
+          <div className="hidden md:flex items-center space-x-2">
+            <Button size="sm" className="h-8 text-xs bg-[#004025] hover:bg-[#004025]/90 border-2 border-[#004025]" asChild data-testid="button-new-garden">
               <Link href="/garden-properties">New Garden</Link>
             </Button>
-            <Button variant="outline" asChild data-testid="button-logout">
+            <Button size="sm" variant="outline" className="h-8 text-xs border-2 border-[#004025] text-[#004025] hover:bg-[#004025]/10" asChild data-testid="button-logout">
               <a href="/api/logout">Sign Out</a>
             </Button>
           </div>
@@ -71,17 +71,17 @@ export default function Navigation() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border py-4" data-testid="mobile-menu">
+          <div className="md:hidden border-t-2 border-[#004025] py-3" data-testid="mobile-menu">
             <div className="flex flex-col space-y-3">
               {navigationItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-sm font-medium transition-all duration-200 py-2 px-3 rounded-md",
+                    "text-xs font-medium transition-all duration-200 py-2 px-3 rounded-md border",
                     location === item.href
-                      ? "text-canary bg-primary/10 font-semibold"
-                      : "text-muted-foreground hover:text-canary hover:bg-canary/10"
+                      ? "bg-[#004025] text-white border-[#004025]"
+                      : "text-[#004025] hover:bg-[#004025]/10 border-transparent hover:border-[#004025]"
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid={`mobile-link-${item.label.toLowerCase().replace(' ', '-')}`}
@@ -89,7 +89,7 @@ export default function Navigation() {
                   {item.label}
                 </Link>
               ))}
-              <div className="border-t border-border pt-3 mt-3 space-y-2">
+              <div className="border-t-2 border-[#004025] pt-3 mt-3 space-y-2">
                 <Button asChild className="w-full" onClick={() => setMobileMenuOpen(false)} data-testid="mobile-button-new-garden">
                   <Link href="/garden-properties">New Garden</Link>
                 </Button>

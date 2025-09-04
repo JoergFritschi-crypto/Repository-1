@@ -117,34 +117,34 @@ export default function PlantDoctor() {
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-serif font-bold text-foreground mb-4" data-testid="text-plant-doctor-title">
-            <Stethoscope className="w-10 h-10 inline mr-4 text-accent" />
+        {/* Header - Compact */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-serif font-semibold text-[#004025] mb-2" data-testid="text-plant-doctor-title">
+            <Stethoscope className="w-7 h-7 inline mr-2 text-[#004025]" />
             Plant Doctor
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-plant-doctor-subtitle">
-            AI-powered plant identification and health diagnosis powered by Anthropic Claude
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto" data-testid="text-plant-doctor-subtitle">
+            AI-powered plant identification and health diagnosis
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Service Selection */}
           <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Select Service</CardTitle>
+            <Card className="border-2 border-[#004025]">
+              <CardHeader className="py-4">
+                <CardTitle className="text-lg">Select Service</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 pt-0">
                 {Object.entries(serviceConfig).map(([key, config]) => {
                   const Icon = config.icon;
                   return (
                     <div
                       key={key}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                         activeService === key
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-accent"
+                          ? "border-[#004025] bg-[#004025]/10"
+                          : "border-[#004025]/30 hover:border-[#004025]"
                       }`}
                       onClick={() => setActiveService(key)}
                       data-testid={`service-${key}`}
