@@ -36,7 +36,8 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
       const imagePath = await runwareImageGenerator.generateImage({
         prompt: prompt || plantName,
         plantName,
-        imageType
+        imageType,
+        approach: 'garden'  // Always use garden approach for natural, realistic images
       });
       console.log(`✅ Success with Runware`);
       return imagePath;
