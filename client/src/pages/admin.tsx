@@ -16,6 +16,7 @@ import { APIKeysManager } from "@/components/admin/api-keys-manager";
 import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { PlantCard } from "@/components/admin/plant-card";
 import { ImageGenerationMonitor } from "@/components/admin/image-generation-monitor";
+import { ImageComparisonTool } from "@/components/admin/image-comparison-tool";
 import { 
   Settings, 
   Database, 
@@ -138,6 +139,7 @@ export default function Admin() {
   const adminTabs = [
     { id: "plants", label: "Plant Database", icon: Database },
     { id: "image-gen", label: "Image Generation", icon: ImageIcon },
+    { id: "image-test", label: "Image Testing", icon: FlaskConical },
     { id: "api-monitor", label: "API Monitor", icon: Server },
     { id: "import", label: "Import Wizard", icon: Upload },
     { id: "testing", label: "Testing Tools", icon: FlaskConical },
@@ -394,6 +396,10 @@ export default function Admin() {
 
               <TabsContent value="image-gen" className="mt-8">
                 <ImageGenerationMonitor />
+              </TabsContent>
+              
+              <TabsContent value="image-test" className="mt-8">
+                <ImageComparisonTool />
               </TabsContent>
 
               <TabsContent value="api-monitor" className="mt-8">

@@ -591,54 +591,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint for comparing different image generation approaches
   app.post('/api/admin/test-generation', isAuthenticated, async (req: any, res) => {
     try {
-      const { plantName, approach, modelChoice } = req.body;
+      const { plantName, approach, modelChoice, imageType } = req.body;
       
       if (!plantName) {
         return res.status(400).json({ error: 'Plant name is required' });
       }
       
-      console.log(`Testing generation: ${plantName} with ${approach || 'garden'} approach using ${modelChoice || 'schnell'}`);
+      const type = imageType || 'full';
+      console.log(`Testing: ${plantName} ${type} with ${approach || 'garden'} approach using ${modelChoice || 'schnell'}`);
       
-      const results = [];
-      const imageTypes: ('thumbnail' | 'full' | 'detail')[] = ['thumbnail', 'full', 'detail'];
+      try {
+        const imagePath = await runwareImageGenerator.generateImage({
+          prompt: plantName,
+          plantName,
+          imageType: type,
+          approach: approach || 'garden',
+          modelChoice: modelChoice || 'schnell'
+        });
+        
+        const result = {
+          id: Date.now().toString(),
+          plantName,
+          imageType: type,
+          approach: approach || 'garden',
+          model: modelChoice || 'schnell',
+          url: imagePath,
+          timestamp: new Date().toISOString()
+        };
+        
+        res.json({
+          message: 'Test generation complete',
+          result
+        });
+      } catch (error) {
+        console.error(`Failed to generate:`, error);
+        res.status(500).json({ error: error.message });
+      }
+    } catch (error) {
+      console.error('Test generation error:', error);
+      res.status(500).json({ error: 'Test generation failed' });
+    }
+  });
+  
+  // Get all test images from the generated folder
+  app.get('/api/admin/test-images', isAuthenticated, async (req: any, res) => {
+    try {
+      const fs = require('fs').promises;
+      const imagesDir = path.join(process.cwd(), 'client', 'public', 'generated-images');
       
-      for (const imageType of imageTypes) {
-        try {
-          const imagePath = await runwareImageGenerator.generateImage({
-            prompt: plantName,
-            plantName,
-            imageType,
-            approach: approach || 'garden',
-            modelChoice: modelChoice || 'schnell'
-          });
+      const files = await fs.readdir(imagesDir);
+      const images = [];
+      
+      for (const file of files) {
+        if (file.endsWith('.png')) {
+          const parts = file.replace('.png', '').split('-');
+          const timestamp = parts[parts.length - 1];
+          const imageType = parts[parts.length - 2];
+          const plantName = parts.slice(0, -2).join('-');
           
-          results.push({
-            imageType,
-            path: imagePath,
-            approach: approach || 'garden',
-            model: modelChoice || 'schnell'
-          });
-        } catch (error) {
-          console.error(`Failed to generate ${imageType}:`, error);
-          results.push({
-            imageType,
-            error: error.message,
-            approach: approach || 'garden',
-            model: modelChoice || 'schnell'
+          // Try to infer approach from recent generations
+          let approach = 'unknown';
+          if (file.includes('175699906')) approach = 'garden';
+          else if (file.includes('175699907')) approach = 'atlas';
+          else if (file.includes('175699907')) approach = 'hybrid';
+          
+          images.push({
+            id: file,
+            plantName: plantName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            imageType: imageType as any,
+            approach: approach as any,
+            model: 'schnell',
+            url: `/generated-images/${file}`,
+            timestamp: new Date(parseInt(timestamp)).toISOString()
           });
         }
       }
       
-      res.json({
-        message: 'Test generation complete',
-        plantName,
-        approach: approach || 'garden',
-        model: modelChoice || 'schnell',
-        results
-      });
+      res.json({ images: images.sort((a, b) => b.timestamp.localeCompare(a.timestamp)) });
     } catch (error) {
-      console.error('Test generation error:', error);
-      res.status(500).json({ error: 'Test generation failed' });
+      console.error('Error listing test images:', error);
+      res.status(500).json({ error: 'Failed to list test images' });
     }
   });
 
