@@ -1361,24 +1361,61 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       ? `${coordinates.latitude},${coordinates.longitude}`
       : location;
     
-    // Get historical data for the past 10 years to calculate accurate climate zones
-    // This provides proper long-term averages for hardiness zones
+    // Fetch last 3 years of data during coldest months (Dec-Feb) for accurate zone calculation
+    // This is more efficient than 10 years of daily data and still provides accurate zones
     const endDate = new Date();
-    const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 10); // 10 years of historical data
+    const currentYear = endDate.getFullYear();
+    const currentMonth = endDate.getMonth();
     
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = endDate.toISOString().split('T')[0];
+    // If we're before March, use previous year as end year
+    const endYear = currentMonth < 2 ? currentYear - 1 : currentYear;
     
-    const response = await fetch(
-      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}/${startDateStr}/${endDateStr}?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`Visual Crossing API error: ${response.status}`);
+    // Fetch data for Dec-Jan-Feb over past 3 winters
+    const requests = [];
+    for (let year = endYear - 2; year <= endYear; year++) {
+      // December of previous year
+      requests.push(fetch(
+        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}/${year-1}-12-01/${year-1}-12-31?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
+      ));
+      // January of current year
+      requests.push(fetch(
+        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}/${year}-01-01/${year}-01-31?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
+      ));
+      // February of current year  
+      requests.push(fetch(
+        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}/${year}-02-01/${year}-02-28?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
+      ));
     }
     
-    const data = await response.json();
+    // Also fetch the full last year for rainfall and growing season data
+    const lastYearStart = `${endDate.getFullYear() - 1}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+    const lastYearEnd = endDate.toISOString().split('T')[0];
+    
+    requests.push(fetch(
+      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(queryLocation)}/${lastYearStart}/${lastYearEnd}?key=${process.env.VISUAL_CROSSING_API_KEY}&include=days&unitGroup=metric`
+    ));
+    
+    const responses = await Promise.all(requests);
+    
+    // Check if all responses are ok
+    for (const response of responses) {
+      if (!response.ok) {
+        throw new Error(`Visual Crossing API error: ${response.status}`);
+      }
+    }
+    
+    // Combine all the data
+    const allData = await Promise.all(responses.map(r => r.json()));
+    
+    // Combine all days from all requests
+    const allDays = [];
+    for (const data of allData) {
+      if (data.days) {
+        allDays.push(...data.days);
+      }
+    }
+    
+    const data = { days: allDays };
     
     // Calculate accurate hardiness zones based on temperature data
     const minTemp = calculateAverageTemp(data.days, 'tempmin');
