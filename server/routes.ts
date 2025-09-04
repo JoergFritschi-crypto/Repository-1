@@ -569,6 +569,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Reset stuck items back to pending
+  app.post('/api/admin/image-generation/reset-stuck', isAuthenticated, async (req: any, res) => {
+    try {
+      const resetCount = await imageGenerationService.retryStuckImages();
+      res.json({ 
+        message: `Reset ${resetCount} stuck items`,
+        reset: resetCount
+      });
+    } catch (error) {
+      console.error("Error resetting stuck items:", error);
+      res.status(500).json({ 
+        message: "Failed to reset stuck items", 
+        error: error.message 
+      });
+    }
+  });
 
   // User plant collection routes
   app.get('/api/my-collection', isAuthenticated, async (req: any, res) => {

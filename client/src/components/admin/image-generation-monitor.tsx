@@ -122,6 +122,29 @@ export function ImageGenerationMonitor() {
       });
     },
   });
+  
+  // Reset stuck items mutation
+  const resetStuckMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/image-generation/reset-stuck');
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Reset Stuck Items",
+        description: `Reset ${data.reset || 0} stuck items back to pending`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/image-generation/queue"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/image-generation/status"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to reset stuck items",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (statusLoading || queueLoading) {
     return (
@@ -172,6 +195,24 @@ export function ImageGenerationMonitor() {
                   <>
                     <Sparkles className="w-4 h-4 mr-1" />
                     Generate All Missing
+                  </>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => resetStuckMutation.mutate()}
+                disabled={resetStuckMutation.isPending || queue?.items?.filter((i: any) => i.status === 'processing').length === 0}
+              >
+                {resetStuckMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    Resetting...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-1" />
+                    Reset Stuck
                   </>
                 )}
               </Button>
@@ -284,27 +325,6 @@ export function ImageGenerationMonitor() {
         </CardContent>
       </Card>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {status?.recentActivity?.map((activity: any, index: number) => (
-              <div key={index} className="flex items-center gap-3 text-sm">
-                {activity.type === "success" && <CheckCircle className="w-4 h-4 text-green-500" />}
-                {activity.type === "error" && <XCircle className="w-4 h-4 text-red-500" />}
-                {activity.type === "info" && <AlertCircle className="w-4 h-4 text-blue-500" />}
-                <span className="flex-1">{activity.message}</span>
-                <span className="text-muted-foreground text-xs">
-                  {new Date(activity.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

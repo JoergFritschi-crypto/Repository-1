@@ -143,7 +143,6 @@ export default function Admin() {
     { id: "testing", label: "Testing Tools", icon: FlaskConical },
     { id: "security", label: "Security", icon: Shield },
     { id: "api-keys", label: "API Keys", icon: Key },
-    { id: "users", label: "User Management", icon: Users },
   ];
 
   return (
@@ -229,32 +228,6 @@ export default function Admin() {
                           >
                             <RefreshCw className={`w-4 h-4 mr-1 ${plantsLoading ? 'animate-spin' : ''}`} />
                             Refresh
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            data-testid="button-seed-plants"
-                            onClick={async () => {
-                              try {
-                                const response = await apiRequest('POST', '/api/admin/plants/seed');
-                                const data = await response.json();
-                                toast({
-                                  title: "Plants Added!",
-                                  description: data.message,
-                                });
-                                queryClient.invalidateQueries({ queryKey: [`/api/plants/search?q=${searchQuery || ''}`] });
-                                queryClient.invalidateQueries({ queryKey: ['/api/admin/plants/pending'] });
-                              } catch (error) {
-                                toast({
-                                  title: "Error",
-                                  description: "Failed to seed plants",
-                                  variant: "destructive",
-                                });
-                              }
-                            }}
-                          >
-                            <Leaf className="w-4 h-4 mr-1" />
-                            Seed 3 Plants
                           </Button>
                           <Button size="sm" variant="outline" data-testid="button-add-plant">
                             <Plus className="w-4 h-4 mr-1" />
@@ -431,22 +404,6 @@ export default function Admin() {
                 <APIKeysManager />
               </TabsContent>
 
-              <TabsContent value="users" className="mt-8">
-                <Card>
-                  <CardHeader>
-                    <CardTitle data-testid="text-user-management-title">User Management</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12" data-testid="user-management-placeholder">
-                      <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">User Management</h3>
-                      <p className="text-muted-foreground">
-                        Manage user accounts and permissions
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
