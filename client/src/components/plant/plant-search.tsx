@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import PlantCard from "./plant-card";
+import { EnhancedPlantCard } from "./enhanced-plant-card";
 import { Search, Filter, X, Loader } from "lucide-react";
 import type { Plant, PlantSearchFilters } from "@/types/plant";
 
@@ -318,11 +318,10 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
           ) : searchResults && searchResults.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="search-results-grid">
               {searchResults.map((plant: Plant) => (
-                <PlantCard
+                <EnhancedPlantCard
                   key={plant.id}
                   plant={plant}
                   viewMode="grid"
-                  showActions={true}
                 />
               ))}
             </div>
