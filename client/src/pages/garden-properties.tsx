@@ -234,8 +234,8 @@ export default function GardenProperties() {
     }
   };
 
-  const completedSteps = Math.min(currentStep - 1, 6);
-  const progress = (completedSteps / 6) * 100;
+  const completedSteps = Math.min(currentStep - 1, 5);
+  const progress = (completedSteps / 5) * 100;
 
   return (
     <div className="min-h-screen bg-background">
@@ -269,7 +269,7 @@ export default function GardenProperties() {
                 Garden Setup
               </h1>
               <span className="text-sm font-medium px-3 py-1.5 bg-white/95 text-[#004025] rounded-md border-2 border-[#004025] shadow-sm" data-testid="text-step-counter">
-                Step {currentStep} of 6
+                Step {currentStep} of 5
               </span>
             </div>
           </div>
@@ -279,7 +279,7 @@ export default function GardenProperties() {
               {GARDEN_STEPS[currentStep - 1]?.title}
             </p>
             <div className="flex gap-1">
-              {[...Array(6)].map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
                   onClick={() => isAdmin && setCurrentStep(i + 1)}
@@ -1053,6 +1053,90 @@ export default function GardenProperties() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-sun-soil">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Sun Exposure & Soil Properties</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 pt-0">
+                    <FormField
+                      control={form.control}
+                      name="sunExposure"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Daily Sun Exposure</FormLabel>
+                          <FormControl>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger data-testid="select-sun-exposure" className="h-8 text-xs">
+                                <SelectValue placeholder="Select sun exposure" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="full_sun">Full Sun (6+ hours)</SelectItem>
+                                <SelectItem value="partial_sun">Partial Sun (4-6 hours)</SelectItem>
+                                <SelectItem value="partial_shade">Partial Shade (2-4 hours)</SelectItem>
+                                <SelectItem value="full_shade">Full Shade (0-2 hours)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name="soilType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Soil Type</FormLabel>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger data-testid="select-soil-type" className="h-8 text-xs">
+                                  <SelectValue placeholder="Select soil type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="clay">Clay</SelectItem>
+                                  <SelectItem value="loam">Loam</SelectItem>
+                                  <SelectItem value="sand">Sand</SelectItem>
+                                  <SelectItem value="silt">Silt</SelectItem>
+                                  <SelectItem value="chalk">Chalk</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="soilPh"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Soil pH: {field.value?.toFixed(1)}</FormLabel>
+                            <FormControl>
+                              <Slider
+                                min={4}
+                                max={9}
+                                step={0.1}
+                                value={[field.value || 6.5]}
+                                onValueChange={(value) => field.onChange(value[0])}
+                                className="w-full"
+                                data-testid="slider-soil-ph"
+                              />
+                            </FormControl>
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>Acidic</span>
+                              <span>Alkaline</span>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
@@ -1134,95 +1218,8 @@ export default function GardenProperties() {
               </Card>
             )}
 
-            {/* Step 5: Sun & Soil */}
+            {/* Step 5: Plant Preferences */}
             {currentStep === 5 && (
-              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-sun-soil">
-                <CardHeader className="py-3">
-                  <CardTitle className="text-base">Sun Exposure & Soil Properties</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-0">
-                  <FormField
-                    control={form.control}
-                    name="sunExposure"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Daily Sun Exposure</FormLabel>
-                        <FormControl>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger data-testid="select-sun-exposure">
-                              <SelectValue placeholder="Select sun exposure" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="full_sun">Full Sun (6+ hours)</SelectItem>
-                              <SelectItem value="partial_sun">Partial Sun (4-6 hours)</SelectItem>
-                              <SelectItem value="partial_shade">Partial Shade (2-4 hours)</SelectItem>
-                              <SelectItem value="full_shade">Full Shade (0-2 hours)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="soilType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Soil Type</FormLabel>
-                          <FormControl>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <SelectTrigger data-testid="select-soil-type">
-                                <SelectValue placeholder="Select soil type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="clay">Clay</SelectItem>
-                                <SelectItem value="loam">Loam</SelectItem>
-                                <SelectItem value="sand">Sand</SelectItem>
-                                <SelectItem value="silt">Silt</SelectItem>
-                                <SelectItem value="chalk">Chalk</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="soilPh"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Soil pH: {field.value?.toFixed(1)}</FormLabel>
-                          <FormControl>
-                            <Slider
-                              min={4}
-                              max={9}
-                              step={0.1}
-                              value={[field.value || 6.5]}
-                              onValueChange={(value) => field.onChange(value[0])}
-                              className="w-full"
-                              data-testid="slider-soil-ph"
-                            />
-                          </FormControl>
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>4.0 (Acidic)</span>
-                            <span>9.0 (Alkaline)</span>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 6: Plant Preferences */}
-            {currentStep === 6 && (
               <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-plant-preferences">
                 <CardHeader className="py-3">
                   <CardTitle className="text-base">Plant Preferences</CardTitle>
@@ -1349,15 +1346,15 @@ export default function GardenProperties() {
               </Button>
 
               <Button
-                type={currentStep === 6 ? "submit" : "button"}
-                onClick={currentStep < 6 ? nextStep : undefined}
+                type={currentStep === 5 ? "submit" : "button"}
+                onClick={currentStep < 5 ? nextStep : undefined}
                 disabled={createGardenMutation.isPending}
-                variant={currentStep === 6 ? "default" : "default"}
+                variant={currentStep === 5 ? "default" : "default"}
                 data-testid="button-next-or-create"
               >
                 {createGardenMutation.isPending ? (
                   "Creating..."
-                ) : currentStep === 6 ? (
+                ) : currentStep === 5 ? (
                   "Generate Garden Design"
                 ) : (
                   <>

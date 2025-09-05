@@ -92,8 +92,8 @@ export const GARDEN_STEPS: GardenStep[] = [
   },
   {
     id: 2,
-    title: "Shape & Orientation",
-    description: "Garden shape, dimensions, slope, and direction",
+    title: "Garden Configuration",
+    description: "Shape, dimensions, slope, sun exposure, and soil",
     completed: false,
   },
   {
@@ -110,12 +110,6 @@ export const GARDEN_STEPS: GardenStep[] = [
   },
   {
     id: 5,
-    title: "Sun & Soil",
-    description: "Configure sun exposure and soil properties",
-    completed: false,
-  },
-  {
-    id: 6,
     title: "Plant Preferences",
     description: "Set your plant preferences and design approach",
     completed: false,
