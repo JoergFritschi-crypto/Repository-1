@@ -68,13 +68,13 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden bg-white border-2 border-[#004025] shadow-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-primary" />
+          <DialogTitle className="flex items-center gap-2 text-[#004025]">
+            <FlaskConical className="w-5 h-5 text-[#004025]" />
             Professional Soil Testing Services
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-gray-600">
             Find local soil testing laboratories and learn how to get your soil professionally analyzed for {location || 'your area'}
           </DialogDescription>
         </DialogHeader>
@@ -97,14 +97,14 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
 
         {data && !isLoading && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-4 bg-gray-100 border border-gray-200">
               <TabsTrigger value="providers">Providers</TabsTrigger>
               <TabsTrigger value="sampling">How to Sample</TabsTrigger>
               <TabsTrigger value="interpretation">Understanding Results</TabsTrigger>
               <TabsTrigger value="benefits">Why Test?</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="h-[500px] mt-4">
+            <ScrollArea className="h-[500px] mt-4 bg-gray-50 rounded-md p-3">
               {/* Providers Tab */}
               <TabsContent value="providers" className="space-y-4 px-1">
                 {data.providers.length === 0 ? (
@@ -117,10 +117,10 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
                   </Alert>
                 ) : (
                   data.providers.map((provider, index) => (
-                    <Card key={index} className="border-l-4" style={{ borderLeftColor: 'var(--primary)' }}>
-                      <CardHeader className="pb-3">
+                    <Card key={index} className="border-l-4 bg-white shadow-sm" style={{ borderLeftColor: '#004025' }}>
+                      <CardHeader className="pb-3 bg-gray-50">
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-base">{provider.name}</CardTitle>
+                          <CardTitle className="text-base text-[#004025]">{provider.name}</CardTitle>
                           <Badge className={getProviderTypeBadge(provider.type)}>
                             {provider.type}
                           </Badge>
@@ -199,14 +199,14 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
 
               {/* Sampling Tab */}
               <TabsContent value="sampling" className="space-y-4 px-1">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Beaker className="w-4 h-4" />
+                <Card className="bg-white border-gray-200 shadow-sm">
+                  <CardHeader className="bg-gray-50">
+                    <CardTitle className="text-base flex items-center gap-2 text-[#004025]">
+                      <Beaker className="w-4 h-4 text-[#004025]" />
                       How to Collect Soil Samples
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-3 bg-white">
                     {data.samplingGuidance.howToSample.map((step, index) => (
                       <div key={index} className="flex gap-3">
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
@@ -218,14 +218,14 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <ClipboardList className="w-4 h-4" />
+                <Card className="bg-white border-gray-200 shadow-sm">
+                  <CardHeader className="bg-gray-50">
+                    <CardTitle className="text-base flex items-center gap-2 text-[#004025]">
+                      <ClipboardList className="w-4 h-4 text-[#004025]" />
                       What Tests to Request
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="bg-white">
                     <ul className="space-y-2">
                       {data.samplingGuidance.whatToRequest.map((test, index) => (
                         <li key={index} className="flex items-start gap-2">
@@ -238,21 +238,21 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
                 </Card>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm">Best Time to Test</CardTitle>
+                  <Card className="bg-white border-gray-200 shadow-sm">
+                    <CardHeader className="pb-3 bg-gray-50">
+                      <CardTitle className="text-sm text-[#004025]">Best Time to Test</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">{data.samplingGuidance.bestTimeToTest}</p>
+                    <CardContent className="bg-white">
+                      <p className="text-sm text-gray-600">{data.samplingGuidance.bestTimeToTest}</p>
                     </CardContent>
                   </Card>
                   
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm">Testing Frequency</CardTitle>
+                  <Card className="bg-white border-gray-200 shadow-sm">
+                    <CardHeader className="pb-3 bg-gray-50">
+                      <CardTitle className="text-sm text-[#004025]">Testing Frequency</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">{data.samplingGuidance.frequency}</p>
+                    <CardContent className="bg-white">
+                      <p className="text-sm text-gray-600">{data.samplingGuidance.frequency}</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -260,11 +260,11 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
 
               {/* Interpretation Tab */}
               <TabsContent value="interpretation" className="space-y-4 px-1">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Key Metrics to Understand</CardTitle>
+                <Card className="bg-white border-gray-200 shadow-sm">
+                  <CardHeader className="bg-gray-50">
+                    <CardTitle className="text-base text-[#004025]">Key Metrics to Understand</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="bg-white">
                     <ul className="space-y-2">
                       {data.interpretation.keyMetrics.map((metric, index) => (
                         <li key={index} className="flex items-start gap-2">
@@ -277,11 +277,11 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
                 </Card>
 
                 {data.interpretation.optimalRanges && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Optimal Ranges for Ornamental Gardens</CardTitle>
+                  <Card className="bg-white border-gray-200 shadow-sm">
+                    <CardHeader className="bg-gray-50">
+                      <CardTitle className="text-base text-[#004025]">Optimal Ranges for Ornamental Gardens</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="bg-white">
                       <div className="space-y-2">
                         {Object.entries(data.interpretation.optimalRanges).map(([key, value]) => (
                           <div key={key} className="flex justify-between text-sm">
@@ -294,11 +294,11 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
                   </Card>
                 )}
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Common Soil Amendments</CardTitle>
+                <Card className="bg-white border-gray-200 shadow-sm">
+                  <CardHeader className="bg-gray-50">
+                    <CardTitle className="text-base text-[#004025]">Common Soil Amendments</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="bg-white">
                     <ul className="space-y-2">
                       {data.interpretation.commonAmendments.map((amendment, index) => (
                         <li key={index} className="text-sm">• {amendment}</li>
@@ -310,11 +310,11 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
 
               {/* Benefits Tab */}
               <TabsContent value="benefits" className="space-y-4 px-1">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Why Professional Soil Testing Matters</CardTitle>
+                <Card className="bg-white border-gray-200 shadow-sm">
+                  <CardHeader className="bg-gray-50">
+                    <CardTitle className="text-base text-[#004025]">Why Professional Soil Testing Matters</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-3 bg-white">
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-semibold text-sm mb-1">💰 Save Money</h4>
