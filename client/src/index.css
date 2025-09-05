@@ -470,6 +470,44 @@
     background-color: hsl(155, 50%, 12%) !important;
   }
   
+  /* Fix hardiness zone tabs visibility - make selected tab clearly visible */
+  button[role="tab"] {
+    background-color: hsl(145, 20%, 94%) !important;
+    color: hsl(155, 100%, 8%) !important;
+    border: 1px solid hsl(145, 20%, 88%) !important;
+    transition: all 0.2s ease;
+  }
+  
+  button[role="tab"][data-state="active"] {
+    background-color: hsl(51, 100%, 57%) !important;
+    color: hsl(155, 100%, 8%) !important;
+    border: 2px solid hsl(45, 100%, 50%) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(255, 213, 0, 0.3) !important;
+  }
+  
+  button[role="tab"]:hover:not([data-state="active"]) {
+    background-color: hsl(145, 20%, 88%) !important;
+    border-color: hsl(45, 100%, 50%) !important;
+  }
+  
+  .dark button[role="tab"] {
+    background-color: hsl(155, 30%, 15%) !important;
+    color: hsl(47, 20%, 95%) !important;
+    border: 1px solid hsl(155, 100%, 12%) !important;
+  }
+  
+  .dark button[role="tab"][data-state="active"] {
+    background-color: hsl(51, 100%, 57%) !important;
+    color: hsl(155, 100%, 8%) !important;
+    border: 2px solid hsl(45, 100%, 50%) !important;
+  }
+  
+  .dark button[role="tab"]:hover:not([data-state="active"]) {
+    background-color: hsl(155, 30%, 20%) !important;
+    border-color: hsl(45, 100%, 50%) !important;
+  }
+  
   /* Card hover effects with rotation */
   .card {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
