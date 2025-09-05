@@ -344,19 +344,6 @@ export default function GardenSketch({
           stroke="#004025"
           strokeWidth="2"
         />
-        
-        {/* Shape Label */}
-        <text
-          x={centerX}
-          y={centerY}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill="#004025"
-          fontSize="14"
-          fontWeight="500"
-        >
-          {shape.replace('-', ' ').toUpperCase()}
-        </text>
       </svg>
 
       <div className="mt-3 text-xs text-muted-foreground space-y-1">
