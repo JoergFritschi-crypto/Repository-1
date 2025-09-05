@@ -702,7 +702,7 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>USDA Hardiness Zone</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.usda_zone || ""} defaultValue={field.value || (climateData as any)?.usda_zone}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.usda_zone || ""}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-usda-zone">
                                     <SelectValue placeholder="Select your USDA zone" />
@@ -749,7 +749,7 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>RHS Hardiness Rating</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.rhs_zone || ""} defaultValue={field.value || (climateData as any)?.rhs_zone}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.rhs_zone || ""}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-rhs-zone">
                                     <SelectValue placeholder="Select your RHS rating" />
@@ -783,17 +783,17 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Hardiness Category</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.hardiness_category || ""} defaultValue={field.value || (climateData as any)?.hardiness_category}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.hardiness_category || ""}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-hardiness-category">
                                     <SelectValue placeholder="Select hardiness category" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="very-hardy">Very Hardy - Survives extreme cold (&lt;-10°C)</SelectItem>
-                                  <SelectItem value="hardy">Hardy - Tolerates normal frosts (-10 to -5°C)</SelectItem>
-                                  <SelectItem value="half-hardy">Half Hardy - Survives light frost (-5 to 0°C)</SelectItem>
-                                  <SelectItem value="tender">Tender - No frost tolerance (&gt;0°C)</SelectItem>
+                                  <SelectItem value="Very Hardy">Very Hardy - Survives extreme cold (&lt;-10°C)</SelectItem>
+                                  <SelectItem value="Hardy">Hardy - Tolerates normal frosts (-10 to -5°C)</SelectItem>
+                                  <SelectItem value="Half Hardy">Half Hardy - Survives light frost (-5 to 0°C)</SelectItem>
+                                  <SelectItem value="Tender">Tender - No frost tolerance (&gt;0°C)</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormDescription className="text-xs">
