@@ -8,7 +8,8 @@ import {
   Sun, 
   Snowflake, 
   Brain,
-  MapPin
+  MapPin,
+  Loader2
 } from "lucide-react";
 import type { ClimateData } from "@/types/garden";
 
@@ -103,22 +104,44 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
 
   if (isLoading) {
     return (
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex justify-between">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-24" />
+      <div>
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardContent className="py-8">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="relative">
+                <CloudSun className="w-12 h-12 text-primary/30" />
+                <Loader2 className="w-6 h-6 animate-spin text-primary absolute -bottom-1 -right-1" />
               </div>
-            ))}
+              <h3 className="text-lg font-medium text-primary">Fetching Climate Data</h3>
+              <p className="text-sm text-muted-foreground text-center max-w-md">
+                Analyzing 20 years of historical weather data for {location}...
+                <br />
+                <span className="text-xs">This may take up to 30 seconds for comprehensive analysis</span>
+              </p>
+              <div className="w-full max-w-xs">
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '60%' }} />
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
+        <div className="grid md:grid-cols-2 gap-8 opacity-50">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex justify-between">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
             <Skeleton className="h-6 w-32" />
           </CardHeader>
           <CardContent>
@@ -129,6 +152,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }

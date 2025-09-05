@@ -22,7 +22,7 @@ import ClimateReport from "@/components/garden/climate-report";
 import ClimateReportModal from "@/components/garden/climate-report-modal";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
 import { GARDEN_STEPS } from "@/types/garden";
-import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun } from "lucide-react";
+import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormDescription } from "@/components/ui/form";
 import flowerBand1 from "@/assets/flower-band-1.png";
@@ -628,7 +628,10 @@ export default function GardenProperties() {
                             data-testid="button-fetch-climate"
                           >
                             {climateLoading ? (
-                              <>Loading Climate Data...</>
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Fetching Climate Data... Please wait
+                              </>
                             ) : (
                               <>
                                 <CloudSun className="w-4 h-4 mr-2" />
