@@ -293,9 +293,9 @@ export default function GardenSketch({
             cy={centerY}
             r={innerRadius}
             fill="none"
-            stroke="#0066cc"
-            strokeWidth="2"
-            opacity="0.3"
+            stroke="#1e88e5"
+            strokeWidth="3"
+            opacity="0.6"
           />
           
           {/* Viewer Position Indicator */}
