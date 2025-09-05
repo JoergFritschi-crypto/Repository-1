@@ -89,7 +89,7 @@ export default function GardenProperties() {
       zipCode: "",
       units: "metric" as const,
       shape: "rectangle",
-      dimensions: { length: 10, width: 8 },
+      dimensions: { width: 4, length: 3 },
       slopePercentage: 5,
       slopeDirection: "S",
       sunExposure: "full_sun",
@@ -878,7 +878,7 @@ export default function GardenProperties() {
                                 <FormControl>
                                   <Input
                                     type="number"
-                                    placeholder="10"
+                                    placeholder="4"
                                     {...field}
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     className="h-8 text-xs"
@@ -898,7 +898,7 @@ export default function GardenProperties() {
                                 <FormControl>
                                   <Input
                                     type="number"
-                                    placeholder="15"
+                                    placeholder="3"
                                     {...field}
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     className="h-8 text-xs"
@@ -951,19 +951,32 @@ export default function GardenProperties() {
                           <FormItem>
                             <FormLabel className="text-xs">Slope: {field.value}%</FormLabel>
                             <FormControl>
-                              <Slider
-                                min={0}
-                                max={45}
-                                step={1}
-                                value={[field.value || 5]}
-                                onValueChange={(value) => field.onChange(value[0])}
-                                className="w-full"
-                                data-testid="slider-slope"
-                              />
+                              <div 
+                                className="relative p-2 rounded"
+                                style={{
+                                  background: `linear-gradient(to right, 
+                                    hsl(131, 69%, 95%) 0%, 
+                                    hsl(131, 69%, 85%) 20%, 
+                                    hsl(51, 100%, 85%) 40%, 
+                                    hsl(30, 100%, 85%) 70%, 
+                                    hsl(0, 65%, 90%) 100%)`
+                                }}
+                              >
+                                <Slider
+                                  min={0}
+                                  max={45}
+                                  step={1}
+                                  value={[field.value || 5]}
+                                  onValueChange={(value) => field.onChange(value[0])}
+                                  className="w-full"
+                                  data-testid="slider-slope"
+                                />
+                              </div>
                             </FormControl>
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>Flat</span>
-                              <span>Steep</span>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-green-600">Flat (0%)</span>
+                              <span className="text-yellow-600">Moderate</span>
+                              <span className="text-red-600">Steep (45%)</span>
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -975,21 +988,61 @@ export default function GardenProperties() {
                         name="slopeDirection"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs">Slope Direction</FormLabel>
+                            <FormLabel className="text-xs">Slope Facing...</FormLabel>
                             <FormControl>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <SelectTrigger data-testid="select-slope-direction" className="h-8 text-xs">
-                                  <SelectValue placeholder="Select direction" />
+                                  <SelectValue placeholder="Select slope facing direction" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="N">North (N)</SelectItem>
-                                  <SelectItem value="NE">Northeast (NE)</SelectItem>
-                                  <SelectItem value="E">East (E)</SelectItem>
-                                  <SelectItem value="SE">Southeast (SE)</SelectItem>
-                                  <SelectItem value="S">South (S)</SelectItem>
-                                  <SelectItem value="SW">Southwest (SW)</SelectItem>
-                                  <SelectItem value="W">West (W)</SelectItem>
-                                  <SelectItem value="NW">Northwest (NW)</SelectItem>
+                                <SelectContent className="max-w-xs">
+                                  <SelectItem value="N">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">North</span>
+                                      <span className="text-xs text-muted-foreground">Cooler, less direct sun</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="NE">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">Northeast</span>
+                                      <span className="text-xs text-muted-foreground">Morning sun, afternoon shade</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="E">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">East</span>
+                                      <span className="text-xs text-muted-foreground">Morning sun, cooler afternoons</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="SE">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">Southeast</span>
+                                      <span className="text-xs text-muted-foreground">Extended morning sun</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="S">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">South</span>
+                                      <span className="text-xs text-muted-foreground">Maximum sun exposure</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="SW">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">Southwest</span>
+                                      <span className="text-xs text-muted-foreground">Hot afternoon sun</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="W">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">West</span>
+                                      <span className="text-xs text-muted-foreground">Intense afternoon sun</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="NW">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">Northwest</span>
+                                      <span className="text-xs text-muted-foreground">Late afternoon light</span>
+                                    </div>
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>
