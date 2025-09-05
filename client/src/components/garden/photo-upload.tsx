@@ -27,6 +27,7 @@ interface GardenPhotoAnalysis {
 
 interface DesignStyleSuggestion {
   styleName: string;
+  styleCategory: string;
   description: string;
   keyFeatures: string[];
   plantPalette: string[];
@@ -34,6 +35,7 @@ interface DesignStyleSuggestion {
   maintenanceLevel: string;
   suitabilityScore: number;
   reasoning: string;
+  adaptations?: string;
 }
 
 export default function PhotoUpload({ 
@@ -541,6 +543,14 @@ export default function PhotoUpload({
                     <h5 className="text-xs font-semibold mb-1">Why This Works</h5>
                     <p className="text-xs">{style.reasoning}</p>
                   </div>
+
+                  {/* Adaptations if any */}
+                  {style.adaptations && (
+                    <div className="p-2 bg-indigo-50 rounded">
+                      <h5 className="text-xs font-semibold mb-1">Custom Adaptations</h5>
+                      <p className="text-xs">{style.adaptations}</p>
+                    </div>
+                  )}
 
                   <Button 
                     className="w-full" 

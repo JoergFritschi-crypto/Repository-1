@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { GARDEN_STYLES } from '../shared/gardenStyles';
 
 /*
 The newest Anthropic model is "claude-sonnet-4-20250514", not "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022" nor "claude-3-sonnet-20240229". 
@@ -27,6 +28,7 @@ export interface GardenPhotoAnalysis {
 
 export interface DesignStyleSuggestion {
   styleName: string;
+  styleCategory: string;
   description: string;
   keyFeatures: string[];
   plantPalette: string[];
@@ -34,6 +36,7 @@ export interface DesignStyleSuggestion {
   maintenanceLevel: string;
   suitabilityScore: number;
   reasoning: string;
+  adaptations?: string;
 }
 
 export async function analyzeGardenPhotos(
@@ -198,15 +201,35 @@ Site Analysis Results:
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
       max_tokens: 3000,
-      system: `You are an expert garden designer. Based on the site analysis and user preferences, suggest 3 distinct garden design styles that would work well. Each style should be unique and cater to different aspects of the user's preferences and site conditions. Output as JSON array with these keys for each style:
-      - styleName: catchy name for the design style
-      - description: 2-3 sentence overview of the style
-      - keyFeatures: array of 4-5 main design elements
-      - plantPalette: array of 5-7 specific plants that fit this style and the climate
+      system: `You are an expert garden designer specializing in established garden design styles. Based on the site analysis and user preferences, suggest 3 garden design styles from these established categories:
+
+      CORE STYLES (prioritize these):
+      1. Romantic/Country Garden - Lush informal plantings, flowing paths, abundant blooms (roses, lavender, peonies)
+      2. Classic/Formal Garden - Symmetry, geometric layouts, clipped hedges, focal points
+      3. Karl Foerster Contemporary - Naturalistic with ornamental grasses, ecological approach, year-round interest
+      4. Cottage Garden - Informal romantic mix, climbing plants, pastel colors, biodiversity
+      5. Mediterranean Garden - Drought-tolerant, terracotta, aromatic herbs, warm colors
+      6. Modernist/Minimalist - Clean lines, architectural plants, contemporary materials
+      7. Japanese Garden - Tranquil, rocks, water, moss, carefully pruned plants
+      
+      ADDITIONAL STYLES (use if especially suitable):
+      8. Gravel/Rock Garden - Xeriscape, alpine plants, low-water
+      9. Woodland/Ecological - Shade-loving natives, layered canopy, wildlife habitat
+      10. Tropical Garden - Exotic foliage, bold colors, lush paradise feel
+      
+      Select the 3 most suitable styles based on the site conditions and preferences. You may blend elements (e.g., Karl Foerster grasses in cottage style) but keep the primary style identity clear.
+      
+      Output as JSON array with these keys for each style:
+      - styleName: use the established style name (e.g., "Romantic/Country Garden")
+      - styleCategory: the base style type (e.g., "romantic-country")
+      - description: 2-3 sentence overview adapting the style to this specific garden
+      - keyFeatures: array of 4-5 main design elements specific to this implementation
+      - plantPalette: array of 5-7 specific plants suitable for this style AND the local climate
       - colorScheme: array of 3-4 dominant colors in the design
-      - maintenanceLevel: low/medium/high with brief explanation
+      - maintenanceLevel: "low", "medium", or "high" with brief explanation
       - suitabilityScore: 1-10 rating for how well it matches preferences and site
-      - reasoning: brief explanation of why this style works for this garden`,
+      - reasoning: explanation of why this specific style works for their garden
+      - adaptations: any modifications to the traditional style for their specific needs`,
       messages: [{
         role: 'user',
         content: [
