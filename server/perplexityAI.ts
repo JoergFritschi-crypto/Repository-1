@@ -363,18 +363,49 @@ class PerplexityAI {
       });
 
       const content = response.choices[0].message.content;
+      console.log('Perplexity response length:', content.length);
+      console.log('First 500 chars:', content.substring(0, 500));
       
       // Try to parse the JSON response
       let parsedContent;
       try {
+        // First attempt: direct parse
         parsedContent = JSON.parse(content);
       } catch (parseError) {
-        // If direct parsing fails, try to extract JSON from the response
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          parsedContent = JSON.parse(jsonMatch[0]);
-        } else {
-          throw parseError;
+        console.log('Initial parse failed, attempting to extract JSON from response');
+        
+        // Second attempt: extract JSON block from markdown code blocks
+        const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
+          try {
+            parsedContent = JSON.parse(codeBlockMatch[1]);
+          } catch (e) {
+            console.log('Code block parse failed');
+          }
+        }
+        
+        // Third attempt: find JSON object in the content
+        if (!parsedContent) {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              // Clean up common issues
+              let cleanedJson = jsonMatch[0]
+                .replace(/,\s*}/g, '}') // Remove trailing commas
+                .replace(/,\s*]/g, ']') // Remove trailing commas in arrays
+                .replace(/'/g, '"') // Replace single quotes with double quotes
+                .replace(/(\w+):/g, '"$1":') // Add quotes to unquoted keys
+                .replace(/:\s*'([^']*)'/g, ': "$1"') // Fix single-quoted values
+                .replace(/"\s*"/g, '","'); // Fix missing commas between strings
+              
+              parsedContent = JSON.parse(cleanedJson);
+            } catch (e) {
+              console.error('Failed to parse cleaned JSON:', e);
+              throw parseError;
+            }
+          } else {
+            throw parseError;
+          }
         }
       }
 
