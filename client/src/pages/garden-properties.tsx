@@ -23,6 +23,7 @@ import ClimateReportModal from "@/components/garden/climate-report-modal";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
 import SoilTestingModal from "@/components/garden/soil-testing-modal";
 import GardenSketch from "@/components/garden/garden-sketch";
+import PhotoUpload from "@/components/garden/photo-upload";
 import { GARDEN_STEPS } from "@/types/garden";
 import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -896,6 +897,15 @@ export default function GardenProperties() {
             {/* Step 2: Shape & Orientation - Combined */}
             {currentStep === 2 && (
               <div className="space-y-3">
+                {/* Photo Upload Section */}
+                <PhotoUpload 
+                  maxPhotos={6}
+                  onPhotosChange={(photos) => {
+                    // Handle photos for AI analysis if needed
+                    console.log(`Uploaded ${photos.length} photos`);
+                  }}
+                />
+                
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-shape-orientation">
                   <CardHeader className="py-3">
                     <CardTitle className="text-base">Garden Shape & Dimensions</CardTitle>
@@ -1671,6 +1681,9 @@ export default function GardenProperties() {
                       dimensions={form.watch("dimensions")}
                       units={form.watch("units")}
                       slopeDirection={form.watch("slopeDirection")}
+                      slopePercentage={form.watch("slopePercentage")}
+                      usdaZone={form.watch("usdaZone")}
+                      rhsZone={form.watch("rhsZone")}
                     />
                   </CardContent>
                 </Card>

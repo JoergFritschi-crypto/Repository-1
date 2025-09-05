@@ -1,24 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Lightbulb, TrendingUp } from 'lucide-react';
 
 interface GardenSketchProps {
   shape: string;
   dimensions: Record<string, number>;
   units: 'metric' | 'imperial';
   slopeDirection?: string;
+  slopePercentage?: number;
+  usdaZone?: string;
+  rhsZone?: string;
 }
 
 export default function GardenSketch({
   shape,
   dimensions,
   units,
-  slopeDirection = 'N'
+  slopeDirection = 'N',
+  slopePercentage = 5,
+  usdaZone = '',
+  rhsZone = ''
 }: GardenSketchProps) {
   const [cardinalRotation, setCardinalRotation] = useState(0);
   const [viewerRotation, setViewerRotation] = useState(0);
   const [isDraggingCardinal, setIsDraggingCardinal] = useState(false);
   const [isDraggingViewer, setIsDraggingViewer] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: 400, height: 400 });
+  const [showAssessment, setShowAssessment] = useState(false);
+  const [assessment, setAssessment] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -201,25 +211,93 @@ export default function GardenSketch({
   
   const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
+  // Generate garden assessment based on conditions
+  const generateAssessment = () => {
+    const tips: string[] = [];
+    
+    // Get actual cardinal direction considering rotation
+    const actualDirection = directions[(Math.round(cardinalRotation / 45) + directions.indexOf(slopeDirection)) % 8];
+    
+    // Slope assessment
+    if (slopePercentage > 0) {
+      if (slopePercentage < 10) {
+        tips.push(`🌱 Gentle ${slopePercentage}% slope facing ${actualDirection} - Ideal for most plants with good drainage`);
+      } else if (slopePercentage < 25) {
+        tips.push(`⛰️ Moderate ${slopePercentage}% slope facing ${actualDirection} - Consider terracing for better planting areas`);
+      } else {
+        tips.push(`🏔️ Steep ${slopePercentage}% slope facing ${actualDirection} - Requires erosion control and terracing`);
+      }
+    }
+    
+    // Sun exposure based on slope direction
+    if (actualDirection.includes('S')) {
+      tips.push('☀️ South-facing slope maximizes sun exposure - Perfect for sun-loving plants and earlier spring growth');
+    } else if (actualDirection.includes('N')) {
+      tips.push('🌤️ North-facing slope provides cooler conditions - Ideal for shade-tolerant and moisture-loving plants');
+    } else if (actualDirection.includes('E')) {
+      tips.push('🌅 East-facing slope gets morning sun - Great for plants that prefer gentler morning light');
+    } else if (actualDirection.includes('W')) {
+      tips.push('🌇 West-facing slope receives afternoon sun - Consider heat-tolerant plants for intense afternoon exposure');
+    }
+    
+    // Hardiness zone tips
+    if (usdaZone) {
+      const zone = parseInt(usdaZone);
+      if (zone <= 5) {
+        tips.push(`❄️ USDA Zone ${usdaZone} - Focus on cold-hardy perennials and protect tender plants in winter`);
+      } else if (zone <= 8) {
+        tips.push(`🌡️ USDA Zone ${usdaZone} - Wide variety of plants possible with proper seasonal care`);
+      } else {
+        tips.push(`🌴 USDA Zone ${usdaZone} - Year-round growing possible, watch for heat stress in summer`);
+      }
+    }
+    
+    // Viewing angle tips
+    const viewAngle = (viewerRotation + 360) % 360;
+    if (viewAngle >= 315 || viewAngle < 45) {
+      tips.push('👁️ Main view from South - Design will emphasize the back/north side of plantings');
+    } else if (viewAngle >= 45 && viewAngle < 135) {
+      tips.push('👁️ Main view from West - Morning shadows will create dramatic effects');
+    } else if (viewAngle >= 135 && viewAngle < 225) {
+      tips.push('👁️ Main view from North - Front-facing plants will get maximum visual impact');
+    } else {
+      tips.push('👁️ Main view from East - Evening light will highlight your garden beautifully');
+    }
+    
+    // Combined factors
+    if (slopePercentage > 15 && actualDirection.includes('S')) {
+      tips.push('💡 Steep south slope creates a natural microclimate - Can grow plants from 1 zone warmer');
+    }
+    if (slopePercentage > 10) {
+      tips.push('💧 Slope aids drainage - Choose plants that prefer well-drained soil, avoid bog plants');
+    }
+    
+    setAssessment(tips);
+    setShowAssessment(true);
+  };
+
   return (
     <div ref={containerRef} className="w-full">
-      <div className="mb-3 text-sm space-y-1">
-        <div className="flex justify-between">
-          <span className="font-medium">Dimensions:</span>
-          <span>
-            {shape === 'circle' 
-              ? `Radius: ${dimensions.radius || 5} ${units === 'metric' ? 'm' : 'ft'}`
-              : `${dimensions.width || 4} x ${dimensions.length || 3} ${units === 'metric' ? 'm' : 'ft'}`
-            }
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium">Area:</span>
-          <span>{calculateArea()} {units === 'metric' ? 'm²' : 'sq ft'}</span>
-        </div>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left side - Canvas */}
+        <div>
+          <div className="mb-3 text-sm space-y-1">
+            <div className="flex justify-between">
+              <span className="font-medium">Dimensions:</span>
+              <span>
+                {shape === 'circle' 
+                  ? `Radius: ${dimensions.radius || 5} ${units === 'metric' ? 'm' : 'ft'}`
+                  : `${dimensions.width || 4} x ${dimensions.length || 3} ${units === 'metric' ? 'm' : 'ft'}`
+                }
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Area:</span>
+              <span>{calculateArea()} {units === 'metric' ? 'm²' : 'sq ft'}</span>
+            </div>
+          </div>
 
-      <svg
+          <svg
         ref={svgRef}
         width={containerSize.width}
         height={containerSize.height}
@@ -390,9 +468,57 @@ export default function GardenSketch({
         />
       </svg>
 
-      <div className="mt-3 text-xs text-muted-foreground space-y-1">
-        <p>🔴 Drag the red N marker to orient North to your property</p>
-        <p>👁️ Drag the blue eye to set your main viewing angle</p>
+          <div className="mt-3 text-xs text-muted-foreground space-y-1">
+            <p>🔴 Drag the red N marker to orient North to your property</p>
+            <p>👁️ Drag the blue eye to set your main viewing angle</p>
+          </div>
+          
+          {/* Assessment Button */}
+          <Button 
+            onClick={generateAssessment}
+            className="w-full mt-3"
+            variant="outline"
+            size="sm"
+            data-testid="button-assess-garden"
+          >
+            <Lightbulb className="w-4 h-4 mr-2" />
+            Analyze Garden Conditions
+          </Button>
+        </div>
+
+        {/* Right side - Assessment Panel */}
+        {showAssessment && (
+          <Card className="border-green-300 bg-green-50/50">
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-green-600" />
+                Garden Assessment
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-2">
+                {assessment.map((tip, index) => (
+                  <div 
+                    key={index} 
+                    className="text-xs p-2 bg-white rounded-lg border border-green-200"
+                  >
+                    {tip}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Summary Box */}
+              <div className="mt-4 p-3 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg">
+                <p className="text-xs font-semibold mb-1">🌿 Overall Recommendation:</p>
+                <p className="text-xs">
+                  Based on your garden's orientation and conditions, focus on plants that match 
+                  your specific microclimate. Consider the viewing angle when placing focal points 
+                  and specimen plants for maximum visual impact.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
