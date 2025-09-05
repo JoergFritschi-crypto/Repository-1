@@ -296,6 +296,63 @@ class PerplexityAI {
     }
   }
 
+  // Regional fallbacks for countries without local testing services
+  private getRegionalFallbacks(country: string): string[] {
+    const fallbacks: { [key: string]: string[] } = {
+      // Europe - Small countries
+      'Andorra': ['Spain', 'France'],
+      'Monaco': ['France', 'Italy'],
+      'Liechtenstein': ['Switzerland', 'Austria'],
+      'San Marino': ['Italy'],
+      'Vatican City': ['Italy'],
+      'Malta': ['Italy', 'UK'],
+      'Luxembourg': ['Belgium', 'Germany', 'France'],
+      
+      // Caribbean
+      'Antigua and Barbuda': ['Trinidad and Tobago', 'USA'],
+      'Saint Kitts and Nevis': ['Trinidad and Tobago', 'Puerto Rico'],
+      'Saint Lucia': ['Trinidad and Tobago', 'Barbados'],
+      'Saint Vincent and the Grenadines': ['Trinidad and Tobago', 'Barbados'],
+      'Grenada': ['Trinidad and Tobago', 'Barbados'],
+      'Dominica': ['Trinidad and Tobago', 'Puerto Rico'],
+      
+      // Pacific Islands
+      'Nauru': ['Australia', 'New Zealand'],
+      'Tuvalu': ['Australia', 'New Zealand'],
+      'Palau': ['Philippines', 'Australia'],
+      'Marshall Islands': ['USA', 'Australia'],
+      'Kiribati': ['Australia', 'New Zealand'],
+      'Samoa': ['New Zealand', 'Australia'],
+      'Tonga': ['New Zealand', 'Australia'],
+      'Vanuatu': ['Australia', 'New Zealand'],
+      'Solomon Islands': ['Australia', 'Papua New Guinea'],
+      
+      // Africa - Small countries
+      'Sao Tome and Principe': ['Portugal', 'Ghana', 'Nigeria'],
+      'Seychelles': ['South Africa', 'Kenya'],
+      'Comoros': ['Madagascar', 'South Africa'],
+      'Cape Verde': ['Portugal', 'Senegal'],
+      'Djibouti': ['Ethiopia', 'Kenya'],
+      'Gambia': ['Senegal'],
+      'Guinea-Bissau': ['Senegal', 'Portugal'],
+      'Lesotho': ['South Africa'],
+      'Swaziland': ['South Africa'],
+      
+      // Asia - Small countries
+      'Maldives': ['India', 'Sri Lanka'],
+      'Bhutan': ['India'],
+      'Brunei': ['Malaysia', 'Singapore'],
+      'East Timor': ['Indonesia', 'Australia'],
+      
+      // Middle East
+      'Bahrain': ['Saudi Arabia', 'UAE'],
+      'Qatar': ['Saudi Arabia', 'UAE'],
+      'Kuwait': ['Saudi Arabia', 'UAE'],
+    };
+    
+    return fallbacks[country] || [];
+  }
+
   async findSoilTestingServices(location: string): Promise<{
     providers: Array<{
       name: string;
@@ -320,17 +377,29 @@ class PerplexityAI {
       commonAmendments: string[];
     };
   }> {
+    // Get regional fallbacks if needed
+    const fallbackCountries = this.getRegionalFallbacks(location);
+    const searchLocations = fallbackCountries.length > 0 
+      ? `${location} (or nearby: ${fallbackCountries.join(', ')})` 
+      : location;
+    
     const messages: PerplexityMessage[] = [
       {
         role: 'system',
         content: `You are an expert gardening advisor with extensive knowledge of soil testing services worldwide.
           Find local soil testing laboratories and services for the specified location.
+          If the primary country doesn't have local services, provide options from nearby countries.
           Prioritize professional labs, university extension services, and government agricultural services.
+          For small countries, include services from neighboring countries that accept international samples.
+          Always indicate which country each service is located in.
           Output your response in JSON format with the exact structure specified.`
       },
       {
         role: 'user',
-        content: `Find professional soil testing services for location: ${location}
+        content: `Find professional soil testing services for: ${searchLocations}
+          
+          ${fallbackCountries.length > 0 ? 
+            `Note: ${location} may not have local testing facilities. Please include services from ${fallbackCountries.join(' and ')} that accept samples from ${location}. Clearly indicate which country each lab is in.` : ''}
           
           Please provide:
           1. At least 3 local soil testing providers (commercial labs, university extensions, or government services)
