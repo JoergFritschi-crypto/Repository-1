@@ -40,7 +40,7 @@ class PerplexityAI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: options.model || 'llama-3.1-sonar-small-128k-online',
+        model: options.model || 'sonar-pro',
         messages,
         max_tokens: options.maxTokens || 1024,
         temperature: options.temperature || 0.7,
@@ -356,7 +356,7 @@ class PerplexityAI {
 
     try {
       const response = await this.makeRequest(messages, {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         maxTokens: 2500,
         temperature: 0.3,
         searchRecencyFilter: 'month'
