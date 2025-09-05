@@ -1432,6 +1432,10 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
     const years = new Set(data.days.map(day => new Date(day.datetime).getFullYear()));
     const yearsArray = Array.from(years).sort();
     
+    // Calculate enhanced climate metrics
+    const heatZone = calculateHeatZone(data.days);
+    const koppenClimate = determineKoppenClimate(data.days, coordinates?.latitude || 0);
+    const additionalMetrics = calculateClimateMetrics(data.days);
     
     // Process and structure the climate data
     return {
@@ -1439,9 +1443,19 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       rhs_zone: zones.rhs,
       hardiness_category: zones.category,
       temperature_range: zones.tempRange,
+      ahs_heat_zone: heatZone,
+      koppen_climate: koppenClimate,
       annual_rainfall: calculateAnnualRainfall(data.days),
       avg_temp_min: minTemp,
       avg_temp_max: calculateAverageTemp(data.days, 'tempmax'),
+      avg_humidity: additionalMetrics.avgHumidity,
+      avg_wind_speed: additionalMetrics.avgWindSpeed,
+      sunshine_percent: additionalMetrics.estimatedSunshinePercent,
+      wettest_month: additionalMetrics.wettestMonth,
+      wettest_month_precip: additionalMetrics.wettestMonthPrecip,
+      driest_month: additionalMetrics.driestMonth,
+      driest_month_precip: additionalMetrics.driestMonthPrecip,
+      monthly_precip_pattern: additionalMetrics.monthlyPrecipPattern,
       frost_dates: calculateFrostDates(data.days),
       growing_season: calculateGrowingSeason(data.days),
       monthly_data: processMonthlyData(data.days),
@@ -1463,6 +1477,142 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
 // Keep old function for backward compatibility
 async function fetchClimateData(location: string, coordinates?: { latitude: number; longitude: number } | null): Promise<any> {
   return fetchClimateDataWithCoordinates(location, coordinates);
+}
+
+// Calculate AHS Heat Zone based on days above 30°C (86°F)
+function calculateHeatZone(days: any[]): number {
+  // Count days with max temp above 30°C
+  const hotDays = days.filter(day => day.tempmax > 30).length;
+  const avgHotDaysPerYear = hotDays / Math.max(1, days.length / 365);
+  
+  // AHS Heat Zone mapping
+  const heatZones = [
+    { zone: 1, min: 0, max: 1 },
+    { zone: 2, min: 1, max: 7 },
+    { zone: 3, min: 7, max: 14 },
+    { zone: 4, min: 14, max: 30 },
+    { zone: 5, min: 30, max: 45 },
+    { zone: 6, min: 45, max: 60 },
+    { zone: 7, min: 60, max: 90 },
+    { zone: 8, min: 90, max: 120 },
+    { zone: 9, min: 120, max: 150 },
+    { zone: 10, min: 150, max: 180 },
+    { zone: 11, min: 180, max: 210 },
+    { zone: 12, min: 210, max: 365 }
+  ];
+  
+  for (const zone of heatZones) {
+    if (avgHotDaysPerYear >= zone.min && avgHotDaysPerYear < zone.max) {
+      return zone.zone;
+    }
+  }
+  return 12; // Maximum heat zone
+}
+
+// Determine Köppen climate classification
+function determineKoppenClimate(days: any[], latitude: number): string {
+  // Calculate basic metrics
+  const avgTemp = days.reduce((sum, day) => sum + day.temp, 0) / days.length;
+  const totalPrecip = days.reduce((sum, day) => sum + (day.precip || 0), 0);
+  const avgPrecipPerYear = totalPrecip / Math.max(1, days.length / 365);
+  
+  // Group by month to find seasonal patterns
+  const monthlyData: { [key: number]: { temp: number[], precip: number[] } } = {};
+  days.forEach(day => {
+    const month = new Date(day.datetime).getMonth();
+    if (!monthlyData[month]) {
+      monthlyData[month] = { temp: [], precip: [] };
+    }
+    monthlyData[month].temp.push(day.temp);
+    monthlyData[month].precip.push(day.precip || 0);
+  });
+  
+  // Calculate monthly averages
+  const monthlyAvgs = Object.entries(monthlyData).map(([month, data]) => ({
+    month: parseInt(month),
+    avgTemp: data.temp.reduce((a, b) => a + b, 0) / data.temp.length,
+    totalPrecip: data.precip.reduce((a, b) => a + b, 0)
+  }));
+  
+  const coldestMonth = Math.min(...monthlyAvgs.map(m => m.avgTemp));
+  const hottestMonth = Math.max(...monthlyAvgs.map(m => m.avgTemp));
+  
+  // Simplified Köppen classification
+  if (coldestMonth >= 18) {
+    // Tropical (A)
+    if (avgPrecipPerYear > 1500) {
+      return "Af - Tropical rainforest";
+    } else if (avgPrecipPerYear > 600) {
+      return "Aw - Tropical savanna";
+    } else {
+      return "Am - Tropical monsoon";
+    }
+  } else if (coldestMonth <= -3) {
+    // Continental (D)
+    if (avgPrecipPerYear > 600) {
+      return hottestMonth > 22 ? "Dfa - Hot summer continental" : "Dfb - Warm summer continental";
+    } else {
+      return "Dfc - Subarctic";
+    }
+  } else if (avgPrecipPerYear < 500) {
+    // Arid (B)
+    return avgTemp > 18 ? "BWh - Hot desert" : "BSk - Cold steppe";
+  } else {
+    // Temperate (C)
+    if (Math.abs(latitude) < 40) {
+      if (avgPrecipPerYear > 1000) {
+        return hottestMonth > 22 ? "Cfa - Humid subtropical" : "Cfb - Oceanic";
+      } else {
+        return "Csa - Mediterranean";
+      }
+    } else {
+      return hottestMonth > 22 ? "Cfb - Oceanic" : "Cfc - Subpolar oceanic";
+    }
+  }
+}
+
+// Calculate additional climate metrics
+function calculateClimateMetrics(days: any[]) {
+  // Average humidity
+  const avgHumidity = days.reduce((sum, day) => sum + (day.humidity || 0), 0) / days.length;
+  
+  // Average wind speed
+  const avgWindSpeed = days.reduce((sum, day) => sum + (day.windspeed || 0), 0) / days.length;
+  
+  // Sunshine hours (estimate from cloud cover if solar radiation not available)
+  const avgCloudCover = days.reduce((sum, day) => sum + (day.cloudcover || 0), 0) / days.length;
+  const estimatedSunshinePercent = 100 - avgCloudCover;
+  
+  // Precipitation pattern (wet/dry seasons)
+  const monthlyPrecip: number[] = new Array(12).fill(0);
+  const monthlyCounts: number[] = new Array(12).fill(0);
+  
+  days.forEach(day => {
+    const month = new Date(day.datetime).getMonth();
+    monthlyPrecip[month] += day.precip || 0;
+    monthlyCounts[month]++;
+  });
+  
+  const monthlyAvgPrecip = monthlyPrecip.map((total, i) => 
+    monthlyCounts[i] > 0 ? total / monthlyCounts[i] : 0
+  );
+  
+  // Find wettest and driest months
+  const wettestMonthIndex = monthlyAvgPrecip.indexOf(Math.max(...monthlyAvgPrecip));
+  const driestMonthIndex = monthlyAvgPrecip.indexOf(Math.min(...monthlyAvgPrecip));
+  
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  return {
+    avgHumidity: Math.round(avgHumidity),
+    avgWindSpeed: Math.round(avgWindSpeed),
+    estimatedSunshinePercent: Math.round(estimatedSunshinePercent),
+    wettestMonth: months[wettestMonthIndex],
+    wettestMonthPrecip: Math.round(monthlyAvgPrecip[wettestMonthIndex] * 30),
+    driestMonth: months[driestMonthIndex],
+    driestMonthPrecip: Math.round(monthlyAvgPrecip[driestMonthIndex] * 30),
+    monthlyPrecipPattern: monthlyAvgPrecip.map(p => Math.round(p * 30))
+  };
 }
 
 function determineHardinessZones(avgMinTemp: number, coordinates?: { latitude: number } | null) {
