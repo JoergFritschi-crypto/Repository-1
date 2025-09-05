@@ -1461,9 +1461,9 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       temperature_range: zones.tempRange,
       ahs_heat_zone: heatZone,
       koppen_climate: koppenClimate,
-      annual_rainfall: calculateAnnualRainfall(data.days),
-      avg_temp_min: minTemp,
-      avg_temp_max: calculateAverageTemp(data.days, 'tempmax'),
+      annual_rainfall: parseFloat(calculateAnnualRainfall(data.days).toFixed(1)),
+      avg_temp_min: parseFloat(minTemp.toFixed(1)),
+      avg_temp_max: parseFloat(calculateAverageTemp(data.days, 'tempmax').toFixed(1)),
       avg_humidity: additionalMetrics.avgHumidity,
       avg_wind_speed: additionalMetrics.avgWindSpeed,
       sunshine_percent: additionalMetrics.estimatedSunshinePercent,
@@ -1480,7 +1480,7 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       data_range: {
         years_included: yearsArray,
         total_years: years.size,
-        date_range: `${startDateStr} to ${endDateStr}`,
+        date_range: `historical data ${yearsArray[0]} - ${yearsArray[yearsArray.length - 1]}`,
         total_days: data.days.length
       }
     };
@@ -1617,17 +1617,17 @@ function calculateClimateMetrics(days: any[]) {
   const wettestMonthIndex = monthlyAvgPrecip.indexOf(Math.max(...monthlyAvgPrecip));
   const driestMonthIndex = monthlyAvgPrecip.indexOf(Math.min(...monthlyAvgPrecip));
   
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   
   return {
-    avgHumidity: Math.round(avgHumidity),
-    avgWindSpeed: Math.round(avgWindSpeed),
-    estimatedSunshinePercent: Math.round(estimatedSunshinePercent),
+    avgHumidity: parseFloat(avgHumidity.toFixed(1)),
+    avgWindSpeed: parseFloat(avgWindSpeed.toFixed(1)),
+    estimatedSunshinePercent: parseFloat(estimatedSunshinePercent.toFixed(1)),
     wettestMonth: months[wettestMonthIndex],
-    wettestMonthPrecip: Math.round(monthlyAvgPrecip[wettestMonthIndex] * 30),
+    wettestMonthPrecip: parseFloat((monthlyAvgPrecip[wettestMonthIndex] * 30).toFixed(1)),
     driestMonth: months[driestMonthIndex],
-    driestMonthPrecip: Math.round(monthlyAvgPrecip[driestMonthIndex] * 30),
-    monthlyPrecipPattern: monthlyAvgPrecip.map(p => Math.round(p * 30))
+    driestMonthPrecip: parseFloat((monthlyAvgPrecip[driestMonthIndex] * 30).toFixed(1)),
+    monthlyPrecipPattern: monthlyAvgPrecip.map(p => parseFloat((p * 30).toFixed(1)))
   };
 }
 
@@ -1720,38 +1720,111 @@ function determineHardinessZones(avgMinTemp: number, coordinates?: { latitude: n
 }
 
 function generateGardeningAdvice(zones: any, weatherData: any) {
-  const advice = [];
+  // Calculate additional metrics for recommendations
+  const avgRainfall = weatherData.days.reduce((sum: number, day: any) => sum + (day.precip || 0), 0) / Math.max(1, weatherData.days.length);
+  const avgTemp = weatherData.days.reduce((sum: number, day: any) => sum + (day.temp || 0), 0) / Math.max(1, weatherData.days.length);
+  const frostDays = weatherData.days.filter((day: any) => day.tempmin <= 0).length;
+  const hotDays = weatherData.days.filter((day: any) => day.tempmax >= 30).length;
   
-  // Based on hardiness zone
+  let recommendations = [];
+  
+  // Comprehensive climate-specific advice (4x enhanced)
   if (zones.zoneNumber <= 6) {
-    advice.push("Your cold climate is ideal for many temperate plants but requires winter protection for tender species.");
-    advice.push("Consider cold frames or greenhouses for extending the growing season.");
+    recommendations.push(
+      "Cold Climate Garden Strategy: Your region experiences significant winter cold, making it ideal for temperate plants that require winter chill hours. " +
+      "Plant cold-hardy perennials like Siberian iris, peonies, hostas, and astilbe which thrive in zones 3-6. " +
+      "For vegetables, focus on cool-season crops: kale, Brussels sprouts, cabbage, and root vegetables like carrots and parsnips. " +
+      "Spring-flowering bulbs such as tulips, daffodils, and crocuses will naturalize beautifully. " +
+      "Consider native trees like sugar maple, white birch, and Colorado blue spruce for year-round structure. "
+    );
+    
+    recommendations.push(
+      "Season Extension Techniques: Maximize your shorter growing season by starting seeds indoors 6-8 weeks before last frost. " +
+      "Install cold frames or hoop houses to extend harvest into late autumn and start spring crops earlier. " +
+      "Use row covers and cloches for individual plant protection during unexpected late spring or early fall frosts. " +
+      "Consider heated propagation mats for early seed starting and succession planting for continuous harvests. " +
+      "Plant quick-maturing varieties and use black plastic mulch to warm soil for heat-loving crops like tomatoes. "
+    );
   } else if (zones.zoneNumber <= 8) {
-    advice.push("Your moderate climate supports a wide variety of plants including most UK natives.");
-    advice.push("Protect half-hardy plants during unexpected frosts.");
+    recommendations.push(
+      "Moderate Climate Opportunities: Your balanced climate supports the widest variety of plants, from traditional cottage garden favorites to Mediterranean species. " +
+      "Grow classic English garden plants: roses, lavender, delphiniums, foxgloves, and hollyhocks alongside ornamental grasses. " +
+      "For edibles, enjoy extended seasons for tomatoes, peppers, squash, and beans, plus year-round lettuce and herbs. " +
+      "Plant fruit trees like apples, pears, and plums, plus soft fruits including raspberries, blackberries, and gooseberries. " +
+      "Mediterranean herbs like rosemary, sage, thyme, and oregano will thrive with minimal winter protection. "
+    );
+    
+    recommendations.push(
+      "Year-Round Garden Interest: Take advantage of your mild winters by incorporating plants for four-season appeal. " +
+      "Plant winter-flowering shrubs like witch hazel, winter jasmine, and mahonia for color during dormant months. " +
+      "Include evergreen structure with boxwood, yew, and holly for year-round form and winter bird habitat. " +
+      "Underplant trees with spring bulbs, summer perennials, and autumn cyclamen for continuous blooming. " +
+      "Consider ornamental bark trees like paperbark maple and coral bark Japanese maple for winter interest. "
+    );
   } else {
-    advice.push("Your mild climate allows for year-round gardening with many Mediterranean plants thriving.");
-    advice.push("Focus on drought-tolerant species and provide shade for cool-season crops.");
+    recommendations.push(
+      "Warm Climate Gardening: Your mild to tropical climate allows for year-round growing and exotic plant choices. " +
+      "Grow tropical and subtropical plants: palms, bird of paradise, bougainvillea, hibiscus, and plumeria outdoors year-round. " +
+      "Cultivate citrus trees (oranges, lemons, grapefruits), avocados, and tropical fruits like mangoes or papayas. " +
+      "For vegetables, enjoy continuous harvests of tomatoes, peppers, eggplants, and grow heat-lovers like okra and sweet potatoes. " +
+      "Create lush tropical gardens with gingers, heliconias, bananas, and cannas for dramatic foliage and flowers. "
+    );
+    
+    recommendations.push(
+      "Heat and Drought Management: Success in warm climates requires smart water management and heat mitigation strategies. " +
+      "Install drip irrigation or soaker hoses for efficient water delivery directly to root zones, reducing evaporation loss. " +
+      "Use thick organic mulch (3-4 inches) to retain moisture, regulate soil temperature, and suppress weeds. " +
+      "Create microclimates with shade cloth or pergolas for cool-season vegetables and shade-loving plants. " +
+      "Choose drought-tolerant natives and succulents like agave, aloe, and sedums for low-maintenance areas. "
+    );
   }
 
-  // Based on RHS rating
-  switch(zones.rhs) {
-    case 'H7':
-    case 'H6':
-      advice.push("Hardy perennials and alpines will thrive. Choose plants rated H6 or hardier.");
-      break;
-    case 'H5':
-    case 'H4':
-      advice.push("Most common garden plants will be suitable. Protect H3-rated plants in winter.");
-      break;
-    case 'H3':
-      advice.push("Coastal and Mediterranean plants work well. Provide winter protection for tender species.");
-      break;
-    default:
-      advice.push("Consider using fleece, cloches, or bringing tender plants indoors during winter.");
+  // Rainfall-specific recommendations
+  if (avgRainfall < 1.5) {
+    recommendations.push(
+      "Water Conservation Strategies: Your lower rainfall requires thoughtful water management for garden success. " +
+      "Design rain gardens and swales to capture and infiltrate storm water runoff for natural irrigation. " +
+      "Install rain barrels or cisterns to harvest roof water for dry period supplementation. " +
+      "Group plants by water needs (hydrozoning) to optimize irrigation efficiency and reduce waste. " +
+      "Select drought-adapted plants like lavender, Russian sage, sedum, yarrow, and ornamental grasses. " +
+      "Improve soil with compost to increase water retention capacity by up to 20%. "
+    );
+  } else if (avgRainfall > 3) {
+    recommendations.push(
+      "Managing High Rainfall: Your abundant precipitation requires excellent drainage and appropriate plant selection. " +
+      "Improve heavy clay soils with organic matter and consider raised beds for better drainage control. " +
+      "Plant rain garden species like astilbe, cardinal flower, Joe Pye weed, and native ferns that thrive in moisture. " +
+      "Choose disease-resistant varieties as fungal issues are more common in humid conditions. " +
+      "Install French drains or dry wells in problem areas to prevent waterlogging and root rot. " +
+      "Embrace moss gardens and moisture-loving groundcovers like ajuga and sweet woodruff. "
+    );
   }
 
-  return advice;
+  // Specialized recommendations based on climate extremes
+  if (frostDays > 100) {
+    recommendations.push(
+      "Frost Protection Essentials: With frequent frosts, protection strategies are crucial for garden success. " +
+      "Maintain a supply of frost blankets, old sheets, and cardboard boxes for emergency overnight protection. " +
+      "Plant frost-tender species near south-facing walls or large rocks that absorb and radiate heat. " +
+      "Wait until soil warms to 60°F before planting warm-season crops to avoid stunted growth. " +
+      "Choose frost-hardy vegetables like kale, spinach, and mâche that sweeten after frost exposure. " +
+      "Mulch perennials after ground freezes to prevent heaving from freeze-thaw cycles. "
+    );
+  }
+
+  if (hotDays > 60) {
+    recommendations.push(
+      "Heat Stress Prevention: Your numerous hot days require heat management for optimal plant health. " +
+      "Provide afternoon shade for sensitive plants using shade cloth (30-50% shade factor) during peak summer. " +
+      "Water deeply in early morning to hydrate plants before heat stress begins. " +
+      "Choose heat-tolerant varieties: Armenian cucumber, yard-long beans, Malabar spinach, and cherry tomatoes. " +
+      "Apply reflective mulch around plants to reduce soil temperature and increase light for fruiting. " +
+      "Mist sensitive plants during extreme heat events to provide evaporative cooling. "
+    );
+  }
+
+  // Join all recommendations into a single comprehensive string
+  return recommendations.join(" ");
 }
 
 function calculateAnnualRainfall(days: any[]): number {

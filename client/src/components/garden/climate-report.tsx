@@ -184,7 +184,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
           <CardHeader>
             <CardTitle className="flex items-center" data-testid="text-climate-summary-title">
               <Thermometer className="w-5 h-5 mr-2 text-accent" />
-              {location} Climate Summary
+              {location.replace(/\s+/g, ', ').replace(', ,', ',')} Climate Summary
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -256,7 +256,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
             <div className="flex justify-between">
               <span className="text-muted-foreground">Annual Rainfall:</span>
               <span className="font-medium" data-testid="text-annual-rainfall">
-                {climateData.annual_rainfall ? Number(climateData.annual_rainfall).toFixed(0) : 'N/A'}mm
+                {climateData.annual_rainfall ? Number(climateData.annual_rainfall).toFixed(1) : 'N/A'}mm
               </span>
             </div>
             <div className="flex justify-between">

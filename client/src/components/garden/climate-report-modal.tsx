@@ -161,12 +161,11 @@ export default function ClimateReportModal({
         <div ref={reportRef} className="space-y-6 pt-4 bg-white text-gray-900">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900">Climate Report</h1>
-            <p className="text-lg font-medium text-gray-800">{location}</p>
+            <p className="text-lg font-medium text-gray-800">{location.replace(/\s+/g, ', ').replace(', ,', ',')}</p>
             <p className="text-sm text-gray-600">Generated on {new Date().toLocaleDateString()}</p>
             {climateData.data_range && (
               <p className="text-sm text-gray-600 mt-2">
-                Based on {climateData.data_range.total_years} years of historical data 
-                ({climateData.data_range.years_included?.join(', ')})
+                Based on {climateData.data_range.date_range || `${climateData.data_range.total_years} years of historical data`}
               </p>
             )}
           </div>
@@ -207,7 +206,7 @@ export default function ClimateReportModal({
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-white p-3 rounded border border-gray-200">
                 <div className="text-sm text-gray-600 mb-1">Annual Rainfall</div>
-                <div className="text-lg font-semibold text-gray-900">{Math.round(climateData.annual_rainfall || 0)}mm</div>
+                <div className="text-lg font-semibold text-gray-900">{typeof climateData.annual_rainfall === 'number' ? climateData.annual_rainfall.toFixed(1) : climateData.annual_rainfall}mm</div>
                 <div className="text-xs text-gray-500 mt-1">{climateData.data_range?.total_years || 20}-year average</div>
               </div>
               <div className="bg-white p-3 rounded border border-gray-200">
@@ -227,12 +226,12 @@ export default function ClimateReportModal({
               </div>
               <div className="bg-white p-3 rounded border border-gray-200">
                 <div className="text-sm text-gray-600 mb-1">Average Humidity</div>
-                <div className="text-lg font-semibold text-cyan-600">{climateData.avg_humidity || 'N/A'}%</div>
+                <div className="text-lg font-semibold text-cyan-600">{typeof climateData.avg_humidity === 'number' ? climateData.avg_humidity.toFixed(1) : climateData.avg_humidity}%</div>
                 <div className="text-xs text-gray-500 mt-1">Year-round average</div>
               </div>
               <div className="bg-white p-3 rounded border border-gray-200">
                 <div className="text-sm text-gray-600 mb-1">Wind Speed</div>
-                <div className="text-lg font-semibold text-gray-700">{climateData.avg_wind_speed ? `${climateData.avg_wind_speed} km/h` : 'N/A'}</div>
+                <div className="text-lg font-semibold text-gray-700">{climateData.avg_wind_speed ? `${typeof climateData.avg_wind_speed === 'number' ? climateData.avg_wind_speed.toFixed(1) : climateData.avg_wind_speed} km/h` : 'N/A'}</div>
                 <div className="text-xs text-gray-500 mt-1">Average wind speed</div>
               </div>
             </div>
@@ -240,7 +239,7 @@ export default function ClimateReportModal({
             {climateData.sunshine_percent !== undefined && (
               <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
                 <div className="text-sm text-gray-600 mb-1">Estimated Sunshine</div>
-                <div className="text-lg font-semibold text-yellow-700">{climateData.sunshine_percent}%</div>
+                <div className="text-lg font-semibold text-yellow-700">{typeof climateData.sunshine_percent === 'number' ? climateData.sunshine_percent.toFixed(1) : climateData.sunshine_percent}%</div>
                 <div className="text-xs text-gray-500 mt-1">Based on average cloud cover</div>
               </div>
             )}
@@ -253,12 +252,12 @@ export default function ClimateReportModal({
                 <div className="bg-white p-3 rounded border border-gray-200">
                   <div className="text-sm text-gray-600 mb-1">Wettest Month</div>
                   <div className="text-lg font-semibold text-blue-600">{climateData.wettest_month || 'N/A'}</div>
-                  <div className="text-sm text-gray-500 mt-1">{climateData.wettest_month_precip ? `${climateData.wettest_month_precip}mm avg` : ''}</div>
+                  <div className="text-sm text-gray-500 mt-1">{climateData.wettest_month_precip !== undefined ? `${typeof climateData.wettest_month_precip === 'number' ? climateData.wettest_month_precip.toFixed(1) : climateData.wettest_month_precip}mm avg` : ''}</div>
                 </div>
                 <div className="bg-white p-3 rounded border border-gray-200">
                   <div className="text-sm text-gray-600 mb-1">Driest Month</div>
                   <div className="text-lg font-semibold text-orange-600">{climateData.driest_month || 'N/A'}</div>
-                  <div className="text-sm text-gray-500 mt-1">{climateData.driest_month_precip !== undefined ? `${climateData.driest_month_precip}mm avg` : ''}</div>
+                  <div className="text-sm text-gray-500 mt-1">{climateData.driest_month_precip !== undefined ? `${typeof climateData.driest_month_precip === 'number' ? climateData.driest_month_precip.toFixed(1) : climateData.driest_month_precip}mm avg` : ''}</div>
                 </div>
               </div>
               {climateData.monthly_precip_pattern && (
@@ -268,7 +267,7 @@ export default function ClimateReportModal({
                     {['J','F','M','A','M','J','J','A','S','O','N','D'].map((month, i) => (
                       <div key={month}>
                         <div className="text-gray-500">{month}</div>
-                        <div className="font-semibold text-gray-700">{climateData.monthly_precip_pattern[i] || 0}</div>
+                        <div className="font-semibold text-gray-700">{typeof climateData.monthly_precip_pattern[i] === 'number' ? climateData.monthly_precip_pattern[i].toFixed(1) : (climateData.monthly_precip_pattern[i] || 0)}</div>
                       </div>
                     ))}
                   </div>
