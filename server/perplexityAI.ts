@@ -363,8 +363,6 @@ class PerplexityAI {
       });
 
       const content = response.choices[0].message.content;
-      console.log('Perplexity response length:', content.length);
-      console.log('First 500 chars:', content.substring(0, 500));
       
       // Try to parse the JSON response
       let parsedContent;
@@ -372,39 +370,75 @@ class PerplexityAI {
         // First attempt: direct parse
         parsedContent = JSON.parse(content);
       } catch (parseError) {
-        console.log('Initial parse failed, attempting to extract JSON from response');
-        
-        // Second attempt: extract JSON block from markdown code blocks
+        // Second attempt: extract JSON from markdown code block
         const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
         if (codeBlockMatch) {
           try {
             parsedContent = JSON.parse(codeBlockMatch[1]);
           } catch (e) {
-            console.log('Code block parse failed');
+            // Code block content might be truncated or malformed
+            // Try to fix common issues
+            let fixedJson = codeBlockMatch[1];
+            
+            // Add closing brackets/braces if truncated
+            const openBraces = (fixedJson.match(/\{/g) || []).length;
+            const closeBraces = (fixedJson.match(/\}/g) || []).length;
+            const openBrackets = (fixedJson.match(/\[/g) || []).length;
+            const closeBrackets = (fixedJson.match(/\]/g) || []).length;
+            
+            for (let i = 0; i < openBrackets - closeBrackets; i++) {
+              fixedJson += ']';
+            }
+            for (let i = 0; i < openBraces - closeBraces; i++) {
+              fixedJson += '}';
+            }
+            
+            try {
+              parsedContent = JSON.parse(fixedJson);
+            } catch (e2) {
+              console.error('Could not parse code block JSON even after fixes');
+            }
           }
         }
         
-        // Third attempt: find JSON object in the content
+        // Third attempt: extract and fix raw JSON
         if (!parsedContent) {
-          const jsonMatch = content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            try {
-              // Clean up common issues
-              let cleanedJson = jsonMatch[0]
-                .replace(/,\s*}/g, '}') // Remove trailing commas
-                .replace(/,\s*]/g, ']') // Remove trailing commas in arrays
-                .replace(/'/g, '"') // Replace single quotes with double quotes
-                .replace(/(\w+):/g, '"$1":') // Add quotes to unquoted keys
-                .replace(/:\s*'([^']*)'/g, ': "$1"') // Fix single-quoted values
-                .replace(/"\s*"/g, '","'); // Fix missing commas between strings
-              
-              parsedContent = JSON.parse(cleanedJson);
-            } catch (e) {
-              console.error('Failed to parse cleaned JSON:', e);
-              throw parseError;
+          // Find the first { and try to extract a valid JSON object
+          const startIndex = content.indexOf('{');
+          if (startIndex >= 0) {
+            let jsonStr = content.substring(startIndex);
+            
+            // Truncate at a reasonable point if it's incomplete
+            const lastValidClose = Math.max(
+              jsonStr.lastIndexOf('}}'),
+              jsonStr.lastIndexOf('}]'),
+              jsonStr.lastIndexOf(']}'),
+              jsonStr.lastIndexOf('}')
+            );
+            
+            if (lastValidClose > 0) {
+              jsonStr = jsonStr.substring(0, lastValidClose + 1);
             }
-          } else {
-            throw parseError;
+            
+            // Add missing closing brackets
+            const openBraces = (jsonStr.match(/\{/g) || []).length;
+            const closeBraces = (jsonStr.match(/\}/g) || []).length;
+            const openBrackets = (jsonStr.match(/\[/g) || []).length;
+            const closeBrackets = (jsonStr.match(/\]/g) || []).length;
+            
+            for (let i = 0; i < openBrackets - closeBrackets; i++) {
+              jsonStr += ']';
+            }
+            for (let i = 0; i < openBraces - closeBraces; i++) {
+              jsonStr += '}';
+            }
+            
+            try {
+              parsedContent = JSON.parse(jsonStr);
+            } catch (e) {
+              console.error('Could not parse extracted JSON:', e.message);
+              throw new Error('Unable to parse response from Perplexity API');
+            }
           }
         }
       }

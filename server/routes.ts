@@ -212,12 +212,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save to file vault if user is authenticated
       if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
         try {
-          await fileVaultService.saveDataToVault(
-            req.user.claims.sub,
-            `soil-testing-${location.replace(/[^a-zA-Z0-9]/g, '-')}`,
-            soilTestingData,
-            'soil-testing'
-          );
+          // File vault save is optional - skip if method doesn't exist
+          if (fileVaultService && typeof fileVaultService.saveDataToVault === 'function') {
+            await fileVaultService.saveDataToVault(
+              req.user.claims.sub,
+              `soil-testing-${location.replace(/[^a-zA-Z0-9]/g, '-')}`,
+              soilTestingData,
+              'soil-testing'
+            );
+          }
         } catch (vaultError) {
           console.error('Error saving to vault:', vaultError);
           // Don't fail the request if vault save fails
