@@ -278,7 +278,7 @@ export default function ClimateReportModal({
                   <div className="text-sm text-gray-600 mb-2">Monthly Precipitation Pattern (mm)</div>
                   <div className="grid grid-cols-12 gap-1 text-xs text-center">
                     {['J','F','M','A','M','J','J','A','S','O','N','D'].map((month, i) => (
-                      <div key={month}>
+                      <div key={`month-${i}`}>
                         <div className="text-gray-500">{month}</div>
                         <div className="font-semibold text-gray-700">{typeof climateData.monthly_precip_pattern[i] === 'number' ? climateData.monthly_precip_pattern[i].toFixed(1) : (climateData.monthly_precip_pattern[i] || 0)}</div>
                       </div>
