@@ -411,6 +411,65 @@
     transition: color 0.2s ease;
   }
   
+  /* Fix dropdown and toast transparency issues */
+  /* Make select dropdowns properly visible with solid backgrounds */
+  [data-radix-popper-content-wrapper] {
+    z-index: 9999 !important;
+  }
+  
+  [role="listbox"], 
+  [data-state="open"][data-side],
+  .SelectContent,
+  div[data-radix-collection-item] {
+    background-color: white !important;
+    backdrop-filter: none !important;
+    opacity: 1 !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+    border: 2px solid hsl(155, 100%, 8%) !important;
+  }
+  
+  .dark [role="listbox"],
+  .dark [data-state="open"][data-side],
+  .dark .SelectContent,
+  .dark div[data-radix-collection-item] {
+    background-color: hsl(155, 50%, 12%) !important;
+    border: 2px solid hsl(145, 56%, 26%) !important;
+  }
+  
+  /* Make toast notifications properly visible */
+  [data-sonner-toaster],
+  [data-sonner-toast],
+  .toast,
+  div[data-state="open"][data-swipe="end"],
+  div[data-state="open"][data-swipe="move"] {
+    background-color: white !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid hsl(155, 100%, 8%) !important;
+  }
+  
+  .dark [data-sonner-toaster],
+  .dark [data-sonner-toast],
+  .dark .toast,
+  .dark div[data-state="open"][data-swipe="end"],
+  .dark div[data-state="open"][data-swipe="move"] {
+    background-color: hsl(155, 50%, 12%) !important;
+    border: 2px solid hsl(145, 56%, 26%) !important;
+  }
+  
+  /* Ensure select trigger buttons are visible */
+  button[role="combobox"],
+  button[aria-haspopup="listbox"] {
+    background-color: white !important;
+    opacity: 1 !important;
+  }
+  
+  .dark button[role="combobox"],
+  .dark button[aria-haspopup="listbox"] {
+    background-color: hsl(155, 50%, 12%) !important;
+  }
+  
   /* Card hover effects with rotation */
   .card {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
