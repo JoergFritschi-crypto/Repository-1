@@ -508,6 +508,12 @@
     border-color: hsl(45, 100%, 50%) !important;
   }
   
+  /* Prevent flower band flashing - ensure no unwanted transitions */
+  div[style*="flower-band"] {
+    transition: none !important;
+    animation: none !important;
+  }
+  
   /* Card hover effects with rotation */
   .card {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

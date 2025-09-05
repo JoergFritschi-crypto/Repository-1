@@ -246,7 +246,7 @@ export default function GardenProperties() {
         <div className="mb-6">
           {/* Flower Band Background */}
           <div 
-            className="relative overflow-hidden rounded-lg mb-4 shadow-sm border-2 border-[#004025]"
+            className="relative overflow-hidden rounded-lg mb-4 shadow-sm border-2 border-[#004025] transition-none"
             style={{
               backgroundImage: `url(${
                 currentStep === 1 ? flowerBand1 :
@@ -263,12 +263,12 @@ export default function GardenProperties() {
               height: '100px'
             }}
           >
-            <div className="absolute inset-0 bg-white/60" />
+            <div className="absolute inset-0 bg-white/20" />
             <div className="relative z-10 flex justify-between items-center h-full px-6">
-              <h1 className="text-3xl font-serif font-semibold text-[#004025] bg-white/80 px-4 py-2 rounded-md border-2 border-[#004025] shadow-sm" data-testid="text-garden-setup-title">
+              <h1 className="text-3xl font-serif font-semibold text-[#004025] bg-white/95 px-4 py-2 rounded-md border-2 border-[#004025] shadow-sm" data-testid="text-garden-setup-title">
                 Garden Setup
               </h1>
-              <span className="text-sm font-medium px-3 py-1.5 bg-white/80 text-[#004025] rounded-md border-2 border-[#004025] shadow-sm" data-testid="text-step-counter">
+              <span className="text-sm font-medium px-3 py-1.5 bg-white/95 text-[#004025] rounded-md border-2 border-[#004025] shadow-sm" data-testid="text-step-counter">
                 Step {currentStep} of 7
               </span>
             </div>
