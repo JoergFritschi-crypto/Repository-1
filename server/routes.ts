@@ -1368,11 +1368,12 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       ? `${coordinates.latitude},${coordinates.longitude}`
       : location;
     
-    // Get 3 years of continuous historical data for accurate climate analysis
-    // This balances accuracy with API rate limits
+    // Get 20 years of continuous historical data for accurate climate analysis
+    // Visual Crossing Professional plan supports up to 40 years of historical data
+    // 20 years should capture most extreme weather events for accurate zone determination
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 5); // 5 years of data (Professional plan)
+    startDate.setFullYear(endDate.getFullYear() - 20); // 20 years of data
     
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
@@ -1391,8 +1392,8 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
     
     const data = await response.json();
     
-    // Calculate accurate hardiness zones based on coldest winter temperatures
-    const minTemp = calculateColdestWinterTemp(data.days, coordinates?.placeName || location);
+    // Calculate accurate hardiness zones based on absolute minimum temperature
+    const minTemp = calculateColdestWinterTemp(data.days);
     const zones = determineHardinessZones(minTemp, coordinates);
     
     // Calculate the actual years of data we received
@@ -1568,7 +1569,7 @@ function calculateAverageTemp(days: any[], field: string): number {
   return temps.reduce((sum, temp) => sum + temp, 0) / temps.length;
 }
 
-function calculateColdestWinterTemp(days: any[], location?: string): number {
+function calculateColdestWinterTemp(days: any[]): number {
   // USDA zones are determined by the absolute minimum temperature
   // Find the single coldest temperature in the entire dataset
   
@@ -1585,26 +1586,8 @@ function calculateColdestWinterTemp(days: any[], location?: string): number {
     return 0;
   }
   
-  // Location-specific overrides for known extreme minimums not captured in recent data
-  // These are based on local knowledge of rare extreme events
-  const locationOverrides: Record<string, number> = {
-    'pfeffingen': -17,  // Zone 7a - historical extreme not in 5-year data
-  };
-  
-  // Check for location override
-  if (location) {
-    const locationKey = location.toLowerCase().split(',')[0].trim();
-    if (locationOverrides[locationKey]) {
-      const overrideMin = locationOverrides[locationKey];
-      console.log("USDA Zone determination with local override:", {
-        dataMinimum: absoluteMin,
-        localKnownMinimum: overrideMin,
-        using: overrideMin,
-        note: "Using local knowledge of historical extreme minimum"
-      });
-      return overrideMin;
-    }
-  }
+  // With 20 years of data, we should capture the actual extreme minimums
+  // No need for location-specific overrides
   
   console.log("USDA Zone determination:", {
     absoluteMinimum: absoluteMin,
