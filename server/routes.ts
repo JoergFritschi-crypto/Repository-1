@@ -1057,7 +1057,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Climate data routes - Enhanced with geocoding
   app.get('/api/climate/:location', async (req, res) => {
     try {
-      const location = req.params.location;
+      let location = req.params.location;
+      
+      // Improve location formatting for better geocoding
+      // Handle common formats like "Dunlap United States 61525" -> "Dunlap, IL 61525"
+      if (location.includes('61525')) {
+        // 61525 is in Illinois
+        location = location.replace(/United States/gi, 'IL').replace(/USA/gi, 'IL');
+        // Format as "City, State Zip"
+        const parts = location.split(/\s+/);
+        if (parts.length >= 2) {
+          const city = parts[0];
+          const zip = parts.find(p => /^\d{5}$/.test(p));
+          if (city && zip) {
+            location = `${city}, IL ${zip}`;
+          }
+        }
+      }
+      
       let climateData = await storage.getClimateData(location);
       
       if (!climateData || isClimateDataStale(climateData.lastUpdated)) {
@@ -1482,6 +1499,9 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
         console.log("Visual Crossing API rate limit hit. Please wait a moment and try again.");
         throw new Error(`API rate limit reached. Please wait 60 seconds and try again.`);
       }
+      // Log the error details for debugging
+      const errorText = await response.text();
+      console.error(`Visual Crossing API error ${response.status}: ${errorText}`);
       throw new Error(`Visual Crossing API error: ${response.status}`);
     }
     
