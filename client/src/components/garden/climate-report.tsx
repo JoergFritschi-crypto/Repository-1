@@ -328,7 +328,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
       </Card>
 
       {/* Gardening Advice */}
-      {climateData?.gardening_advice && climateData.gardening_advice.length > 0 && (
+      {climateData?.gardening_advice && climateData.gardening_advice.trim() !== '' && (
         <Card className="border-primary bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center" data-testid="text-gardening-advice-title">
@@ -337,14 +337,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm">
-              {climateData.gardening_advice.map((advice, index) => (
-                <li key={index} className="flex items-start">
-                  <span className="w-2 h-2 bg-primary rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
-                  <span>{advice}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="text-sm leading-relaxed">{climateData.gardening_advice}</p>
           </CardContent>
         </Card>
       )}
