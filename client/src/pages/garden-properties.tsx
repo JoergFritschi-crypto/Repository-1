@@ -123,6 +123,27 @@ export default function GardenProperties() {
     enabled: shouldFetchClimate && locationToFetch.length > 3,
   });
 
+  // Auto-fill form fields when climate data is loaded
+  useEffect(() => {
+    if (climateData) {
+      // Auto-fill USDA zone if not already set
+      if (!form.getValues("usdaZone") && (climateData as any)?.usda_zone) {
+        form.setValue("usdaZone", (climateData as any).usda_zone);
+      }
+      // Auto-fill RHS zone if not already set
+      if (!form.getValues("rhsZone") && (climateData as any)?.rhs_zone) {
+        form.setValue("rhsZone", (climateData as any).rhs_zone);
+      }
+      // Auto-fill hardiness category if not already set (handle case mismatch)
+      if (!form.getValues("hardinessCategory") && (climateData as any)?.hardiness_category) {
+        const category = (climateData as any).hardiness_category;
+        // Normalize to lowercase to match select options
+        const normalizedCategory = category ? category.toLowerCase().replace(' ', '-') : '';
+        form.setValue("hardinessCategory", normalizedCategory);
+      }
+    }
+  }, [climateData, form]);
+
   // Handle manual climate fetch
   const handleFetchClimate = async () => {
     if (locationToFetch.length > 3) {
@@ -641,6 +662,18 @@ export default function GardenProperties() {
                       Select your hardiness zone using one of the three systems below. Zones may be auto-filled if you provide location above.
                     </p>
                     
+                    {/* Display current zones if any are set */}
+                    {(form.watch("usdaZone") || form.watch("rhsZone") || form.watch("hardinessCategory")) && (
+                      <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm">
+                        <div className="font-medium text-green-800 dark:text-green-200 mb-2">Currently Selected:</div>
+                        <div className="space-y-1 text-green-700 dark:text-green-300">
+                          {form.watch("usdaZone") && <div>USDA Zone: {form.watch("usdaZone")}</div>}
+                          {form.watch("rhsZone") && <div>RHS Rating: {form.watch("rhsZone")}</div>}
+                          {form.watch("hardinessCategory") && <div>Category: {form.watch("hardinessCategory")}</div>}
+                        </div>
+                      </div>
+                    )}
+                    
                     {/* Zone Selection Tabs */}
                     <Tabs defaultValue="usda" className="w-full">
                       <TabsList className="grid w-full grid-cols-3">
@@ -656,7 +689,7 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>USDA Hardiness Zone</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.usda_zone}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.usda_zone || ""} defaultValue={field.value || (climateData as any)?.usda_zone}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-usda-zone">
                                     <SelectValue placeholder="Select your USDA zone" />
@@ -681,6 +714,10 @@ export default function GardenProperties() {
                                   <SelectItem value="10b">Zone 10b (2 to 4°C)</SelectItem>
                                   <SelectItem value="11a">Zone 11a (4 to 7°C)</SelectItem>
                                   <SelectItem value="11b">Zone 11b (7 to 10°C)</SelectItem>
+                                  <SelectItem value="12a">Zone 12a (10 to 12.8°C)</SelectItem>
+                                  <SelectItem value="12b">Zone 12b (12.8 to 15.6°C)</SelectItem>
+                                  <SelectItem value="13a">Zone 13a (15.6 to 18.3°C)</SelectItem>
+                                  <SelectItem value="13b">Zone 13b (18.3 to 21.1°C)</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormDescription className="text-xs">
@@ -699,7 +736,7 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>RHS Hardiness Rating</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.rhs_zone}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.rhs_zone || ""} defaultValue={field.value || (climateData as any)?.rhs_zone}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-rhs-zone">
                                     <SelectValue placeholder="Select your RHS rating" />
@@ -733,7 +770,7 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Hardiness Category</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.hardiness_category}>
+                              <Select onValueChange={field.onChange} value={field.value || (climateData as any)?.hardiness_category || ""} defaultValue={field.value || (climateData as any)?.hardiness_category}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-hardiness-category">
                                     <SelectValue placeholder="Select hardiness category" />
