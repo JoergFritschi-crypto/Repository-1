@@ -157,8 +157,8 @@ export class MapboxAPI {
     try {
       const params = new URLSearchParams({
         access_token: this.apiKey,
-        limit: '1',
-        country: 'GB' // Bias towards UK results
+        limit: '1'
+        // No country bias - allow global geocoding
       });
 
       const response = await fetch(
