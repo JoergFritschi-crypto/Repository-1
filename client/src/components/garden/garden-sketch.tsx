@@ -337,12 +337,22 @@ export default function GardenSketch({
           />
         </g>
 
+        {/* Garden gradient */}
+        <defs>
+          <radialGradient id="gardenGradient" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#81c784" />
+            <stop offset="50%" stopColor="#66bb6a" />
+            <stop offset="100%" stopColor="#4caf50" />
+          </radialGradient>
+        </defs>
+        
         {/* Garden Shape */}
         <path
           d={getShapePath()}
-          fill="#e8f5e9"
+          fill="url(#gardenGradient)"
           stroke="#004025"
           strokeWidth="2"
+          opacity="0.9"
         />
       </svg>
 
