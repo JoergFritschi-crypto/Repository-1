@@ -5,7 +5,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema } from "@shared/schema";
 import Stripe from "stripe";
 import PerplexityAI from "./perplexityAI";
-import { analyzeGardenPhotos, getPlantAdvice } from "./anthropic";
+import { analyzeGardenPhotos, generateDesignStyles, getPlantAdvice } from "./anthropic";
 import AnthropicAI from "./anthropicAI";
 import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
@@ -208,6 +208,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error analyzing garden photos:', error);
       res.status(500).json({ 
         message: 'Failed to analyze garden photos',
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Generate design styles endpoint
+  app.post('/api/generate-design-styles', isAuthenticated, async (req: any, res) => {
+    try {
+      const { images, gardenData, photoAnalysis } = req.body;
+      
+      if (!images || !Array.isArray(images) || images.length === 0) {
+        return res.status(400).json({ message: 'No images provided' });
+      }
+
+      if (!photoAnalysis) {
+        return res.status(400).json({ message: 'Photo analysis results required' });
+      }
+
+      const styles = await generateDesignStyles(images, gardenData, photoAnalysis);
+      res.json(styles);
+    } catch (error) {
+      console.error('Error generating design styles:', error);
+      res.status(500).json({ 
+        message: 'Failed to generate design styles',
         error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }

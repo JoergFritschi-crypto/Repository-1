@@ -25,23 +25,57 @@ export interface GardenPhotoAnalysis {
   opportunities: string[];
 }
 
+export interface DesignStyleSuggestion {
+  styleName: string;
+  description: string;
+  keyFeatures: string[];
+  plantPalette: string[];
+  colorScheme: string[];
+  maintenanceLevel: string;
+  suitabilityScore: number;
+  reasoning: string;
+}
+
 export async function analyzeGardenPhotos(
   base64Images: string[],
   gardenInfo?: {
+    // Step 2 Data
     shape?: string;
     dimensions?: Record<string, number>;
+    units?: string;
     slopeDirection?: string;
     slopePercentage?: number;
     usdaZone?: string;
+    rhsZone?: string;
+    location?: string;
+    // Step 3 Data - Plant Preferences
+    style?: string;
+    colors?: string[];
+    bloomTime?: string[];
+    maintenance?: string;
+    features?: string[];
+    avoidFeatures?: string[];
+    specialRequests?: string;
   }
 ): Promise<GardenPhotoAnalysis> {
   try {
     const contextInfo = gardenInfo ? `
-Garden Context:
+Garden Physical Properties:
+- Location: ${gardenInfo.location || 'Not specified'}
 - Shape: ${gardenInfo.shape || 'Not specified'}
-- Dimensions: ${JSON.stringify(gardenInfo.dimensions || {})}
+- Dimensions: ${JSON.stringify(gardenInfo.dimensions || {})} ${gardenInfo.units || ''}
 - Slope: ${gardenInfo.slopePercentage || 0}% facing ${gardenInfo.slopeDirection || 'N'}
 - USDA Zone: ${gardenInfo.usdaZone || 'Not specified'}
+- RHS Zone: ${gardenInfo.rhsZone || 'Not specified'}
+
+Design Preferences:
+- Preferred Style: ${gardenInfo.style || 'Not specified'}
+- Color Preferences: ${gardenInfo.colors?.join(', ') || 'Not specified'}
+- Bloom Times: ${gardenInfo.bloomTime?.join(', ') || 'Not specified'}
+- Maintenance Level: ${gardenInfo.maintenance || 'Not specified'}
+- Desired Features: ${gardenInfo.features?.join(', ') || 'None specified'}
+- Features to Avoid: ${gardenInfo.avoidFeatures?.join(', ') || 'None specified'}
+- Special Requests: ${gardenInfo.specialRequests || 'None'}
 ` : '';
 
     const imageContent = base64Images.map(img => ({
@@ -97,6 +131,104 @@ Garden Context:
   } catch (error) {
     console.error('Error analyzing garden photos:', error);
     throw new Error(`Failed to analyze garden photos: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function generateDesignStyles(
+  base64Images: string[],
+  gardenData: {
+    // Step 2 Data
+    shape?: string;
+    dimensions?: Record<string, number>;
+    units?: string;
+    slopeDirection?: string;
+    slopePercentage?: number;
+    usdaZone?: string;
+    rhsZone?: string;
+    location?: string;
+    // Step 3 Data - Plant Preferences  
+    style?: string;
+    colors?: string[];
+    bloomTime?: string[];
+    maintenance?: string;
+    features?: string[];
+    avoidFeatures?: string[];
+    specialRequests?: string;
+  },
+  photoAnalysis: GardenPhotoAnalysis
+): Promise<DesignStyleSuggestion[]> {
+  try {
+    const contextInfo = `
+Garden Physical Properties:
+- Location: ${gardenData.location || 'Not specified'}
+- Shape: ${gardenData.shape || 'Not specified'}
+- Dimensions: ${JSON.stringify(gardenData.dimensions || {})} ${gardenData.units || ''}
+- Slope: ${gardenData.slopePercentage || 0}% facing ${gardenData.slopeDirection || 'N'}
+- USDA Zone: ${gardenData.usdaZone || 'Not specified'}
+- RHS Zone: ${gardenData.rhsZone || 'Not specified'}
+
+Design Preferences:
+- Preferred Style: ${gardenData.style || 'Not specified'}
+- Color Preferences: ${gardenData.colors?.join(', ') || 'Not specified'}
+- Bloom Times: ${gardenData.bloomTime?.join(', ') || 'Not specified'}
+- Maintenance Level: ${gardenData.maintenance || 'Not specified'}
+- Desired Features: ${gardenData.features?.join(', ') || 'None specified'}
+- Features to Avoid: ${gardenData.avoidFeatures?.join(', ') || 'None specified'}
+- Special Requests: ${gardenData.specialRequests || 'None'}
+
+Site Analysis Results:
+- Overall Condition: ${photoAnalysis.overallCondition}
+- Existing Plants: ${photoAnalysis.existingPlants.join(', ') || 'None identified'}
+- Soil: ${photoAnalysis.soilObservations}
+- Sunlight: ${photoAnalysis.sunlightPatterns}
+- Structures: ${photoAnalysis.structures.join(', ') || 'None'}
+- Challenges: ${photoAnalysis.challenges.join(', ') || 'None'}
+- Opportunities: ${photoAnalysis.opportunities.join(', ') || 'None'}
+`;
+
+    const imageContent = base64Images.slice(0, 3).map(img => ({
+      type: "image" as const,
+      source: {
+        type: "base64" as const,
+        media_type: "image/jpeg" as const,
+        data: img.replace(/^data:image\/\w+;base64,/, '')
+      }
+    }));
+
+    const response = await anthropic.messages.create({
+      model: DEFAULT_MODEL_STR,
+      max_tokens: 3000,
+      system: `You are an expert garden designer. Based on the site analysis and user preferences, suggest 3 distinct garden design styles that would work well. Each style should be unique and cater to different aspects of the user's preferences and site conditions. Output as JSON array with these keys for each style:
+      - styleName: catchy name for the design style
+      - description: 2-3 sentence overview of the style
+      - keyFeatures: array of 4-5 main design elements
+      - plantPalette: array of 5-7 specific plants that fit this style and the climate
+      - colorScheme: array of 3-4 dominant colors in the design
+      - maintenanceLevel: low/medium/high with brief explanation
+      - suitabilityScore: 1-10 rating for how well it matches preferences and site
+      - reasoning: brief explanation of why this style works for this garden`,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: "text",
+            text: `Based on this comprehensive garden information and site photos, suggest 3 distinct design styles that would work well:${contextInfo}`
+          },
+          ...imageContent
+        ]
+      }],
+    });
+
+    const content = response.content[0];
+    if (content.type === 'text') {
+      const styles = JSON.parse(content.text);
+      return Array.isArray(styles) ? styles : [styles];
+    }
+
+    throw new Error('Unexpected response format from Claude');
+  } catch (error) {
+    console.error('Error generating design styles:', error);
+    throw new Error(`Failed to generate design styles: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Image as ImageIcon, Camera, Sparkles, Loader2, TreePine } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Camera, Sparkles, Loader2, TreePine, Palette } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -9,14 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 interface PhotoUploadProps {
   onPhotosChange?: (photos: File[]) => void;
   onAnalysisComplete?: (analysis: GardenPhotoAnalysis) => void;
+  onStylesGenerated?: (styles: DesignStyleSuggestion[]) => void;
   maxPhotos?: number;
-  gardenInfo?: {
-    shape?: string;
-    dimensions?: Record<string, number>;
-    slopeDirection?: string;
-    slopePercentage?: number;
-    usdaZone?: string;
-  };
+  gardenData?: any; // Full form data from Steps 2 and 3
 }
 
 interface GardenPhotoAnalysis {
@@ -30,17 +25,31 @@ interface GardenPhotoAnalysis {
   opportunities: string[];
 }
 
+interface DesignStyleSuggestion {
+  styleName: string;
+  description: string;
+  keyFeatures: string[];
+  plantPalette: string[];
+  colorScheme: string[];
+  maintenanceLevel: string;
+  suitabilityScore: number;
+  reasoning: string;
+}
+
 export default function PhotoUpload({ 
   onPhotosChange,
   onAnalysisComplete,
+  onStylesGenerated,
   maxPhotos = 6,
-  gardenInfo
+  gardenData
 }: PhotoUploadProps) {
   const [photos, setPhotos] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [analysis, setAnalysis] = useState<GardenPhotoAnalysis | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [designStyles, setDesignStyles] = useState<DesignStyleSuggestion[]>([]);
+  const [showStyles, setShowStyles] = useState(false);
   const { toast } = useToast();
 
   // Convert files to base64 for sending to Claude
@@ -63,6 +72,27 @@ export default function PhotoUpload({
       // Convert photos to base64
       const base64Images = await Promise.all(photos.map(convertToBase64));
 
+      // Prepare comprehensive garden info for Claude
+      const gardenInfo = {
+        // Step 2 Data
+        shape: gardenData?.shape,
+        dimensions: gardenData?.dimensions,
+        units: gardenData?.units,
+        slopeDirection: gardenData?.slopeDirection,
+        slopePercentage: gardenData?.slopePercentage,
+        usdaZone: gardenData?.usdaZone,
+        rhsZone: gardenData?.rhsZone,
+        location: gardenData?.location,
+        // Step 3 Data - Plant Preferences
+        style: gardenData?.style,
+        colors: gardenData?.colors,
+        bloomTime: gardenData?.bloomTime,
+        maintenance: gardenData?.maintenance,
+        features: gardenData?.features,
+        avoidFeatures: gardenData?.avoidFeatures,
+        specialRequests: gardenData?.specialRequests
+      };
+
       const response = await apiRequest('POST', '/api/analyze-garden-photos', {
         images: base64Images,
         gardenInfo
@@ -70,7 +100,7 @@ export default function PhotoUpload({
 
       return response.json();
     },
-    onSuccess: (data: GardenPhotoAnalysis) => {
+    onSuccess: async (data: GardenPhotoAnalysis) => {
       setAnalysis(data);
       setShowAnalysis(true);
       if (onAnalysisComplete) {
@@ -80,12 +110,73 @@ export default function PhotoUpload({
         title: 'Analysis Complete',
         description: 'Claude has analyzed your garden photos successfully!'
       });
+
+      // Automatically generate design styles after analysis
+      if (photos.length > 0) {
+        generateStylesMutation.mutate(data);
+      }
     },
     onError: (error) => {
       console.error('Analysis error:', error);
       toast({
         title: 'Analysis Failed',
         description: 'Could not analyze photos. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  });
+
+  // Design styles generation mutation
+  const generateStylesMutation = useMutation({
+    mutationFn: async (photoAnalysis: GardenPhotoAnalysis): Promise<DesignStyleSuggestion[]> => {
+      // Convert photos to base64
+      const base64Images = await Promise.all(photos.map(convertToBase64));
+
+      // Prepare comprehensive garden data
+      const fullGardenData = {
+        // Step 2 Data
+        shape: gardenData?.shape,
+        dimensions: gardenData?.dimensions,
+        units: gardenData?.units,
+        slopeDirection: gardenData?.slopeDirection,
+        slopePercentage: gardenData?.slopePercentage,
+        usdaZone: gardenData?.usdaZone,
+        rhsZone: gardenData?.rhsZone,
+        location: gardenData?.location,
+        // Step 3 Data - Plant Preferences
+        style: gardenData?.style,
+        colors: gardenData?.colors,
+        bloomTime: gardenData?.bloomTime,
+        maintenance: gardenData?.maintenance,
+        features: gardenData?.features,
+        avoidFeatures: gardenData?.avoidFeatures,
+        specialRequests: gardenData?.specialRequests
+      };
+
+      const response = await apiRequest('POST', '/api/generate-design-styles', {
+        images: base64Images,
+        gardenData: fullGardenData,
+        photoAnalysis
+      });
+
+      return response.json();
+    },
+    onSuccess: (styles: DesignStyleSuggestion[]) => {
+      setDesignStyles(styles);
+      setShowStyles(true);
+      if (onStylesGenerated) {
+        onStylesGenerated(styles);
+      }
+      toast({
+        title: 'Design Styles Generated!',
+        description: `Claude has created ${styles.length} unique design options for your garden.`
+      });
+    },
+    onError: (error) => {
+      console.error('Style generation error:', error);
+      toast({
+        title: 'Style Generation Failed',
+        description: 'Could not generate design styles. Please try again.',
         variant: 'destructive'
       });
     }
@@ -121,6 +212,8 @@ export default function PhotoUpload({
     // Reset analysis when photos change
     setAnalysis(null);
     setShowAnalysis(false);
+    setDesignStyles([]);
+    setShowStyles(false);
     if (onPhotosChange) {
       onPhotosChange(newPhotos);
     }
@@ -150,6 +243,8 @@ export default function PhotoUpload({
     // Reset analysis when photos change
     setAnalysis(null);
     setShowAnalysis(false);
+    setDesignStyles([]);
+    setShowStyles(false);
     if (onPhotosChange) {
       onPhotosChange(newPhotos);
     }
@@ -167,7 +262,7 @@ export default function PhotoUpload({
         <CardContent className="space-y-3 pt-0">
           <p className="text-xs text-muted-foreground">
             Upload up to {maxPhotos} photos of your garden site from different angles. 
-            These will help the AI provide better recommendations.
+            Claude AI will analyze them and suggest personalized design styles.
           </p>
 
           {/* Upload Area */}
@@ -242,7 +337,7 @@ export default function PhotoUpload({
           {photos.length > 0 && (
             <Button
               onClick={() => analyzePhotosMutation.mutate()}
-              disabled={analyzePhotosMutation.isPending}
+              disabled={analyzePhotosMutation.isPending || generateStylesMutation.isPending}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
               data-testid="button-analyze-photos"
             >
@@ -251,10 +346,15 @@ export default function PhotoUpload({
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Analyzing with Claude AI...
                 </>
+              ) : generateStylesMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating Design Styles...
+                </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Analyze Photos with Claude AI
+                  Analyze Photos & Generate Designs
                 </>
               )}
             </Button>
@@ -368,6 +468,91 @@ export default function PhotoUpload({
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Design Style Suggestions */}
+      {showStyles && designStyles.length > 0 && (
+        <Card className="border-2 border-indigo-300 bg-indigo-50/30 shadow-sm" data-testid="design-styles">
+          <CardHeader className="py-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Palette className="w-4 h-4 text-indigo-600" />
+              Personalized Design Styles by Claude
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-0">
+            <p className="text-xs text-muted-foreground">
+              Based on your preferences and site analysis, Claude has created {designStyles.length} unique design styles for your garden. 
+              Each style is tailored to your specific conditions and requirements.
+            </p>
+
+            {designStyles.map((style, index) => (
+              <Card key={index} className="border border-indigo-200 bg-white">
+                <CardHeader className="py-3">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-sm">{style.styleName}</CardTitle>
+                    <div className="text-xs bg-indigo-100 px-2 py-1 rounded">
+                      Match: {style.suitabilityScore}/10
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-0">
+                  <p className="text-xs">{style.description}</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Key Features */}
+                    <div className="p-2 bg-gray-50 rounded">
+                      <h5 className="text-xs font-semibold mb-1">Key Features</h5>
+                      <ul className="text-xs space-y-0.5">
+                        {style.keyFeatures.map((feature, i) => (
+                          <li key={i}>• {feature}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Plant Palette */}
+                    <div className="p-2 bg-green-50 rounded">
+                      <h5 className="text-xs font-semibold mb-1">Plant Palette</h5>
+                      <ul className="text-xs space-y-0.5">
+                        {style.plantPalette.slice(0, 5).map((plant, i) => (
+                          <li key={i}>• {plant}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {/* Color Scheme */}
+                    <div className="p-2 bg-purple-50 rounded">
+                      <h5 className="text-xs font-semibold mb-1">Colors</h5>
+                      <div className="text-xs">{style.colorScheme.join(', ')}</div>
+                    </div>
+
+                    {/* Maintenance */}
+                    <div className="p-2 bg-amber-50 rounded">
+                      <h5 className="text-xs font-semibold mb-1">Maintenance</h5>
+                      <div className="text-xs">{style.maintenanceLevel}</div>
+                    </div>
+                  </div>
+
+                  {/* Why This Works */}
+                  <div className="p-2 bg-blue-50 rounded">
+                    <h5 className="text-xs font-semibold mb-1">Why This Works</h5>
+                    <p className="text-xs">{style.reasoning}</p>
+                  </div>
+
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    size="sm"
+                    data-testid={`select-style-${index}`}
+                  >
+                    Select This Style
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </CardContent>
         </Card>
       )}

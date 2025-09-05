@@ -904,12 +904,10 @@ export default function GardenProperties() {
                     // Handle photos for AI analysis if needed
                     console.log(`Uploaded ${photos.length} photos`);
                   }}
-                  gardenInfo={{
-                    shape: form.watch("shape"),
-                    dimensions: form.watch("dimensions"),
-                    slopeDirection: form.watch("slopeDirection"),
-                    slopePercentage: form.watch("slopePercentage"),
-                    usdaZone: form.watch("usdaZone")
+                  gardenData={form.getValues()}
+                  onStylesGenerated={(styles) => {
+                    console.log(`Generated ${styles.length} design styles`);
+                    // Could store styles in form state if needed
                   }}
                 />
                 
