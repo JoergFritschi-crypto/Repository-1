@@ -328,6 +328,13 @@ export default function ClimateReportModal({
               </div>
             </div>
           )}
+
+          {climateData.gardening_advice && (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">Gardening Recommendations</h2>
+              <p className="text-sm leading-relaxed text-gray-700">{climateData.gardening_advice}</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

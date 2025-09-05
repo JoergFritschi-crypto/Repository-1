@@ -414,81 +414,81 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
               if (zoneNum <= 4) {
                 // Very cold zones
                 plants = [
-                  { name: "Siberian Iris", type: "Perennial", color: "Purple/Blue blooms" },
-                  { name: "Paper Birch", type: "Tree", color: "White bark" },
-                  { name: "Peony 'Sarah Bernhardt'", type: "Perennial", color: "Pink blooms" },
-                  { name: "Blue Spruce", type: "Evergreen", color: "Silver-blue needles" },
-                  { name: "Hosta 'Sum and Substance'", type: "Perennial", color: "Chartreuse foliage" },
-                  { name: "Ninebark 'Diablo'", type: "Shrub", color: "Purple foliage" },
-                  { name: "Astilbe 'Bridal Veil'", type: "Perennial", color: "White plumes" },
-                  { name: "Serviceberry", type: "Tree", color: "White spring flowers" },
-                  { name: "Russian Sage", type: "Perennial", color: "Lavender flowers" },
-                  { name: "Arborvitae 'Emerald Green'", type: "Evergreen", color: "Bright green" },
-                  { name: "Bleeding Heart", type: "Perennial", color: "Pink heart flowers" },
-                  { name: "Red Twig Dogwood", type: "Shrub", color: "Red winter stems" }
+                  { name: "Iris sibirica - Siberian Iris", type: "Perennial", color: "Purple/Blue blooms" },
+                  { name: "Betula papyrifera - Paper Birch", type: "Tree", color: "White bark" },
+                  { name: "Paeonia 'Sarah Bernhardt' - Peony", type: "Perennial", color: "Pink blooms" },
+                  { name: "Picea pungens - Blue Spruce", type: "Evergreen", color: "Silver-blue needles" },
+                  { name: "Hosta 'Sum and Substance' - Plantain Lily", type: "Perennial", color: "Chartreuse foliage" },
+                  { name: "Physocarpus opulifolius 'Diablo' - Ninebark", type: "Shrub", color: "Purple foliage" },
+                  { name: "Astilbe 'Bridal Veil' - False Goat's Beard", type: "Perennial", color: "White plumes" },
+                  { name: "Amelanchier canadensis - Serviceberry", type: "Tree", color: "White spring flowers" },
+                  { name: "Perovskia atriplicifolia - Russian Sage", type: "Perennial", color: "Lavender flowers" },
+                  { name: "Thuja occidentalis 'Emerald Green' - Arborvitae", type: "Evergreen", color: "Bright green" },
+                  { name: "Dicentra spectabilis - Bleeding Heart", type: "Perennial", color: "Pink heart flowers" },
+                  { name: "Cornus sericea - Red Twig Dogwood", type: "Shrub", color: "Red winter stems" }
                 ];
               } else if (zoneNum <= 6) {
                 // Cold zones
                 plants = [
-                  { name: "Lavender 'Munstead'", type: "Perennial", color: "Purple flowers" },
-                  { name: "Japanese Maple", type: "Tree", color: "Red fall foliage" },
-                  { name: "Hydrangea 'Annabelle'", type: "Shrub", color: "White ball flowers" },
-                  { name: "Black-eyed Susan", type: "Perennial", color: "Yellow daisy flowers" },
-                  { name: "Eastern Redbud", type: "Tree", color: "Pink spring blooms" },
-                  { name: "Coneflower 'Magnus'", type: "Perennial", color: "Pink-purple flowers" },
-                  { name: "Boxwood 'Green Velvet'", type: "Evergreen", color: "Dense green" },
-                  { name: "Daylily 'Stella d'Oro'", type: "Perennial", color: "Golden yellow" },
-                  { name: "Lilac 'Miss Kim'", type: "Shrub", color: "Fragrant purple" },
-                  { name: "Coral Bells 'Palace Purple'", type: "Perennial", color: "Purple foliage" },
-                  { name: "Spirea 'Goldflame'", type: "Shrub", color: "Orange-gold leaves" }
+                  { name: "Lavandula angustifolia 'Munstead' - English Lavender", type: "Perennial", color: "Purple flowers" },
+                  { name: "Acer palmatum - Japanese Maple", type: "Tree", color: "Red fall foliage" },
+                  { name: "Hydrangea arborescens 'Annabelle' - Smooth Hydrangea", type: "Shrub", color: "White ball flowers" },
+                  { name: "Rudbeckia fulgida - Black-eyed Susan", type: "Perennial", color: "Yellow daisy flowers" },
+                  { name: "Cercis canadensis - Eastern Redbud", type: "Tree", color: "Pink spring blooms" },
+                  { name: "Echinacea purpurea 'Magnus' - Coneflower", type: "Perennial", color: "Pink-purple flowers" },
+                  { name: "Buxus 'Green Velvet' - Boxwood", type: "Evergreen", color: "Dense green" },
+                  { name: "Hemerocallis 'Stella d'Oro' - Daylily", type: "Perennial", color: "Golden yellow" },
+                  { name: "Syringa meyeri 'Miss Kim' - Lilac", type: "Shrub", color: "Fragrant purple" },
+                  { name: "Heuchera 'Palace Purple' - Coral Bells", type: "Perennial", color: "Purple foliage" },
+                  { name: "Spiraea japonica 'Goldflame' - Spirea", type: "Shrub", color: "Orange-gold leaves" }
                 ];
               } else if (zoneNum <= 8) {
                 // Temperate zones
                 plants = [
-                  { name: "Rose 'Lady Emma Hamilton'", type: "Shrub", color: "Apricot-orange" },
-                  { name: "English Lavender", type: "Perennial", color: "Purple fragrant" },
-                  { name: "Japanese Camellia", type: "Shrub", color: "Pink/Red blooms" },
-                  { name: "Delphinium 'Pacific Giant'", type: "Perennial", color: "Blue spikes" },
-                  { name: "Magnolia 'Jane'", type: "Tree", color: "Purple-pink flowers" },
-                  { name: "Salvia 'May Night'", type: "Perennial", color: "Deep purple" },
-                  { name: "Rhododendron 'PJM'", type: "Evergreen", color: "Lavender-pink" },
-                  { name: "Clematis 'Jackmanii'", type: "Vine", color: "Purple flowers" },
-                  { name: "Weigela 'Wine & Roses'", type: "Shrub", color: "Pink flowers" },
-                  { name: "Allium 'Purple Sensation'", type: "Bulb", color: "Purple globes" },
-                  { name: "Wisteria sinensis", type: "Vine", color: "Fragrant purple" },
-                  { name: "Hellebore 'Winter Jewels'", type: "Perennial", color: "Winter blooms" }
+                  { name: "Rosa 'Lady Emma Hamilton' - English Rose", type: "Shrub", color: "Apricot-orange" },
+                  { name: "Lavandula angustifolia - English Lavender", type: "Perennial", color: "Purple fragrant" },
+                  { name: "Camellia japonica - Japanese Camellia", type: "Shrub", color: "Pink/Red blooms" },
+                  { name: "Delphinium elatum 'Pacific Giant' - Larkspur", type: "Perennial", color: "Blue spikes" },
+                  { name: "Magnolia × 'Jane' - Tulip Tree", type: "Tree", color: "Purple-pink flowers" },
+                  { name: "Salvia nemorosa 'May Night' - Wood Sage", type: "Perennial", color: "Deep purple" },
+                  { name: "Rhododendron 'PJM Elite' - Rhododendron", type: "Evergreen", color: "Lavender-pink" },
+                  { name: "Clematis 'Jackmanii' - Virgin's Bower", type: "Vine", color: "Purple flowers" },
+                  { name: "Weigela florida 'Wine & Roses' - Weigela", type: "Shrub", color: "Pink flowers" },
+                  { name: "Allium hollandicum 'Purple Sensation' - Ornamental Onion", type: "Bulb", color: "Purple globes" },
+                  { name: "Wisteria sinensis - Chinese Wisteria", type: "Vine", color: "Fragrant purple" },
+                  { name: "Helleborus × hybridus 'Winter Jewels' - Lenten Rose", type: "Perennial", color: "Winter blooms" }
                 ];
               } else if (zoneNum <= 10) {
                 // Warm zones
                 plants = [
-                  { name: "Bougainvillea 'Barbara Karst'", type: "Vine", color: "Magenta bracts" },
-                  { name: "Meyer Lemon", type: "Tree", color: "Fragrant white flowers" },
-                  { name: "Agapanthus 'Storm Cloud'", type: "Perennial", color: "Blue-purple" },
-                  { name: "Gardenia 'August Beauty'", type: "Shrub", color: "White fragrant" },
-                  { name: "Mexican Sage", type: "Perennial", color: "Purple spikes" },
-                  { name: "Oleander 'Pink Beauty'", type: "Shrub", color: "Pink flowers" },
-                  { name: "Society Garlic", type: "Perennial", color: "Lavender blooms" },
-                  { name: "Bottlebrush 'Little John'", type: "Shrub", color: "Red brushes" },
-                  { name: "Rosemary 'Tuscan Blue'", type: "Herb", color: "Blue flowers" },
-                  { name: "Pride of Madeira", type: "Shrub", color: "Purple spikes" },
-                  { name: "Lantana 'New Gold'", type: "Perennial", color: "Yellow clusters" },
-                  { name: "Fig 'Brown Turkey'", type: "Tree", color: "Edible fruit" }
+                  { name: "Bougainvillea 'Barbara Karst' - Paper Flower", type: "Vine", color: "Magenta bracts" },
+                  { name: "Citrus × meyeri - Meyer Lemon", type: "Tree", color: "Fragrant white flowers" },
+                  { name: "Agapanthus 'Storm Cloud' - Lily of the Nile", type: "Perennial", color: "Blue-purple" },
+                  { name: "Gardenia jasminoides 'August Beauty' - Cape Jasmine", type: "Shrub", color: "White fragrant" },
+                  { name: "Salvia leucantha - Mexican Sage", type: "Perennial", color: "Purple spikes" },
+                  { name: "Nerium oleander 'Pink Beauty' - Oleander", type: "Shrub", color: "Pink flowers" },
+                  { name: "Tulbaghia violacea - Society Garlic", type: "Perennial", color: "Lavender blooms" },
+                  { name: "Callistemon 'Little John' - Bottlebrush", type: "Shrub", color: "Red brushes" },
+                  { name: "Rosmarinus officinalis 'Tuscan Blue' - Rosemary", type: "Herb", color: "Blue flowers" },
+                  { name: "Echium candicans - Pride of Madeira", type: "Shrub", color: "Purple spikes" },
+                  { name: "Lantana camara 'New Gold' - Lantana", type: "Perennial", color: "Yellow clusters" },
+                  { name: "Ficus carica 'Brown Turkey' - Common Fig", type: "Tree", color: "Edible fruit" }
                 ];
               } else {
                 // Tropical zones
                 plants = [
-                  { name: "Bird of Paradise", type: "Perennial", color: "Orange-blue blooms" },
-                  { name: "Plumeria 'Singapore White'", type: "Tree", color: "Fragrant white" },
-                  { name: "Hibiscus 'Red Dragon'", type: "Shrub", color: "Large red flowers" },
-                  { name: "Mango 'Kent'", type: "Tree", color: "Sweet fruit" },
-                  { name: "Ixora 'Super King'", type: "Shrub", color: "Red clusters" },
-                  { name: "Croton 'Petra'", type: "Shrub", color: "Colorful foliage" },
-                  { name: "Heliconia 'Lobster Claw'", type: "Perennial", color: "Red-yellow bracts" },
-                  { name: "Royal Palm", type: "Palm", color: "Majestic trunk" },
-                  { name: "Bougainvillea 'California Gold'", type: "Vine", color: "Golden yellow" },
-                  { name: "Frangipani", type: "Tree", color: "Fragrant pink-white" },
-                  { name: "Ti Plant 'Red Sister'", type: "Shrub", color: "Red-pink leaves" },
-                  { name: "Passion Fruit Vine", type: "Vine", color: "Purple fruit" }
+                  { name: "Strelitzia reginae - Bird of Paradise", type: "Perennial", color: "Orange-blue blooms" },
+                  { name: "Plumeria obtusa 'Singapore White' - Frangipani", type: "Tree", color: "Fragrant white" },
+                  { name: "Hibiscus rosa-sinensis 'Red Dragon' - Chinese Hibiscus", type: "Shrub", color: "Large red flowers" },
+                  { name: "Mangifera indica 'Kent' - Mango", type: "Tree", color: "Sweet fruit" },
+                  { name: "Ixora coccinea 'Super King' - Jungle Geranium", type: "Shrub", color: "Red clusters" },
+                  { name: "Codiaeum variegatum 'Petra' - Croton", type: "Shrub", color: "Colorful foliage" },
+                  { name: "Heliconia rostrata - Lobster Claw", type: "Perennial", color: "Red-yellow bracts" },
+                  { name: "Roystonea regia - Royal Palm", type: "Palm", color: "Majestic trunk" },
+                  { name: "Bougainvillea 'California Gold' - Paper Flower", type: "Vine", color: "Golden yellow" },
+                  { name: "Plumeria rubra - Red Frangipani", type: "Tree", color: "Fragrant pink-white" },
+                  { name: "Cordyline fruticosa 'Red Sister' - Ti Plant", type: "Shrub", color: "Red-pink leaves" },
+                  { name: "Passiflora edulis - Passion Fruit", type: "Vine", color: "Purple fruit" }
                 ];
               }
               
