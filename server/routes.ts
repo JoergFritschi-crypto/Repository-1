@@ -1056,16 +1056,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (process.env.VISUAL_CROSSING_API_KEY) {
           const freshData = await fetchClimateData(location, coordinates);
           if (freshData) {
-            // Map the API fields to database fields
+            // Map ALL the API fields to database fields to preserve enhanced metrics
             const dbData = {
               hardiness_zone: `${freshData.usda_zone} / ${freshData.rhs_zone}`,
+              usda_zone: freshData.usda_zone,
+              rhs_zone: freshData.rhs_zone,
+              ahs_heat_zone: freshData.ahs_heat_zone,
+              koppen_climate: freshData.koppen_climate,
+              hardiness_category: freshData.hardiness_category,
+              temperature_range: freshData.temperature_range,
               annual_rainfall: freshData.annual_rainfall,
               avg_temp_min: freshData.avg_temp_min,
               avg_temp_max: freshData.avg_temp_max,
+              avg_humidity: freshData.avg_humidity,
+              avg_wind_speed: freshData.avg_wind_speed,
+              sunshine_percent: freshData.sunshine_percent,
+              wettest_month: freshData.wettest_month,
+              wettest_month_precip: freshData.wettest_month_precip,
+              driest_month: freshData.driest_month,
+              driest_month_precip: freshData.driest_month_precip,
+              monthly_precip_pattern: freshData.monthly_precip_pattern,
               frost_dates: freshData.frost_dates,
               growing_season: freshData.growing_season,
               monthly_data: freshData.monthly_data,
-              data_source: freshData.data_source
+              gardening_advice: freshData.gardening_advice,
+              data_source: freshData.data_source,
+              data_range: freshData.data_range
             };
             
             if (climateData) {
