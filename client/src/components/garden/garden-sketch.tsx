@@ -334,8 +334,8 @@ export default function GardenSketch({
                 L ${centerX + 3} ${centerY - innerRadius + 30}
                 L ${centerX + 3} ${centerY - innerRadius + 45}
                 L ${centerX + 8} ${centerY - innerRadius + 45} z`}
-            fill="#0066cc"
-            opacity="0.7"
+            fill="#1e88e5"
+            opacity="0.9"
             pointerEvents="none"
           />
         </g>
