@@ -1062,10 +1062,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (process.env.VISUAL_CROSSING_API_KEY) {
           const freshData = await fetchClimateData(location, coordinates);
           if (freshData) {
+            // Map the API fields to database fields
+            const dbData = {
+              hardiness_zone: `${freshData.usda_zone} / ${freshData.rhs_zone}`,
+              annual_rainfall: freshData.annual_rainfall,
+              avg_temp_min: freshData.avg_temp_min,
+              avg_temp_max: freshData.avg_temp_max,
+              frost_dates: freshData.frost_dates,
+              growing_season: freshData.growing_season,
+              monthly_data: freshData.monthly_data,
+              data_source: freshData.data_source
+            };
+            
             if (climateData) {
-              climateData = await storage.updateClimateData(location, freshData);
+              climateData = await storage.updateClimateData(location, dbData);
             } else {
-              climateData = await storage.createClimateData({ location, ...freshData });
+              climateData = await storage.createClimateData({ location, ...dbData });
             }
           }
         }
