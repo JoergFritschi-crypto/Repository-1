@@ -26,6 +26,7 @@ import { GARDEN_STEPS } from "@/types/garden";
 import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormDescription } from "@/components/ui/form";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import flowerBand1 from "@/assets/flower-band-1.png";
 import flowerBand2 from "@/assets/flower-band-2.png";
 import flowerBand3 from "@/assets/flower-band-3.png";
@@ -419,17 +420,32 @@ export default function GardenProperties() {
                               <div className="flex justify-between items-center mb-2">
                                 <FormLabel>Country</FormLabel>
                                 {field.value && (
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setShowSoilTestingModal(true)}
-                                    className="h-7 text-xs"
-                                    data-testid="button-find-soil-testing"
-                                  >
-                                    <MapPin className="w-3 h-3 mr-1" />
-                                    Find Soil Testing Labs
-                                  </Button>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => setShowSoilTestingModal(true)}
+                                          className="h-7 text-xs"
+                                          data-testid="button-find-soil-testing"
+                                        >
+                                          <MapPin className="w-3 h-3 mr-1" />
+                                          Find Soil Testing Labs
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="left" className="max-w-xs">
+                                        <p className="font-semibold mb-1">Why test your soil?</p>
+                                        <ul className="text-xs space-y-1">
+                                          <li>• Save money on fertilizers</li>
+                                          <li>• Grow healthier plants</li>
+                                          <li>• Fix problems precisely</li>
+                                          <li>• Protect the environment</li>
+                                        </ul>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 )}
                               </div>
                               <Select onValueChange={field.onChange} value={field.value}>

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, ExternalLink, Phone, MapPin, FlaskConical, Calendar, DollarSign, Info, CheckCircle2, Beaker, ClipboardList } from "lucide-react";
+import { Loader2, ExternalLink, Phone, MapPin, FlaskConical, Calendar, DollarSign, Info, CheckCircle2, Beaker, ClipboardList, Download, Printer, Share2 } from "lucide-react";
 
 interface SoilTestingModalProps {
   open: boolean;
@@ -50,6 +50,51 @@ interface SoilTestingData {
 
 export default function SoilTestingModal({ open, onClose, location }: SoilTestingModalProps) {
   const [activeTab, setActiveTab] = useState("providers");
+  
+  const handleExport = () => {
+    if (!data) return;
+    
+    const exportData = {
+      location,
+      date: new Date().toLocaleDateString(),
+      ...data
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `soil-testing-${location.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  
+  const handlePrint = () => {
+    window.print();
+  };
+  
+  const handleShare = async () => {
+    if (!data) return;
+    
+    const shareText = `Soil Testing Services for ${location}\n\nProviders:\n${data.providers.map(p => `- ${p.name}: ${p.website || p.phone || 'Contact for info'}`).join('\n')}\n\nFind your local soil testing services at GardenScape Pro!`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Soil Testing Services - ${location}`,
+          text: shareText
+        });
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      // Fallback to clipboard
+      navigator.clipboard.writeText(shareText);
+      alert('Information copied to clipboard!');
+    }
+  };
 
   const { data, isLoading, error } = useQuery<SoilTestingData>({
     queryKey: ['/api/soil-testing-services', location],
@@ -79,13 +124,48 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
     <Dialog open={open} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden bg-white border-2 border-[#004025] shadow-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-[#004025]">
-            <FlaskConical className="w-5 h-5 text-[#004025]" />
-            Professional Soil Testing Services
-          </DialogTitle>
-          <DialogDescription className="text-gray-600">
-            Find local soil testing laboratories and learn how to get your soil professionally analyzed in <strong>{location || 'your area'}</strong>
-          </DialogDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <DialogTitle className="flex items-center gap-2 text-[#004025]">
+                <FlaskConical className="w-5 h-5 text-[#004025]" />
+                Professional Soil Testing Services
+              </DialogTitle>
+              <DialogDescription className="text-gray-600 mt-1">
+                Find local soil testing laboratories and learn how to get your soil professionally analyzed in <strong>{location || 'your area'}</strong>
+              </DialogDescription>
+            </div>
+            {data && !isLoading && (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleShare}
+                  className="h-8"
+                  title="Share"
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handlePrint}
+                  className="h-8"
+                  title="Print"
+                >
+                  <Printer className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleExport}
+                  className="h-8"
+                  title="Download as JSON"
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </DialogHeader>
 
         {isLoading && (
