@@ -5,6 +5,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema } from "@shared/schema";
 import Stripe from "stripe";
 import PerplexityAI from "./perplexityAI";
+import { analyzeGardenPhotos, getPlantAdvice } from "./anthropic";
 import AnthropicAI from "./anthropicAI";
 import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
@@ -189,6 +190,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching climate data:", error);
       res.status(500).json({ message: "Failed to fetch climate data" });
+    }
+  });
+
+  // Garden photo analysis endpoint
+  app.post('/api/analyze-garden-photos', isAuthenticated, async (req: any, res) => {
+    try {
+      const { images, gardenInfo } = req.body;
+      
+      if (!images || !Array.isArray(images) || images.length === 0) {
+        return res.status(400).json({ message: 'No images provided for analysis' });
+      }
+
+      const analysis = await analyzeGardenPhotos(images, gardenInfo);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error analyzing garden photos:', error);
+      res.status(500).json({ 
+        message: 'Failed to analyze garden photos',
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Plant advice endpoint
+  app.post('/api/plant-advice', isAuthenticated, async (req: any, res) => {
+    try {
+      const { question, context } = req.body;
+      
+      if (!question) {
+        return res.status(400).json({ message: 'Question is required' });
+      }
+
+      const advice = await getPlantAdvice(question, context);
+      res.json({ advice });
+    } catch (error) {
+      console.error('Error getting plant advice:', error);
+      res.status(500).json({ 
+        message: 'Failed to get plant advice',
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 

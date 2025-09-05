@@ -1,0 +1,37 @@
+Core Garden Styles to Offer
+Romantic/Country Garden: Known for lush, informal plantings, flowing pathways, and abundant blooms (roses, lavender, peonies), embracing English and French country influences for a cozy, timeless atmosphere.
+
+Classic/Formal Garden: Emphasizes symmetry, geometric layouts, clipped hedges, defined borders, and focal points like statues or water features. Often inspired by European traditions (Italian, French, Baroque).
+
+Karl Foerster Type/Contemporary Perennial Garden: Characterized by naturalistic plantings, ornamental grasses (especially Calamagrostis 'Karl Foerster'), robust perennials, and an ecological, modern approach. It blends wild and designed elements, focusing on sustainability, year-round interest, and plant-driven composition.
+
+Cottage Garden: Informal, romantic mix of flowers (foxgloves, delphiniums, clematis), climbing plants, pastel colors, and hidden nooks, encouraging biodiversity and sensory appeal.
+
+Mediterranean Garden: Drought-tolerant species, terracotta materials, aromatic herbs (rosemary, thyme), and warm color palettes evoke relaxed Mediterranean living.
+
+Modernist/Minimalist Garden: Clean lines, geometric spaces, architectural plants, minimalist plantings, and materials like concrete, steel, and glass for a contemporary look.
+
+Japanese Garden: Subtle, tranquil designs using rocks, water elements, moss, and carefully pruned plants for meditative and balanced outdoor environments.
+
+Additional Styles Worth Considering
+Gravel/Rock Garden (xeriscape, alpine, or desert plants)
+
+Woodland/Ecological Garden (shade-loving, native plants, low-maintenance)
+
+Tropical Garden (exotic foliage, bold colors)
+
+Suggestions for AI Garden Design Interface
+Offer these major styles as pre-set themes, with visual previews and plant palettes tailored to each style.
+
+Consider regional/climate adaptability, plant availability, and maintenance levels as selectable criteria.
+
+Allow blending elements (e.g., Karl Foerster grasses in cottage style, or a mix of formal and naturalistic borders) for customization.
+
+Including these diverse and timeless styles ensures flexibility and professional appeal in your AI garden design solution.
+
+Related
+Which classic garden styles do designers ask AI to generate most often
+How would a Karl Foerster–inspired perennial scheme differ from a romantic cottage
+What plant palettes best suit a Mediterranean versus a modern minimalist garden
+Why do formal French or Baroque layouts work poorly with small urban plots
+How can I let user climate and maintenance preferences guide AI style choices

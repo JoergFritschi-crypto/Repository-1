@@ -904,6 +904,13 @@ export default function GardenProperties() {
                     // Handle photos for AI analysis if needed
                     console.log(`Uploaded ${photos.length} photos`);
                   }}
+                  gardenInfo={{
+                    shape: form.watch("shape"),
+                    dimensions: form.watch("dimensions"),
+                    slopeDirection: form.watch("slopeDirection"),
+                    slopePercentage: form.watch("slopePercentage"),
+                    usdaZone: form.watch("usdaZone")
+                  }}
                 />
                 
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-shape-orientation">
