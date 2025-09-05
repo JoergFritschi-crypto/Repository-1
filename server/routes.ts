@@ -1485,11 +1485,17 @@ function determineHardinessZones(avgMinTemp: number, coordinates?: { latitude: n
   ];
 
   // Find USDA zone
-  let usdaZone = '9a'; // Default
-  for (const zone of usdaZones) {
-    if (avgMinTemp >= zone.min && avgMinTemp < zone.max) {
-      usdaZone = zone.zone;
-      break;
+  let usdaZone = '13b'; // Default to warmest for tropical areas
+  
+  // Check if temperature is warmer than all zones (tropical)
+  if (avgMinTemp > 21.1) {
+    usdaZone = '13b'; // Tropical - no frost
+  } else {
+    for (const zone of usdaZones) {
+      if (avgMinTemp >= zone.min && avgMinTemp < zone.max) {
+        usdaZone = zone.zone;
+        break;
+      }
     }
   }
 
@@ -1658,7 +1664,18 @@ function calculateFrostDates(days: any[]): any {
 
 function calculateGrowingSeason(days: any[]): any {
   // Calculate typical growing season within a calendar year
+  // Growing season is when minimum temperature stays above 5°C
   const growingDays = days.filter(day => day.tempmin > 5);
+  
+  // For tropical locations with year-round growing season
+  if (growingDays.length === days.length || growingDays.length > days.length * 0.95) {
+    const currentYear = new Date().getFullYear();
+    return {
+      start: `${currentYear}-01-01`,
+      end: `${currentYear}-12-31`,
+      length_days: 365
+    };
+  }
   
   if (growingDays.length === 0) {
     return { start: null, end: null, length_days: 0 };
@@ -1690,24 +1707,29 @@ function calculateGrowingSeason(days: any[]): any {
   const validYears = Object.values(seasonByYear).filter(y => y.start && y.end);
   if (validYears.length === 0) return { start: null, end: null, length_days: 0 };
   
-  // Find median dates
-  const startDates = validYears.map(y => new Date(y.start).getMonth() * 30 + new Date(y.start).getDate());
-  const endDates = validYears.map(y => new Date(y.end).getMonth() * 30 + new Date(y.end).getDate());
+  // Find typical start and end dates
+  const startDates = validYears.map(y => {
+    const d = new Date(y.start);
+    return { month: d.getMonth(), day: d.getDate() };
+  });
+  const endDates = validYears.map(y => {
+    const d = new Date(y.end);
+    return { month: d.getMonth(), day: d.getDate() };
+  });
+  
+  // Calculate average start and end
+  const avgStartMonth = Math.round(startDates.reduce((sum, d) => sum + d.month, 0) / startDates.length);
+  const avgStartDay = Math.round(startDates.reduce((sum, d) => sum + d.day, 0) / startDates.length);
+  const avgEndMonth = Math.round(endDates.reduce((sum, d) => sum + d.month, 0) / endDates.length);
+  const avgEndDay = Math.round(endDates.reduce((sum, d) => sum + d.day, 0) / endDates.length);
+  
   const avgDays = validYears.reduce((sum, y) => sum + y.days, 0) / validYears.length;
   
-  const medianStart = startDates.sort((a, b) => a - b)[Math.floor(startDates.length / 2)];
-  const medianEnd = endDates.sort((a, b) => a - b)[Math.floor(endDates.length / 2)];
-  
-  // Convert to dates in current year
   const currentYear = new Date().getFullYear();
-  const startMonth = Math.floor(medianStart / 30);
-  const startDay = medianStart % 30 || 15;
-  const endMonth = Math.floor(medianEnd / 30);
-  const endDay = medianEnd % 30 || 15;
   
   return {
-    start: `${currentYear}-${String(startMonth + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`,
-    end: `${currentYear}-${String(endMonth + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`,
+    start: `${currentYear}-${String(avgStartMonth + 1).padStart(2, '0')}-${String(avgStartDay).padStart(2, '0')}`,
+    end: `${currentYear}-${String(avgEndMonth + 1).padStart(2, '0')}-${String(avgEndDay).padStart(2, '0')}`,
     length_days: Math.round(avgDays)
   };
 }
