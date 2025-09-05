@@ -255,6 +255,155 @@ Site Analysis Results:
   }
 }
 
+export interface PlantPlacement {
+  id: string;
+  plantName: string;
+  latinName: string;
+  x: number; // percentage position (0-100)
+  y: number; // percentage position (0-100)
+  width: number; // size in design units
+  height: number; // size in design units
+  quantity: number;
+  plantingGroup?: string; // for mass plantings
+  layer: 'canopy' | 'understory' | 'shrub' | 'perennial' | 'groundcover';
+  season: string[]; // seasons of interest
+  color: string; // primary bloom/foliage color
+}
+
+export interface GardenDesign {
+  styleName: string;
+  styleCategory: string;
+  plantPlacements: PlantPlacement[];
+  designZones: {
+    name: string;
+    purpose: string;
+    plants: string[]; // plant IDs in this zone
+  }[];
+  colorPalette: string[];
+  maintenanceNotes: string;
+  seasonalHighlights: {
+    season: string;
+    features: string[];
+  }[];
+  implementationNotes: string;
+}
+
+export async function generateCompleteGardenDesign(
+  selectedStyle: DesignStyleSuggestion,
+  gardenData: any,
+  safetyPreferences: {
+    petSafe?: boolean;
+    childSafe?: boolean;
+  }
+): Promise<GardenDesign> {
+  try {
+    const gardenInfo = `
+Garden Details:
+- Shape: ${gardenData.shape}
+- Dimensions: ${JSON.stringify(gardenData.dimensions)} ${gardenData.units}
+- Total Area: ${calculateArea(gardenData.shape, gardenData.dimensions)} sq ${gardenData.units}
+- Sun Exposure: ${gardenData.sunExposure}
+- USDA Zone: ${gardenData.usdaZone}
+- Location: ${gardenData.location || gardenData.city}
+
+Selected Style:
+- Name: ${selectedStyle.styleName}
+- Category: ${selectedStyle.styleCategory}
+- Key Features: ${selectedStyle.keyFeatures.join(', ')}
+- Plant Palette: ${selectedStyle.plantPalette.join(', ')}
+- Maintenance Level: ${selectedStyle.maintenanceLevel}
+
+Safety Requirements:
+- Pet Safe: ${safetyPreferences.petSafe ? 'Yes - NO toxic plants' : 'No restriction'}
+- Child Safe: ${safetyPreferences.childSafe ? 'Yes - NO toxic plants' : 'No restriction'}
+`;
+
+    const response = await anthropic.messages.create({
+      model: DEFAULT_MODEL_STR,
+      max_tokens: 4000,
+      system: `You are an expert garden designer creating a complete, implementable garden design. Based on the selected style and garden parameters, create a detailed planting plan with exact placements.
+      
+      CRITICAL SAFETY RULES:
+      ${safetyPreferences.petSafe ? '- ONLY use pet-safe, non-toxic plants. Absolutely NO plants toxic to dogs or cats.' : ''}
+      ${safetyPreferences.childSafe ? '- ONLY use child-safe, non-toxic plants. Absolutely NO poisonous or harmful plants.' : ''}
+      
+      For plant placement:
+      - Use percentage-based positioning (0-100 for x,y) to work with any garden size
+      - Layer plants appropriately (tall in back, short in front)
+      - Consider mature plant sizes for spacing
+      - Group plants for visual impact
+      - Ensure year-round interest
+      
+      Output as JSON with this structure:
+      {
+        "styleName": "string",
+        "styleCategory": "string",
+        "plantPlacements": [
+          {
+            "id": "unique_id",
+            "plantName": "common name",
+            "latinName": "scientific name",
+            "x": number (0-100),
+            "y": number (0-100),
+            "width": number (mature width in feet/meters),
+            "height": number (mature height in feet/meters),
+            "quantity": number,
+            "plantingGroup": "optional grouping name",
+            "layer": "canopy|understory|shrub|perennial|groundcover",
+            "season": ["spring", "summer", "fall", "winter"],
+            "color": "primary color"
+          }
+        ],
+        "designZones": [
+          {
+            "name": "zone name",
+            "purpose": "functional or aesthetic purpose",
+            "plants": ["plant_ids"]
+          }
+        ],
+        "colorPalette": ["colors used"],
+        "maintenanceNotes": "care overview",
+        "seasonalHighlights": [
+          {
+            "season": "season name",
+            "features": ["what looks good"]
+          }
+        ],
+        "implementationNotes": "installation guidance"
+      }`,
+      messages: [{
+        role: 'user',
+        content: `Create a complete garden design with specific plant placements:${gardenInfo}`
+      }],
+    });
+
+    const content = response.content[0];
+    if (content.type === 'text') {
+      return JSON.parse(content.text);
+    }
+
+    throw new Error('Unexpected response format from Claude');
+  } catch (error) {
+    console.error('Error generating complete garden design:', error);
+    throw new Error(`Failed to generate garden design: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+function calculateArea(shape: string, dimensions: Record<string, number>): number {
+  switch (shape) {
+    case 'rectangle':
+      return (dimensions.length || 0) * (dimensions.width || 0);
+    case 'square':
+      return (dimensions.side || 0) * (dimensions.side || 0);
+    case 'circle':
+      return Math.PI * (dimensions.radius || 0) * (dimensions.radius || 0);
+    case 'oval':
+      return Math.PI * (dimensions.majorAxis || 0) * (dimensions.minorAxis || 0) / 4;
+    default:
+      return (dimensions.approximateLength || 0) * (dimensions.approximateWidth || 0);
+  }
+}
+
 export async function getPlantAdvice(question: string, context?: string): Promise<string> {
   try {
     const response = await anthropic.messages.create({

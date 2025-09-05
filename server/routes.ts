@@ -5,7 +5,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema } from "@shared/schema";
 import Stripe from "stripe";
 import PerplexityAI from "./perplexityAI";
-import { analyzeGardenPhotos, generateDesignStyles, getPlantAdvice } from "./anthropic";
+import { analyzeGardenPhotos, generateDesignStyles, generateCompleteGardenDesign, getPlantAdvice } from "./anthropic";
 import AnthropicAI from "./anthropicAI";
 import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
@@ -232,6 +232,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error generating design styles:', error);
       res.status(500).json({ 
         message: 'Failed to generate design styles',
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Generate complete garden design endpoint
+  app.post('/api/generate-complete-design', isAuthenticated, async (req: any, res) => {
+    try {
+      const { selectedStyle, gardenData, safetyPreferences } = req.body;
+      
+      if (!selectedStyle) {
+        return res.status(400).json({ message: 'Selected style is required' });
+      }
+
+      if (!gardenData) {
+        return res.status(400).json({ message: 'Garden data is required' });
+      }
+
+      const design = await generateCompleteGardenDesign(
+        selectedStyle,
+        gardenData,
+        safetyPreferences || {}
+      );
+      
+      res.json(design);
+    } catch (error) {
+      console.error('Error generating complete design:', error);
+      res.status(500).json({ 
+        message: 'Failed to generate complete garden design',
         error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }

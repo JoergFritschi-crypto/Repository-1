@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from '@/hooks/use-toast';
+import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
@@ -118,6 +118,8 @@ export default function GardenProperties() {
   const [climateData, setClimateData] = useState<any>(null);
   const [hasUploadedPhotos, setHasUploadedPhotos] = useState(false);
   const [generatedStyles, setGeneratedStyles] = useState<any[]>([]);
+  const [completeDesign, setCompleteDesign] = useState<any>(null);
+  const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
   const [, setLocation] = useLocation();
 
   const form = useForm<GardenFormValues>({
@@ -1208,11 +1210,54 @@ export default function GardenProperties() {
                       <Button 
                         type="button"
                         className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
-                        onClick={() => {/* Generate AI design */}}
+                        onClick={async () => {
+                          setIsGeneratingDesign(true);
+                          try {
+                            const selectedStyleData = generatedStyles.find(
+                              style => style.styleCategory === form.watch("selectedStyle")
+                            );
+                            
+                            const response = await apiRequest('POST', '/api/generate-complete-design', {
+                              selectedStyle: selectedStyleData,
+                              gardenData: form.getValues(),
+                              safetyPreferences: {
+                                petSafe: form.watch("preferences.petSafe"),
+                                childSafe: form.watch("preferences.childSafe")
+                              }
+                            });
+                            
+                            const design = await response.json();
+                            setCompleteDesign(design);
+                            
+                            toast({
+                              title: 'Garden Design Generated!',
+                              description: `Your ${design.styleName} garden is ready with ${design.plantPlacements.length} plants.`
+                            });
+                          } catch (error) {
+                            console.error('Failed to generate design:', error);
+                            toast({
+                              title: 'Generation Failed',
+                              description: 'Could not generate garden design. Please try again.',
+                              variant: 'destructive'
+                            });
+                          } finally {
+                            setIsGeneratingDesign(false);
+                          }
+                        }}
+                        disabled={isGeneratingDesign}
                         data-testid="button-generate-design"
                       >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Generate Complete Garden Design
+                        {isGeneratingDesign ? (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                            Generating Design...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Generate Complete Garden Design
+                          </>
+                        )}
                       </Button>
                     </CardContent>
                   </Card>
@@ -1221,16 +1266,74 @@ export default function GardenProperties() {
                 {/* Main Design Canvas */}
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-interactive-canvas">
                   <CardHeader className="py-3">
-                    <CardTitle className="text-base">Garden Layout Canvas</CardTitle>
+                    <CardTitle className="text-base">
+                      Garden Layout Canvas
+                      {completeDesign && (
+                        <Badge className="ml-2" variant="secondary">
+                          AI Design Loaded
+                        </Badge>
+                      )}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <InteractiveCanvas
                       shape={form.watch("shape")}
                       dimensions={form.watch("dimensions")}
                       units={form.watch("units") === 'feet' ? 'imperial' : 'metric'}
+                      aiDesign={completeDesign}
                     />
                   </CardContent>
                 </Card>
+
+                {/* Show Design Details if AI design is generated */}
+                {completeDesign && (
+                  <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="design-details">
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <TreePine className="w-4 h-4 text-purple-600" />
+                        Your {completeDesign.styleName} Garden Design
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-0">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="p-3 bg-white rounded-lg border">
+                          <h4 className="font-semibold text-sm mb-2">Plant Count</h4>
+                          <p className="text-2xl font-bold text-green-600">
+                            {completeDesign.plantPlacements.length} plants
+                          </p>
+                        </div>
+                        <div className="p-3 bg-white rounded-lg border">
+                          <h4 className="font-semibold text-sm mb-2">Design Zones</h4>
+                          <p className="text-xs">
+                            {completeDesign.designZones.map((zone: any) => zone.name).join(', ')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-white rounded-lg border">
+                        <h4 className="font-semibold text-sm mb-2">Color Palette</h4>
+                        <div className="flex gap-2 flex-wrap">
+                          {completeDesign.colorPalette.map((color: string, i: number) => (
+                            <Badge key={i} variant="outline">{color}</Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-white rounded-lg border">
+                        <h4 className="font-semibold text-sm mb-2">Maintenance Notes</h4>
+                        <p className="text-xs">{completeDesign.maintenanceNotes}</p>
+                      </div>
+
+                      <div className="p-3 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg border border-purple-300">
+                        <h4 className="font-semibold text-sm mb-2">Next Steps</h4>
+                        <p className="text-xs">
+                          Your design is now on the canvas above. You can proceed to Step 5 to generate 
+                          the final blueprint and download your complete garden plan.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 

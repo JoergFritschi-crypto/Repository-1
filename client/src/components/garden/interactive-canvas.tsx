@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ interface InteractiveCanvasProps {
   dimensions: GardenDimensions;
   units: 'metric' | 'imperial';
   gardenId?: string;
+  aiDesign?: any; // AI-generated design from Claude
 }
 
 interface CanvasElement {
@@ -42,11 +43,27 @@ export default function InteractiveCanvas({
   shape, 
   dimensions, 
   units, 
-  gardenId 
+  gardenId,
+  aiDesign 
 }: InteractiveCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [selectedTool, setSelectedTool] = useState<string>('select');
-  const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([
+  
+  // Initialize canvas with AI design if provided
+  const getInitialElements = (): CanvasElement[] => {
+    if (aiDesign && aiDesign.plantPlacements) {
+      return aiDesign.plantPlacements.map((plant: any) => ({
+        id: plant.id,
+        type: 'plant' as const,
+        x: (plant.x / 100) * 400, // Convert percentage to canvas pixels
+        y: (plant.y / 100) * 300, // Convert percentage to canvas pixels
+        radius: Math.min(plant.width * 5, 30), // Scale plant size
+        label: plant.plantName,
+        color: getColorForPlant(plant.color),
+      }));
+    }
+    // Default demo elements if no AI design
+    return [
     {
       id: '1',
       type: 'plant',
@@ -75,7 +92,10 @@ export default function InteractiveCanvas({
       label: 'Perennial Border',
       color: '#10B981',
     },
-  ]);
+    ];
+  };
+  
+  const [canvasElements, setCanvasElements] = useState<CanvasElement[]>(getInitialElements());
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [layers, setLayers] = useState({
     plants: true,
@@ -87,6 +107,28 @@ export default function InteractiveCanvas({
 
   const unitSymbol = units === 'metric' ? 'm' : 'ft';
   const scaleRatio = 20; // 1 unit = 20 pixels
+  
+  // Helper function to map plant colors to hex codes
+  const getColorForPlant = (color: string): string => {
+    const colorMap: Record<string, string> = {
+      'purple': '#8B5CF6',
+      'yellow': '#EAB308',
+      'pink': '#EC4899',
+      'white': '#E5E7EB',
+      'blue': '#3B82F6',
+      'red': '#EF4444',
+      'orange': '#F97316',
+      'green': '#10B981',
+    };
+    return colorMap[color.toLowerCase()] || '#10B981';
+  };
+  
+  // Update canvas when AI design changes
+  useEffect(() => {
+    if (aiDesign && aiDesign.plantPlacements) {
+      setCanvasElements(getInitialElements());
+    }
+  }, [aiDesign])
 
   const tools = [
     { id: 'select', label: 'Select', icon: MousePointer, active: selectedTool === 'select' },
