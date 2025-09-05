@@ -1658,89 +1658,23 @@ export default function GardenProperties() {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Placeholder for small canvas - to be designed later */}
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-small-canvas">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Quick Garden Sketch</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 bg-gray-50 rounded flex items-center justify-center text-gray-500">
+                      Small canvas coming soon - between slope and sun exposure
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
-            {/* Step 3: Interactive Canvas */}
+            {/* Step 3: Plant Preferences (moved from Step 5) */}
             {currentStep === 3 && (
-              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-interactive-canvas">
-                <CardHeader className="py-3">
-                  <CardTitle className="text-base">Garden Layout Canvas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InteractiveCanvas
-                    shape={form.watch("shape")}
-                    dimensions={form.watch("dimensions")}
-                    units={form.watch("units")}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 4: Design Approach */}
-            {currentStep === 4 && (
-              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-design-approach">
-                <CardHeader className="py-3">
-                  <CardTitle className="text-base">Garden Design Approach</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-0">
-                  <FormField
-                    control={form.control}
-                    name="design_approach"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>How would you like to design your garden?</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="space-y-3"
-                          >
-                            <div className="flex items-start space-x-3">
-                              <RadioGroupItem value="ai" id="ai" />
-                              <div>
-                                <Label htmlFor="ai" className="font-medium">
-                                  AI-Powered Design
-                                </Label>
-                                <p className="text-sm text-muted-foreground">
-                                  Let our AI create a beautiful garden design based on your preferences and climate
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-start space-x-3">
-                              <RadioGroupItem value="manual" id="manual" />
-                              <div>
-                                <Label htmlFor="manual" className="font-medium">
-                                  Manual Design
-                                </Label>
-                                <p className="text-sm text-muted-foreground">
-                                  Design your garden yourself using our interactive canvas
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-start space-x-3">
-                              <RadioGroupItem value="hybrid" id="hybrid" />
-                              <div>
-                                <Label htmlFor="hybrid" className="font-medium">
-                                  Hybrid Approach
-                                </Label>
-                                <p className="text-sm text-muted-foreground">
-                                  Start with AI suggestions and customize them to your liking
-                                </p>
-                              </div>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 5: Plant Preferences */}
-            {currentStep === 5 && (
               <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-plant-preferences">
                 <CardHeader className="py-3">
                   <CardTitle className="text-base">Plant Preferences</CardTitle>
@@ -1827,28 +1761,184 @@ export default function GardenProperties() {
                     </div>
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="design_approach"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Design Approach</FormLabel>
-                        <FormControl>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger data-testid="select-design-approach">
-                              <SelectValue placeholder="Select approach" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="ai">Let AI design my garden</SelectItem>
-                              <SelectItem value="manual">I'll design it myself</SelectItem>
-                              <SelectItem value="hybrid">Hybrid (AI + manual)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div>
+                    <h3 className="font-semibold mb-4">Garden Characteristics</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="preferences.fragrant"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="checkbox-fragrant"
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm font-normal">
+                              Fragrant plants preferred
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="preferences.deerResistant"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="checkbox-deer-resistant"
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm font-normal">
+                              Deer resistant varieties
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="preferences.droughtTolerant"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="checkbox-drought-tolerant"
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm font-normal">
+                              Drought tolerant plants
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Step 4: Design Approach & Canvas */}
+            {currentStep === 4 && (
+              <div className="space-y-3">
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-design-approach">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Garden Design Approach</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-0">
+                    <FormField
+                      control={form.control}
+                      name="design_approach"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>How would you like to design your garden?</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-start space-x-3">
+                                <RadioGroupItem value="ai" id="ai" />
+                                <div>
+                                  <Label htmlFor="ai" className="font-medium">
+                                    AI-Powered Design
+                                  </Label>
+                                  <p className="text-sm text-muted-foreground">
+                                    Let our AI create a beautiful garden design based on your preferences and climate
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-start space-x-3">
+                                <RadioGroupItem value="manual" id="manual" />
+                                <div>
+                                  <Label htmlFor="manual" className="font-medium">
+                                    Manual Design
+                                  </Label>
+                                  <p className="text-sm text-muted-foreground">
+                                    Design your garden yourself using our interactive canvas
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-start space-x-3">
+                                <RadioGroupItem value="hybrid" id="hybrid" />
+                                <div>
+                                  <Label htmlFor="hybrid" className="font-medium">
+                                    Hybrid Approach
+                                  </Label>
+                                  <p className="text-sm text-muted-foreground">
+                                    Start with AI suggestions and customize them to your liking
+                                  </p>
+                                </div>
+                              </div>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Main Design Canvas (moved from Step 3) */}
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-interactive-canvas">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Garden Layout Canvas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <InteractiveCanvas
+                      shape={form.watch("shape")}
+                      dimensions={form.watch("dimensions")}
+                      units={form.watch("units")}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Step 5: Finale - Blueprint & Download */}
+            {currentStep === 5 && (
+              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-finale-blueprint">
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">Review & Generate Blueprint</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-0">
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-3">Your Garden Summary</h3>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Name:</strong> {form.watch("name") || "Not set"}</p>
+                      <p><strong>Location:</strong> {form.watch("city") || form.watch("location") || "Not set"}</p>
+                      <p><strong>Shape:</strong> {form.watch("shape") || "Rectangle"}</p>
+                      <p><strong>Sun Exposure:</strong> {form.watch("sunExposure")?.replace("_", " ") || "Not set"}</p>
+                      <p><strong>Design Approach:</strong> {form.watch("design_approach")?.toUpperCase() || "Not set"}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-3">What Happens Next?</h3>
+                    <ol className="list-decimal list-inside space-y-2 text-sm">
+                      <li>AI will generate your personalized garden design</li>
+                      <li>Get a complete plant list with care instructions</li>
+                      <li>Download your garden blueprint as PDF</li>
+                      <li>Access planting calendar and maintenance schedule</li>
+                      <li>Share your design with friends or professionals</li>
+                    </ol>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      By clicking "Generate Garden Design", our AI will create a complete garden plan based on all your inputs, 
+                      including climate data, soil conditions, and plant preferences.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             )}
