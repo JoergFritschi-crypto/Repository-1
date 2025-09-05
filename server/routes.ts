@@ -1081,7 +1081,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get coordinates if we have Mapbox
         let coordinates = null;
         if (mapboxAPI) {
+          console.log(`Geocoding location with Mapbox: ${location}`);
           coordinates = await mapboxAPI.geocode(location);
+          if (coordinates) {
+            console.log(`Mapbox returned coordinates: ${coordinates.latitude}, ${coordinates.longitude}`);
+          } else {
+            console.log(`Mapbox could not geocode location: ${location}`);
+          }
+        } else {
+          console.log("Mapbox API not configured");
         }
         
         // Fetch fresh data from Visual Crossing API
