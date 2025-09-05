@@ -82,7 +82,12 @@ export default function GardenProperties() {
   const form = useForm<GardenFormData>({
     resolver: zodResolver(gardenSchema),
     defaultValues: {
-      units: undefined, // No default - must be selected
+      name: "",
+      location: "",
+      city: "",
+      country: "",
+      zipCode: "",
+      units: "metric" as const,
       shape: "rectangle",
       dimensions: { length: 10, width: 8 },
       slopePercentage: 5,
@@ -90,6 +95,9 @@ export default function GardenProperties() {
       sunExposure: "full_sun",
       soilType: "loam",
       soilPh: 6.5,
+      usdaZone: "",
+      rhsZone: "",
+      hardinessCategory: "",
       design_approach: "ai",
       preferences: {
         petSafe: false,
@@ -97,6 +105,8 @@ export default function GardenProperties() {
         noThorns: false,
         lowAllergen: true,
         fragrant: true,
+        deerResistant: false,
+        droughtTolerant: false,
         colors: ["red", "yellow"],
         plantTypes: ["perennials", "hedges"],
         bloomTimes: ["spring", "summer"],
