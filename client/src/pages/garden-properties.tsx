@@ -47,6 +47,29 @@ const gardenSchema = z.object({
   sunExposure: z.enum(["full_sun", "partial_sun", "partial_shade", "full_shade"]).optional(),
   soilType: z.enum(["clay", "loam", "sand", "silt", "chalk"]).optional(),
   soilPh: z.number().min(4).max(9).optional(),
+  hasSoilAnalysis: z.boolean().optional(),
+  soilAnalysis: z.object({
+    nitrogen: z.number().optional(),
+    phosphorus: z.number().optional(),
+    potassium: z.number().optional(),
+    calcium: z.number().optional(),
+    magnesium: z.number().optional(),
+    sulfur: z.number().optional(),
+    iron: z.number().optional(),
+    manganese: z.number().optional(),
+    zinc: z.number().optional(),
+    copper: z.number().optional(),
+    boron: z.number().optional(),
+    molybdenum: z.number().optional(),
+    organicMatter: z.number().optional(),
+    cec: z.number().optional(),
+    salinity: z.number().optional(),
+    baseSaturation: z.number().optional(),
+    calciumSaturation: z.number().optional(),
+    magnesiumSaturation: z.number().optional(),
+    potassiumSaturation: z.number().optional(),
+    sodiumSaturation: z.number().optional(),
+  }).optional(),
   usdaZone: z.string().optional(),
   rhsZone: z.string().optional(),
   hardinessCategory: z.string().optional(),
@@ -95,6 +118,8 @@ export default function GardenProperties() {
       sunExposure: "full_sun",
       soilType: "loam",
       soilPh: 6.5,
+      hasSoilAnalysis: false,
+      soilAnalysis: {},
       usdaZone: "",
       rhsZone: "",
       hardinessCategory: "",
@@ -1135,6 +1160,464 @@ export default function GardenProperties() {
                         )}
                       />
                     </div>
+
+                    {/* Professional Soil Analysis Toggle */}
+                    <div className="pt-3 border-t">
+                      <FormField
+                        control={form.control}
+                        name="hasSoilAnalysis"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="checkbox-soil-analysis"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">
+                                I have professional soil analysis results
+                              </FormLabel>
+                              <p className="text-xs text-muted-foreground">
+                                Add detailed nutrient levels from your soil test report
+                              </p>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Professional Soil Analysis Fields */}
+                    {form.watch("hasSoilAnalysis") && (
+                      <div className="space-y-4 pt-3">
+                        <Tabs defaultValue="npk" className="w-full">
+                          <TabsList className="grid w-full grid-cols-4 h-9">
+                            <TabsTrigger value="npk" className="text-xs">NPK</TabsTrigger>
+                            <TabsTrigger value="secondary" className="text-xs">Secondary</TabsTrigger>
+                            <TabsTrigger value="micro" className="text-xs">Micronutrients</TabsTrigger>
+                            <TabsTrigger value="other" className="text-xs">Other</TabsTrigger>
+                          </TabsList>
+                          
+                          {/* NPK Tab */}
+                          <TabsContent value="npk" className="space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.nitrogen"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Nitrogen (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-nitrogen"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.phosphorus"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Phosphorus (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-phosphorus"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.potassium"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Potassium (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-potassium"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </TabsContent>
+
+                          {/* Secondary Nutrients Tab */}
+                          <TabsContent value="secondary" className="space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.calcium"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Calcium (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-calcium"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.magnesium"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Magnesium (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-magnesium"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.sulfur"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Sulfur (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-sulfur"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </TabsContent>
+
+                          {/* Micronutrients Tab */}
+                          <TabsContent value="micro" className="space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.iron"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Iron (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-iron"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.manganese"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Manganese (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-manganese"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.zinc"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Zinc (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-zinc"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.copper"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Copper (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-copper"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.boron"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Boron (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-boron"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.molybdenum"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Molybdenum (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-molybdenum"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </TabsContent>
+
+                          {/* Other Properties Tab */}
+                          <TabsContent value="other" className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.organicMatter"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Organic Matter (%)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="0.1"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-organic-matter"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.cec"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">CEC (meq/100g)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="0.1"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-cec"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.salinity"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Salinity (dS/m)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="0.1"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-salinity"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.baseSaturation"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Base Saturation (%)</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        step="0.1"
+                                        placeholder="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                        className="h-8 text-xs"
+                                        data-testid="input-base-saturation"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium">Saturation Percentages</p>
+                              <div className="grid grid-cols-2 gap-3">
+                                <FormField
+                                  control={form.control}
+                                  name="soilAnalysis.calciumSaturation"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Calcium (%)</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.1"
+                                          placeholder="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                          className="h-8 text-xs"
+                                          data-testid="input-calcium-saturation"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="soilAnalysis.magnesiumSaturation"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Magnesium (%)</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.1"
+                                          placeholder="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                          className="h-8 text-xs"
+                                          data-testid="input-magnesium-saturation"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="soilAnalysis.potassiumSaturation"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Potassium (%)</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.1"
+                                          placeholder="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                          className="h-8 text-xs"
+                                          data-testid="input-potassium-saturation"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="soilAnalysis.sodiumSaturation"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Sodium (%)</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.1"
+                                          placeholder="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                          className="h-8 text-xs"
+                                          data-testid="input-sodium-saturation"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </div>
+                          </TabsContent>
+                        </Tabs>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

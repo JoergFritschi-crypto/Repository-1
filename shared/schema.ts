@@ -87,6 +87,8 @@ export const gardens = pgTable("gardens", {
   sunExposure: sunExposureEnum("sun_exposure"),
   soilType: soilTypeEnum("soil_type"),
   soilPh: decimal("soil_ph", { precision: 3, scale: 1 }),
+  hasSoilAnalysis: boolean("has_soil_analysis").default(false),
+  soilAnalysis: jsonb("soil_analysis"), // Professional soil test results
   hardiness_zone: varchar("hardiness_zone"),
   usdaZone: varchar("usda_zone"),
   rhsZone: varchar("rhs_zone"),
