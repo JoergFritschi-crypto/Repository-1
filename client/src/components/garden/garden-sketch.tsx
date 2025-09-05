@@ -67,11 +67,43 @@ export default function GardenSketch({
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  // Calculate optimal scale for shape to fit inside inner ring
+  const calculateOptimalScale = () => {
+    const innerRingRadius = containerSize.width * 0.4;
+    const maxSize = innerRingRadius * 2 * 0.85; // 85% of inner ring diameter
+    
+    // Get the largest dimension of the shape
+    let largestDimension = 1;
+    switch (shape) {
+      case 'rectangle':
+      case 'l-shape':
+      case 'oval':
+        const width = dimensions.width || 4;
+        const length = dimensions.length || 3;
+        largestDimension = Math.max(width, length);
+        break;
+      case 'square':
+        largestDimension = dimensions.width || 4;
+        break;
+      case 'circle':
+        largestDimension = (dimensions.radius || 5) * 2;
+        break;
+      case 'triangle':
+        largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3);
+        break;
+      default:
+        largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3);
+    }
+    
+    // Calculate scale to fit shape inside inner ring
+    return maxSize / (largestDimension * 20);
+  };
+
   // Get garden shape path
   const getShapePath = () => {
     const centerX = containerSize.width / 2;
     const centerY = containerSize.height / 2;
-    const scale = 0.35; // Shape takes up 35% of container to leave room for rings
+    const scale = calculateOptimalScale();
     
     switch (shape) {
       case 'rectangle':
