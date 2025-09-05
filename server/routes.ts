@@ -141,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch climate data using coordinates if available, otherwise use location string
       const climateData = await fetchClimateDataWithCoordinates(
         coordinates ? `${coordinates.latitude},${coordinates.longitude}` : location,
-        coordinates
+        coordinates ? { latitude: coordinates.latitude, longitude: coordinates.longitude } : null
       );
 
       if (!climateData) {
@@ -185,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(garden);
     } catch (error) {
       console.error("Error creating garden:", error);
-      res.status(400).json({ message: "Failed to create garden", error: error.message });
+      res.status(400).json({ message: "Failed to create garden", error: (error as Error).message });
     }
   });
 
@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedGarden);
     } catch (error) {
       console.error("Error updating garden:", error);
-      res.status(400).json({ message: "Failed to update garden", error: error.message });
+      res.status(400).json({ message: "Failed to update garden", error: (error as Error).message });
     }
   });
 
@@ -249,9 +249,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: garden.location || 'United Kingdom',
         shape: garden.shape || 'rectangular',
         dimensions: garden.dimensions,
-        hardiness_zone: garden.hardiness_zone,
-        sun_exposure: garden.sun_exposure,
-        design_approach: garden.design_approach,
+        hardiness_zone: garden.hardiness_zone || undefined,
+        sun_exposure: garden.sunExposure || undefined,
+        design_approach: garden.design_approach || undefined,
         preferences: garden.preferences
       });
 
@@ -266,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store recommendations in garden preferences or separate table
         await storage.updateGarden(req.params.id, {
           preferences: {
-            ...garden.preferences,
+            ...(garden.preferences as any || {}),
             ai_plant_recommendations: aiDesign.plantRecommendations,
             ai_design_notes: aiDesign.designNotes
           }
@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error generating AI garden design:", error);
-      res.status(500).json({ message: "Failed to generate AI design", error: error.message });
+      res.status(500).json({ message: "Failed to generate AI design", error: (error as Error).message });
     }
   });
 
@@ -485,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(plant);
     } catch (error) {
       console.error("Error creating plant:", error);
-      res.status(400).json({ message: "Failed to create plant", error: error.message });
+      res.status(400).json({ message: "Failed to create plant", error: (error as Error).message });
     }
   });
 
@@ -544,7 +544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error starting image generation:", error);
       res.status(500).json({ 
         message: "Failed to start image generation", 
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -586,7 +586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error starting bulk image generation:", error);
       res.status(500).json({ 
         message: "Failed to start bulk image generation", 
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -599,7 +599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error getting image generation status:", error);
       res.status(500).json({ 
         message: "Failed to get generation status", 
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -623,7 +623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error getting queue status:", error);
       res.status(500).json({ 
         message: "Failed to get queue status", 
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -640,7 +640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error clearing queue:", error);
       res.status(500).json({ 
         message: "Failed to clear queue", 
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -657,7 +657,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error resetting stuck items:", error);
       res.status(500).json({ 
         message: "Failed to reset stuck items", 
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -699,7 +699,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (error) {
         console.error(`Failed to generate:`, error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: (error as Error).message });
       }
     } catch (error) {
       console.error('Test generation error:', error);
@@ -802,7 +802,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(collection);
     } catch (error) {
       console.error("Error adding to plant collection:", error);
-      res.status(400).json({ message: "Failed to add to collection", error: error.message });
+      res.status(400).json({ message: "Failed to add to collection", error: (error as Error).message });
     }
   });
 
@@ -874,7 +874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(session);
     } catch (error) {
       console.error("Error creating plant doctor session:", error);
-      res.status(400).json({ message: "Failed to create identification session", error: error.message });
+      res.status(400).json({ message: "Failed to create identification session", error: (error as Error).message });
     }
   });
 
@@ -895,7 +895,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const query = req.query.q as string || "";
       const source = req.query.source as string || "all"; // all, perenual, gbif, local
       
-      let results = [];
+      let results: any[] = [];
       
       // Search local database
       if (source === "all" || source === "local") {
@@ -1371,7 +1371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ 
           valid: false, 
           status: 'invalid',
-          message: error.message 
+          message: (error as Error).message 
         });
       }
     } catch (error) {
@@ -1415,7 +1415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         res.json({ clientSecret: paymentIntent.client_secret });
       } catch (error: any) {
-        res.status(500).json({ message: "Error creating payment intent: " + error.message });
+        res.status(500).json({ message: "Error creating payment intent: " + (error as Error).message });
       }
     });
 
@@ -1461,7 +1461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (error: any) {
         console.error("Stripe subscription error:", error);
-        return res.status(400).json({ error: { message: error.message } });
+        return res.status(400).json({ error: { message: (error as Error).message } });
       }
     });
   }
@@ -1489,12 +1489,12 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       ? `${coordinates.latitude},${coordinates.longitude}`
       : location;
     
-    // Get 20 years of continuous historical data for accurate climate analysis
+    // Get 2 years of historical data for testing (we'll optimize this later)
     // Visual Crossing Professional plan supports up to 40 years of historical data
-    // 20 years should capture most extreme weather events for accurate zone determination
+    // For production, we should use 10-20 years for accurate zone determination
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 20); // 20 years of data
+    startDate.setFullYear(endDate.getFullYear() - 2); // 2 years for testing
     
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];

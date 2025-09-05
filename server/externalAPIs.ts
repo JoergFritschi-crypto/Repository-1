@@ -174,8 +174,8 @@ export class MapboxAPI {
         const [longitude, latitude] = feature.center;
         
         // Extract context information
-        const country = feature.context?.find(c => c.id.startsWith('country'))?.text;
-        const region = feature.context?.find(c => c.id.startsWith('region'))?.text;
+        const country = feature.context?.find((c: any) => c.id.startsWith('country'))?.text;
+        const region = feature.context?.find((c: any) => c.id.startsWith('region'))?.text;
         
         return {
           latitude,
@@ -220,10 +220,10 @@ export class MapboxAPI {
         
         return {
           address: feature.place_name,
-          city: context.find(c => c.id.startsWith('place'))?.text,
-          region: context.find(c => c.id.startsWith('region'))?.text,
-          country: context.find(c => c.id.startsWith('country'))?.text,
-          postcode: context.find(c => c.id.startsWith('postcode'))?.text
+          city: context.find((c: any) => c.id.startsWith('place'))?.text,
+          region: context.find((c: any) => c.id.startsWith('region'))?.text,
+          country: context.find((c: any) => c.id.startsWith('country'))?.text,
+          postcode: context.find((c: any) => c.id.startsWith('postcode'))?.text
         };
       }
       
