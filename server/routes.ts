@@ -147,12 +147,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Climate data not available for this location" });
       }
 
-      // Add debug logging
-      console.log("Sending climate response with zones:", {
-        usda: climateData?.usda_zone,
-        rhs: climateData?.rhs_zone,
-        category: climateData?.hardiness_category
-      });
       
       res.json({
         ...climateData,
@@ -1087,7 +1081,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Climate data not found" });
       }
       
-      res.json(climateData);
+      // Parse the combined hardiness_zone field back into separate fields for the frontend
+      let usda_zone = '';
+      let rhs_zone = '';
+      if (climateData.hardiness_zone) {
+        const parts = climateData.hardiness_zone.split(' / ');
+        usda_zone = parts[0] || '';
+        rhs_zone = parts[1] || '';
+      }
+      
+      // Determine hardiness category from USDA zone
+      let hardiness_category = 'Half Hardy';
+      if (usda_zone) {
+        const zoneNum = parseInt(usda_zone.match(/\d+/)?.[0] || '9');
+        if (zoneNum <= 5) hardiness_category = 'Very Hardy';
+        else if (zoneNum <= 7) hardiness_category = 'Hardy';
+        else if (zoneNum <= 9) hardiness_category = 'Half Hardy';
+        else if (zoneNum >= 11) hardiness_category = 'Tender';
+      }
+      
+      // Send response with both database fields and expected frontend fields
+      res.json({
+        ...climateData,
+        usda_zone,
+        rhs_zone,
+        hardiness_category,
+        temperature_range: `${climateData.avg_temp_min}°C to ${climateData.avg_temp_max}°C`
+      });
     } catch (error) {
       console.error("Error fetching climate data:", error);
       res.status(500).json({ message: "Failed to fetch climate data" });
@@ -1412,13 +1432,6 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
     const years = new Set(data.days.map(day => new Date(day.datetime).getFullYear()));
     const yearsArray = Array.from(years).sort();
     
-    // Debug log to check data structure
-    console.log("Climate data summary:", {
-      location: data.resolvedAddress,
-      days_received: data.days.length,
-      years: yearsArray,
-      sample_day: data.days[0]
-    });
     
     // Process and structure the climate data
     return {
@@ -1607,10 +1620,6 @@ function calculateColdestWinterTemp(days: any[]): number {
   // With 20 years of data, we should capture the actual extreme minimums
   // No need for location-specific overrides
   
-  console.log("USDA Zone determination:", {
-    absoluteMinimum: absoluteMin,
-    note: "Zone is determined by the single coldest temperature recorded"
-  });
   
   return absoluteMin;
 }

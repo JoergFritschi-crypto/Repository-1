@@ -23,8 +23,6 @@ export default function ClimateReportModal({
 
   if (!climateData) return null;
   
-  // Debug log to see what data we actually have
-  console.log("Climate modal data:", climateData);
 
   const handlePrint = () => {
     const printContent = reportRef.current?.innerHTML || '';
@@ -202,7 +200,7 @@ export default function ClimateReportModal({
               </div>
               <div className="bg-white p-3 rounded border border-gray-200">
                 <div className="text-sm text-gray-600 mb-1">Growing Season</div>
-                <div className="text-lg font-semibold text-gray-900">{climateData.growing_season?.length || 0} days</div>
+                <div className="text-lg font-semibold text-gray-900">{climateData.growing_season?.length_days || 0} days</div>
               </div>
             </div>
           </div>
