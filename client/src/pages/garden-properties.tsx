@@ -416,7 +416,22 @@ export default function GardenProperties() {
                           name="country"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Country</FormLabel>
+                              <div className="flex justify-between items-center mb-2">
+                                <FormLabel>Country</FormLabel>
+                                {field.value && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowSoilTestingModal(true)}
+                                    className="h-7 text-xs"
+                                    data-testid="button-find-soil-testing"
+                                  >
+                                    <MapPin className="w-3 h-3 mr-1" />
+                                    Find Soil Testing Labs
+                                  </Button>
+                                )}
+                              </div>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-country">
@@ -620,6 +635,11 @@ export default function GardenProperties() {
                                   <SelectItem value="Zimbabwe">Zimbabwe</SelectItem>
                                 </SelectContent>
                               </Select>
+                              {field.value && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  💡 Use the "Find Soil Testing Labs" button above to discover professional testing services in {field.value}
+                                </p>
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1165,42 +1185,29 @@ export default function GardenProperties() {
 
                     {/* Professional Soil Analysis Toggle */}
                     <div className="pt-3 border-t">
-                      <div className="flex justify-between items-start">
-                        <FormField
-                          control={form.control}
-                          name="hasSoilAnalysis"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  data-testid="checkbox-soil-analysis"
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel className="font-medium">
-                                  I have professional soil analysis results
-                                </FormLabel>
-                                <p className="text-xs text-muted-foreground">
-                                  Add detailed nutrient levels from your soil test report
-                                </p>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowSoilTestingModal(true)}
-                          className="h-8 text-xs"
-                          data-testid="button-find-soil-testing"
-                        >
-                          <MapPin className="w-3 h-3 mr-1" />
-                          Find Testing Services
-                        </Button>
-                      </div>
+                      <FormField
+                        control={form.control}
+                        name="hasSoilAnalysis"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="checkbox-soil-analysis"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">
+                                I have professional soil analysis results
+                              </FormLabel>
+                              <p className="text-xs text-muted-foreground">
+                                Add detailed nutrient levels from your soil test report
+                              </p>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     {/* Professional Soil Analysis Fields */}
@@ -1877,7 +1884,7 @@ export default function GardenProperties() {
         <SoilTestingModal
           open={showSoilTestingModal}
           onClose={() => setShowSoilTestingModal(false)}
-          location={locationToFetch}
+          location={watchedCountry || locationToFetch}
         />
       </div>
     </div>

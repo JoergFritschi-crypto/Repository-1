@@ -75,7 +75,7 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
             Professional Soil Testing Services
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            Find local soil testing laboratories and learn how to get your soil professionally analyzed for {location || 'your area'}
+            Find local soil testing laboratories and learn how to get your soil professionally analyzed in <strong>{location || 'your area'}</strong>
           </DialogDescription>
         </DialogHeader>
 
