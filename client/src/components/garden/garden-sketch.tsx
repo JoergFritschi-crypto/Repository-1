@@ -325,15 +325,15 @@ export default function GardenSketch({
             />
           </g>
           
-          {/* View direction arrow - pointing inward */}
+          {/* View direction arrow - pointing outward */}
           <path
-            d={`M ${centerX} ${centerY - innerRadius + 20} 
-                L ${centerX - 8} ${centerY - innerRadius + 35} 
-                L ${centerX - 3} ${centerY - innerRadius + 35}
-                L ${centerX - 3} ${centerY - innerRadius + 50}
-                L ${centerX + 3} ${centerY - innerRadius + 50}
-                L ${centerX + 3} ${centerY - innerRadius + 35}
-                L ${centerX + 8} ${centerY - innerRadius + 35} z`}
+            d={`M ${centerX} ${centerY - innerRadius - 25} 
+                L ${centerX - 8} ${centerY - innerRadius - 40} 
+                L ${centerX - 3} ${centerY - innerRadius - 40}
+                L ${centerX - 3} ${centerY - innerRadius - 55}
+                L ${centerX + 3} ${centerY - innerRadius - 55}
+                L ${centerX + 3} ${centerY - innerRadius - 40}
+                L ${centerX + 8} ${centerY - innerRadius - 40} z`}
             fill="#0066cc"
             opacity="0.7"
             pointerEvents="none"
