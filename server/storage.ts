@@ -6,6 +6,7 @@ import {
   gardenPlants,
   plantDoctorSessions,
   climateData,
+  fileVault,
   type User,
   type UpsertUser,
   type Garden,
@@ -20,9 +21,11 @@ import {
   type InsertPlantDoctorSession,
   type ClimateData,
   type InsertClimateData,
+  type FileVault,
+  type InsertFileVault,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, ilike, and, or, desc } from "drizzle-orm";
+import { eq, ilike, and, or, desc, isNotNull, lte, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -75,6 +78,13 @@ export interface IStorage {
   getClimateData(location: string): Promise<ClimateData | undefined>;
   createClimateData(climate: InsertClimateData): Promise<ClimateData>;
   updateClimateData(location: string, climate: Partial<InsertClimateData>): Promise<ClimateData>;
+  
+  // File vault operations
+  createVaultItem(vaultItem: InsertFileVault): Promise<FileVault>;
+  getUserVaultItems(userId: string): Promise<FileVault[]>;
+  getVaultItem(id: string): Promise<FileVault | undefined>;
+  updateVaultAccessTime(id: string): Promise<void>;
+  deleteExpiredVaultItems(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -316,6 +326,41 @@ export class DatabaseStorage implements IStorage {
       .where(eq(climateData.location, location))
       .returning();
     return updatedClimate;
+  }
+
+  // File vault operations
+  async createVaultItem(vaultItem: InsertFileVault): Promise<FileVault> {
+    const [newItem] = await db.insert(fileVault).values(vaultItem).returning();
+    return newItem;
+  }
+
+  async getUserVaultItems(userId: string): Promise<FileVault[]> {
+    return await db.select().from(fileVault)
+      .where(eq(fileVault.userId, userId))
+      .orderBy(desc(fileVault.createdAt));
+  }
+
+  async getVaultItem(id: string): Promise<FileVault | undefined> {
+    const [item] = await db.select().from(fileVault).where(eq(fileVault.id, id));
+    return item;
+  }
+
+  async updateVaultAccessTime(id: string): Promise<void> {
+    await db.update(fileVault)
+      .set({ 
+        lastAccessedAt: new Date(),
+        accessCount: sql`access_count + 1`
+      })
+      .where(eq(fileVault.id, id));
+  }
+
+  async deleteExpiredVaultItems(): Promise<number> {
+    const result = await db.delete(fileVault)
+      .where(and(
+        isNotNull(fileVault.expiresAt),
+        lte(fileVault.expiresAt, new Date())
+      ));
+    return result.count || 0;
   }
 }
 

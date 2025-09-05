@@ -9,6 +9,7 @@ import AnthropicAI from "./anthropicAI";
 import GeminiAI from "./geminiAI";
 import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
 import { generateGardeningAdvice } from "./gardening-advice";
+import { fileVaultService } from "./fileVault";
 import { apiMonitoring } from "./apiMonitoring";
 import { imageGenerationService } from "./imageGenerationService";
 import { runwareImageGenerator } from "./runwareImageGenerator";
@@ -114,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Climate data endpoint with Mapbox geocoding
-  app.get('/api/climate', async (req, res) => {
+  app.get('/api/climate', async (req: any, res) => {
     const location = req.query.location as string;
     
     if (!location || location.length < 3) {
@@ -164,11 +165,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         formattedLocation = parts.join(', ');
       }
       
-      res.json({
+      const response = {
         ...climateData,
         coordinates,
         location: formattedLocation
-      });
+      };
+      
+      // Save to file vault if user is authenticated
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        try {
+          await fileVaultService.saveClimateReport(
+            req.user.claims.sub,
+            formattedLocation,
+            response
+          );
+        } catch (vaultError) {
+          console.error('Error saving to vault:', vaultError);
+          // Don't fail the request if vault save fails
+        }
+      }
+      
+      res.json(response);
     } catch (error) {
       console.error("Error fetching climate data:", error);
       res.status(500).json({ message: "Failed to fetch climate data" });
@@ -182,6 +199,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: req.user.claims.sub
       });
       const garden = await storage.createGarden(gardenData);
+      
+      // Save garden design to file vault
+      try {
+        await fileVaultService.saveGardenDesign(
+          req.user.claims.sub,
+          garden.name,
+          {
+            ...garden,
+            created: new Date().toISOString(),
+            version: '1.0'
+          }
+        );
+      } catch (vaultError) {
+        console.error('Error saving garden to vault:', vaultError);
+      }
+      
       res.status(201).json(garden);
     } catch (error) {
       console.error("Error creating garden:", error);
@@ -281,6 +314,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating AI garden design:", error);
       res.status(500).json({ message: "Failed to generate AI design", error: (error as Error).message });
+    }
+  });
+
+  // File vault routes
+  app.get('/api/vault/items', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const items = await storage.getUserVaultItems(userId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching vault items:", error);
+      res.status(500).json({ message: "Failed to fetch vault items" });
+    }
+  });
+
+  app.get('/api/vault/items/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const item = await storage.getVaultItem(req.params.id);
+      
+      if (!item) {
+        return res.status(404).json({ message: "Vault item not found" });
+      }
+      
+      // Check ownership
+      if (item.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Update access time
+      await storage.updateVaultAccessTime(item.id);
+      
+      res.json(item);
+    } catch (error) {
+      console.error("Error fetching vault item:", error);
+      res.status(500).json({ message: "Failed to fetch vault item" });
     }
   });
 
@@ -1489,12 +1558,12 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       ? `${coordinates.latitude},${coordinates.longitude}`
       : location;
     
-    // Get 2 years of historical data for testing (we'll optimize this later)
+    // Get 10 years of historical data for accurate climate analysis
     // Visual Crossing Professional plan supports up to 40 years of historical data
-    // For production, we should use 10-20 years for accurate zone determination
+    // 10 years provides good balance between accuracy and performance
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 2); // 2 years for testing
+    startDate.setFullYear(endDate.getFullYear() - 10); // 10 years for accurate zone determination
     
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
@@ -1981,8 +2050,8 @@ function calculateGrowingSeason(days: any[]): any {
 }
 
 function processMonthlyData(days: any[]): any {
-  const monthlyData = {};
-  days.forEach(day => {
+  const monthlyData: { [key: number]: any } = {};
+  days.forEach((day: any) => {
     const month = new Date(day.datetime).getMonth();
     if (!monthlyData[month]) {
       monthlyData[month] = {
@@ -1998,8 +2067,8 @@ function processMonthlyData(days: any[]): any {
   
   // Calculate averages
   Object.keys(monthlyData).forEach(month => {
-    const data = monthlyData[month];
-    data.temp_avg = data.temp_avg.reduce((sum, temp) => sum + temp, 0) / data.temp_avg.length;
+    const data = monthlyData[parseInt(month)];
+    data.temp_avg = data.temp_avg.reduce((sum: number, temp: number) => sum + temp, 0) / data.temp_avg.length;
   });
   
   return monthlyData;

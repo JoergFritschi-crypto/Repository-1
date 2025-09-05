@@ -280,6 +280,21 @@ export const apiHealthChecks = pgTable("api_health_checks", {
   metadata: jsonb("metadata"), // additional service-specific data
 });
 
+// File vault for storing user reports, designs, and images with tier-based retention
+export const fileVault = pgTable("file_vault", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  fileName: varchar("file_name").notNull(),
+  fileType: varchar("file_type").notNull(), // climate_report, garden_design, garden_image, plant_report
+  contentType: varchar("content_type").notNull(), // json, pdf, image, html
+  filePath: varchar("file_path").notNull(),
+  metadata: jsonb("metadata"),
+  expiresAt: timestamp("expires_at"), // null means permanent
+  accessCount: integer("access_count").default(0),
+  lastAccessedAt: timestamp("last_accessed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // API usage statistics
 export const apiUsageStats = pgTable("api_usage_stats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -328,6 +343,8 @@ export type ApiAlert = typeof apiAlerts.$inferSelect;
 export type InsertApiAlert = typeof apiAlerts.$inferInsert;
 export type ImageGenerationQueue = typeof imageGenerationQueue.$inferSelect;
 export type InsertImageGenerationQueue = typeof imageGenerationQueue.$inferInsert;
+export type FileVault = typeof fileVault.$inferSelect;
+export type InsertFileVault = typeof fileVault.$inferInsert;
 
 // Schema exports for validation
 export const insertGardenSchema = createInsertSchema(gardens);
@@ -340,3 +357,4 @@ export const insertApiHealthCheckSchema = createInsertSchema(apiHealthChecks);
 export const insertApiUsageStatSchema = createInsertSchema(apiUsageStats);
 export const insertApiAlertSchema = createInsertSchema(apiAlerts);
 export const insertImageGenerationQueueSchema = createInsertSchema(imageGenerationQueue);
+export const insertFileVaultSchema = createInsertSchema(fileVault);
