@@ -162,7 +162,16 @@ export default function ClimateReportModal({
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900">Climate Report</h1>
             <p className="text-lg font-medium text-gray-800">{location.replace(/\s+/g, ', ').replace(', ,', ',')}</p>
-            <p className="text-sm text-gray-600">Generated on {new Date().toLocaleDateString()}</p>
+            <p className="text-sm text-gray-600">Generated on {(() => {
+              const date = new Date();
+              const month = date.toLocaleDateString('en-US', { month: 'long' });
+              const day = date.getDate();
+              const year = date.getFullYear();
+              const ordinal = day === 1 ? 'first' : day === 2 ? 'second' : day === 3 ? 'third' : 
+                             day === 5 ? 'fifth' : day === 21 ? 'twenty-first' : day === 22 ? 'twenty-second' : 
+                             day === 23 ? 'twenty-third' : day === 31 ? 'thirty-first' : `${day}th`;
+              return `${ordinal} of ${month} ${year}`;
+            })()}</p>
             {climateData.data_range && (
               <p className="text-sm text-gray-600 mt-2">
                 Based on {climateData.data_range.date_range || `${climateData.data_range.total_years} years of historical data`}
@@ -236,10 +245,14 @@ export default function ClimateReportModal({
               </div>
             </div>
             
-            {climateData.sunshine_percent !== undefined && (
+            {(climateData.sunshine_hours !== undefined || climateData.sunshine_percent !== undefined) && (
               <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
-                <div className="text-sm text-gray-600 mb-1">Estimated Sunshine</div>
-                <div className="text-lg font-semibold text-yellow-700">{typeof climateData.sunshine_percent === 'number' ? climateData.sunshine_percent.toFixed(1) : climateData.sunshine_percent}%</div>
+                <div className="text-sm text-gray-600 mb-1">Average Daily Sunshine</div>
+                <div className="text-lg font-semibold text-yellow-700">
+                  {climateData.sunshine_hours !== undefined 
+                    ? `${climateData.sunshine_hours.toFixed(1)} hours per day`
+                    : `${(climateData.sunshine_percent * 0.12).toFixed(1)} hours per day`}
+                </div>
                 <div className="text-xs text-gray-500 mt-1">Based on average cloud cover</div>
               </div>
             )}
@@ -284,7 +297,15 @@ export default function ClimateReportModal({
                   <div className="text-sm text-gray-600 mb-1">Typical Last Frost</div>
                   <div className="text-lg font-semibold text-gray-900">
                     {climateData.frost_dates.last_frost 
-                      ? new Date(climateData.frost_dates.last_frost).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+                      ? (() => {
+                          const date = new Date(climateData.frost_dates.last_frost);
+                          const month = date.toLocaleDateString('en-US', { month: 'long' });
+                          const day = date.getDate();
+                          const ordinal = day === 1 ? 'first' : day === 2 ? 'second' : day === 3 ? 'third' : 
+                                         day === 21 ? 'twenty-first' : day === 22 ? 'twenty-second' : day === 23 ? 'twenty-third' :
+                                         day === 31 ? 'thirty-first' : `${day}th`;
+                          return `${ordinal} of ${month}`;
+                        })()
                       : 'No frost risk'}
                   </div>
                 </div>
@@ -292,7 +313,15 @@ export default function ClimateReportModal({
                   <div className="text-sm text-gray-600 mb-1">Typical First Frost</div>
                   <div className="text-lg font-semibold text-gray-900">
                     {climateData.frost_dates.first_frost
-                      ? new Date(climateData.frost_dates.first_frost).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+                      ? (() => {
+                          const date = new Date(climateData.frost_dates.first_frost);
+                          const month = date.toLocaleDateString('en-US', { month: 'long' });
+                          const day = date.getDate();
+                          const ordinal = day === 1 ? 'first' : day === 2 ? 'second' : day === 3 ? 'third' : 
+                                         day === 21 ? 'twenty-first' : day === 22 ? 'twenty-second' : day === 23 ? 'twenty-third' :
+                                         day === 31 ? 'thirty-first' : `${day}th`;
+                          return `${ordinal} of ${month}`;
+                        })()
                       : 'No frost risk'}
                   </div>
                 </div>

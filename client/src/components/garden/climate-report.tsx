@@ -248,7 +248,15 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
               <span className="text-muted-foreground">Growing Season:</span>
               <span className="font-medium" data-testid="text-growing-season">
                 {climateData.growing_season?.start && climateData.growing_season?.end
-                  ? `${new Date(climateData.growing_season.start).toLocaleDateString()} - ${new Date(climateData.growing_season.end).toLocaleDateString()}`
+                  ? (() => {
+                      const startDate = new Date(climateData.growing_season.start);
+                      const endDate = new Date(climateData.growing_season.end);
+                      const startMonth = startDate.toLocaleDateString('en-US', { month: 'long' });
+                      const endMonth = endDate.toLocaleDateString('en-US', { month: 'long' });
+                      const startDay = startDate.getDate();
+                      const endDay = endDate.getDate();
+                      return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+                    })()
                   : 'March - October'
                 }
               </span>
@@ -263,8 +271,16 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
               <span className="text-muted-foreground">Frost Dates:</span>
               <span className="font-medium" data-testid="text-frost-dates">
                 {climateData.frost_dates?.last_frost && climateData.frost_dates?.first_frost
-                  ? `${new Date(climateData.frost_dates.last_frost).toLocaleDateString()} - ${new Date(climateData.frost_dates.first_frost).toLocaleDateString()}`
-                  : 'Nov 15 - Mar 15'
+                  ? (() => {
+                      const lastFrost = new Date(climateData.frost_dates.last_frost);
+                      const firstFrost = new Date(climateData.frost_dates.first_frost);
+                      const lastMonth = lastFrost.toLocaleDateString('en-US', { month: 'long' });
+                      const firstMonth = firstFrost.toLocaleDateString('en-US', { month: 'long' });
+                      const lastDay = lastFrost.getDate();
+                      const firstDay = firstFrost.getDate();
+                      return `${lastMonth} ${lastDay} - ${firstMonth} ${firstDay}`;
+                    })()
+                  : 'November 15 - March 15'
                 }
               </span>
             </div>

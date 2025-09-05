@@ -1467,6 +1467,7 @@ async function fetchClimateDataWithCoordinates(location: string, coordinates?: {
       avg_humidity: additionalMetrics.avgHumidity,
       avg_wind_speed: additionalMetrics.avgWindSpeed,
       sunshine_percent: additionalMetrics.estimatedSunshinePercent,
+      sunshine_hours: additionalMetrics.sunshineHoursPerDay,
       wettest_month: additionalMetrics.wettestMonth,
       wettest_month_precip: additionalMetrics.wettestMonthPrecip,
       driest_month: additionalMetrics.driestMonth,
@@ -1598,6 +1599,8 @@ function calculateClimateMetrics(days: any[]) {
   // Sunshine hours (estimate from cloud cover if solar radiation not available)
   const avgCloudCover = days.reduce((sum, day) => sum + (day.cloudcover || 0), 0) / days.length;
   const estimatedSunshinePercent = 100 - avgCloudCover;
+  // Convert to hours per day (assuming average 12 hours daylight)
+  const sunshineHoursPerDay = (estimatedSunshinePercent / 100) * 12;
   
   // Precipitation pattern (wet/dry seasons)
   const monthlyPrecip: number[] = new Array(12).fill(0);
@@ -1623,6 +1626,7 @@ function calculateClimateMetrics(days: any[]) {
     avgHumidity: parseFloat(avgHumidity.toFixed(1)),
     avgWindSpeed: parseFloat(avgWindSpeed.toFixed(1)),
     estimatedSunshinePercent: parseFloat(estimatedSunshinePercent.toFixed(1)),
+    sunshineHoursPerDay: parseFloat(sunshineHoursPerDay.toFixed(1)),
     wettestMonth: months[wettestMonthIndex],
     wettestMonthPrecip: parseFloat((monthlyAvgPrecip[wettestMonthIndex] * 30).toFixed(1)),
     driestMonth: months[driestMonthIndex],
@@ -1732,50 +1736,50 @@ function generateGardeningAdvice(zones: any, weatherData: any) {
   if (zones.zoneNumber <= 6) {
     recommendations.push(
       "Cold Climate Garden Strategy: Your region experiences significant winter cold, making it ideal for temperate plants that require winter chill hours. " +
-      "Plant cold-hardy perennials like Siberian iris, peonies, hostas, and astilbe which thrive in zones 3-6. " +
-      "For vegetables, focus on cool-season crops: kale, Brussels sprouts, cabbage, and root vegetables like carrots and parsnips. " +
-      "Spring-flowering bulbs such as tulips, daffodils, and crocuses will naturalize beautifully. " +
-      "Consider native trees like sugar maple, white birch, and Colorado blue spruce for year-round structure. "
+      "Plant cold-hardy perennials like Siberian iris 'Caesar's Brother', peonies 'Sarah Bernhardt' and 'Karl Rosenfield', hostas 'Sum and Substance', and astilbe 'Bridal Veil' which thrive in zones 3-6. " +
+      "For vegetables, focus on cool-season crops: curly kale 'Winterbor', Brussels sprouts 'Long Island Improved', savoy cabbage, and root vegetables like 'Nantes' carrots and 'Hollow Crown' parsnips. " +
+      "Spring-flowering bulbs such as Darwin tulips, King Alfred daffodils, and Dutch crocuses will naturalize beautifully. " +
+      "Consider native trees like sugar maple, paper birch, white spruce, and Colorado blue spruce for year-round structure. "
     );
     
     recommendations.push(
-      "Season Extension Techniques: Maximize your shorter growing season by starting seeds indoors 6-8 weeks before last frost. " +
-      "Install cold frames or hoop houses to extend harvest into late autumn and start spring crops earlier. " +
-      "Use row covers and cloches for individual plant protection during unexpected late spring or early fall frosts. " +
-      "Consider heated propagation mats for early seed starting and succession planting for continuous harvests. " +
-      "Plant quick-maturing varieties and use black plastic mulch to warm soil for heat-loving crops like tomatoes. "
+      "Season Extension Techniques: Maximize your shorter growing season by starting seeds indoors 6-8 weeks before last frost using grow lights and heat mats. " +
+      "Install cold frames facing south or polycarbonate hoop houses to extend harvest into December and start spring crops in March. " +
+      "Use floating row covers rated for 4-8 degrees of frost protection and glass or plastic cloches for individual plant protection. " +
+      "Consider heated propagation mats maintaining 70-75°F for tomatoes, peppers, and eggplants, starting them in February for May transplanting. " +
+      "Plant quick-maturing varieties like 'Early Girl' tomatoes, 'Ace' peppers, and use IRT black plastic mulch to warm soil 5-10 degrees. "
     );
   } else if (zones.zoneNumber <= 8) {
     recommendations.push(
       "Moderate Climate Opportunities: Your balanced climate supports the widest variety of plants, from traditional cottage garden favorites to Mediterranean species. " +
-      "Grow classic English garden plants: roses, lavender, delphiniums, foxgloves, and hollyhocks alongside ornamental grasses. " +
-      "For edibles, enjoy extended seasons for tomatoes, peppers, squash, and beans, plus year-round lettuce and herbs. " +
-      "Plant fruit trees like apples, pears, and plums, plus soft fruits including raspberries, blackberries, and gooseberries. " +
-      "Mediterranean herbs like rosemary, sage, thyme, and oregano will thrive with minimal winter protection. "
+      "Grow classic English garden plants: David Austin roses 'Lady Emma Hamilton' and 'Graham Thomas', English lavender 'Hidcote', Pacific Giant delphiniums, foxgloves 'Camelot', and 'Chater's Double' hollyhocks alongside Miscanthus and Pennisetum grasses. " +
+      "For edibles, enjoy extended seasons for 'Cherokee Purple' tomatoes, 'Carmen' peppers, 'Butternut' squash, and 'Blue Lake' beans, plus year-round 'Winter Density' lettuce and Mediterranean herbs. " +
+      "Plant fruit trees like 'Honeycrisp' apples, 'Bartlett' pears, and 'Victoria' plums, plus soft fruits including 'Heritage' raspberries, 'Triple Crown' blackberries, and 'Invicta' gooseberries. " +
+      "Mediterranean herbs like 'Tuscan Blue' rosemary, 'Berggarten' sage, English thyme, and Greek oregano will thrive with minimal winter protection using fleece wraps. "
     );
     
     recommendations.push(
       "Year-Round Garden Interest: Take advantage of your mild winters by incorporating plants for four-season appeal. " +
-      "Plant winter-flowering shrubs like witch hazel, winter jasmine, and mahonia for color during dormant months. " +
-      "Include evergreen structure with boxwood, yew, and holly for year-round form and winter bird habitat. " +
-      "Underplant trees with spring bulbs, summer perennials, and autumn cyclamen for continuous blooming. " +
-      "Consider ornamental bark trees like paperbark maple and coral bark Japanese maple for winter interest. "
+      "Plant winter-flowering shrubs like Hamamelis 'Arnold Promise' witch hazel blooming January-February, Jasminum nudiflorum winter jasmine for December color, and Mahonia 'Charity' with fragrant yellow flowers November-January. " +
+      "Include evergreen structure with Buxus sempervirens 'Suffruticosa' dwarf boxwood, Taxus baccata English yew, and Ilex aquifolium 'J.C. van Tol' holly for year-round form and winter bird habitat. " +
+      "Underplant trees with Galanthus snowdrops for February, Narcissus 'February Gold', summer Heuchera and Astilbe, plus Cyclamen hederifolium for autumn blooms September-November. " +
+      "Consider ornamental bark trees like Acer griseum paperbark maple with cinnamon peeling bark and Acer palmatum 'Sango-kaku' coral bark Japanese maple for stunning winter silhouettes. "
     );
   } else {
     recommendations.push(
       "Warm Climate Gardening: Your mild to tropical climate allows for year-round growing and exotic plant choices. " +
-      "Grow tropical and subtropical plants: palms, bird of paradise, bougainvillea, hibiscus, and plumeria outdoors year-round. " +
-      "Cultivate citrus trees (oranges, lemons, grapefruits), avocados, and tropical fruits like mangoes or papayas. " +
-      "For vegetables, enjoy continuous harvests of tomatoes, peppers, eggplants, and grow heat-lovers like okra and sweet potatoes. " +
-      "Create lush tropical gardens with gingers, heliconias, bananas, and cannas for dramatic foliage and flowers. "
+      "Grow tropical and subtropical plants: Phoenix canariensis date palms, Strelitzia reginae bird of paradise, Bougainvillea 'Barbara Karst' and 'California Gold', Hibiscus rosa-sinensis 'Red Dragon', and white or pink Plumeria rubra outdoors year-round. " +
+      "Cultivate citrus trees including 'Washington Navel' oranges, 'Meyer' lemons, 'Ruby Red' grapefruits, 'Hass' avocados, and tropical fruits like 'Kent' mangoes or 'Red Lady' papayas in your garden. " +
+      "For vegetables, enjoy continuous harvests of 'Sun Gold' cherry tomatoes, 'Thai Dragon' peppers, Japanese eggplants, and grow heat-lovers like 'Clemson Spineless' okra and 'Beauregard' sweet potatoes. " +
+      "Create lush tropical gardens with red torch ginger, Heliconia 'Lobster Claw', Musa 'Dwarf Cavendish' bananas, and Canna 'Tropicanna' for dramatic foliage and flowers year-round. "
     );
     
     recommendations.push(
       "Heat and Drought Management: Success in warm climates requires smart water management and heat mitigation strategies. " +
-      "Install drip irrigation or soaker hoses for efficient water delivery directly to root zones, reducing evaporation loss. " +
-      "Use thick organic mulch (3-4 inches) to retain moisture, regulate soil temperature, and suppress weeds. " +
-      "Create microclimates with shade cloth or pergolas for cool-season vegetables and shade-loving plants. " +
-      "Choose drought-tolerant natives and succulents like agave, aloe, and sedums for low-maintenance areas. "
+      "Install drip irrigation with pressure-compensating emitters at 12-inch spacing or quarter-inch soaker hoses for efficient water delivery directly to root zones, reducing evaporation loss by 50%. " +
+      "Use thick organic mulch of shredded hardwood or pine bark at 3-4 inches depth to retain moisture, regulate soil temperature keeping roots 10 degrees cooler, and suppress weeds naturally. " +
+      "Create microclimates with 30-50% shade cloth or wooden pergolas covered with passion vine or grapes for cool-season vegetables and shade-loving plants like lettuce and cilantro. " +
+      "Choose drought-tolerant natives and succulents like Agave americana, Aloe vera, Sedum 'Autumn Joy', plus native salvias and penstemons for water-wise landscaping. "
     );
   }
 
@@ -1783,43 +1787,43 @@ function generateGardeningAdvice(zones: any, weatherData: any) {
   if (avgRainfall < 1.5) {
     recommendations.push(
       "Water Conservation Strategies: Your lower rainfall requires thoughtful water management for garden success. " +
-      "Design rain gardens and swales to capture and infiltrate storm water runoff for natural irrigation. " +
-      "Install rain barrels or cisterns to harvest roof water for dry period supplementation. " +
-      "Group plants by water needs (hydrozoning) to optimize irrigation efficiency and reduce waste. " +
-      "Select drought-adapted plants like lavender, Russian sage, sedum, yarrow, and ornamental grasses. " +
-      "Improve soil with compost to increase water retention capacity by up to 20%. "
+      "Design bioswale rain gardens 6-8 inches deep with native rushes and sedges to capture and infiltrate storm water runoff, recharging groundwater naturally. " +
+      "Install 50-gallon rain barrels or 500-gallon cisterns connected to downspouts to harvest roof water, providing 600 gallons from just 1 inch of rain on 1000 sq ft roof. " +
+      "Group plants into hydrozones: high water for vegetables and annuals, moderate for perennials, and low water for Mediterranean and native plants to optimize irrigation efficiency. " +
+      "Select drought-adapted plants like Lavandula angustifolia 'Munstead', Perovskia 'Blue Spire' Russian sage, Sedum 'Dragon's Blood', Achillea 'Moonshine' yarrow, and Festuca glauca blue fescue grass. " +
+      "Improve soil with 2-3 inches of aged compost annually to increase water retention capacity by 20% and reduce watering frequency by one-third. "
     );
   } else if (avgRainfall > 3) {
     recommendations.push(
-      "Managing High Rainfall: Your abundant precipitation requires excellent drainage and appropriate plant selection. " +
-      "Improve heavy clay soils with organic matter and consider raised beds for better drainage control. " +
-      "Plant rain garden species like astilbe, cardinal flower, Joe Pye weed, and native ferns that thrive in moisture. " +
-      "Choose disease-resistant varieties as fungal issues are more common in humid conditions. " +
-      "Install French drains or dry wells in problem areas to prevent waterlogging and root rot. " +
-      "Embrace moss gardens and moisture-loving groundcovers like ajuga and sweet woodruff. "
+      "Managing High Rainfall: Your abundant precipitation requires excellent drainage and appropriate plant selection for success. " +
+      "Improve heavy clay soils by incorporating 4-6 inches of coarse sand and aged compost, or build raised beds 12-18 inches high filled with well-draining soil mix. " +
+      "Plant rain garden species like Astilbe 'Bridal Veil', Lobelia cardinalis cardinal flower, Eupatorium 'Gateway' Joe Pye weed, and native ferns including Matteuccia struthiopteris ostrich fern that thrive in moisture. " +
+      "Choose disease-resistant varieties like 'Iron Lady' tomatoes, 'DMR-401' cucumbers, and mildew-resistant phlox and bee balm to combat fungal issues common in humid conditions. " +
+      "Install 4-inch perforated French drains with gravel backfill or dry wells 3 feet deep in problem areas to prevent waterlogging and root rot effectively. " +
+      "Embrace moss gardens with cushion moss and sheet moss, plus moisture-loving groundcovers like Ajuga 'Black Scallop' and Galium odoratum sweet woodruff for shaded areas. "
     );
   }
 
   // Specialized recommendations based on climate extremes
   if (frostDays > 100) {
     recommendations.push(
-      "Frost Protection Essentials: With frequent frosts, protection strategies are crucial for garden success. " +
-      "Maintain a supply of frost blankets, old sheets, and cardboard boxes for emergency overnight protection. " +
-      "Plant frost-tender species near south-facing walls or large rocks that absorb and radiate heat. " +
-      "Wait until soil warms to 60°F before planting warm-season crops to avoid stunted growth. " +
-      "Choose frost-hardy vegetables like kale, spinach, and mâche that sweeten after frost exposure. " +
-      "Mulch perennials after ground freezes to prevent heaving from freeze-thaw cycles. "
+      "Frost Protection Essentials: With frequent frosts, protection strategies are crucial for garden success in your climate. " +
+      "Maintain a supply of floating row covers rated for 4-8°F protection, old cotton sheets avoiding plastic that conducts cold, and corrugated cardboard boxes for emergency overnight protection. " +
+      "Plant frost-tender species like tomatoes and peppers near south-facing walls that radiate stored heat or large rocks and boulders that act as thermal mass releasing warmth at night. " +
+      "Wait until soil temperature reaches 60°F at 4-inch depth measured at 8 AM for three consecutive days before planting warm-season crops to ensure vigorous growth. " +
+      "Choose frost-hardy vegetables like 'Winterbor' kale sweetening to 25°F, 'Bloomsdale' spinach hardy to 20°F, and corn salad mâche surviving to 5°F that improve flavor after frost exposure. " +
+      "Apply 4-6 inch mulch layer of straw or shredded leaves after ground freezes solid to 2 inches depth, preventing damaging heaving from repeated freeze-thaw cycles throughout winter. "
     );
   }
 
   if (hotDays > 60) {
     recommendations.push(
-      "Heat Stress Prevention: Your numerous hot days require heat management for optimal plant health. " +
-      "Provide afternoon shade for sensitive plants using shade cloth (30-50% shade factor) during peak summer. " +
-      "Water deeply in early morning to hydrate plants before heat stress begins. " +
-      "Choose heat-tolerant varieties: Armenian cucumber, yard-long beans, Malabar spinach, and cherry tomatoes. " +
-      "Apply reflective mulch around plants to reduce soil temperature and increase light for fruiting. " +
-      "Mist sensitive plants during extreme heat events to provide evaporative cooling. "
+      "Heat Stress Prevention: Your numerous hot days require active heat management strategies for optimal plant health and productivity. " +
+      "Provide afternoon shade using aluminet shade cloth with 30% factor for tomatoes and peppers, 50% for lettuce and greens, installed on PVC frames from noon to 4 PM during peak summer months. " +
+      "Water deeply with 1-2 inches weekly in early morning before 8 AM, allowing foliage to dry before intense sun while roots absorb moisture for the heat ahead. " +
+      "Choose heat-tolerant varieties: 'Suyo Long' Armenian cucumber thriving above 90°F, 'Red Noodle' yard-long beans, 'Red Stem' Malabar spinach, and 'Sun Gold' cherry tomatoes producing in extreme heat. " +
+      "Apply silver reflective mulch or white plastic around plants to reduce soil temperature by 10°F while increasing photosynthesis by reflecting light to lower leaves. " +
+      "Install micro-misting systems on timers to spray fine water droplets for 30 seconds every 30 minutes during days above 95°F, reducing leaf temperature through evaporative cooling. "
     );
   }
 
@@ -1864,61 +1868,74 @@ function calculateColdestWinterTemp(days: any[]): number {
 }
 
 function calculateFrostDates(days: any[]): any {
-  // Find typical first and last frost dates within a calendar year
-  const frostDays = days.filter(day => day.tempmin <= 0);
+  // For each year, find the last spring frost and first fall frost
+  const yearlyFrostDates: { [year: number]: { lastSpring: Date | null, firstFall: Date | null } } = {};
   
-  if (frostDays.length === 0) {
-    return { first_frost: null, last_frost: null };
-  }
-  
-  // Group by year and find the typical pattern
-  const frostByYear: { [year: number]: { first: string, last: string } } = {};
-  
-  frostDays.forEach(day => {
+  days.forEach(day => {
     const date = new Date(day.datetime);
     const year = date.getFullYear();
     const month = date.getMonth();
+    const dayOfMonth = date.getDate();
     
-    // Consider Dec as part of next year's winter for frost tracking
-    const frostYear = month === 11 ? year + 1 : year;
-    
-    if (!frostByYear[frostYear]) {
-      frostByYear[frostYear] = { first: day.datetime, last: day.datetime };
-    } else {
-      // Update first and last frost for this frost year
-      if (day.datetime < frostByYear[frostYear].first) {
-        frostByYear[frostYear].first = day.datetime;
+    if (day.tempmin <= 0) {
+      if (!yearlyFrostDates[year]) {
+        yearlyFrostDates[year] = { lastSpring: null, firstFall: null };
       }
-      if (day.datetime > frostByYear[frostYear].last) {
-        frostByYear[frostYear].last = day.datetime;
+      
+      // Spring frost (January to June)
+      if (month >= 0 && month <= 5) {
+        if (!yearlyFrostDates[year].lastSpring || date > yearlyFrostDates[year].lastSpring!) {
+          yearlyFrostDates[year].lastSpring = date;
+        }
+      }
+      
+      // Fall frost (July to December)
+      if (month >= 6 && month <= 11) {
+        if (!yearlyFrostDates[year].firstFall || date < yearlyFrostDates[year].firstFall!) {
+          yearlyFrostDates[year].firstFall = date;
+        }
       }
     }
   });
   
   // Calculate average dates
-  const validYears = Object.values(frostByYear).filter(y => y.first && y.last);
-  if (validYears.length === 0) return { first_frost: null, last_frost: null };
+  const lastSpringFrosts: Date[] = [];
+  const firstFallFrosts: Date[] = [];
   
-  // Find median dates for typical year
-  const lastFrostDates = validYears.map(y => new Date(y.last).getMonth() * 30 + new Date(y.last).getDate());
-  const firstFrostDates = validYears.map(y => {
-    const d = new Date(y.first);
-    return (d.getMonth() < 6 ? d.getMonth() + 12 : d.getMonth()) * 30 + d.getDate();
+  Object.values(yearlyFrostDates).forEach(year => {
+    if (year.lastSpring) lastSpringFrosts.push(year.lastSpring);
+    if (year.firstFall) firstFallFrosts.push(year.firstFall);
   });
   
-  const medianLast = lastFrostDates.sort((a, b) => a - b)[Math.floor(lastFrostDates.length / 2)];
-  const medianFirst = firstFrostDates.sort((a, b) => a - b)[Math.floor(firstFrostDates.length / 2)];
+  if (lastSpringFrosts.length === 0 && firstFallFrosts.length === 0) {
+    return { first_frost: null, last_frost: null };
+  }
   
-  // Convert back to approximate dates in current year
-  const currentYear = new Date().getFullYear();
-  const lastMonth = Math.floor(medianLast / 30);
-  const lastDay = medianLast % 30 || 15;
-  const firstMonth = Math.floor(medianFirst / 30) % 12;
-  const firstDay = medianFirst % 30 || 15;
+  // Calculate average dates
+  let avgLastFrost: Date | null = null;
+  let avgFirstFrost: Date | null = null;
+  
+  if (lastSpringFrosts.length > 0) {
+    const avgLastMonth = Math.round(lastSpringFrosts.reduce((sum, d) => sum + d.getMonth(), 0) / lastSpringFrosts.length);
+    const avgLastDay = Math.round(lastSpringFrosts.reduce((sum, d) => sum + d.getDate(), 0) / lastSpringFrosts.length);
+    avgLastFrost = new Date(2024, avgLastMonth, avgLastDay);
+  }
+  
+  if (firstFallFrosts.length > 0) {
+    const avgFirstMonth = Math.round(firstFallFrosts.reduce((sum, d) => sum + d.getMonth(), 0) / firstFallFrosts.length);
+    const avgFirstDay = Math.round(firstFallFrosts.reduce((sum, d) => sum + d.getDate(), 0) / firstFallFrosts.length);
+    avgFirstFrost = new Date(2024, avgFirstMonth, avgFirstDay);
+  }
+  
+  // Format dates
+  const formatDate = (date: Date | null) => {
+    if (!date) return null;
+    return `2024-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
   
   return {
-    last_frost: `${currentYear}-${String(lastMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
-    first_frost: `${currentYear}-${String(firstMonth + 1).padStart(2, '0')}-${String(firstDay).padStart(2, '0')}`
+    last_frost: formatDate(avgLastFrost),
+    first_frost: formatDate(avgFirstFrost)
   };
 }
 
