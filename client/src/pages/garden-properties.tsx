@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import ProgressBar from "@/components/ui/progress-bar";
-import ShapeSelector from "@/components/garden/shape-selector";
+// import ShapeSelector from "@/components/garden/shape-selector"; // Replaced with dropdown
 import ClimateReport from "@/components/garden/climate-report";
 import ClimateReportModal from "@/components/garden/climate-report-modal";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
@@ -40,7 +40,7 @@ const gardenSchema = z.object({
   country: z.string().optional(),
   zipCode: z.string().optional(),
   units: z.enum(["metric", "imperial"]),
-  shape: z.enum(["rectangle", "circle", "oval", "rhomboid", "l_shaped"]),
+  shape: z.enum(["rectangle", "square", "circle", "oval", "triangle", "l-shape", "free-form"]),
   dimensions: z.record(z.number()),
   slopePercentage: z.number().min(0).max(45).optional(),
   slopeDirection: z.enum(["N", "NE", "E", "SE", "S", "SW", "W", "NW"]).optional(),
@@ -234,8 +234,8 @@ export default function GardenProperties() {
     }
   };
 
-  const completedSteps = Math.min(currentStep - 1, 7);
-  const progress = (completedSteps / 7) * 100;
+  const completedSteps = Math.min(currentStep - 1, 6);
+  const progress = (completedSteps / 6) * 100;
 
   return (
     <div className="min-h-screen bg-background">
@@ -269,7 +269,7 @@ export default function GardenProperties() {
                 Garden Setup
               </h1>
               <span className="text-sm font-medium px-3 py-1.5 bg-white/95 text-[#004025] rounded-md border-2 border-[#004025] shadow-sm" data-testid="text-step-counter">
-                Step {currentStep} of 7
+                Step {currentStep} of 6
               </span>
             </div>
           </div>
@@ -279,7 +279,7 @@ export default function GardenProperties() {
               {GARDEN_STEPS[currentStep - 1]?.title}
             </p>
             <div className="flex gap-1">
-              {[...Array(7)].map((_, i) => (
+              {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
                   onClick={() => isAdmin && setCurrentStep(i + 1)}
@@ -300,13 +300,13 @@ export default function GardenProperties() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             {/* Step 1: Location & Units */}
             {currentStep === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-location-units">
-                  <CardHeader className="py-4">
-                    <CardTitle className="flex items-center text-lg">
+                  <CardHeader className="py-3">
+                    <CardTitle className="flex items-center text-base">
                       <MapPin className="w-4 h-4 mr-2 text-[#004025]" />
                       Garden Setup & Location
                     </CardTitle>
@@ -323,7 +323,7 @@ export default function GardenProperties() {
                           </FormLabel>
                           <FormControl>
                             <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger data-testid="select-units" className={`h-9 text-xs border-2 ${!field.value ? "border-destructive" : "border-[#004025]"}`}>
+                              <SelectTrigger data-testid="select-units" className={`h-8 text-xs border-2 ${!field.value ? "border-destructive" : "border-[#004025]"}`}>
                                 <SelectValue placeholder="Please select measurement units" />
                               </SelectTrigger>
                               <SelectContent className="bg-white border-2 border-[#004025]">
@@ -363,7 +363,7 @@ export default function GardenProperties() {
                     />
 
                     {/* Location Fields - Optional */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <h3 className="text-sm font-medium">Garden Location (Optional)</h3>
                       <p className="text-xs text-muted-foreground">
                         Providing location helps us determine your climate zone and give personalized recommendations
@@ -664,8 +664,8 @@ export default function GardenProperties() {
 
                 {/* Manual Hardiness Zone Selection */}
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-hardiness-zones">
-                  <CardHeader className="py-4">
-                    <CardTitle className="flex items-center text-lg">
+                  <CardHeader className="py-3">
+                    <CardTitle className="flex items-center text-base">
                       <Thermometer className="w-4 h-4 mr-2 text-[#004025]" />
                       Hardiness Zone Selection
                     </CardTitle>
@@ -695,7 +695,7 @@ export default function GardenProperties() {
                         <TabsTrigger value="category">Category</TabsTrigger>
                       </TabsList>
                       
-                      <TabsContent value="usda" className="space-y-4">
+                      <TabsContent value="usda" className="space-y-3">
                         <FormField
                           control={form.control}
                           name="usdaZone"
@@ -742,7 +742,7 @@ export default function GardenProperties() {
                         />
                       </TabsContent>
                       
-                      <TabsContent value="rhs" className="space-y-4">
+                      <TabsContent value="rhs" className="space-y-3">
                         <FormField
                           control={form.control}
                           name="rhsZone"
@@ -776,7 +776,7 @@ export default function GardenProperties() {
                         />
                       </TabsContent>
                       
-                      <TabsContent value="category" className="space-y-4">
+                      <TabsContent value="category" className="space-y-3">
                         <FormField
                           control={form.control}
                           name="hardinessCategory"
@@ -829,93 +829,185 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 2: Garden Shape */}
+            {/* Step 2: Shape & Orientation - Combined */}
             {currentStep === 2 && (
-              <Card className="garden-card-frame" data-testid="step-garden-shape">
-                <CardHeader>
-                  <CardTitle>Garden Shape & Dimensions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ShapeSelector
-                    shape={form.watch("shape")}
-                    dimensions={form.watch("dimensions")}
-                    units={form.watch("units")}
-                    onShapeChange={(shape) => form.setValue("shape", shape as any)}
-                    onDimensionsChange={(dimensions) => form.setValue("dimensions", dimensions as any)}
-                  />
-                </CardContent>
-              </Card>
-            )}
+              <div className="space-y-3">
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-shape-orientation">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Garden Shape & Dimensions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 pt-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {/* Garden Shape Dropdown */}
+                      <FormField
+                        control={form.control}
+                        name="shape"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Garden Shape</FormLabel>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} value={field.value || "rectangle"}>
+                                <SelectTrigger data-testid="select-garden-shape" className="h-8 text-xs">
+                                  <SelectValue placeholder="Select garden shape" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="rectangle">Rectangle</SelectItem>
+                                  <SelectItem value="square">Square</SelectItem>
+                                  <SelectItem value="circle">Circle</SelectItem>
+                                  <SelectItem value="oval">Oval</SelectItem>
+                                  <SelectItem value="triangle">Triangle</SelectItem>
+                                  <SelectItem value="l-shape">L-Shape</SelectItem>
+                                  <SelectItem value="free-form">Free Form</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-            {/* Step 3: Slope & Direction */}
-            {currentStep === 3 && (
-              <Card className="garden-card-frame" data-testid="step-slope-direction">
-                <CardHeader>
-                  <CardTitle>Slope & Cardinal Direction</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                  <FormField
-                    control={form.control}
-                    name="slopePercentage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Slope Percentage: {field.value}%</FormLabel>
-                        <FormControl>
-                          <Slider
-                            min={0}
-                            max={45}
-                            step={1}
-                            value={[field.value || 5]}
-                            onValueChange={(value) => field.onChange(value[0])}
-                            className="w-full"
-                            data-testid="slider-slope"
+                      {/* Dimensions based on shape */}
+                      {(form.watch("shape") === "rectangle" || form.watch("shape") === "square" || !form.watch("shape")) && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="dimensions.width"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">Width ({form.watch("units") === "metric" ? "m" : "ft"})</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="10"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    className="h-8 text-xs"
+                                    data-testid="input-width"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
-                        </FormControl>
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                          <span>0% (Flat)</span>
-                          <span>45% (Steep)</span>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormField
+                            control={form.control}
+                            name="dimensions.length"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">Length ({form.watch("units") === "metric" ? "m" : "ft"})</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="15"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    className="h-8 text-xs"
+                                    data-testid="input-length"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
 
-                  <FormField
-                    control={form.control}
-                    name="slopeDirection"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Slope Direction</FormLabel>
-                        <FormControl>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger data-testid="select-slope-direction">
-                              <SelectValue placeholder="Select direction" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="N">North (N)</SelectItem>
-                              <SelectItem value="NE">Northeast (NE)</SelectItem>
-                              <SelectItem value="E">East (E)</SelectItem>
-                              <SelectItem value="SE">Southeast (SE)</SelectItem>
-                              <SelectItem value="S">South (S)</SelectItem>
-                              <SelectItem value="SW">Southwest (SW)</SelectItem>
-                              <SelectItem value="W">West (W)</SelectItem>
-                              <SelectItem value="NW">Northwest (NW)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                      {(form.watch("shape") === "circle") && (
+                        <FormField
+                          control={form.control}
+                          name="dimensions.radius"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Radius ({form.watch("units") === "metric" ? "m" : "ft"})</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="5"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                  className="h-8 text-xs"
+                                  data-testid="input-radius"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-slope-direction">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Slope & Cardinal Direction</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 pt-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name="slopePercentage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Slope: {field.value}%</FormLabel>
+                            <FormControl>
+                              <Slider
+                                min={0}
+                                max={45}
+                                step={1}
+                                value={[field.value || 5]}
+                                onValueChange={(value) => field.onChange(value[0])}
+                                className="w-full"
+                                data-testid="slider-slope"
+                              />
+                            </FormControl>
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>Flat</span>
+                              <span>Steep</span>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="slopeDirection"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Slope Direction</FormLabel>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger data-testid="select-slope-direction" className="h-8 text-xs">
+                                  <SelectValue placeholder="Select direction" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="N">North (N)</SelectItem>
+                                  <SelectItem value="NE">Northeast (NE)</SelectItem>
+                                  <SelectItem value="E">East (E)</SelectItem>
+                                  <SelectItem value="SE">Southeast (SE)</SelectItem>
+                                  <SelectItem value="S">South (S)</SelectItem>
+                                  <SelectItem value="SW">Southwest (SW)</SelectItem>
+                                  <SelectItem value="W">West (W)</SelectItem>
+                                  <SelectItem value="NW">Northwest (NW)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
-            {/* Step 4: Interactive Canvas */}
-            {currentStep === 4 && (
-              <Card className="garden-card-frame" data-testid="step-interactive-canvas">
-                <CardHeader>
-                  <CardTitle>Garden Layout Canvas</CardTitle>
+            {/* Step 3: Interactive Canvas */}
+            {currentStep === 3 && (
+              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-interactive-canvas">
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">Garden Layout Canvas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <InteractiveCanvas
@@ -927,13 +1019,13 @@ export default function GardenProperties() {
               </Card>
             )}
 
-            {/* Step 5: Design Approach */}
-            {currentStep === 5 && (
-              <Card className="garden-card-frame" data-testid="step-design-approach">
-                <CardHeader>
-                  <CardTitle>Garden Design Approach</CardTitle>
+            {/* Step 4: Design Approach */}
+            {currentStep === 4 && (
+              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-design-approach">
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">Garden Design Approach</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 pt-0">
                   <FormField
                     control={form.control}
                     name="design_approach"
@@ -944,7 +1036,7 @@ export default function GardenProperties() {
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
-                            className="space-y-4"
+                            className="space-y-3"
                           >
                             <div className="flex items-start space-x-3">
                               <RadioGroupItem value="ai" id="ai" />
@@ -989,13 +1081,13 @@ export default function GardenProperties() {
               </Card>
             )}
 
-            {/* Step 6: Sun & Soil */}
-            {currentStep === 6 && (
-              <Card className="garden-card-frame" data-testid="step-sun-soil">
-                <CardHeader>
-                  <CardTitle>Sun Exposure & Soil Properties</CardTitle>
+            {/* Step 5: Sun & Soil */}
+            {currentStep === 5 && (
+              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-sun-soil">
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">Sun Exposure & Soil Properties</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent className="space-y-4 pt-0">
                   <FormField
                     control={form.control}
                     name="sunExposure"
@@ -1076,13 +1168,13 @@ export default function GardenProperties() {
               </Card>
             )}
 
-            {/* Step 7: Plant Preferences */}
-            {currentStep === 7 && (
-              <Card className="garden-card-frame" data-testid="step-plant-preferences">
-                <CardHeader>
-                  <CardTitle>Plant Preferences</CardTitle>
+            {/* Step 6: Plant Preferences */}
+            {currentStep === 6 && (
+              <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-plant-preferences">
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">Plant Preferences</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent className="space-y-4 pt-0">
                   <div>
                     <h3 className="font-semibold mb-4">Safety Considerations</h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -1204,15 +1296,15 @@ export default function GardenProperties() {
               </Button>
 
               <Button
-                type={currentStep === 7 ? "submit" : "button"}
-                onClick={currentStep < 7 ? nextStep : undefined}
+                type={currentStep === 6 ? "submit" : "button"}
+                onClick={currentStep < 6 ? nextStep : undefined}
                 disabled={createGardenMutation.isPending}
-                variant={currentStep === 7 ? "default" : "default"}
+                variant={currentStep === 6 ? "default" : "default"}
                 data-testid="button-next-or-create"
               >
                 {createGardenMutation.isPending ? (
                   "Creating..."
-                ) : currentStep === 7 ? (
+                ) : currentStep === 6 ? (
                   "Generate Garden Design"
                 ) : (
                   <>
