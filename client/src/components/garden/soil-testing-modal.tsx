@@ -53,7 +53,16 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
 
   const { data, isLoading, error } = useQuery<SoilTestingData>({
     queryKey: ['/api/soil-testing-services', location],
-    enabled: open && location.length > 3,
+    queryFn: async () => {
+      const response = await fetch(`/api/soil-testing-services?location=${encodeURIComponent(location)}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch soil testing services');
+      }
+      return response.json();
+    },
+    enabled: open && location && location.length > 0,
   });
 
   const getProviderTypeBadge = (type: string) => {
