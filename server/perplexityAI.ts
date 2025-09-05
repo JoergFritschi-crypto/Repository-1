@@ -294,6 +294,137 @@ class PerplexityAI {
       throw new Error('Failed to identify weed using Perplexity AI');
     }
   }
+
+  async findSoilTestingServices(location: string): Promise<{
+    providers: Array<{
+      name: string;
+      type: 'commercial' | 'university' | 'government' | 'cooperative';
+      services: string[];
+      priceRange?: string;
+      turnaroundTime?: string;
+      website?: string;
+      phone?: string;
+      address?: string;
+      specialNotes?: string;
+    }>;
+    samplingGuidance: {
+      howToSample: string[];
+      whatToRequest: string[];
+      bestTimeToTest: string;
+      frequency: string;
+    };
+    interpretation: {
+      keyMetrics: string[];
+      optimalRanges: any;
+      commonAmendments: string[];
+    };
+  }> {
+    const messages: PerplexityMessage[] = [
+      {
+        role: 'system',
+        content: `You are an expert gardening advisor with extensive knowledge of soil testing services worldwide.
+          Find local soil testing laboratories and services for the specified location.
+          Prioritize professional labs, university extension services, and government agricultural services.
+          Output your response in JSON format with the exact structure specified.`
+      },
+      {
+        role: 'user',
+        content: `Find professional soil testing services for location: ${location}
+          
+          Please provide:
+          1. At least 3 local soil testing providers (commercial labs, university extensions, or government services)
+          2. What types of tests to request for ornamental garden use
+          3. How to properly collect soil samples
+          4. Typical costs and turnaround times
+          5. How to interpret the results
+          
+          Focus on services that provide comprehensive nutrient analysis including:
+          - NPK levels
+          - Secondary nutrients (Ca, Mg, S)
+          - Micronutrients (Fe, Mn, Zn, Cu, B, Mo)
+          - Organic matter percentage
+          - CEC (Cation Exchange Capacity)
+          - pH and buffer pH
+          
+          Output as JSON with keys:
+          "providers" (array of provider objects with name, type, services, priceRange, turnaroundTime, website, phone, address, specialNotes),
+          "samplingGuidance" (object with howToSample array, whatToRequest array, bestTimeToTest, frequency),
+          "interpretation" (object with keyMetrics array, optimalRanges object, commonAmendments array)`
+      }
+    ];
+
+    try {
+      const response = await this.makeRequest(messages, {
+        model: 'llama-3.1-sonar-large-128k-online',
+        maxTokens: 2500,
+        temperature: 0.3,
+        searchRecencyFilter: 'month',
+        return_citations: true
+      });
+
+      const content = response.choices[0].message.content;
+      
+      // Try to parse the JSON response
+      let parsedContent;
+      try {
+        parsedContent = JSON.parse(content);
+      } catch (parseError) {
+        // If direct parsing fails, try to extract JSON from the response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsedContent = JSON.parse(jsonMatch[0]);
+        } else {
+          throw parseError;
+        }
+      }
+
+      // Ensure all required fields are present with defaults
+      return {
+        providers: parsedContent.providers || [],
+        samplingGuidance: parsedContent.samplingGuidance || {
+          howToSample: [
+            "Take 10-15 samples from different areas of your garden",
+            "Sample to a depth of 6-8 inches for established gardens",
+            "Mix samples thoroughly in a clean bucket",
+            "Take about 2 cups of the mixed soil for testing",
+            "Avoid sampling recently fertilized areas"
+          ],
+          whatToRequest: [
+            "Complete nutrient analysis",
+            "Organic matter percentage",
+            "CEC and base saturation",
+            "Recommendations for ornamental plants"
+          ],
+          bestTimeToTest: "Early spring or fall",
+          frequency: "Every 2-3 years for established gardens"
+        },
+        interpretation: parsedContent.interpretation || {
+          keyMetrics: [
+            "pH (6.0-7.0 for most ornamentals)",
+            "Organic matter (3-5% ideal)",
+            "NPK levels",
+            "CEC (10-20 meq/100g for loam)"
+          ],
+          optimalRanges: {
+            pH: "6.0-7.0",
+            organicMatter: "3-5%",
+            nitrogen: "20-40 ppm",
+            phosphorus: "20-40 ppm",
+            potassium: "150-250 ppm"
+          },
+          commonAmendments: [
+            "Lime for raising pH",
+            "Sulfur for lowering pH",
+            "Compost for organic matter",
+            "Balanced fertilizers for nutrient deficiencies"
+          ]
+        }
+      };
+    } catch (error) {
+      console.error('Error finding soil testing services:', error);
+      throw new Error('Failed to find soil testing services');
+    }
+  }
 }
 
 export default PerplexityAI;

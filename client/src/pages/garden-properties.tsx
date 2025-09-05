@@ -21,6 +21,7 @@ import ProgressBar from "@/components/ui/progress-bar";
 import ClimateReport from "@/components/garden/climate-report";
 import ClimateReportModal from "@/components/garden/climate-report-modal";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
+import SoilTestingModal from "@/components/garden/soil-testing-modal";
 import { GARDEN_STEPS } from "@/types/garden";
 import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -150,6 +151,7 @@ export default function GardenProperties() {
   // Manual climate report fetching
   const [shouldFetchClimate, setShouldFetchClimate] = useState(false);
   const [showClimateModal, setShowClimateModal] = useState(false);
+  const [showSoilTestingModal, setShowSoilTestingModal] = useState(false);
   const locationToFetch = combinedLocation || watchedLocation || '';
 
   // Fetch climate data only when manually triggered
@@ -1163,29 +1165,42 @@ export default function GardenProperties() {
 
                     {/* Professional Soil Analysis Toggle */}
                     <div className="pt-3 border-t">
-                      <FormField
-                        control={form.control}
-                        name="hasSoilAnalysis"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                data-testid="checkbox-soil-analysis"
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="font-medium">
-                                I have professional soil analysis results
-                              </FormLabel>
-                              <p className="text-xs text-muted-foreground">
-                                Add detailed nutrient levels from your soil test report
-                              </p>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex justify-between items-start">
+                        <FormField
+                          control={form.control}
+                          name="hasSoilAnalysis"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  data-testid="checkbox-soil-analysis"
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel className="font-medium">
+                                  I have professional soil analysis results
+                                </FormLabel>
+                                <p className="text-xs text-muted-foreground">
+                                  Add detailed nutrient levels from your soil test report
+                                </p>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowSoilTestingModal(true)}
+                          className="h-8 text-xs"
+                          data-testid="button-find-soil-testing"
+                        >
+                          <MapPin className="w-3 h-3 mr-1" />
+                          Find Testing Services
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Professional Soil Analysis Fields */}
@@ -1856,6 +1871,13 @@ export default function GardenProperties() {
           onClose={() => setShowClimateModal(false)}
           location={locationToFetch}
           climateData={climateData}
+        />
+        
+        {/* Soil Testing Services Modal */}
+        <SoilTestingModal
+          open={showSoilTestingModal}
+          onClose={() => setShowSoilTestingModal(false)}
+          location={locationToFetch}
         />
       </div>
     </div>

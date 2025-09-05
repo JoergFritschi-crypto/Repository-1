@@ -192,6 +192,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Soil testing services endpoint
+  app.get('/api/soil-testing-services', async (req: any, res) => {
+    const location = req.query.location as string;
+    
+    if (!location || location.length < 3) {
+      return res.status(400).json({ message: "Location is required" });
+    }
+
+    if (!perplexityAI) {
+      return res.status(503).json({ 
+        message: "Soil testing service lookup is not available. Please configure PERPLEXITY_API_KEY." 
+      });
+    }
+
+    try {
+      const soilTestingData = await perplexityAI.findSoilTestingServices(location);
+      
+      // Save to file vault if user is authenticated
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        try {
+          await fileVaultService.saveDataToVault(
+            req.user.claims.sub,
+            `soil-testing-${location.replace(/[^a-zA-Z0-9]/g, '-')}`,
+            soilTestingData,
+            'soil-testing'
+          );
+        } catch (vaultError) {
+          console.error('Error saving to vault:', vaultError);
+          // Don't fail the request if vault save fails
+        }
+      }
+      
+      res.json(soilTestingData);
+    } catch (error) {
+      console.error("Error finding soil testing services:", error);
+      res.status(500).json({ 
+        message: "Failed to find soil testing services. Please try again later." 
+      });
+    }
+  });
+
   app.post('/api/gardens', isAuthenticated, async (req: any, res) => {
     try {
       const gardenData = insertGardenSchema.parse({
