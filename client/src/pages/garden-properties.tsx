@@ -22,6 +22,7 @@ import ClimateReport from "@/components/garden/climate-report";
 import ClimateReportModal from "@/components/garden/climate-report-modal";
 import InteractiveCanvas from "@/components/garden/interactive-canvas";
 import SoilTestingModal from "@/components/garden/soil-testing-modal";
+import GardenSketch from "@/components/garden/garden-sketch";
 import { GARDEN_STEPS } from "@/types/garden";
 import { MapPin, ArrowLeft, ArrowRight, Thermometer, CloudSun, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -1659,15 +1660,18 @@ export default function GardenProperties() {
                   </CardContent>
                 </Card>
 
-                {/* Placeholder for small canvas - to be designed later */}
-                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-small-canvas">
+                {/* Garden Sketch with rotatable rings */}
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-garden-sketch">
                   <CardHeader className="py-3">
-                    <CardTitle className="text-base">Quick Garden Sketch</CardTitle>
+                    <CardTitle className="text-base">Garden Orientation & View</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-64 bg-gray-50 rounded flex items-center justify-center text-gray-500">
-                      Small canvas coming soon - between slope and sun exposure
-                    </div>
+                    <GardenSketch
+                      shape={form.watch("shape")}
+                      dimensions={form.watch("dimensions")}
+                      units={form.watch("units")}
+                      slopeDirection={form.watch("slopeDirection")}
+                    />
                   </CardContent>
                 </Card>
               </div>
