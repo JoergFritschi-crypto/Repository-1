@@ -394,6 +394,121 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Recommended Plants */}
+      <Card className="border-accent bg-accent/5">
+        <CardHeader>
+          <CardTitle className="flex items-center" data-testid="text-ai-plants-title">
+            <Brain className="w-5 h-5 mr-2 text-accent" />
+            AI Recommended Plants
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-3 gap-4">
+            {(() => {
+              const zoneNum = parseInt(hardiness_zone?.match(/\d+/)?.[0] || '9');
+              
+              // Define plants for different zones
+              let plants = [];
+              
+              if (zoneNum <= 4) {
+                // Very cold zones
+                plants = [
+                  { name: "Siberian Iris", type: "Perennial", color: "Purple/Blue blooms" },
+                  { name: "Paper Birch", type: "Tree", color: "White bark" },
+                  { name: "Peony 'Sarah Bernhardt'", type: "Perennial", color: "Pink blooms" },
+                  { name: "Blue Spruce", type: "Evergreen", color: "Silver-blue needles" },
+                  { name: "Hosta 'Sum and Substance'", type: "Perennial", color: "Chartreuse foliage" },
+                  { name: "Ninebark 'Diablo'", type: "Shrub", color: "Purple foliage" },
+                  { name: "Astilbe 'Bridal Veil'", type: "Perennial", color: "White plumes" },
+                  { name: "Serviceberry", type: "Tree", color: "White spring flowers" },
+                  { name: "Russian Sage", type: "Perennial", color: "Lavender flowers" },
+                  { name: "Arborvitae 'Emerald Green'", type: "Evergreen", color: "Bright green" },
+                  { name: "Bleeding Heart", type: "Perennial", color: "Pink heart flowers" },
+                  { name: "Red Twig Dogwood", type: "Shrub", color: "Red winter stems" }
+                ];
+              } else if (zoneNum <= 6) {
+                // Cold zones
+                plants = [
+                  { name: "Lavender 'Munstead'", type: "Perennial", color: "Purple flowers" },
+                  { name: "Japanese Maple", type: "Tree", color: "Red fall foliage" },
+                  { name: "Hydrangea 'Annabelle'", type: "Shrub", color: "White ball flowers" },
+                  { name: "Black-eyed Susan", type: "Perennial", color: "Yellow daisy flowers" },
+                  { name: "Eastern Redbud", type: "Tree", color: "Pink spring blooms" },
+                  { name: "Coneflower 'Magnus'", type: "Perennial", color: "Pink-purple flowers" },
+                  { name: "Boxwood 'Green Velvet'", type: "Evergreen", color: "Dense green" },
+                  { name: "Daylily 'Stella d'Oro'", type: "Perennial", color: "Golden yellow" },
+                  { name: "Lilac 'Miss Kim'", type: "Shrub", color: "Fragrant purple" },
+                  { name: "Coral Bells 'Palace Purple'", type: "Perennial", color: "Purple foliage" },
+                  { name: "Spirea 'Goldflame'", type: "Shrub", color: "Orange-gold leaves" }
+                ];
+              } else if (zoneNum <= 8) {
+                // Temperate zones
+                plants = [
+                  { name: "Rose 'Lady Emma Hamilton'", type: "Shrub", color: "Apricot-orange" },
+                  { name: "English Lavender", type: "Perennial", color: "Purple fragrant" },
+                  { name: "Japanese Camellia", type: "Shrub", color: "Pink/Red blooms" },
+                  { name: "Delphinium 'Pacific Giant'", type: "Perennial", color: "Blue spikes" },
+                  { name: "Magnolia 'Jane'", type: "Tree", color: "Purple-pink flowers" },
+                  { name: "Salvia 'May Night'", type: "Perennial", color: "Deep purple" },
+                  { name: "Rhododendron 'PJM'", type: "Evergreen", color: "Lavender-pink" },
+                  { name: "Clematis 'Jackmanii'", type: "Vine", color: "Purple flowers" },
+                  { name: "Weigela 'Wine & Roses'", type: "Shrub", color: "Pink flowers" },
+                  { name: "Allium 'Purple Sensation'", type: "Bulb", color: "Purple globes" },
+                  { name: "Wisteria sinensis", type: "Vine", color: "Fragrant purple" },
+                  { name: "Hellebore 'Winter Jewels'", type: "Perennial", color: "Winter blooms" }
+                ];
+              } else if (zoneNum <= 10) {
+                // Warm zones
+                plants = [
+                  { name: "Bougainvillea 'Barbara Karst'", type: "Vine", color: "Magenta bracts" },
+                  { name: "Meyer Lemon", type: "Tree", color: "Fragrant white flowers" },
+                  { name: "Agapanthus 'Storm Cloud'", type: "Perennial", color: "Blue-purple" },
+                  { name: "Gardenia 'August Beauty'", type: "Shrub", color: "White fragrant" },
+                  { name: "Mexican Sage", type: "Perennial", color: "Purple spikes" },
+                  { name: "Oleander 'Pink Beauty'", type: "Shrub", color: "Pink flowers" },
+                  { name: "Society Garlic", type: "Perennial", color: "Lavender blooms" },
+                  { name: "Bottlebrush 'Little John'", type: "Shrub", color: "Red brushes" },
+                  { name: "Rosemary 'Tuscan Blue'", type: "Herb", color: "Blue flowers" },
+                  { name: "Pride of Madeira", type: "Shrub", color: "Purple spikes" },
+                  { name: "Lantana 'New Gold'", type: "Perennial", color: "Yellow clusters" },
+                  { name: "Fig 'Brown Turkey'", type: "Tree", color: "Edible fruit" }
+                ];
+              } else {
+                // Tropical zones
+                plants = [
+                  { name: "Bird of Paradise", type: "Perennial", color: "Orange-blue blooms" },
+                  { name: "Plumeria 'Singapore White'", type: "Tree", color: "Fragrant white" },
+                  { name: "Hibiscus 'Red Dragon'", type: "Shrub", color: "Large red flowers" },
+                  { name: "Mango 'Kent'", type: "Tree", color: "Sweet fruit" },
+                  { name: "Ixora 'Super King'", type: "Shrub", color: "Red clusters" },
+                  { name: "Croton 'Petra'", type: "Shrub", color: "Colorful foliage" },
+                  { name: "Heliconia 'Lobster Claw'", type: "Perennial", color: "Red-yellow bracts" },
+                  { name: "Royal Palm", type: "Palm", color: "Majestic trunk" },
+                  { name: "Bougainvillea 'California Gold'", type: "Vine", color: "Golden yellow" },
+                  { name: "Frangipani", type: "Tree", color: "Fragrant pink-white" },
+                  { name: "Ti Plant 'Red Sister'", type: "Shrub", color: "Red-pink leaves" },
+                  { name: "Passion Fruit Vine", type: "Vine", color: "Purple fruit" }
+                ];
+              }
+              
+              return plants.map((plant, index) => (
+                <div key={index} className="flex flex-col space-y-1">
+                  <div className="flex items-start">
+                    <span className="w-2 h-2 bg-accent rounded-full mr-2 mt-1 flex-shrink-0"></span>
+                    <div className="text-sm">
+                      <span className="font-medium">{plant.name}</span>
+                      <div className="text-xs text-muted-foreground">
+                        <span>{plant.type}</span> • <span className="italic">{plant.color}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
