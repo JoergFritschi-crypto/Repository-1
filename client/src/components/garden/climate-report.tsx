@@ -233,7 +233,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Location:</span>
                   <span className="text-xs">
-                    {Number(climateData.coordinates.latitude).toFixed(4)}, {Number(climateData.coordinates.longitude).toFixed(4)}
+                    {Number(climateData.coordinates.latitude).toFixed(1)}, {Number(climateData.coordinates.longitude).toFixed(1)}
                   </span>
                 </div>
               )}
@@ -255,7 +255,21 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
                       const endMonth = endDate.toLocaleDateString('en-US', { month: 'long' });
                       const startDay = startDate.getDate();
                       const endDay = endDate.getDate();
-                      return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+                      
+                      const getOrdinal = (day: number) => {
+                        if (day === 1 || day === 21 || day === 31) return day === 1 ? 'first' : day === 21 ? 'twenty-first' : 'thirty-first';
+                        if (day === 2 || day === 22) return day === 2 ? 'second' : 'twenty-second';
+                        if (day === 3 || day === 23) return day === 3 ? 'third' : 'twenty-third';
+                        if (day >= 4 && day <= 20) {
+                          const ones = ['', '', '', '', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth',
+                                       'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth',
+                                       'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth'];
+                          return ones[day] || `${day}th`;
+                        }
+                        return `${['twenty', 'thirty'][Math.floor(day / 10) - 2]}-${['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][day % 10]}`;
+                      };
+                      
+                      return `${getOrdinal(startDay)} of ${startMonth} - ${getOrdinal(endDay)} of ${endMonth}`;
                     })()
                   : 'March - October'
                 }
@@ -278,9 +292,23 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
                       const firstMonth = firstFrost.toLocaleDateString('en-US', { month: 'long' });
                       const lastDay = lastFrost.getDate();
                       const firstDay = firstFrost.getDate();
-                      return `${lastMonth} ${lastDay} - ${firstMonth} ${firstDay}`;
+                      
+                      const getOrdinal = (day: number) => {
+                        if (day === 1 || day === 21 || day === 31) return day === 1 ? 'first' : day === 21 ? 'twenty-first' : 'thirty-first';
+                        if (day === 2 || day === 22) return day === 2 ? 'second' : 'twenty-second';
+                        if (day === 3 || day === 23) return day === 3 ? 'third' : 'twenty-third';
+                        if (day >= 4 && day <= 20) {
+                          const ones = ['', '', '', '', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth',
+                                       'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth',
+                                       'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth'];
+                          return ones[day] || `${day}th`;
+                        }
+                        return `${['twenty', 'thirty'][Math.floor(day / 10) - 2]}-${['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][day % 10]}`;
+                      };
+                      
+                      return `${getOrdinal(lastDay)} of ${lastMonth} - ${getOrdinal(firstDay)} of ${firstMonth}`;
                     })()
-                  : 'November 15 - March 15'
+                  : 'fifteenth of November - fifteenth of March'
                 }
               </span>
             </div>

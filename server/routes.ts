@@ -148,10 +148,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       
+      // Format location as "City, Zip, Country"
+      let formattedLocation = location;
+      if (coordinates) {
+        const parts = [];
+        if (coordinates.placeName) {
+          const cityMatch = coordinates.placeName.match(/^([^,]+)/);
+          if (cityMatch) parts.push(cityMatch[1].trim());
+        }
+        // Extract zip code from original location if present
+        const zipMatch = location.match(/\b\d{5}(?:-\d{4})?\b/);
+        if (zipMatch) parts.push(zipMatch[0]);
+        if (coordinates.country) parts.push(coordinates.country);
+        formattedLocation = parts.join(', ');
+      }
+      
       res.json({
         ...climateData,
         coordinates,
-        location: coordinates ? coordinates.placeName : location
+        location: formattedLocation
       });
     } catch (error) {
       console.error("Error fetching climate data:", error);
@@ -1071,6 +1086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               avg_humidity: freshData.avg_humidity,
               avg_wind_speed: freshData.avg_wind_speed,
               sunshine_percent: freshData.sunshine_percent,
+              sunshine_hours: freshData.sunshine_hours,
               wettest_month: freshData.wettest_month,
               wettest_month_precip: freshData.wettest_month_precip,
               driest_month: freshData.driest_month,
@@ -1116,9 +1132,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         else if (zoneNum >= 11) hardiness_category = 'Tender';
       }
       
+      // Format location as "City, Zip, Country" if needed
+      let formattedLocation = climateData.location || location;
+      const locationParts = formattedLocation.split(/\s+/);
+      const formattedParts = [];
+      
+      // Extract city (first word that's not a country)
+      if (locationParts.length > 0 && !['United', 'States', 'Kingdom'].includes(locationParts[0])) {
+        formattedParts.push(locationParts[0]);
+      }
+      
+      // Extract zip code if present
+      const zipMatch = formattedLocation.match(/\b\d{5}(?:-\d{4})?\b/);
+      if (zipMatch) formattedParts.push(zipMatch[0]);
+      
+      // Extract country (look for common country names)
+      if (formattedLocation.includes('United States') || formattedLocation.includes('USA')) {
+        formattedParts.push('United States');
+      } else if (formattedLocation.includes('United Kingdom') || formattedLocation.includes('UK')) {
+        formattedParts.push('United Kingdom');
+      } else if (formattedLocation.includes('Canada')) {
+        formattedParts.push('Canada');
+      } else if (locationParts.length > 1) {
+        // Use last word as country if no zip code
+        if (!zipMatch && locationParts.length > 1) {
+          formattedParts.push(locationParts[locationParts.length - 1]);
+        }
+      }
+      
+      const finalLocation = formattedParts.length > 0 ? formattedParts.join(', ') : formattedLocation;
+      
       // Send response with both database fields and expected frontend fields
       res.json({
         ...climateData,
+        location: finalLocation,
         usda_zone,
         rhs_zone,
         hardiness_category,
