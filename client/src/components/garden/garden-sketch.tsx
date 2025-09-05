@@ -252,22 +252,53 @@ export default function GardenSketch({
                   cx={x}
                   cy={y}
                   r={isMainDirection ? 12 : 8}
-                  fill={dir === 'N' ? '#dc2626' : '#004025'}
+                  fill={dir === 'N' ? '#dc2626' : dir === 'S' ? '#fbbf24' : '#004025'}
                   onMouseDown={(e) => handleMouseDown(e, 'cardinal')}
                   className="cursor-grab active:cursor-grabbing"
                 />
-                <text
-                  x={x}
-                  y={y}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="white"
-                  fontSize={isMainDirection ? "11" : "9"}
-                  fontWeight="bold"
-                  pointerEvents="none"
-                >
-                  {dir}
-                </text>
+                {dir === 'S' ? (
+                  // Sun icon for South
+                  <g pointerEvents="none">
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={4}
+                      fill="#fff"
+                    />
+                    {/* Sun rays */}
+                    {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
+                      const rad = angle * (Math.PI / 180);
+                      const x1 = x + 5 * Math.cos(rad);
+                      const y1 = y + 5 * Math.sin(rad);
+                      const x2 = x + 8 * Math.cos(rad);
+                      const y2 = y + 8 * Math.sin(rad);
+                      return (
+                        <line
+                          key={angle}
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
+                          stroke="#fff"
+                          strokeWidth="1.5"
+                        />
+                      );
+                    })}
+                  </g>
+                ) : (
+                  <text
+                    x={x}
+                    y={y}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="white"
+                    fontSize={isMainDirection ? "11" : "9"}
+                    fontWeight="bold"
+                    pointerEvents="none"
+                  >
+                    {dir}
+                  </text>
+                )}
               </g>
             );
           })}
