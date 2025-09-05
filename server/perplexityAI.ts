@@ -40,7 +40,7 @@ class PerplexityAI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'sonar-pro',
+        model: options.model || 'llama-3.1-sonar-small-128k-online',
         messages,
         max_tokens: options.maxTokens || 1024,
         temperature: options.temperature || 0.7,
@@ -50,7 +50,8 @@ class PerplexityAI {
         return_related_questions: false,
         search_recency_filter: options.searchRecencyFilter || 'month',
         stream: false,
-        ...options
+        presence_penalty: 0,
+        frequency_penalty: 1
       }),
     });
 
@@ -355,11 +356,10 @@ class PerplexityAI {
 
     try {
       const response = await this.makeRequest(messages, {
-        model: 'llama-3.1-sonar-large-128k-online',
+        model: 'llama-3.1-sonar-small-128k-online',
         maxTokens: 2500,
         temperature: 0.3,
-        searchRecencyFilter: 'month',
-        return_citations: true
+        searchRecencyFilter: 'month'
       });
 
       const content = response.choices[0].message.content;
