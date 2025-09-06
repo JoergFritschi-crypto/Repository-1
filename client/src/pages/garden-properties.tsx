@@ -231,7 +231,7 @@ export default function GardenProperties() {
         {/* Header */}
         <div className="mb-6">
           <Card className="border-2 border-[#004025] shadow-sm mb-2">
-            <CardHeader className="py-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-t-lg">
+            <CardHeader className="py-6 flower-band-studio rounded-t-lg">
               <CardTitle className="text-2xl md:text-3xl">Garden Design Studio</CardTitle>
             </CardHeader>
           </Card>
@@ -296,7 +296,7 @@ export default function GardenProperties() {
             {/* Step 1: Welcome & Location */}
             {currentStep === 1 && (
               <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-welcome-location">
-                <CardHeader className="py-7 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-t-lg">
+                <CardHeader className="py-7 flower-band-spring rounded-t-lg">
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
@@ -577,7 +577,7 @@ export default function GardenProperties() {
                 />
                 
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-shape-orientation">
-                  <CardHeader className="py-7 bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-900/20 dark:to-teal-900/20 rounded-t-lg">
+                  <CardHeader className="py-7 flower-band-summer rounded-t-lg">
                     <CardTitle className="text-base">Garden Shape & Dimensions</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-0">
@@ -875,7 +875,7 @@ export default function GardenProperties() {
 
                 {/* Garden Sketch with rotatable rings */}
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-garden-sketch">
-                  <CardHeader className="py-7 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 rounded-t-lg">
+                  <CardHeader className="py-7 flower-band-autumn rounded-t-lg">
                     <CardTitle className="text-base">Garden Orientation & View</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -898,7 +898,7 @@ export default function GardenProperties() {
               <div className="space-y-3">
                 {/* Design Approach Selection */}
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-design-approach">
-                  <CardHeader className="py-7 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/20 dark:to-gray-900/20 rounded-t-lg">
+                  <CardHeader className="py-7 flower-band-green rounded-t-lg">
                     <CardTitle className="text-base">Choose Your Design Approach</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-0">
@@ -1463,7 +1463,7 @@ export default function GardenProperties() {
             {/* Step 5: Finale - Blueprint & Download */}
             {currentStep === 5 && (
               <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-finale-blueprint">
-                <CardHeader className="py-7 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-t-lg">
+                <CardHeader className="py-7 flower-band-review rounded-t-lg">
                   <CardTitle className="text-base">Review & Generate Blueprint</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
