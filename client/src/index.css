@@ -508,15 +508,15 @@
     border-color: hsl(45, 100%, 50%) !important;
   }
   
-  /* Decorative flower band for headers */
+  /* Decorative flower band - base style (yellow/gold theme) */
   .flower-band {
     position: relative;
     background: linear-gradient(90deg, 
-      hsl(51, 100%, 57%, 0.1) 0%,
-      hsl(45, 100%, 50%, 0.15) 25%,
-      hsl(131, 69%, 41%, 0.1) 50%,
-      hsl(145, 56%, 26%, 0.1) 75%,
-      hsl(51, 100%, 57%, 0.1) 100%);
+      hsl(51, 100%, 57%, 0.6) 0%,
+      hsl(45, 100%, 50%, 0.7) 25%,
+      hsl(43, 95%, 55%, 0.65) 50%,
+      hsl(48, 100%, 52%, 0.7) 75%,
+      hsl(51, 100%, 57%, 0.6) 100%);
     background-size: 200% 100%;
     animation: subtle-shift 20s ease-in-out infinite;
   }
@@ -526,11 +526,92 @@
     position: absolute;
     inset: 0;
     background-image: 
-      radial-gradient(circle at 20% 50%, hsl(51, 100%, 57%, 0.2) 0%, transparent 25%),
-      radial-gradient(circle at 40% 30%, hsl(131, 69%, 41%, 0.15) 0%, transparent 20%),
-      radial-gradient(circle at 60% 70%, hsl(145, 56%, 26%, 0.15) 0%, transparent 20%),
-      radial-gradient(circle at 80% 40%, hsl(45, 100%, 50%, 0.2) 0%, transparent 25%);
+      radial-gradient(circle at 20% 50%, hsl(51, 100%, 57%, 0.8) 0%, transparent 35%),
+      radial-gradient(circle at 40% 30%, hsl(45, 100%, 50%, 0.7) 0%, transparent 30%),
+      radial-gradient(circle at 60% 70%, hsl(43, 95%, 55%, 0.7) 0%, transparent 30%),
+      radial-gradient(circle at 80% 40%, hsl(48, 100%, 52%, 0.8) 0%, transparent 35%);
     background-size: 150px 100%;
+    background-repeat: repeat-x;
+    pointer-events: none;
+  }
+  
+  /* Green nature theme variant */
+  .flower-band-green {
+    position: relative;
+    background: linear-gradient(90deg, 
+      hsl(131, 69%, 41%, 0.5) 0%,
+      hsl(145, 56%, 26%, 0.6) 25%,
+      hsl(155, 100%, 20%, 0.55) 50%,
+      hsl(140, 60%, 30%, 0.6) 75%,
+      hsl(131, 69%, 41%, 0.5) 100%);
+    background-size: 200% 100%;
+    animation: subtle-shift 25s ease-in-out infinite;
+  }
+  
+  .flower-band-green::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      radial-gradient(circle at 15% 50%, hsl(131, 69%, 41%, 0.7) 0%, transparent 35%),
+      radial-gradient(circle at 35% 70%, hsl(145, 56%, 26%, 0.6) 0%, transparent 30%),
+      radial-gradient(circle at 65% 30%, hsl(155, 100%, 20%, 0.6) 0%, transparent 30%),
+      radial-gradient(circle at 85% 60%, hsl(140, 60%, 30%, 0.7) 0%, transparent 35%);
+    background-size: 180px 100%;
+    background-repeat: repeat-x;
+    pointer-events: none;
+  }
+  
+  /* Purple/pink floral theme variant */
+  .flower-band-purple {
+    position: relative;
+    background: linear-gradient(90deg, 
+      hsl(280, 60%, 65%, 0.5) 0%,
+      hsl(300, 50%, 70%, 0.6) 25%,
+      hsl(320, 55%, 68%, 0.55) 50%,
+      hsl(290, 58%, 66%, 0.6) 75%,
+      hsl(280, 60%, 65%, 0.5) 100%);
+    background-size: 200% 100%;
+    animation: subtle-shift 18s ease-in-out infinite;
+  }
+  
+  .flower-band-purple::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      radial-gradient(circle at 25% 40%, hsl(280, 60%, 65%, 0.7) 0%, transparent 35%),
+      radial-gradient(circle at 45% 60%, hsl(300, 50%, 70%, 0.6) 0%, transparent 30%),
+      radial-gradient(circle at 70% 35%, hsl(320, 55%, 68%, 0.6) 0%, transparent 30%),
+      radial-gradient(circle at 90% 55%, hsl(290, 58%, 66%, 0.7) 0%, transparent 35%);
+    background-size: 160px 100%;
+    background-repeat: repeat-x;
+    pointer-events: none;
+  }
+  
+  /* Sunset/autumn theme variant */
+  .flower-band-sunset {
+    position: relative;
+    background: linear-gradient(90deg, 
+      hsl(20, 80%, 60%, 0.5) 0%,
+      hsl(35, 75%, 55%, 0.6) 25%,
+      hsl(15, 85%, 58%, 0.55) 50%,
+      hsl(30, 78%, 57%, 0.6) 75%,
+      hsl(20, 80%, 60%, 0.5) 100%);
+    background-size: 200% 100%;
+    animation: subtle-shift 22s ease-in-out infinite;
+  }
+  
+  .flower-band-sunset::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      radial-gradient(circle at 18% 45%, hsl(20, 80%, 60%, 0.7) 0%, transparent 35%),
+      radial-gradient(circle at 42% 65%, hsl(35, 75%, 55%, 0.6) 0%, transparent 30%),
+      radial-gradient(circle at 68% 40%, hsl(15, 85%, 58%, 0.6) 0%, transparent 30%),
+      radial-gradient(circle at 88% 50%, hsl(30, 78%, 57%, 0.7) 0%, transparent 35%);
+    background-size: 170px 100%;
     background-repeat: repeat-x;
     pointer-events: none;
   }
