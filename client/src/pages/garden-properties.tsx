@@ -1350,7 +1350,7 @@ export default function GardenProperties() {
             {/* Step 5: Finale - Blueprint & Download */}
             {currentStep === 5 && (
               <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-finale-blueprint">
-                <CardHeader className="py-7 flower-band-zen rounded-t-lg">
+                <CardHeader className="py-7 flower-band-review rounded-t-lg">
                   <CardTitle className="text-base">Review & Generate Blueprint</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
