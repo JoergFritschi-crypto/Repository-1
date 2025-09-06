@@ -262,7 +262,13 @@ export default function GardenProperties() {
 
         {/* Current Step Info */}
         <Card className="mb-4 border-2 border-[#004025] shadow-sm">
-          <CardHeader className="py-5 flower-band-sunset rounded-t-lg">
+          <CardHeader className={`py-5 ${
+            currentStep === 1 ? 'flower-band-wildflower' :
+            currentStep === 2 ? 'flower-band-tropical' :
+            currentStep === 3 ? 'flower-band-cottage' :
+            currentStep === 4 ? 'flower-band-modern' :
+            'flower-band-zen'
+          } rounded-t-lg`}>
             <CardTitle className="text-base md:text-lg">
               Step {currentStep}: {stepDetails[currentStep - 1].title}
             </CardTitle>
