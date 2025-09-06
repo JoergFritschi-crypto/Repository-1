@@ -756,3 +756,157 @@
     font-weight: 600;
   }
 }
+
+/* Additional Photorealistic flower bands for unique sections */
+
+/* Photorealistic flower band - Cottage Garden theme */
+.flower-band-cottage {
+  position: relative;
+  overflow: hidden;
+}
+
+.flower-band-cottage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/src/assets/generated_images/Cottage_garden_paradise_0828c1a9.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(1.15) saturate(1.3);
+  z-index: 0;
+}
+
+.flower-band-cottage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0.15) 0%, 
+    rgba(0, 0, 0, 0.2) 50%, 
+    rgba(0, 0, 0, 0.15) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flower-band-cottage > * {
+  position: relative;
+  z-index: 2;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  font-weight: 600;
+}
+
+/* Photorealistic flower band - Modern Geometric theme */
+.flower-band-modern {
+  position: relative;
+  overflow: hidden;
+}
+
+.flower-band-modern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/src/assets/generated_images/Modern_geometric_garden_dc4159b9.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(1.15) saturate(1.3);
+  z-index: 0;
+}
+
+.flower-band-modern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0.15) 0%, 
+    rgba(0, 0, 0, 0.2) 50%, 
+    rgba(0, 0, 0, 0.15) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flower-band-modern > * {
+  position: relative;
+  z-index: 2;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  font-weight: 600;
+}
+
+/* Photorealistic flower band - Mediterranean theme */
+.flower-band-mediterranean {
+  position: relative;
+  overflow: hidden;
+}
+
+.flower-band-mediterranean::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/src/assets/generated_images/Mediterranean_garden_terrace_6717cad7.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(1.15) saturate(1.3);
+  z-index: 0;
+}
+
+.flower-band-mediterranean::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0.15) 0%, 
+    rgba(0, 0, 0, 0.2) 50%, 
+    rgba(0, 0, 0, 0.15) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flower-band-mediterranean > * {
+  position: relative;
+  z-index: 2;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  font-weight: 600;
+}
+
+/* Photorealistic flower band - Japanese Zen theme */
+.flower-band-zen {
+  position: relative;
+  overflow: hidden;
+}
+
+.flower-band-zen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/src/assets/generated_images/Japanese_zen_garden_542a8b46.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(1.15) saturate(1.3);
+  z-index: 0;
+}
+
+.flower-band-zen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0, 0, 0, 0.15) 0%, 
+    rgba(0, 0, 0, 0.2) 50%, 
+    rgba(0, 0, 0, 0.15) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flower-band-zen > * {
+  position: relative;
+  z-index: 2;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  font-weight: 600;
+}
