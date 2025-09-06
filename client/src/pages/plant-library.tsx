@@ -52,7 +52,7 @@ export default function PlantLibrary() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header - Compact */}
         <div className="mb-6">
-          <h1 className="text-2xl font-serif font-semibold text-[#004025] mb-2" data-testid="text-plant-library-title">
+          <h1 className="text-2xl font-serif font-semibold text-[#004025] mb-2 flower-band rounded-lg px-6 py-3" data-testid="text-plant-library-title">
             Plant Library
           </h1>
           <p className="text-sm text-muted-foreground" data-testid="text-plant-library-subtitle">
@@ -83,7 +83,7 @@ export default function PlantLibrary() {
               {/* Filters Sidebar */}
               <div className="lg:col-span-1">
                 <Card className="border-2 border-[#004025]">
-                  <CardHeader className="py-4">
+                  <CardHeader className="py-4 flower-band rounded-t-lg">
                     <CardTitle className="flex items-center justify-between text-lg">
                       <span>Filters</span>
                       <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 px-2 text-xs" data-testid="button-clear-filters">
@@ -264,7 +264,7 @@ export default function PlantLibrary() {
           {/* My Collection Tab */}
           <TabsContent value="collection" className="mt-8">
             <Card>
-              <CardHeader>
+              <CardHeader className="flower-band rounded-t-lg">
                 <CardTitle>My Plant Collection</CardTitle>
               </CardHeader>
               <CardContent>
