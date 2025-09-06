@@ -25,7 +25,7 @@ import PhotoUpload from '@/components/garden/photo-upload';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { Lock, Crown, CreditCard } from 'lucide-react';
+import { Lock, Crown, CreditCard, Shield } from 'lucide-react';
 
 const gardenSchema = z.object({
   name: z.string().min(1, 'Garden name is required'),
@@ -1056,7 +1056,8 @@ export default function GardenProperties() {
 
                 {/* Show AI Style Preview if AI approach is chosen */}
                 {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
-                  <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
+                  <>
+                    <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-purple-600" />
@@ -1101,6 +1102,117 @@ export default function GardenProperties() {
                       )}
                     </CardContent>
                   </Card>
+                  
+                  {/* Garden Style Selection for AI approach */}
+                  <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        Select Your Garden Style
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-0">
+                      <p className="text-sm text-muted-foreground">
+                        Choose from our curated collection of garden styles. Each style has been carefully designed with specific plants and layouts.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {GARDEN_STYLES && Object.values(GARDEN_STYLES).slice(0, 10).map((style: any) => (
+                          <Card 
+                            key={style.id} 
+                            className={`cursor-pointer transition-all hover:shadow-md ${
+                              selectedGardenStyle === style.id 
+                                ? 'border-purple-500 bg-purple-50' 
+                                : 'hover:border-purple-300'
+                            }`}
+                            onClick={() => setSelectedGardenStyle(style.id)}
+                          >
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm">{style.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 pt-0">
+                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                {style.description}
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {style.signaturePlants?.slice(0, 2).map((plant: string, i: number) => (
+                                  <Badge key={i} variant="outline" className="text-xs">
+                                    {plant}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <Button
+                                type="button"
+                                variant={selectedGardenStyle === style.id ? "default" : "outline"}
+                                size="sm"
+                                className="w-full mt-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedGardenStyle(style.id);
+                                }}
+                              >
+                                {selectedGardenStyle === style.id ? "Selected" : "Select"}
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Safety Preferences for AI approach (after selecting a style) */}
+                  {selectedGardenStyle && (
+                    <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-safety-preferences">
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-purple-600" />
+                          Safety Preferences
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Select any safety considerations for your garden design.
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="preferences.petSafe"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-sm font-normal">
+                                  Pet-safe plants only
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="preferences.childSafe"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-sm font-normal">
+                                  Child-safe plants only
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  </>
                 )}
 
                 {/* Show Plant Preferences if Manual approach is chosen */}
