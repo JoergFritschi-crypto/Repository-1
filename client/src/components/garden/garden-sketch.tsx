@@ -105,6 +105,11 @@ export default function GardenSketch({
       case 'triangle':
         largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3);
         break;
+      case 'l_shaped':
+      case 'r_shaped':
+        // L-shaped needs more space due to its complex shape
+        largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3) * 1.2;
+        break;
       default:
         largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3);
     }
@@ -151,6 +156,24 @@ export default function GardenSketch({
         return `M ${centerX} ${centerY - triHeight/2} 
                 L ${centerX - triWidth/2} ${centerY + triHeight/2} 
                 L ${centerX + triWidth/2} ${centerY + triHeight/2} z`;
+      
+      case 'l_shaped':
+        const lWidth = (dimensions.width || 4) * 20 * scale;
+        const lHeight = (dimensions.length || 3) * 20 * scale;
+        // L-shape with bottom-right corner cut
+        return `M ${centerX - lWidth/2} ${centerY - lHeight/2}
+                h ${lWidth} v ${lHeight * 0.4}
+                h ${-lWidth * 0.5} v ${lHeight * 0.6}
+                h ${-lWidth * 0.5} z`;
+      
+      case 'r_shaped':
+        const rWidth = (dimensions.width || 4) * 20 * scale;
+        const rHeight = (dimensions.length || 3) * 20 * scale;
+        // R-shape (mirrored L-shape with bottom-left corner cut)
+        return `M ${centerX - rWidth/2} ${centerY - rHeight/2}
+                h ${rWidth} v ${rHeight}
+                h ${-rWidth * 0.5} v ${-rHeight * 0.6}
+                h ${-rWidth * 0.5} z`;
       
       default:
         // Default to rectangle for any unknown shape

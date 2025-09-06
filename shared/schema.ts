@@ -57,7 +57,9 @@ export const gardenShapeEnum = pgEnum("garden_shape", [
   "square",
   "circle", 
   "oval",
-  "triangle"
+  "triangle",
+  "l_shaped",
+  "r_shaped"
 ]);
 
 // Slope direction enum
