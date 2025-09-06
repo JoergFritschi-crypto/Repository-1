@@ -218,9 +218,11 @@ export default function GardenProperties() {
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
         <div className="mb-6">
-          <div className="mb-2 flower-band-green rounded-lg px-6 py-6">
-            <h1 className="text-2xl md:text-3xl font-bold">Garden Design Studio</h1>
-          </div>
+          <Card className="border-2 border-[#004025] shadow-sm mb-2">
+            <CardHeader className="py-6 flower-band-green rounded-t-lg">
+              <CardTitle className="text-2xl md:text-3xl">Garden Design Studio</CardTitle>
+            </CardHeader>
+          </Card>
           <p className="text-sm md:text-base text-gray-600">Create your personalized garden with AI assistance</p>
         </div>
 
@@ -259,12 +261,12 @@ export default function GardenProperties() {
         </div>
 
         {/* Current Step Info */}
-        <Card className="mb-4 bg-gradient-to-r from-[#004025] to-[#00301c] text-white shadow-md">
+        <Card className="mb-4 border-2 border-[#004025] shadow-sm">
           <CardHeader className="py-5 flower-band-sunset rounded-t-lg">
             <CardTitle className="text-base md:text-lg">
               Step {currentStep}: {stepDetails[currentStep - 1].title}
             </CardTitle>
-            <CardDescription className="text-green-100 text-xs md:text-sm">
+            <CardDescription className="text-xs md:text-sm">
               {stepDetails[currentStep - 1].description}
             </CardDescription>
           </CardHeader>
