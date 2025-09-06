@@ -1013,8 +1013,11 @@ export default function GardenProperties() {
                           <FormLabel>How would you like to design your garden?</FormLabel>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                form.setValue("design_approach", value);
+                              }}
+                              value={field.value || ""}
                               className="space-y-3"
                             >
                               <div className="flex items-start space-x-3">
