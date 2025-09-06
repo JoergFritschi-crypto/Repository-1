@@ -5,6 +5,7 @@ import {
   userPlantCollections,
   gardenPlants,
   plantDoctorSessions,
+  designGenerations,
   climateData,
   fileVault,
   type User,
@@ -19,6 +20,8 @@ import {
   type InsertGardenPlant,
   type PlantDoctorSession,
   type InsertPlantDoctorSession,
+  type DesignGeneration,
+  type InsertDesignGeneration,
   type ClimateData,
   type InsertClimateData,
   type FileVault,
@@ -73,6 +76,11 @@ export interface IStorage {
   createPlantDoctorSession(session: InsertPlantDoctorSession): Promise<PlantDoctorSession>;
   getUserPlantDoctorSessions(userId: string): Promise<PlantDoctorSession[]>;
   updatePlantDoctorSession(id: string, session: Partial<InsertPlantDoctorSession>): Promise<PlantDoctorSession>;
+  
+  // Design generation tracking operations
+  getUserDesignGenerations(userId: string): Promise<DesignGeneration[]>;
+  createDesignGeneration(generation: InsertDesignGeneration): Promise<DesignGeneration>;
+  getDesignGenerationsByStyle(userId: string, styleId: string): Promise<DesignGeneration[]>;
   
   // Climate data operations
   getClimateData(location: string): Promise<ClimateData | undefined>;
@@ -306,6 +314,27 @@ export class DatabaseStorage implements IStorage {
       .where(eq(plantDoctorSessions.id, id))
       .returning();
     return updatedSession;
+  }
+
+  // Design generation tracking operations
+  async getUserDesignGenerations(userId: string): Promise<DesignGeneration[]> {
+    return await db.select().from(designGenerations)
+      .where(eq(designGenerations.userId, userId))
+      .orderBy(desc(designGenerations.createdAt));
+  }
+
+  async createDesignGeneration(generation: InsertDesignGeneration): Promise<DesignGeneration> {
+    const [newGeneration] = await db.insert(designGenerations).values(generation).returning();
+    return newGeneration;
+  }
+
+  async getDesignGenerationsByStyle(userId: string, styleId: string): Promise<DesignGeneration[]> {
+    return await db.select().from(designGenerations)
+      .where(and(
+        eq(designGenerations.userId, userId),
+        eq(designGenerations.styleId, styleId)
+      ))
+      .orderBy(desc(designGenerations.createdAt));
   }
 
   // Climate data operations

@@ -129,7 +129,7 @@ export default function GardenProperties() {
   
   // Get user data and design generation history
   const { user } = useAuth();
-  const { data: designHistory } = useQuery({
+  const { data: designHistory = [] } = useQuery<any[]>({
     queryKey: ['/api/design-generations'],
     enabled: !!user
   });

@@ -2,7 +2,7 @@ import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema } from "@shared/schema";
+import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema, insertDesignGenerationSchema } from "@shared/schema";
 import Stripe from "stripe";
 import PerplexityAI from "./perplexityAI";
 import { analyzeGardenPhotos, generateDesignStyles, generateCompleteGardenDesign, getPlantAdvice } from "./anthropic";
@@ -112,6 +112,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching garden:", error);
       res.status(500).json({ message: "Failed to fetch garden" });
+    }
+  });
+  
+  // Design generation tracking routes
+  app.get('/api/design-generations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const generations = await storage.getUserDesignGenerations(userId);
+      res.json(generations);
+    } catch (error) {
+      console.error("Error fetching design generations:", error);
+      res.status(500).json({ message: "Failed to fetch design generations" });
+    }
+  });
+  
+  app.post('/api/design-generations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = insertDesignGenerationSchema.parse({
+        ...req.body,
+        userId
+      });
+      const generation = await storage.createDesignGeneration(validatedData);
+      res.json(generation);
+    } catch (error) {
+      console.error("Error creating design generation:", error);
+      res.status(500).json({ message: "Failed to track design generation" });
     }
   });
 
@@ -241,6 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/generate-complete-design', isAuthenticated, async (req: any, res) => {
     try {
       const { selectedStyle, gardenData, safetyPreferences } = req.body;
+      const userId = req.user.claims.sub;
       
       if (!selectedStyle) {
         return res.status(400).json({ message: 'Selected style is required' });
@@ -250,13 +278,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Garden data is required' });
       }
 
-      const design = await generateCompleteGardenDesign(
-        selectedStyle,
-        gardenData,
-        safetyPreferences || {}
-      );
-      
-      res.json(design);
+      // Check user tier and generation limits
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const userTier = user.userTier || 'free';
+      const generations = await storage.getUserDesignGenerations(userId);
+      const styleGenerations = await storage.getDesignGenerationsByStyle(userId, selectedStyle.id);
+
+      // Apply tier restrictions
+      if (userTier === 'free' && generations.length >= 1) {
+        return res.status(403).json({ 
+          message: 'Free tier users can only generate 1 design. Please upgrade to continue.',
+          tierLimit: true 
+        });
+      }
+
+      if (userTier === 'pay_per_design' && styleGenerations.length >= 1) {
+        return res.status(403).json({ 
+          message: 'You have already generated a design with this style. Try a different style or upgrade to premium.',
+          iterationLimit: true 
+        });
+      }
+
+      // Track the generation attempt
+      const generationTracking = await storage.createDesignGeneration({
+        userId,
+        gardenId: gardenData.id || null,
+        styleId: selectedStyle.id,
+        generationType: generations.length === 0 ? 'initial' : 'iteration',
+        success: false,
+        tokensUsed: 0
+      });
+
+      try {
+        const design = await generateCompleteGardenDesign(
+          selectedStyle,
+          gardenData,
+          safetyPreferences || {}
+        );
+        
+        // Update generation as successful
+        await storage.createDesignGeneration({
+          userId,
+          gardenId: gardenData.id || null,
+          styleId: selectedStyle.id,
+          generationType: generations.length === 0 ? 'initial' : 'iteration',
+          success: true,
+          tokensUsed: 0 // You can track actual tokens if needed
+        });
+        
+        res.json(design);
+      } catch (genError) {
+        // Update generation as failed
+        await storage.createDesignGeneration({
+          userId,
+          gardenId: gardenData.id || null,
+          styleId: selectedStyle.id,
+          generationType: generations.length === 0 ? 'initial' : 'iteration',
+          success: false,
+          errorMessage: genError instanceof Error ? genError.message : 'Unknown error',
+          tokensUsed: 0
+        });
+        throw genError;
+      }
     } catch (error) {
       console.error('Error generating complete design:', error);
       res.status(500).json({ 
