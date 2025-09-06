@@ -1014,7 +1014,7 @@ export default function GardenProperties() {
                           <FormControl>
                             <RadioGroup
                               onValueChange={field.onChange}
-                              defaultValue={field.value}
+                              value={field.value}
                               className="space-y-3"
                             >
                               <div className="flex items-start space-x-3">
