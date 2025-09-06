@@ -34,7 +34,7 @@ const gardenSchema = z.object({
   country: z.string().optional(),
   usdaZone: z.string().optional(),
   rhsZone: z.string().optional(),
-  shape: z.enum(['rectangle', 'square', 'circle', 'oval', 'triangle', 'irregular', 'kidney', 'l-shaped']),
+  shape: z.enum(['rectangle', 'square', 'circle', 'oval', 'triangle']),
   dimensions: z.record(z.number()).default({}),
   units: z.enum(['feet', 'meters']).default('feet'),
   sunExposure: z.enum(['full_sun', 'partial_shade', 'full_shade', 'varied']).optional(),
@@ -615,9 +615,6 @@ export default function GardenProperties() {
                               <SelectItem value="circle">Circle</SelectItem>
                               <SelectItem value="oval">Oval</SelectItem>
                               <SelectItem value="triangle">Triangle</SelectItem>
-                              <SelectItem value="irregular">Irregular</SelectItem>
-                              <SelectItem value="kidney">Kidney</SelectItem>
-                              <SelectItem value="l-shaped">L-Shaped</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -781,7 +778,7 @@ export default function GardenProperties() {
                         </div>
                       )}
 
-                      {['triangle', 'irregular', 'kidney', 'l-shaped'].includes(watchedShape) && (
+                      {watchedShape === 'triangle' && (
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}

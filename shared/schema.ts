@@ -54,10 +54,10 @@ export const users = pgTable("users", {
 // Garden shape enum
 export const gardenShapeEnum = pgEnum("garden_shape", [
   "rectangle",
+  "square",
   "circle", 
   "oval",
-  "rhomboid",
-  "l_shaped"
+  "triangle"
 ]);
 
 // Slope direction enum

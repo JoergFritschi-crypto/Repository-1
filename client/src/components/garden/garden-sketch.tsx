@@ -86,11 +86,15 @@ export default function GardenSketch({
     let largestDimension = 1;
     switch (shape) {
       case 'rectangle':
-      case 'l-shape':
+        const rectWidth = dimensions.width || 4;
+        const rectLength = dimensions.length || 3;
+        largestDimension = Math.max(rectWidth, rectLength);
+        break;
       case 'oval':
-        const width = dimensions.width || 4;
-        const length = dimensions.length || 3;
-        largestDimension = Math.max(width, length);
+        // Oval needs more space due to curves
+        const ovalWidth = dimensions.width || 4;
+        const ovalLength = dimensions.length || 3;
+        largestDimension = Math.max(ovalWidth, ovalLength) * 1.2;
         break;
       case 'square':
         largestDimension = dimensions.width || 4;
@@ -134,8 +138,9 @@ export default function GardenSketch({
                 A ${radius} ${radius} 0 1 1 ${centerX} ${centerY - radius}`;
       
       case 'oval':
-        const ovalWidth = (dimensions.width || 4) * 20 * scale;
-        const ovalHeight = (dimensions.length || 6) * 20 * scale;
+        // Use smaller of the two dimensions for proper scaling
+        const ovalWidth = (dimensions.width || 4) * 20 * scale * 0.8;
+        const ovalHeight = (dimensions.length || 3) * 20 * scale * 0.8;
         return `M ${centerX - ovalWidth/2} ${centerY} 
                 A ${ovalWidth/2} ${ovalHeight/2} 0 1 1 ${centerX + ovalWidth/2} ${centerY}
                 A ${ovalWidth/2} ${ovalHeight/2} 0 1 1 ${centerX - ovalWidth/2} ${centerY}`;
@@ -147,16 +152,12 @@ export default function GardenSketch({
                 L ${centerX - triWidth/2} ${centerY + triHeight/2} 
                 L ${centerX + triWidth/2} ${centerY + triHeight/2} z`;
       
-      case 'l-shape':
-        const lWidth = (dimensions.width || 4) * 20 * scale;
-        const lHeight = (dimensions.length || 3) * 20 * scale;
-        return `M ${centerX - lWidth/2} ${centerY - lHeight/2}
-                h ${lWidth * 0.6} v ${lHeight * 0.4}
-                h ${lWidth * 0.4} v ${lHeight * 0.6}
-                h ${-lWidth} z`;
-      
       default:
-        return getShapePath();
+        // Default to rectangle for any unknown shape
+        const defaultWidth = (dimensions.width || 4) * 20 * scale;
+        const defaultHeight = (dimensions.length || 3) * 20 * scale;
+        return `M ${centerX - defaultWidth/2} ${centerY - defaultHeight/2} 
+                h ${defaultWidth} v ${defaultHeight} h ${-defaultWidth} z`;
     }
   };
 
