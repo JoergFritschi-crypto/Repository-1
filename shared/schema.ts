@@ -26,6 +26,13 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// User tier enum
+export const userTierEnum = pgEnum("user_tier", [
+  "free",
+  "pay_per_design", 
+  "premium"
+]);
+
 // User storage table.
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
@@ -37,6 +44,8 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   subscriptionStatus: varchar("subscription_status"),
+  userTier: userTierEnum("user_tier").default("free"),
+  designCredits: integer("design_credits").default(1), // For pay-per-design users
   isAdmin: boolean("is_admin").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -147,11 +156,18 @@ export const plants = pgTable("plants", {
   flowerColor: jsonb("flower_color"), // Array of colors
   floweringSeason: varchar("flowering_season"), // When it blooms
   
-  // Safety - VERY IMPORTANT
-  poisonousToHumans: integer("poisonous_to_humans").default(0), // 0-5 scale
-  poisonousToPets: integer("poisonous_to_pets").default(0), // 0-5 scale
+  // Safety - VERY IMPORTANT - Using RHS/HTA 3-tier classification
+  toxicityCategory: varchar("toxicity_category").default("low"), // high, moderate, low
+  toxicityToHumans: varchar("toxicity_to_humans").default("low"), // high, moderate, low  
+  toxicityToPets: varchar("toxicity_to_pets").default("low"), // high, moderate, low
+  toxicityNotes: text("toxicity_notes"), // Specific toxicity information
+  childSafe: boolean("child_safe").default(true), // Quick reference for families
+  petSafe: boolean("pet_safe").default(true), // Quick reference for pet owners
   cuisine: boolean("cuisine").default(false), // Culinary uses
   medicinal: boolean("medicinal").default(false), // Medicinal uses
+  // Legacy toxicity fields - kept for backward compatibility but deprecated
+  poisonousToHumans: integer("poisonous_to_humans").default(0), // DEPRECATED - use toxicityToHumans
+  poisonousToPets: integer("poisonous_to_pets").default(0), // DEPRECATED - use toxicityToPets
   
   // Garden information
   attracts: jsonb("attracts"), // What it attracts (butterflies, birds, etc.)
@@ -218,6 +234,19 @@ export const plantDoctorSessions = pgTable("plant_doctor_sessions", {
   confidence: decimal("confidence", { precision: 5, scale: 4 }),
   identifiedPlantId: varchar("identified_plant_id").references(() => plants.id),
   userFeedback: jsonb("user_feedback"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Design generation tracking for user tier limits
+export const designGenerations = pgTable("design_generations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  gardenId: varchar("garden_id").references(() => gardens.id),
+  styleId: varchar("style_id").notNull(), // Garden style used
+  generationType: varchar("generation_type").notNull(), // initial, iteration
+  success: boolean("success").default(false),
+  errorMessage: text("error_message"),
+  tokensUsed: integer("tokens_used"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -335,6 +364,8 @@ export type GardenPlant = typeof gardenPlants.$inferSelect;
 export type InsertGardenPlant = typeof gardenPlants.$inferInsert;
 export type PlantDoctorSession = typeof plantDoctorSessions.$inferSelect;
 export type InsertPlantDoctorSession = typeof plantDoctorSessions.$inferInsert;
+export type DesignGeneration = typeof designGenerations.$inferSelect;
+export type InsertDesignGeneration = typeof designGenerations.$inferInsert;
 export type ClimateData = typeof climateData.$inferSelect;
 export type InsertClimateData = typeof climateData.$inferInsert;
 export type ApiHealthCheck = typeof apiHealthChecks.$inferSelect;
@@ -354,6 +385,7 @@ export const insertPlantSchema = createInsertSchema(plants);
 export const insertUserPlantCollectionSchema = createInsertSchema(userPlantCollections);
 export const insertGardenPlantSchema = createInsertSchema(gardenPlants);
 export const insertPlantDoctorSessionSchema = createInsertSchema(plantDoctorSessions);
+export const insertDesignGenerationSchema = createInsertSchema(designGenerations);
 export const insertClimateDataSchema = createInsertSchema(climateData);
 export const insertApiHealthCheckSchema = createInsertSchema(apiHealthChecks);
 export const insertApiUsageStatSchema = createInsertSchema(apiUsageStats);
