@@ -160,6 +160,20 @@ export default function GardenProperties() {
   const watchedLocation = form.watch("location");
   const watchedCity = form.watch("city");
   const watchedDesignApproach = form.watch("design_approach");
+  
+  // Watch values for GardenSketch to prevent re-render loops
+  const watchedShape = form.watch("shape");
+  const watchedDimensions = form.watch("dimensions");
+  const watchedUnits = form.watch("units");
+  const watchedSlopeDirection = form.watch("slopeDirection");
+  const watchedSlopePercentage = form.watch("slopePercentage");
+  const watchedUsdaZone = form.watch("usdaZone");
+  const watchedRhsZone = form.watch("rhsZone");
+  const watchedName = form.watch("name");
+  const watchedSunExposure = form.watch("sunExposure");
+  const watchedSelectedStyle = form.watch("selectedStyle");
+  const watchedPetSafe = form.watch("preferences.petSafe");
+  const watchedChildSafe = form.watch("preferences.childSafe");
 
   const nextStep = () => {
     setCurrentStep(prev => Math.min(prev + 1, 5));
@@ -637,14 +651,14 @@ export default function GardenProperties() {
                         )}
                       />
 
-                      {form.watch("shape") === 'rectangle' && (
+                      {watchedShape === 'rectangle' && (
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="dimensions.length"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Length ({form.watch("units")})</FormLabel>
+                                <FormLabel>Length ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
@@ -663,7 +677,7 @@ export default function GardenProperties() {
                             name="dimensions.width"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Width ({form.watch("units")})</FormLabel>
+                                <FormLabel>Width ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
@@ -680,13 +694,13 @@ export default function GardenProperties() {
                         </div>
                       )}
 
-                      {form.watch("shape") === 'square' && (
+                      {watchedShape === 'square' && (
                         <FormField
                           control={form.control}
                           name="dimensions.side"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Side Length ({form.watch("units")})</FormLabel>
+                              <FormLabel>Side Length ({watchedUnits})</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
@@ -702,13 +716,13 @@ export default function GardenProperties() {
                         />
                       )}
 
-                      {form.watch("shape") === 'circle' && (
+                      {watchedShape === 'circle' && (
                         <FormField
                           control={form.control}
                           name="dimensions.radius"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Radius ({form.watch("units")})</FormLabel>
+                              <FormLabel>Radius ({watchedUnits})</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
@@ -724,14 +738,14 @@ export default function GardenProperties() {
                         />
                       )}
 
-                      {form.watch("shape") === 'oval' && (
+                      {watchedShape === 'oval' && (
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="dimensions.majorAxis"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Major Axis ({form.watch("units")})</FormLabel>
+                                <FormLabel>Major Axis ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
@@ -750,7 +764,7 @@ export default function GardenProperties() {
                             name="dimensions.minorAxis"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Minor Axis ({form.watch("units")})</FormLabel>
+                                <FormLabel>Minor Axis ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
@@ -767,14 +781,14 @@ export default function GardenProperties() {
                         </div>
                       )}
 
-                      {['triangle', 'irregular', 'kidney', 'l-shaped'].includes(form.watch("shape")) && (
+                      {['triangle', 'irregular', 'kidney', 'l-shaped'].includes(watchedShape) && (
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="dimensions.approximateLength"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Approx. Length ({form.watch("units")})</FormLabel>
+                                <FormLabel>Approx. Length ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
@@ -793,7 +807,7 @@ export default function GardenProperties() {
                             name="dimensions.approximateWidth"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Approx. Width ({form.watch("units")})</FormLabel>
+                                <FormLabel>Approx. Width ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
@@ -882,13 +896,13 @@ export default function GardenProperties() {
                   </CardHeader>
                   <CardContent>
                     <GardenSketch
-                      shape={form.watch("shape")}
-                      dimensions={form.watch("dimensions")}
-                      units={form.watch("units") === 'feet' ? 'imperial' : 'metric'}
-                      slopeDirection={form.watch("slopeDirection")}
-                      slopePercentage={form.watch("slopePercentage")}
-                      usdaZone={form.watch("usdaZone")}
-                      rhsZone={form.watch("rhsZone")}
+                      shape={watchedShape}
+                      dimensions={watchedDimensions}
+                      units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
+                      slopeDirection={watchedSlopeDirection}
+                      slopePercentage={watchedSlopePercentage}
+                      usdaZone={watchedUsdaZone}
+                      rhsZone={watchedRhsZone}
                     />
                   </CardContent>
                 </Card>
@@ -1346,8 +1360,8 @@ export default function GardenProperties() {
                               selectedStyle: selectedStyle,
                               gardenData: form.getValues(),
                               safetyPreferences: {
-                                petSafe: form.watch("preferences.petSafe"),
-                                childSafe: form.watch("preferences.childSafe")
+                                petSafe: watchedPetSafe,
+                                childSafe: watchedChildSafe
                               }
                             });
                             
@@ -1402,9 +1416,9 @@ export default function GardenProperties() {
                   </CardHeader>
                   <CardContent>
                     <InteractiveCanvas
-                      shape={form.watch("shape")}
-                      dimensions={form.watch("dimensions")}
-                      units={form.watch("units") === 'feet' ? 'imperial' : 'metric'}
+                      shape={watchedShape}
+                      dimensions={watchedDimensions}
+                      units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
                       aiDesign={completeDesign}
                     />
                   </CardContent>
@@ -1472,13 +1486,13 @@ export default function GardenProperties() {
                   <div className="bg-green-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-3">Your Garden Summary</h3>
                     <div className="space-y-2 text-sm">
-                      <p><strong>Name:</strong> {form.watch("name") || "Not set"}</p>
-                      <p><strong>Location:</strong> {form.watch("city") || form.watch("location") || "Not set"}</p>
-                      <p><strong>Shape:</strong> {form.watch("shape") || "Rectangle"}</p>
-                      <p><strong>Sun Exposure:</strong> {form.watch("sunExposure")?.replace("_", " ") || "Not set"}</p>
+                      <p><strong>Name:</strong> {watchedName || "Not set"}</p>
+                      <p><strong>Location:</strong> {watchedCity || watchedLocation || "Not set"}</p>
+                      <p><strong>Shape:</strong> {watchedShape || "Rectangle"}</p>
+                      <p><strong>Sun Exposure:</strong> {watchedSunExposure?.replace("_", " ") || "Not set"}</p>
                       <p><strong>Design Approach:</strong> {watchedDesignApproach?.toUpperCase() || "Not set"}</p>
-                      {form.watch("selectedStyle") && (
-                        <p><strong>Selected Style:</strong> {form.watch("selectedStyle")}</p>
+                      {watchedSelectedStyle && (
+                        <p><strong>Selected Style:</strong> {watchedSelectedStyle}</p>
                       )}
                     </div>
                   </div>
