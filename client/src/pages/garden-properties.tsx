@@ -22,6 +22,10 @@ import InteractiveCanvas from '@/components/garden/interactive-canvas';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
 import PhotoUpload from '@/components/garden/photo-upload';
+import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
+import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { Lock, Crown, CreditCard } from 'lucide-react';
 
 const gardenSchema = z.object({
   name: z.string().min(1, 'Garden name is required'),
@@ -120,7 +124,15 @@ export default function GardenProperties() {
   const [generatedStyles, setGeneratedStyles] = useState<any[]>([]);
   const [completeDesign, setCompleteDesign] = useState<any>(null);
   const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
+  const [selectedGardenStyle, setSelectedGardenStyle] = useState<string | null>(null);
   const [, setLocation] = useLocation();
+  
+  // Get user data and design generation history
+  const { user } = useAuth();
+  const { data: designHistory } = useQuery({
+    queryKey: ['/api/design-generations'],
+    enabled: !!user
+  });
 
   const form = useForm<GardenFormValues>({
     resolver: zodResolver(gardenSchema),
@@ -1121,59 +1133,162 @@ export default function GardenProperties() {
             {/* Step 4: Interactive Design Canvas */}
             {currentStep === 4 && (
               <div className="space-y-3">
-                {/* Show AI styles if AI approach was chosen */}
-                {form.watch("design_approach") === "ai" && generatedStyles.length > 0 && !form.watch("selectedStyle") && (
+                {/* Show Garden Styles if AI approach was chosen */}
+                {form.watch("design_approach") === "ai" && !selectedGardenStyle && (
                   <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-styles">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-purple-600" />
                         Select Your Garden Style
                       </CardTitle>
+                      {user?.userTier && (
+                        <Badge className="ml-auto" variant={user.userTier === 'premium' ? 'default' : 'secondary'}>
+                          {user.userTier === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+                          {user.userTier === 'pay_per_design' && <CreditCard className="w-3 h-3 mr-1" />}
+                          {user.userTier === 'premium' ? 'Premium' : user.userTier === 'pay_per_design' ? 'Pay Per Design' : 'Free Tier'}
+                        </Badge>
+                      )}
                     </CardHeader>
                     <CardContent className="space-y-4 pt-0">
                       <p className="text-sm text-muted-foreground">
-                        Based on your site analysis, here are 3 personalized design styles. Select one to generate your complete garden.
+                        Choose from our curated collection of garden styles. Your tier determines which styles you can generate.
                       </p>
-                      <div className="space-y-3">
-                        {generatedStyles.map((style, index) => (
-                          <Card key={index} className="cursor-pointer hover:border-purple-500 transition-colors"
-                            onClick={() => form.setValue("selectedStyle", style.styleCategory)}>
-                            <CardHeader className="py-2">
-                              <div className="flex justify-between items-start">
-                                <CardTitle className="text-sm">{style.styleName}</CardTitle>
-                                <Badge>Match: {style.suitabilityScore}/10</Badge>
-                              </div>
-                            </CardHeader>
-                            <CardContent className="space-y-2 pt-0">
-                              <p className="text-xs">{style.description}</p>
-                              <div className="flex flex-wrap gap-1">
-                                {style.keyFeatures.slice(0, 3).map((feature: string, i: number) => (
-                                  <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
-                                ))}
-                              </div>
-                              <Button 
-                                type="button"
-                                variant={form.watch("selectedStyle") === style.styleCategory ? "default" : "outline"}
-                                className="w-full mt-2"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  form.setValue("selectedStyle", style.styleCategory);
-                                }}
-                                data-testid={`select-style-${index}`}
+                      
+                      {/* Core Garden Styles */}
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-semibold">Popular Garden Styles</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {CORE_GARDEN_STYLES.map((styleKey) => {
+                            const style = GARDEN_STYLES[styleKey];
+                            const usedCount = designHistory?.filter((h: any) => h.styleId === style.id).length || 0;
+                            const isLocked = user?.userTier === 'free' && (designHistory?.length || 0) >= 1;
+                            const isIterationLocked = user?.userTier === 'pay_per_design' && usedCount >= 1;
+                            const canUse = user?.userTier === 'premium' || (!isLocked && !isIterationLocked);
+                            
+                            return (
+                              <Card 
+                                key={style.id} 
+                                className={`cursor-pointer transition-colors ${
+                                  canUse ? 'hover:border-purple-500' : 'opacity-60 cursor-not-allowed'
+                                } ${selectedGardenStyle === style.id ? 'border-purple-500 bg-purple-50' : ''}`}
+                                onClick={() => canUse && setSelectedGardenStyle(style.id)}>
+                                <CardHeader className="py-2">
+                                  <div className="flex justify-between items-start">
+                                    <CardTitle className="text-sm">{style.name}</CardTitle>
+                                    {!canUse && (
+                                      <Lock className="w-4 h-4 text-gray-400" />
+                                    )}
+                                  </div>
+                                </CardHeader>
+                                <CardContent className="space-y-2 pt-0">
+                                  <p className="text-xs line-clamp-2">{style.description}</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {style.signaturePlants.slice(0, 3).map((plant: string, i: number) => (
+                                      <Badge key={i} variant="outline" className="text-xs">{plant}</Badge>
+                                    ))}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Maintenance: {style.maintenanceLevel}
+                                  </div>
+                                  {canUse ? (
+                                    <Button 
+                                      type="button"
+                                      variant={selectedGardenStyle === style.id ? "default" : "outline"}
+                                      className="w-full mt-2"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedGardenStyle(style.id);
+                                      }}
+                                      data-testid={`select-style-${style.id}`}
+                                    >
+                                      {selectedGardenStyle === style.id ? "Selected" : "Select This Style"}
+                                    </Button>
+                                  ) : (
+                                    <div className="text-xs text-center mt-2 text-muted-foreground">
+                                      {user?.userTier === 'free' ? 'Upgrade to access' : 'Already used once'}
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      {/* Additional Garden Styles */}
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-semibold flex items-center gap-2">
+                          Specialty Garden Styles
+                          <Badge variant="outline" className="text-xs">
+                            {user?.userTier === 'premium' ? 'Available' : 'Premium'}
+                          </Badge>
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {ADDITIONAL_GARDEN_STYLES.map((styleKey) => {
+                            const style = GARDEN_STYLES[styleKey];
+                            const usedCount = designHistory?.filter((h: any) => h.styleId === style.id).length || 0;
+                            const canUse = user?.userTier === 'premium';
+                            
+                            return (
+                              <Card 
+                                key={style.id} 
+                                className={`cursor-pointer transition-colors ${
+                                  canUse ? 'hover:border-purple-500' : 'opacity-60 cursor-not-allowed'
+                                } ${selectedGardenStyle === style.id ? 'border-purple-500 bg-purple-50' : ''}`}
+                                onClick={() => canUse && setSelectedGardenStyle(style.id)}
                               >
-                                {form.watch("selectedStyle") === style.styleCategory ? "Selected" : "Select This Style"}
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ))}
+                                <CardHeader className="py-2">
+                                  <div className="flex justify-between items-start">
+                                    <CardTitle className="text-sm">{style.name}</CardTitle>
+                                    {!canUse && (
+                                      <Crown className="w-4 h-4 text-amber-500" />
+                                    )}
+                                  </div>
+                                </CardHeader>
+                                <CardContent className="space-y-2 pt-0">
+                                  <p className="text-xs line-clamp-2">{style.description}</p>
+                                  <div className="text-xs text-muted-foreground">
+                                    Maintenance: {style.maintenanceLevel}
+                                  </div>
+                                  {canUse ? (
+                                    <Button 
+                                      type="button"
+                                      variant={selectedGardenStyle === style.id ? "default" : "outline"}
+                                      className="w-full mt-2"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedGardenStyle(style.id);
+                                      }}
+                                      data-testid={`select-style-${style.id}`}
+                                    >
+                                      {selectedGardenStyle === style.id ? "Selected" : "Select This Style"}
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className="w-full mt-2"
+                                      size="sm"
+                                      disabled
+                                    >
+                                      <Crown className="w-3 h-3 mr-1" />
+                                      Premium Only
+                                    </Button>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 )}
 
                 {/* Basic Safety Preferences for AI approach */}
-                {form.watch("design_approach") === "ai" && form.watch("selectedStyle") && (
+                {form.watch("design_approach") === "ai" && selectedGardenStyle && (
                   <Card className="border-2 border-[#004025] shadow-sm" data-testid="safety-preferences">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base">Safety Preferences</CardTitle>
@@ -1223,12 +1338,10 @@ export default function GardenProperties() {
                         onClick={async () => {
                           setIsGeneratingDesign(true);
                           try {
-                            const selectedStyleData = generatedStyles.find(
-                              style => style.styleCategory === form.watch("selectedStyle")
-                            );
+                            const selectedStyle = GARDEN_STYLES[selectedGardenStyle as keyof typeof GARDEN_STYLES];
                             
                             const response = await apiRequest('POST', '/api/generate-complete-design', {
-                              selectedStyle: selectedStyleData,
+                              selectedStyle: selectedStyle,
                               gardenData: form.getValues(),
                               safetyPreferences: {
                                 petSafe: form.watch("preferences.petSafe"),
