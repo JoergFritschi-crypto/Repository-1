@@ -154,9 +154,11 @@ export default function GardenSketch({
       case 'triangle':
         const triWidth = (dimensions.base || 4) * 20 * scale;
         const triHeight = (dimensions.height || 3) * 20 * scale;
-        return `M ${centerX} ${centerY - triHeight/2} 
-                L ${centerX - triWidth/2} ${centerY + triHeight/2} 
-                L ${centerX + triWidth/2} ${centerY + triHeight/2} z`;
+        // Center triangle based on its centroid (1/3 from base)
+        const triOffsetY = triHeight / 6; // Shift up to center the visual weight
+        return `M ${centerX} ${centerY - triHeight/2 - triOffsetY} 
+                L ${centerX - triWidth/2} ${centerY + triHeight/2 - triOffsetY} 
+                L ${centerX + triWidth/2} ${centerY + triHeight/2 - triOffsetY} z`;
       
       case 'l_shaped':
         const lMainWidth = (dimensions.mainWidth || 20) * 20 * scale;
