@@ -159,6 +159,7 @@ export default function GardenProperties() {
   const watchedCountry = form.watch("country");
   const watchedLocation = form.watch("location");
   const watchedCity = form.watch("city");
+  const watchedDesignApproach = form.watch("design_approach");
 
   const nextStep = () => {
     setCurrentStep(prev => Math.min(prev + 1, 5));
@@ -947,7 +948,8 @@ export default function GardenProperties() {
                 </Card>
 
                 {/* Show AI Style Preview if AI approach is chosen */}
-                {form.watch("design_approach") === "ai" && (
+                {console.log('Design approach:', watchedDesignApproach)}
+                {watchedDesignApproach === "ai" && (
                   <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
@@ -996,7 +998,7 @@ export default function GardenProperties() {
                 )}
 
                 {/* Show Plant Preferences if Manual approach is chosen */}
-                {form.watch("design_approach") === "manual" && (
+                {watchedDesignApproach === "manual" && (
                   <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-plant-preferences">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base">Plant Preferences</CardTitle>
