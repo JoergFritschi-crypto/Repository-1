@@ -255,7 +255,7 @@ export default function PhotoUpload({
   return (
     <div className="space-y-3">
       <Card className="border-2 border-[#004025] shadow-sm" data-testid="photo-upload">
-        <CardHeader className="py-3">
+        <CardHeader className="py-3 flower-band-formal rounded-t-lg">
           <CardTitle className="text-base flex items-center gap-2">
             <Camera className="w-4 h-4" />
             Site Photos
