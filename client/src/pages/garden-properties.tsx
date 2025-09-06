@@ -218,7 +218,9 @@ export default function GardenProperties() {
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2 flower-band-green rounded-lg px-6 py-3">Garden Design Studio</h1>
+          <div className="mb-2 flower-band-green rounded-lg px-6 py-4">
+            <h1 className="text-2xl md:text-3xl font-bold">Garden Design Studio</h1>
+          </div>
           <p className="text-sm md:text-base text-gray-600">Create your personalized garden with AI assistance</p>
         </div>
 

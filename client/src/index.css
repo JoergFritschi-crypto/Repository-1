@@ -511,11 +511,19 @@
   /* Photorealistic flower band - Spring yellow theme */
   .flower-band {
     position: relative;
+    overflow: hidden;
+  }
+  
+  .flower-band::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image: url('/src/assets/generated_images/Spring_garden_flower_band_522a172c.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    overflow: hidden;
+    filter: brightness(1.15) saturate(1.3);
+    z-index: 0;
   }
   
   .flower-band::before {
@@ -523,27 +531,37 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.5) 0%, 
-      rgba(0, 0, 0, 0.6) 50%, 
-      rgba(0, 0, 0, 0.5) 100%);
+      rgba(0, 0, 0, 0.15) 0%, 
+      rgba(0, 0, 0, 0.2) 50%, 
+      rgba(0, 0, 0, 0.15) 100%);
+    z-index: 1;
     pointer-events: none;
   }
   
   .flower-band > * {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     color: white;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    font-weight: 600;
   }
   
   /* Photorealistic flower band - Green garden theme */
   .flower-band-green {
     position: relative;
+    overflow: hidden;
+  }
+  
+  .flower-band-green::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image: url('/src/assets/generated_images/Green_garden_foliage_band_766b4b0d.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    overflow: hidden;
+    filter: brightness(1.15) saturate(1.3);
+    z-index: 0;
   }
   
   .flower-band-green::before {
@@ -551,27 +569,37 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.5) 0%, 
-      rgba(0, 0, 0, 0.6) 50%, 
-      rgba(0, 0, 0, 0.5) 100%);
+      rgba(0, 0, 0, 0.15) 0%, 
+      rgba(0, 0, 0, 0.2) 50%, 
+      rgba(0, 0, 0, 0.15) 100%);
+    z-index: 1;
     pointer-events: none;
   }
   
   .flower-band-green > * {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     color: white;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    font-weight: 600;
   }
   
   /* Photorealistic flower band - Summer cottage garden theme */
   .flower-band-purple {
     position: relative;
+    overflow: hidden;
+  }
+  
+  .flower-band-purple::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image: url('/src/assets/generated_images/Summer_cottage_garden_band_65ffffb0.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    overflow: hidden;
+    filter: brightness(1.15) saturate(1.3);
+    z-index: 0;
   }
   
   .flower-band-purple::before {
@@ -579,27 +607,37 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.5) 0%, 
-      rgba(0, 0, 0, 0.6) 50%, 
-      rgba(0, 0, 0, 0.5) 100%);
+      rgba(0, 0, 0, 0.15) 0%, 
+      rgba(0, 0, 0, 0.2) 50%, 
+      rgba(0, 0, 0, 0.15) 100%);
+    z-index: 1;
     pointer-events: none;
   }
   
   .flower-band-purple > * {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     color: white;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    font-weight: 600;
   }
   
   /* Photorealistic flower band - Autumn garden theme */
   .flower-band-sunset {
     position: relative;
+    overflow: hidden;
+  }
+  
+  .flower-band-sunset::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image: url('/src/assets/generated_images/Autumn_garden_flower_band_80bfeb10.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    overflow: hidden;
+    filter: brightness(1.15) saturate(1.3);
+    z-index: 0;
   }
   
   .flower-band-sunset::before {
@@ -607,17 +645,19 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.5) 0%, 
-      rgba(0, 0, 0, 0.6) 50%, 
-      rgba(0, 0, 0, 0.5) 100%);
+      rgba(0, 0, 0, 0.15) 0%, 
+      rgba(0, 0, 0, 0.2) 50%, 
+      rgba(0, 0, 0, 0.15) 100%);
+    z-index: 1;
     pointer-events: none;
   }
   
   .flower-band-sunset > * {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     color: white;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    font-weight: 600;
   }
   
   @keyframes subtle-shift {
