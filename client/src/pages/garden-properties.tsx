@@ -162,9 +162,6 @@ export default function GardenProperties() {
   const watchedCity = form.watch("city");
   const watchedDesignApproach = form.watch("design_approach");
   
-  // Debug logging
-  console.log("watchedDesignApproach:", watchedDesignApproach);
-  
   // Watch values for GardenSketch to prevent re-render loops
   const watchedShape = form.watch("shape");
   const watchedDimensions = form.watch("dimensions") || {};
@@ -1019,7 +1016,6 @@ export default function GardenProperties() {
                             <RadioGroup
                               value={localDesignApproach || field.value || ""}
                               onValueChange={(value) => {
-                                console.log("RadioGroup onChange called with value:", value);
                                 const typedValue = value as "ai" | "manual";
                                 setLocalDesignApproach(typedValue);
                                 field.onChange(typedValue);
@@ -1059,7 +1055,6 @@ export default function GardenProperties() {
                 </Card>
 
                 {/* Show AI Style Preview if AI approach is chosen */}
-                {console.log("Rendering AI section check:", localDesignApproach === "ai", "localDesignApproach:", localDesignApproach, "watchedDesignApproach:", watchedDesignApproach)}
                 {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
                   <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
                     <CardHeader className="py-3">
