@@ -143,6 +143,7 @@ export default function GardenProperties() {
       dimensions: {},
       slopeDirection: 'N',
       slopePercentage: 0,
+      design_approach: undefined,
       preferences: {
         petSafe: false,
         childSafe: false,
