@@ -128,7 +128,7 @@ export default function Home() {
           {/* Recent Gardens */}
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4 flower-band-sunset rounded-t-lg">
+              <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4">
                 <CardTitle className="text-base" data-testid="text-recent-gardens-title">Recent Garden Designs</CardTitle>
                 <Button size="sm" asChild data-testid="button-new-garden">
                   <Link href="/garden-properties">
@@ -193,7 +193,7 @@ export default function Home() {
           <div className="space-y-4">
             {/* Quick Actions */}
             <Card>
-              <CardHeader className="pb-3 pt-4 flower-band-purple rounded-t-lg">
+              <CardHeader className="pb-3 pt-4">
                 <CardTitle className="text-base" data-testid="text-quick-actions-title">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -220,7 +220,7 @@ export default function Home() {
 
             {/* Plant Collection Preview */}
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4 flower-band-green rounded-t-lg">
+              <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4">
                 <CardTitle className="text-base" data-testid="text-collection-title">My Plant Collection</CardTitle>
                 <Button variant="ghost" size="sm" asChild data-testid="button-view-all-plants">
                   <Link href="/plant-library?tab=collection">View All</Link>

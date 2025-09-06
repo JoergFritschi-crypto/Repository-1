@@ -511,93 +511,41 @@
   /* Photorealistic flower band - Spring yellow theme */
   .flower-band {
     position: relative;
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3)),
-      url('/src/assets/generated_images/Spring_garden_flower_band_522a172c.png');
-    background-size: 100% 100%, cover;
+    background-image: url('/src/assets/generated_images/Spring_garden_flower_band_522a172c.png');
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     overflow: hidden;
-  }
-  
-  .flower-band::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, 
-      rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.2) 50%, 
-      rgba(255, 255, 255, 0) 100%);
-    pointer-events: none;
   }
   
   /* Photorealistic flower band - Green garden theme */
   .flower-band-green {
     position: relative;
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3)),
-      url('/src/assets/generated_images/Green_garden_foliage_band_766b4b0d.png');
-    background-size: 100% 100%, cover;
+    background-image: url('/src/assets/generated_images/Green_garden_foliage_band_766b4b0d.png');
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     overflow: hidden;
-  }
-  
-  .flower-band-green::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, 
-      rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.2) 50%, 
-      rgba(255, 255, 255, 0) 100%);
-    pointer-events: none;
   }
   
   /* Photorealistic flower band - Summer cottage garden theme */
   .flower-band-purple {
     position: relative;
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3)),
-      url('/src/assets/generated_images/Summer_cottage_garden_band_65ffffb0.png');
-    background-size: 100% 100%, cover;
+    background-image: url('/src/assets/generated_images/Summer_cottage_garden_band_65ffffb0.png');
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     overflow: hidden;
-  }
-  
-  .flower-band-purple::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, 
-      rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.2) 50%, 
-      rgba(255, 255, 255, 0) 100%);
-    pointer-events: none;
   }
   
   /* Photorealistic flower band - Autumn garden theme */
   .flower-band-sunset {
     position: relative;
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3)),
-      url('/src/assets/generated_images/Autumn_garden_flower_band_80bfeb10.png');
-    background-size: 100% 100%, cover;
+    background-image: url('/src/assets/generated_images/Autumn_garden_flower_band_80bfeb10.png');
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     overflow: hidden;
-  }
-  
-  .flower-band-sunset::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, 
-      rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.2) 50%, 
-      rgba(255, 255, 255, 0) 100%);
-    pointer-events: none;
   }
   
   @keyframes subtle-shift {
