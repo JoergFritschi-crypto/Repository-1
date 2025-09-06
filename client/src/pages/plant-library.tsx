@@ -264,7 +264,7 @@ export default function PlantLibrary() {
           {/* My Collection Tab */}
           <TabsContent value="collection" className="mt-8">
             <Card>
-              <CardHeader className="py-5 flower-band-green rounded-t-lg">
+              <CardHeader className="py-7 flower-band-green rounded-t-lg">
                 <CardTitle>My Plant Collection</CardTitle>
               </CardHeader>
               <CardContent>
