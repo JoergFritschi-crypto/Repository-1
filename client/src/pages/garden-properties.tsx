@@ -125,6 +125,7 @@ export default function GardenProperties() {
   const [completeDesign, setCompleteDesign] = useState<any>(null);
   const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
   const [selectedGardenStyle, setSelectedGardenStyle] = useState<string | null>(null);
+  const [localDesignApproach, setLocalDesignApproach] = useState<"ai" | "manual" | undefined>(undefined);
   const [, setLocation] = useLocation();
   
   // Get user data and design generation history
@@ -160,6 +161,9 @@ export default function GardenProperties() {
   const watchedLocation = form.watch("location");
   const watchedCity = form.watch("city");
   const watchedDesignApproach = form.watch("design_approach");
+  
+  // Debug logging
+  console.log("watchedDesignApproach:", watchedDesignApproach);
   
   // Watch values for GardenSketch to prevent re-render loops
   const watchedShape = form.watch("shape");
@@ -1013,11 +1017,14 @@ export default function GardenProperties() {
                           <FormLabel>How would you like to design your garden?</FormLabel>
                           <FormControl>
                             <RadioGroup
+                              value={localDesignApproach || field.value || ""}
                               onValueChange={(value) => {
-                                field.onChange(value);
-                                form.setValue("design_approach", value);
+                                console.log("RadioGroup onChange called with value:", value);
+                                const typedValue = value as "ai" | "manual";
+                                setLocalDesignApproach(typedValue);
+                                field.onChange(typedValue);
+                                form.setValue("design_approach", typedValue);
                               }}
-                              value={field.value || ""}
                               className="space-y-3"
                             >
                               <div className="flex items-start space-x-3">
@@ -1052,7 +1059,8 @@ export default function GardenProperties() {
                 </Card>
 
                 {/* Show AI Style Preview if AI approach is chosen */}
-                {watchedDesignApproach === "ai" && (
+                {console.log("Rendering AI section check:", localDesignApproach === "ai", "localDesignApproach:", localDesignApproach, "watchedDesignApproach:", watchedDesignApproach)}
+                {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
                   <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
@@ -1101,7 +1109,7 @@ export default function GardenProperties() {
                 )}
 
                 {/* Show Plant Preferences if Manual approach is chosen */}
-                {watchedDesignApproach === "manual" && (
+                {(localDesignApproach === "manual" || watchedDesignApproach === "manual") && (
                   <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-plant-preferences">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base">Plant Preferences</CardTitle>
