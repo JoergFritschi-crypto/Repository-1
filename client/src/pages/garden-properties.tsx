@@ -36,7 +36,7 @@ const gardenSchema = z.object({
   rhsZone: z.string().optional(),
   shape: z.enum(['rectangle', 'square', 'circle', 'oval', 'triangle', 'l_shaped', 'r_shaped']),
   dimensions: z.record(z.number()).default({}),
-  units: z.enum(['feet', 'meters']).default('feet'),
+  units: z.enum(['feet', 'meters']),
   sunExposure: z.enum(['full_sun', 'partial_shade', 'full_shade', 'varied']).optional(),
   slopeDirection: z.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']).default('N'),
   slopePercentage: z.number().min(0).max(100).default(0),
@@ -139,7 +139,7 @@ export default function GardenProperties() {
     defaultValues: {
       name: '',
       shape: 'rectangle',
-      units: 'feet',
+      units: undefined, // User MUST choose units
       dimensions: {},
       slopeDirection: 'N',
       slopePercentage: 0,
@@ -780,21 +780,21 @@ export default function GardenProperties() {
                         </div>
                       )}
 
-                      {['triangle', 'l_shaped', 'r_shaped'].includes(watchedShape) && (
+                      {watchedShape === 'triangle' && (
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
-                            name="dimensions.approximateLength"
+                            name="dimensions.base"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Approx. Length ({watchedUnits})</FormLabel>
+                                <FormLabel>Base ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
                                     placeholder="20" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    data-testid="input-dimension-approx-length"
+                                    data-testid="input-dimension-base"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -803,23 +803,111 @@ export default function GardenProperties() {
                           />
                           <FormField
                             control={form.control}
-                            name="dimensions.approximateWidth"
+                            name="dimensions.height"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Approx. Width ({watchedUnits})</FormLabel>
+                                <FormLabel>Height ({watchedUnits})</FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
                                     placeholder="15" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    data-testid="input-dimension-approx-width"
+                                    data-testid="input-dimension-height"
                                   />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
+                        </div>
+                      )}
+
+                      {['l_shaped', 'r_shaped'].includes(watchedShape) && (
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Define the main body and the cutout dimensions
+                          </p>
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            <FormField
+                              control={form.control}
+                              name="dimensions.mainLength"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Main Length ({watchedUnits})</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="30" 
+                                      {...field} 
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                      data-testid="input-dimension-main-length"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="dimensions.mainWidth"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Main Width ({watchedUnits})</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="20" 
+                                      {...field} 
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                      data-testid="input-dimension-main-width"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="dimensions.cutoutLength"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cutout Length ({watchedUnits})</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="15" 
+                                      {...field} 
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                      data-testid="input-dimension-cutout-length"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="dimensions.cutoutWidth"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cutout Width ({watchedUnits})</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="10" 
+                                      {...field} 
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                      data-testid="input-dimension-cutout-width"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
                       )}
                     </div>

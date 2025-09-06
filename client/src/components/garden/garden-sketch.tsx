@@ -103,12 +103,13 @@ export default function GardenSketch({
         largestDimension = (dimensions.radius || 5) * 2;
         break;
       case 'triangle':
-        largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3);
+        largestDimension = Math.max(dimensions.base || 4, dimensions.height || 3);
         break;
       case 'l_shaped':
       case 'r_shaped':
-        // L-shaped needs more space due to its complex shape
-        largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3) * 1.2;
+        // L-shaped and R-shaped need more space due to their complex shape
+        const mainSize = Math.max(dimensions.mainLength || 30, dimensions.mainWidth || 20);
+        largestDimension = mainSize * 1.2;
         break;
       default:
         largestDimension = Math.max(dimensions.width || 4, dimensions.length || 3);
@@ -151,29 +152,33 @@ export default function GardenSketch({
                 A ${ovalWidth/2} ${ovalHeight/2} 0 1 1 ${centerX - ovalWidth/2} ${centerY}`;
       
       case 'triangle':
-        const triWidth = (dimensions.width || 4) * 20 * scale;
-        const triHeight = (dimensions.length || 3) * 20 * scale;
+        const triWidth = (dimensions.base || 4) * 20 * scale;
+        const triHeight = (dimensions.height || 3) * 20 * scale;
         return `M ${centerX} ${centerY - triHeight/2} 
                 L ${centerX - triWidth/2} ${centerY + triHeight/2} 
                 L ${centerX + triWidth/2} ${centerY + triHeight/2} z`;
       
       case 'l_shaped':
-        const lWidth = (dimensions.width || 4) * 20 * scale;
-        const lHeight = (dimensions.length || 3) * 20 * scale;
+        const lMainWidth = (dimensions.mainWidth || 20) * 20 * scale;
+        const lMainLength = (dimensions.mainLength || 30) * 20 * scale;
+        const lCutoutWidth = (dimensions.cutoutWidth || 10) * 20 * scale;
+        const lCutoutLength = (dimensions.cutoutLength || 15) * 20 * scale;
         // L-shape with bottom-right corner cut
-        return `M ${centerX - lWidth/2} ${centerY - lHeight/2}
-                h ${lWidth} v ${lHeight * 0.4}
-                h ${-lWidth * 0.5} v ${lHeight * 0.6}
-                h ${-lWidth * 0.5} z`;
+        return `M ${centerX - lMainWidth/2} ${centerY - lMainLength/2}
+                h ${lMainWidth} v ${lMainLength - lCutoutLength}
+                h ${-lCutoutWidth} v ${lCutoutLength}
+                h ${-(lMainWidth - lCutoutWidth)} z`;
       
       case 'r_shaped':
-        const rWidth = (dimensions.width || 4) * 20 * scale;
-        const rHeight = (dimensions.length || 3) * 20 * scale;
+        const rMainWidth = (dimensions.mainWidth || 20) * 20 * scale;
+        const rMainLength = (dimensions.mainLength || 30) * 20 * scale;
+        const rCutoutWidth = (dimensions.cutoutWidth || 10) * 20 * scale;
+        const rCutoutLength = (dimensions.cutoutLength || 15) * 20 * scale;
         // R-shape (mirrored L-shape with bottom-left corner cut)
-        return `M ${centerX - rWidth/2} ${centerY - rHeight/2}
-                h ${rWidth} v ${rHeight}
-                h ${-rWidth * 0.5} v ${-rHeight * 0.6}
-                h ${-rWidth * 0.5} z`;
+        return `M ${centerX - rMainWidth/2} ${centerY - rMainLength/2}
+                h ${rMainWidth} v ${rMainLength}
+                h ${-(rMainWidth - rCutoutWidth)} v ${-rCutoutLength}
+                h ${-rCutoutWidth} z`;
       
       default:
         // Default to rectangle for any unknown shape
