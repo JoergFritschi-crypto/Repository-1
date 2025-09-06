@@ -948,7 +948,6 @@ export default function GardenProperties() {
                 </Card>
 
                 {/* Show AI Style Preview if AI approach is chosen */}
-                {console.log('Design approach:', watchedDesignApproach)}
                 {watchedDesignApproach === "ai" && (
                   <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
                     <CardHeader className="py-3">
@@ -1137,7 +1136,7 @@ export default function GardenProperties() {
             {currentStep === 4 && (
               <div className="space-y-3">
                 {/* Show Garden Styles if AI approach was chosen */}
-                {form.watch("design_approach") === "ai" && !selectedGardenStyle && (
+                {watchedDesignApproach === "ai" && !selectedGardenStyle && (
                   <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-styles">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
@@ -1291,7 +1290,7 @@ export default function GardenProperties() {
                 )}
 
                 {/* Basic Safety Preferences for AI approach */}
-                {form.watch("design_approach") === "ai" && selectedGardenStyle && (
+                {watchedDesignApproach === "ai" && selectedGardenStyle && (
                   <Card className="border-2 border-[#004025] shadow-sm" data-testid="safety-preferences">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base">Safety Preferences</CardTitle>
@@ -1477,7 +1476,7 @@ export default function GardenProperties() {
                       <p><strong>Location:</strong> {form.watch("city") || form.watch("location") || "Not set"}</p>
                       <p><strong>Shape:</strong> {form.watch("shape") || "Rectangle"}</p>
                       <p><strong>Sun Exposure:</strong> {form.watch("sunExposure")?.replace("_", " ") || "Not set"}</p>
-                      <p><strong>Design Approach:</strong> {form.watch("design_approach")?.toUpperCase() || "Not set"}</p>
+                      <p><strong>Design Approach:</strong> {watchedDesignApproach?.toUpperCase() || "Not set"}</p>
                       {form.watch("selectedStyle") && (
                         <p><strong>Selected Style:</strong> {form.watch("selectedStyle")}</p>
                       )}
