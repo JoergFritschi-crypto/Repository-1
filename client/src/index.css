@@ -512,13 +512,13 @@
   .flower-band {
     position: relative;
     background: linear-gradient(90deg, 
-      hsl(51, 100%, 57%, 0.6) 0%,
-      hsl(45, 100%, 50%, 0.7) 25%,
-      hsl(43, 95%, 55%, 0.65) 50%,
-      hsl(48, 100%, 52%, 0.7) 75%,
-      hsl(51, 100%, 57%, 0.6) 100%);
-    background-size: 200% 100%;
-    animation: subtle-shift 20s ease-in-out infinite;
+      hsl(51, 100%, 90%, 0.8) 0%,
+      hsl(45, 100%, 92%, 0.7) 25%,
+      hsl(43, 95%, 93%, 0.8) 50%,
+      hsl(48, 100%, 91%, 0.7) 75%,
+      hsl(51, 100%, 90%, 0.8) 100%);
+    background-size: 300% 100%;
+    animation: subtle-shift 30s ease-in-out infinite;
   }
   
   .flower-band::before {
@@ -526,11 +526,16 @@
     position: absolute;
     inset: 0;
     background-image: 
-      radial-gradient(circle at 20% 50%, hsl(51, 100%, 57%, 0.8) 0%, transparent 35%),
-      radial-gradient(circle at 40% 30%, hsl(45, 100%, 50%, 0.7) 0%, transparent 30%),
-      radial-gradient(circle at 60% 70%, hsl(43, 95%, 55%, 0.7) 0%, transparent 30%),
-      radial-gradient(circle at 80% 40%, hsl(48, 100%, 52%, 0.8) 0%, transparent 35%);
-    background-size: 150px 100%;
+      radial-gradient(circle at 20% 50%, hsl(51, 100%, 57%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 40% 30%, hsl(45, 100%, 50%, 0.1) 6px, transparent 7px),
+      radial-gradient(circle at 60% 70%, hsl(43, 95%, 55%, 0.11) 7px, transparent 8px),
+      radial-gradient(circle at 80% 40%, hsl(48, 100%, 52%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 10% 60%, hsl(51, 100%, 60%, 0.08) 5px, transparent 6px),
+      radial-gradient(circle at 30% 80%, hsl(45, 95%, 58%, 0.09) 6px, transparent 7px),
+      radial-gradient(circle at 50% 20%, hsl(48, 100%, 55%, 0.1) 5px, transparent 6px),
+      radial-gradient(circle at 70% 50%, hsl(43, 100%, 57%, 0.08) 7px, transparent 8px),
+      radial-gradient(circle at 90% 70%, hsl(51, 95%, 59%, 0.09) 6px, transparent 7px);
+    background-size: 200px 100%;
     background-repeat: repeat-x;
     pointer-events: none;
   }
@@ -539,13 +544,13 @@
   .flower-band-green {
     position: relative;
     background: linear-gradient(90deg, 
-      hsl(131, 69%, 41%, 0.5) 0%,
-      hsl(145, 56%, 26%, 0.6) 25%,
-      hsl(155, 100%, 20%, 0.55) 50%,
-      hsl(140, 60%, 30%, 0.6) 75%,
-      hsl(131, 69%, 41%, 0.5) 100%);
-    background-size: 200% 100%;
-    animation: subtle-shift 25s ease-in-out infinite;
+      hsl(131, 40%, 92%, 0.8) 0%,
+      hsl(145, 35%, 90%, 0.7) 25%,
+      hsl(155, 45%, 91%, 0.8) 50%,
+      hsl(140, 38%, 93%, 0.7) 75%,
+      hsl(131, 40%, 92%, 0.8) 100%);
+    background-size: 300% 100%;
+    animation: subtle-shift 35s ease-in-out infinite;
   }
   
   .flower-band-green::before {
@@ -553,11 +558,16 @@
     position: absolute;
     inset: 0;
     background-image: 
-      radial-gradient(circle at 15% 50%, hsl(131, 69%, 41%, 0.7) 0%, transparent 35%),
-      radial-gradient(circle at 35% 70%, hsl(145, 56%, 26%, 0.6) 0%, transparent 30%),
-      radial-gradient(circle at 65% 30%, hsl(155, 100%, 20%, 0.6) 0%, transparent 30%),
-      radial-gradient(circle at 85% 60%, hsl(140, 60%, 30%, 0.7) 0%, transparent 35%);
-    background-size: 180px 100%;
+      radial-gradient(circle at 15% 50%, hsl(131, 69%, 41%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 35% 70%, hsl(145, 56%, 26%, 0.1) 6px, transparent 7px),
+      radial-gradient(circle at 65% 30%, hsl(155, 100%, 20%, 0.11) 7px, transparent 8px),
+      radial-gradient(circle at 85% 60%, hsl(140, 60%, 30%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 25% 25%, hsl(135, 65%, 35%, 0.08) 5px, transparent 6px),
+      radial-gradient(circle at 45% 85%, hsl(150, 55%, 28%, 0.09) 6px, transparent 7px),
+      radial-gradient(circle at 55% 15%, hsl(145, 70%, 32%, 0.1) 5px, transparent 6px),
+      radial-gradient(circle at 75% 45%, hsl(138, 60%, 38%, 0.08) 7px, transparent 8px),
+      radial-gradient(circle at 95% 75%, hsl(142, 58%, 36%, 0.09) 6px, transparent 7px);
+    background-size: 220px 100%;
     background-repeat: repeat-x;
     pointer-events: none;
   }
@@ -566,13 +576,13 @@
   .flower-band-purple {
     position: relative;
     background: linear-gradient(90deg, 
-      hsl(280, 60%, 65%, 0.5) 0%,
-      hsl(300, 50%, 70%, 0.6) 25%,
-      hsl(320, 55%, 68%, 0.55) 50%,
-      hsl(290, 58%, 66%, 0.6) 75%,
-      hsl(280, 60%, 65%, 0.5) 100%);
-    background-size: 200% 100%;
-    animation: subtle-shift 18s ease-in-out infinite;
+      hsl(280, 30%, 94%, 0.8) 0%,
+      hsl(300, 25%, 93%, 0.7) 25%,
+      hsl(320, 28%, 92%, 0.8) 50%,
+      hsl(290, 30%, 94%, 0.7) 75%,
+      hsl(280, 30%, 94%, 0.8) 100%);
+    background-size: 300% 100%;
+    animation: subtle-shift 28s ease-in-out infinite;
   }
   
   .flower-band-purple::before {
@@ -580,11 +590,16 @@
     position: absolute;
     inset: 0;
     background-image: 
-      radial-gradient(circle at 25% 40%, hsl(280, 60%, 65%, 0.7) 0%, transparent 35%),
-      radial-gradient(circle at 45% 60%, hsl(300, 50%, 70%, 0.6) 0%, transparent 30%),
-      radial-gradient(circle at 70% 35%, hsl(320, 55%, 68%, 0.6) 0%, transparent 30%),
-      radial-gradient(circle at 90% 55%, hsl(290, 58%, 66%, 0.7) 0%, transparent 35%);
-    background-size: 160px 100%;
+      radial-gradient(circle at 25% 40%, hsl(280, 60%, 65%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 45% 60%, hsl(300, 50%, 70%, 0.1) 6px, transparent 7px),
+      radial-gradient(circle at 70% 35%, hsl(320, 55%, 68%, 0.11) 7px, transparent 8px),
+      radial-gradient(circle at 90% 55%, hsl(290, 58%, 66%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 15% 20%, hsl(285, 55%, 62%, 0.08) 5px, transparent 6px),
+      radial-gradient(circle at 35% 75%, hsl(305, 48%, 72%, 0.09) 6px, transparent 7px),
+      radial-gradient(circle at 60% 10%, hsl(310, 52%, 69%, 0.1) 5px, transparent 6px),
+      radial-gradient(circle at 80% 65%, hsl(295, 56%, 67%, 0.08) 7px, transparent 8px),
+      radial-gradient(circle at 95% 30%, hsl(275, 58%, 64%, 0.09) 6px, transparent 7px);
+    background-size: 190px 100%;
     background-repeat: repeat-x;
     pointer-events: none;
   }
@@ -593,13 +608,13 @@
   .flower-band-sunset {
     position: relative;
     background: linear-gradient(90deg, 
-      hsl(20, 80%, 60%, 0.5) 0%,
-      hsl(35, 75%, 55%, 0.6) 25%,
-      hsl(15, 85%, 58%, 0.55) 50%,
-      hsl(30, 78%, 57%, 0.6) 75%,
-      hsl(20, 80%, 60%, 0.5) 100%);
-    background-size: 200% 100%;
-    animation: subtle-shift 22s ease-in-out infinite;
+      hsl(20, 40%, 94%, 0.8) 0%,
+      hsl(35, 38%, 92%, 0.7) 25%,
+      hsl(15, 42%, 93%, 0.8) 50%,
+      hsl(30, 39%, 91%, 0.7) 75%,
+      hsl(20, 40%, 94%, 0.8) 100%);
+    background-size: 300% 100%;
+    animation: subtle-shift 32s ease-in-out infinite;
   }
   
   .flower-band-sunset::before {
@@ -607,11 +622,16 @@
     position: absolute;
     inset: 0;
     background-image: 
-      radial-gradient(circle at 18% 45%, hsl(20, 80%, 60%, 0.7) 0%, transparent 35%),
-      radial-gradient(circle at 42% 65%, hsl(35, 75%, 55%, 0.6) 0%, transparent 30%),
-      radial-gradient(circle at 68% 40%, hsl(15, 85%, 58%, 0.6) 0%, transparent 30%),
-      radial-gradient(circle at 88% 50%, hsl(30, 78%, 57%, 0.7) 0%, transparent 35%);
-    background-size: 170px 100%;
+      radial-gradient(circle at 18% 45%, hsl(20, 80%, 60%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 42% 65%, hsl(35, 75%, 55%, 0.1) 6px, transparent 7px),
+      radial-gradient(circle at 68% 40%, hsl(15, 85%, 58%, 0.11) 7px, transparent 8px),
+      radial-gradient(circle at 88% 50%, hsl(30, 78%, 57%, 0.12) 8px, transparent 9px),
+      radial-gradient(circle at 12% 70%, hsl(25, 82%, 62%, 0.08) 5px, transparent 6px),
+      radial-gradient(circle at 32% 20%, hsl(28, 77%, 56%, 0.09) 6px, transparent 7px),
+      radial-gradient(circle at 58% 85%, hsl(18, 83%, 59%, 0.1) 5px, transparent 6px),
+      radial-gradient(circle at 76% 25%, hsl(33, 79%, 58%, 0.08) 7px, transparent 8px),
+      radial-gradient(circle at 94% 80%, hsl(22, 81%, 61%, 0.09) 6px, transparent 7px);
+    background-size: 210px 100%;
     background-repeat: repeat-x;
     pointer-events: none;
   }

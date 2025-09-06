@@ -231,7 +231,7 @@ export default function GardenProperties() {
                 className={`flex-1 text-center ${index < stepDetails.length - 1 ? 'relative' : ''}`}
               >
                 <div 
-                  className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-colors ${
+                  className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-colors relative z-10 ${
                     currentStep > index + 1 
                       ? 'bg-[#004025] text-white' 
                       : currentStep === index + 1 
@@ -246,7 +246,7 @@ export default function GardenProperties() {
                 <p className="text-xs text-gray-500 hidden lg:block">{step.subtitle}</p>
                 {index < stepDetails.length - 1 && (
                   <div 
-                    className={`absolute top-4 md:top-5 left-1/2 w-full h-0.5 transition-colors ${
+                    className={`absolute top-4 md:top-5 left-[calc(50%+20px)] right-0 h-0.5 transition-colors -z-10 ${
                       currentStep > index + 1 ? 'bg-[#004025]' : 'bg-gray-300'
                     }`} 
                   />
