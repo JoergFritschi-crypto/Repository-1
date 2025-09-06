@@ -864,7 +864,7 @@ export default function GardenProperties() {
                     <GardenSketch
                       shape={form.watch("shape")}
                       dimensions={form.watch("dimensions")}
-                      units={form.watch("units")}
+                      units={form.watch("units") === 'feet' ? 'imperial' : 'metric'}
                       slopeDirection={form.watch("slopeDirection")}
                       slopePercentage={form.watch("slopePercentage")}
                       usdaZone={form.watch("usdaZone")}
