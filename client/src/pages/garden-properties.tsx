@@ -219,7 +219,7 @@ export default function GardenProperties() {
         {/* Header */}
         <div className="mb-6">
           <Card className="border-2 border-[#004025] shadow-sm mb-2">
-            <CardHeader className="py-6 flower-band-green rounded-t-lg">
+            <CardHeader className="py-6 flower-band-studio rounded-t-lg">
               <CardTitle className="text-2xl md:text-3xl">Garden Design Studio</CardTitle>
             </CardHeader>
           </Card>
