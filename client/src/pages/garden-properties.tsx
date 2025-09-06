@@ -163,7 +163,7 @@ export default function GardenProperties() {
   
   // Watch values for GardenSketch to prevent re-render loops
   const watchedShape = form.watch("shape");
-  const watchedDimensions = form.watch("dimensions");
+  const watchedDimensions = form.watch("dimensions") || {};
   const watchedUnits = form.watch("units");
   const watchedSlopeDirection = form.watch("slopeDirection");
   const watchedSlopePercentage = form.watch("slopePercentage");
@@ -603,26 +603,23 @@ export default function GardenProperties() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Garden Shape</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="grid grid-cols-2 md:grid-cols-4 gap-3"
-                            >
-                              {['rectangle', 'square', 'circle', 'oval', 'triangle', 'irregular', 'kidney', 'l-shaped'].map(shape => (
-                                <div key={shape}>
-                                  <RadioGroupItem value={shape} id={shape} className="peer sr-only" />
-                                  <Label
-                                    htmlFor={shape}
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                                    data-testid={`shape-${shape}`}
-                                  >
-                                    <span className="text-xs capitalize">{shape.replace('-', ' ')}</span>
-                                  </Label>
-                                </div>
-                              ))}
-                            </RadioGroup>
-                          </FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-shape">
+                                <SelectValue placeholder="Select garden shape" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="rectangle">Rectangle</SelectItem>
+                              <SelectItem value="square">Square</SelectItem>
+                              <SelectItem value="circle">Circle</SelectItem>
+                              <SelectItem value="oval">Oval</SelectItem>
+                              <SelectItem value="triangle">Triangle</SelectItem>
+                              <SelectItem value="irregular">Irregular</SelectItem>
+                              <SelectItem value="kidney">Kidney</SelectItem>
+                              <SelectItem value="l-shaped">L-Shaped</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -642,10 +639,13 @@ export default function GardenProperties() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="feet">Feet</SelectItem>
-                                <SelectItem value="meters">Meters</SelectItem>
+                                <SelectItem value="feet">Feet (Imperial)</SelectItem>
+                                <SelectItem value="meters">Meters (Metric)</SelectItem>
                               </SelectContent>
                             </Select>
+                            <FormDescription className="text-xs">
+                              Your choice of units will be used throughout the entire design process
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
