@@ -1242,159 +1242,26 @@ export default function GardenProperties() {
             {/* Step 4: Interactive Design Canvas */}
             {currentStep === 4 && (
               <div className="space-y-3">
-                {/* Show Garden Styles if AI approach was chosen */}
-                {watchedDesignApproach === "ai" && !selectedGardenStyle && (
-                  <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-styles">
-                    <CardHeader className="py-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-600" />
-                        Select Your Garden Style
-                      </CardTitle>
-                      {user?.userTier && (
-                        <Badge className="ml-auto" variant={user.userTier === 'premium' ? 'default' : 'secondary'}>
-                          {user.userTier === 'premium' && <Crown className="w-3 h-3 mr-1" />}
-                          {user.userTier === 'pay_per_design' && <CreditCard className="w-3 h-3 mr-1" />}
-                          {user.userTier === 'premium' ? 'Premium' : user.userTier === 'pay_per_design' ? 'Pay Per Design' : 'Free Tier'}
-                        </Badge>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-0">
-                      <p className="text-sm text-muted-foreground">
-                        Choose from our curated collection of garden styles. Your tier determines which styles you can generate.
-                      </p>
-                      
-                      {/* Core Garden Styles */}
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-semibold">Popular Garden Styles</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {CORE_GARDEN_STYLES.map((styleKey) => {
-                            const style = GARDEN_STYLES[styleKey];
-                            const usedCount = designHistory?.filter((h: any) => h.styleId === style.id).length || 0;
-                            const isLocked = user?.userTier === 'free' && (designHistory?.length || 0) >= 1;
-                            const isIterationLocked = user?.userTier === 'pay_per_design' && usedCount >= 1;
-                            const canUse = user?.userTier === 'premium' || (!isLocked && !isIterationLocked);
-                            
-                            return (
-                              <Card 
-                                key={style.id} 
-                                className={`cursor-pointer transition-colors ${
-                                  canUse ? 'hover:border-purple-500' : 'opacity-60 cursor-not-allowed'
-                                } ${selectedGardenStyle === style.id ? 'border-purple-500 bg-purple-50' : ''}`}
-                                onClick={() => canUse && setSelectedGardenStyle(style.id)}>
-                                <CardHeader className="py-2">
-                                  <div className="flex justify-between items-start">
-                                    <CardTitle className="text-sm">{style.name}</CardTitle>
-                                    {!canUse && (
-                                      <Lock className="w-4 h-4 text-gray-400" />
-                                    )}
-                                  </div>
-                                </CardHeader>
-                                <CardContent className="space-y-2 pt-0">
-                                  <p className="text-xs line-clamp-2">{style.description}</p>
-                                  <div className="flex flex-wrap gap-1">
-                                    {style.signaturePlants.slice(0, 3).map((plant: string, i: number) => (
-                                      <Badge key={i} variant="outline" className="text-xs">{plant}</Badge>
-                                    ))}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Maintenance: {style.maintenanceLevel}
-                                  </div>
-                                  {canUse ? (
-                                    <Button 
-                                      type="button"
-                                      variant={selectedGardenStyle === style.id ? "default" : "outline"}
-                                      className="w-full mt-2"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedGardenStyle(style.id);
-                                      }}
-                                      data-testid={`select-style-${style.id}`}
-                                    >
-                                      {selectedGardenStyle === style.id ? "Selected" : "Select This Style"}
-                                    </Button>
-                                  ) : (
-                                    <div className="text-xs text-center mt-2 text-muted-foreground">
-                                      {user?.userTier === 'free' ? 'Upgrade to access' : 'Already used once'}
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      
-                      {/* Additional Garden Styles */}
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-semibold flex items-center gap-2">
-                          Specialty Garden Styles
-                          <Badge variant="outline" className="text-xs">
-                            {user?.userTier === 'premium' ? 'Available' : 'Premium'}
-                          </Badge>
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {ADDITIONAL_GARDEN_STYLES.map((styleKey) => {
-                            const style = GARDEN_STYLES[styleKey];
-                            const usedCount = designHistory?.filter((h: any) => h.styleId === style.id).length || 0;
-                            const canUse = user?.userTier === 'premium';
-                            
-                            return (
-                              <Card 
-                                key={style.id} 
-                                className={`cursor-pointer transition-colors ${
-                                  canUse ? 'hover:border-purple-500' : 'opacity-60 cursor-not-allowed'
-                                } ${selectedGardenStyle === style.id ? 'border-purple-500 bg-purple-50' : ''}`}
-                                onClick={() => canUse && setSelectedGardenStyle(style.id)}
-                              >
-                                <CardHeader className="py-2">
-                                  <div className="flex justify-between items-start">
-                                    <CardTitle className="text-sm">{style.name}</CardTitle>
-                                    {!canUse && (
-                                      <Crown className="w-4 h-4 text-amber-500" />
-                                    )}
-                                  </div>
-                                </CardHeader>
-                                <CardContent className="space-y-2 pt-0">
-                                  <p className="text-xs line-clamp-2">{style.description}</p>
-                                  <div className="text-xs text-muted-foreground">
-                                    Maintenance: {style.maintenanceLevel}
-                                  </div>
-                                  {canUse ? (
-                                    <Button 
-                                      type="button"
-                                      variant={selectedGardenStyle === style.id ? "default" : "outline"}
-                                      className="w-full mt-2"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedGardenStyle(style.id);
-                                      }}
-                                      data-testid={`select-style-${style.id}`}
-                                    >
-                                      {selectedGardenStyle === style.id ? "Selected" : "Select This Style"}
-                                    </Button>
-                                  ) : (
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      className="w-full mt-2"
-                                      size="sm"
-                                      disabled
-                                    >
-                                      <Crown className="w-3 h-3 mr-1" />
-                                      Premium Only
-                                    </Button>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                {/* Note: Garden style selection has been moved to Step 3 where it belongs */}
+                
+                {/* Interactive canvas for garden design */}
+                <Card className="border-2 border-[#004025] shadow-sm" data-testid="design-canvas">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Interactive Garden Design</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-0">
+                    <p className="text-sm text-muted-foreground">
+                      {watchedDesignApproach === "ai" 
+                        ? "Your AI-generated garden design will appear here after processing."
+                        : "Use the interactive canvas below to manually design your garden."}
+                    </p>
+                    
+                    {/* Interactive canvas placeholder */}
+                    <div className="bg-gray-50 rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground">Interactive garden design canvas will be displayed here</p>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Basic Safety Preferences for AI approach */}
                 {watchedDesignApproach === "ai" && selectedGardenStyle && (
