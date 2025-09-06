@@ -233,9 +233,9 @@ export default function GardenProperties() {
                 <div 
                   className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-colors ${
                     currentStep > index + 1 
-                      ? 'bg-green-600 text-white' 
+                      ? 'bg-[#004025] text-white' 
                       : currentStep === index + 1 
-                      ? 'bg-green-600 text-white ring-4 ring-green-200' 
+                      ? 'bg-[#004025] text-white ring-4 ring-[#004025]/20' 
                       : 'bg-gray-200 text-gray-600'
                   }`}
                   data-testid={`step-indicator-${index + 1}`}
@@ -247,7 +247,7 @@ export default function GardenProperties() {
                 {index < stepDetails.length - 1 && (
                   <div 
                     className={`absolute top-4 md:top-5 left-1/2 w-full h-0.5 transition-colors ${
-                      currentStep > index + 1 ? 'bg-green-600' : 'bg-gray-300'
+                      currentStep > index + 1 ? 'bg-[#004025]' : 'bg-gray-300'
                     }`} 
                   />
                 )}
@@ -257,7 +257,7 @@ export default function GardenProperties() {
         </div>
 
         {/* Current Step Info */}
-        <Card className="mb-4 bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md">
+        <Card className="mb-4 bg-gradient-to-r from-[#004025] to-[#00301c] text-white shadow-md">
           <CardHeader className="py-3 flower-band">
             <CardTitle className="text-base md:text-lg">
               Step {currentStep}: {stepDetails[currentStep - 1].title}
