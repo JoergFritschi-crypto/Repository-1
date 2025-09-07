@@ -62,9 +62,9 @@ export default function GardenLayoutCanvas({
   };
 
   // Get plant color based on type or characteristics
-  const getPlantColor = (plant: PlacedPlant): string => {
+  const getPlantColor = (plant: any): string => {
     // If flower color is specified, use that
-    if (plant.flowerColor) {
+    if (plant.flowerColor && typeof plant.flowerColor === 'string') {
       const colorMap: Record<string, string> = {
         'red': '#dc2626',
         'pink': '#ec4899',
@@ -82,11 +82,13 @@ export default function GardenLayoutCanvas({
     }
     
     // Default colors based on plant type
-    if (plant.plantType?.includes('tree')) return '#059669'; // Emerald for trees
-    if (plant.plantType?.includes('shrub')) return '#16a34a'; // Green for shrubs
-    if (plant.plantType?.includes('perennial')) return '#8b5cf6'; // Violet for perennials
-    if (plant.plantType?.includes('annual')) return '#f59e0b'; // Amber for annuals
-    if (plant.plantType?.includes('herb')) return '#10b981'; // Light green for herbs
+    if (plant.plantType && typeof plant.plantType === 'string') {
+      if (plant.plantType.includes('tree')) return '#059669'; // Emerald for trees
+      if (plant.plantType.includes('shrub')) return '#16a34a'; // Green for shrubs
+      if (plant.plantType.includes('perennial')) return '#8b5cf6'; // Violet for perennials
+      if (plant.plantType.includes('annual')) return '#f59e0b'; // Amber for annuals
+      if (plant.plantType.includes('herb')) return '#10b981'; // Light green for herbs
+    }
     
     // Default green
     return '#22c55e';
