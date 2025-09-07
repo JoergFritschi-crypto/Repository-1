@@ -97,7 +97,6 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const getDistributedPeriods = useCallback(() => {
     const startPeriod = periodRange[0];
     const endPeriod = periodRange[1];
-    const totalPeriods = endPeriod - startPeriod + 1;
     
     if (imageCount === 1) {
       // Single image at midpoint
@@ -105,17 +104,29 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
       return [midPoint];
     }
     
-    // Distribute evenly
+    // Distribute evenly - ALWAYS include first and last periods
     const periods: number[] = [];
-    const step = totalPeriods / (imageCount - 1);
+    
+    // For 2 images: just start and end
+    if (imageCount === 2) {
+      return [startPeriod, endPeriod];
+    }
+    
+    // For 3+ images: distribute evenly with first at start, last at end
+    const range = endPeriod - startPeriod;
+    const step = range / (imageCount - 1);
     
     for (let i = 0; i < imageCount; i++) {
       if (i === 0) {
+        // First image ALWAYS at the very start
         periods.push(startPeriod);
       } else if (i === imageCount - 1) {
+        // Last image ALWAYS at the very end
         periods.push(endPeriod);
       } else {
-        periods.push(Math.round(startPeriod + step * i));
+        // Middle images distributed evenly
+        const position = startPeriod + (step * i);
+        periods.push(Math.round(position));
       }
     }
     
