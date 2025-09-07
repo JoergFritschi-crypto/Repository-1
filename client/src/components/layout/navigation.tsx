@@ -4,10 +4,22 @@ import { Menu, X } from "lucide-react";
 import { GardenScapeIcon } from "@/components/ui/brand-icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
 
 export default function Navigation() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Get the actual user (not affected by tier testing)
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+  
+  // Check if testing mode is active
+  const isTestingMode = !!sessionStorage.getItem('tierTestingMode');
+  const isActualAdmin = user?.isAdmin === true;
 
   const navigationItems = [
     { href: "/welcome", label: "Welcome" },
@@ -15,7 +27,8 @@ export default function Navigation() {
     { href: "/plant-library", label: "Plant Library" },
     { href: "/plant-doctor", label: "Plant Doctor" },
     { href: "/premium", label: "Premium" },
-    { href: "/admin", label: "Admin" },
+    // Always show admin link for actual admins, even in testing mode
+    ...(isActualAdmin ? [{ href: "/admin", label: isTestingMode ? "Admin (Testing)" : "Admin" }] : []),
   ];
 
   return (

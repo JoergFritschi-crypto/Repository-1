@@ -24,7 +24,7 @@ import SoilTestingModal from '@/components/garden/soil-testing-modal';
 import PhotoUpload from '@/components/garden/photo-upload';
 import Navigation from '@/components/layout/navigation';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthWithTesting } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { Lock, Crown, CreditCard } from 'lucide-react';
 
@@ -135,7 +135,7 @@ export default function GardenProperties() {
   const [, setLocation] = useLocation();
   
   // Get user data and design generation history
-  const { user } = useAuth();
+  const { user } = useAuthWithTesting();
   const { data: designHistory = [] } = useQuery<any[]>({
     queryKey: ['/api/design-generations'],
     enabled: !!user

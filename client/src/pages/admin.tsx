@@ -26,6 +26,7 @@ import {
   Server, 
   Key, 
   Users,
+  User,
   Search,
   Filter,
   Check,
@@ -38,7 +39,9 @@ import {
   Leaf,
   ImageIcon,
   RefreshCw,
-  Loader2
+  Loader2,
+  Crown,
+  CreditCard
 } from "lucide-react";
 
 export default function Admin() {
@@ -46,7 +49,24 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("plants");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [testingTier, setTestingTier] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Handle tier testing
+  useEffect(() => {
+    if (testingTier) {
+      sessionStorage.setItem('tierTestingMode', testingTier);
+      // Trigger re-render of auth-dependent components
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      toast({
+        title: "Testing Mode Activated",
+        description: `Now testing as ${testingTier.replace('_', ' ').toUpperCase()} user`,
+      });
+    } else {
+      sessionStorage.removeItem('tierTestingMode');
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    }
+  }, [testingTier, toast]);
 
   // Admin access check and make admin
   useEffect(() => {
@@ -395,12 +415,80 @@ export default function Admin() {
                     <CardTitle data-testid="text-testing-tools-title">Testing Tools</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-center py-12" data-testid="testing-tools-placeholder">
-                      <FlaskConical className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">Testing Tools</h3>
-                      <p className="text-muted-foreground">
-                        System testing and debugging utilities
-                      </p>
+                    <div className="space-y-6">
+                      {/* Tier Testing Tool */}
+                      <div className="border rounded-lg p-6 bg-gradient-to-r from-purple-50 to-pink-50">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Crown className="w-6 h-6 text-purple-600" />
+                          <h3 className="text-lg font-semibold">User Tier Testing</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Temporarily simulate different user tiers to test the user experience. Your admin privileges remain accessible.
+                        </p>
+                        
+                        <div className="grid grid-cols-3 gap-4">
+                          <Button
+                            variant={testingTier === 'free' ? 'default' : 'outline'}
+                            onClick={() => setTestingTier('free')}
+                            className="flex flex-col items-center py-4"
+                            data-testid="button-test-tier-free"
+                          >
+                            <User className="w-5 h-5 mb-2" />
+                            <span className="font-medium">Free Tier</span>
+                            <span className="text-xs text-muted-foreground mt-1">1 design credit</span>
+                          </Button>
+                          
+                          <Button
+                            variant={testingTier === 'pay_per_design' ? 'default' : 'outline'}
+                            onClick={() => setTestingTier('pay_per_design')}
+                            className="flex flex-col items-center py-4"
+                            data-testid="button-test-tier-pay-per-design"
+                          >
+                            <CreditCard className="w-5 h-5 mb-2" />
+                            <span className="font-medium">Pay-Per-Design</span>
+                            <span className="text-xs text-muted-foreground mt-1">Purchase credits</span>
+                          </Button>
+                          
+                          <Button
+                            variant={testingTier === 'premium' ? 'default' : 'outline'}
+                            onClick={() => setTestingTier('premium')}
+                            className="flex flex-col items-center py-4"
+                            data-testid="button-test-tier-premium"
+                          >
+                            <Crown className="w-5 h-5 mb-2" />
+                            <span className="font-medium">Premium</span>
+                            <span className="text-xs text-muted-foreground mt-1">Unlimited access</span>
+                          </Button>
+                        </div>
+                        
+                        {testingTier && (
+                          <div className="mt-4 p-3 bg-white rounded-lg border border-purple-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                <span className="text-sm font-medium">Testing as: {testingTier.replace('_', ' ').toUpperCase()}</span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setTestingTier(null)}
+                                data-testid="button-clear-testing-tier"
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Clear
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Placeholder for future testing tools */}
+                      <div className="text-center py-8 border-t" data-testid="testing-tools-placeholder">
+                        <FlaskConical className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-sm text-muted-foreground">
+                          More testing utilities coming soon
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
