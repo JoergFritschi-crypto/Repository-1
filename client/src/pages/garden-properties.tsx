@@ -128,6 +128,7 @@ export default function GardenProperties() {
   const [climateData, setClimateData] = useState<any>(null);
   const [hasUploadedPhotos, setHasUploadedPhotos] = useState(false);
   const [generatedStyles, setGeneratedStyles] = useState<any[]>([]);
+  const [selectedStyleFromAI, setSelectedStyleFromAI] = useState<any>(null);
   const [completeDesign, setCompleteDesign] = useState<any>(null);
   const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
   const [selectedGardenStyle, setSelectedGardenStyle] = useState<string | null>(null);
@@ -1843,6 +1844,10 @@ export default function GardenProperties() {
                     setGeneratedStyles(styles);
                     console.log(`Generated ${styles.length} design styles`);
                   }}
+                  onStyleSelected={(style) => {
+                    setSelectedStyleFromAI(style);
+                    console.log(`Selected style: ${style?.styleName}`);
+                  }}
                 />
               </div>
             )}
@@ -1850,111 +1855,206 @@ export default function GardenProperties() {
             {/* Step 3: Choose Your Design Approach - Workflow Decision Point */}
             {currentStep === 3 && (
               <div className="space-y-3">
-                {/* Design Approach Selection */}
-                <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-design-approach">
-                  <CardHeader className="py-7 flower-band-green rounded-t-lg">
-                    <CardTitle className="text-base">Choose Your Design Approach</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-0">
-                    <FormField
-                      control={form.control}
-                      name="design_approach"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>How would you like to design your garden?</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              value={localDesignApproach || field.value || ""}
-                              onValueChange={(value) => {
-                                const typedValue = value as "ai" | "manual";
-                                setLocalDesignApproach(typedValue);
-                                field.onChange(typedValue);
-                                form.setValue("design_approach", typedValue);
-                              }}
-                              className="space-y-3"
-                            >
-                              <div className="flex items-start space-x-3">
-                                <RadioGroupItem value="ai" id="ai" />
-                                <div>
-                                  <Label htmlFor="ai" className="font-medium">
-                                    AI-Powered Design
-                                  </Label>
-                                  <p className="text-sm text-muted-foreground">
-                                    Get personalized design styles from AI based on your photos and preferences. Quick and easy!
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-start space-x-3">
-                                <RadioGroupItem value="manual" id="manual" />
-                                <div>
-                                  <Label htmlFor="manual" className="font-medium">
-                                    Manual Design
-                                  </Label>
-                                  <p className="text-sm text-muted-foreground">
-                                    Full control: Choose plants yourself and design your garden on the interactive canvas
-                                  </p>
-                                </div>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-
-                {/* Show AI Style Preview if AI approach is chosen */}
-                {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
+                {/* If user selected a style from AI in Step 2, show it and ask how to proceed */}
+                {selectedStyleFromAI ? (
                   <>
-                    <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
-                    <CardHeader className="py-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-600" />
-                        AI Design Styles
-                      </CardTitle>
+                    {/* Show the selected style */}
+                    <Card className="border-2 border-indigo-500 bg-indigo-50/30 shadow-sm" data-testid="selected-ai-style">
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-indigo-600" />
+                          Your Selected Design Style
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3 pt-0">
+                        <div className="p-3 bg-white rounded-lg border-2 border-indigo-300">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-sm">{selectedStyleFromAI.styleName}</h4>
+                            <Badge className="bg-indigo-100 text-indigo-700">
+                              Match: {selectedStyleFromAI.suitabilityScore}/10
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-600 mb-2">{selectedStyleFromAI.description}</p>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="p-2 bg-gray-50 rounded">
+                              <span className="font-medium">Maintenance:</span> {selectedStyleFromAI.maintenanceLevel}
+                            </div>
+                            <div className="p-2 bg-gray-50 rounded">
+                              <span className="font-medium">Colors:</span> {selectedStyleFromAI.colorScheme?.join(', ')}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Ask how to proceed with this style */}
+                    <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-design-approach">
+                      <CardHeader className="py-7 flower-band-green rounded-t-lg">
+                        <CardTitle className="text-base">How would you like to proceed?</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-0">
+                        <FormField
+                          control={form.control}
+                          name="design_approach"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Choose how to create your garden layout</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  value={localDesignApproach || field.value || ""}
+                                  onValueChange={(value) => {
+                                    const typedValue = value as "ai" | "manual";
+                                    setLocalDesignApproach(typedValue);
+                                    field.onChange(typedValue);
+                                    form.setValue("design_approach", typedValue);
+                                  }}
+                                  className="space-y-3"
+                                >
+                                  <div className="flex items-start space-x-3">
+                                    <RadioGroupItem value="ai" id="ai" />
+                                    <div>
+                                      <Label htmlFor="ai" className="font-medium">
+                                        Continue with AI Layout Generation
+                                      </Label>
+                                      <p className="text-sm text-muted-foreground">
+                                        Let AI create the complete garden layout using the {selectedStyleFromAI.styleName} style, with plant placement and design details
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-start space-x-3">
+                                    <RadioGroupItem value="manual" id="manual" />
+                                    <div>
+                                      <Label htmlFor="manual" className="font-medium">
+                                        Switch to Manual Design
+                                      </Label>
+                                      <p className="text-sm text-muted-foreground">
+                                        Use the style as inspiration but manually place plants and design your garden on the interactive canvas
+                                      </p>
+                                    </div>
+                                  </div>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+
+                    {/* Safety Preferences for AI approach with selected style */}
+                    {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
+                      <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-safety-preferences">
+                        <CardHeader className="py-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-purple-600" />
+                            Safety Preferences
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 pt-0">
+                          <p className="text-sm text-muted-foreground">
+                            Select any safety considerations for your garden design.
+                          </p>
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="preferences.petSafe"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="text-sm font-normal">
+                                    Pet-safe plants only
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="preferences.childSafe"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="text-sm font-normal">
+                                    Child-safe plants only
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </>
+                ) : (
+                  /* Original flow if no AI style was selected */
+                  <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-design-approach">
+                    <CardHeader className="py-7 flower-band-green rounded-t-lg">
+                      <CardTitle className="text-base">Choose Your Design Approach</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-0">
-                      {generatedStyles.length > 0 ? (
-                        <div className="space-y-3">
-                          <p className="text-sm text-muted-foreground">
-                            Based on your photos and preferences, Claude has generated these design styles:
-                          </p>
-                          {generatedStyles.slice(0, 3).map((style, index) => (
-                            <div key={index} className="p-3 bg-white rounded-lg border">
-                              <h4 className="font-semibold text-sm">{style.styleName}</h4>
-                              <p className="text-xs text-gray-600 mt-1">{style.description}</p>
-                              <Badge className="mt-2">Match: {style.suitabilityScore}/10</Badge>
-                            </div>
-                          ))}
-                          <p className="text-xs text-purple-600 font-medium">
-                            You'll select your preferred style on the next page
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-sm text-muted-foreground">
-                            {hasUploadedPhotos 
-                              ? "After analyzing your photos, AI will suggest 3 personalized design styles."
-                              : "Please upload photos in Step 2 to receive AI design suggestions."
-                            }
-                          </p>
-                          <div className="bg-purple-100 p-3 rounded-lg">
-                            <p className="text-xs font-medium mb-1">What happens next:</p>
-                            <ol className="text-xs space-y-1 ml-4 list-decimal">
-                              <li>Review AI-generated style options</li>
-                              <li>Select your preferred style</li>
-                              <li>Set basic safety preferences (toxic plants, etc.)</li>
-                              <li>AI creates your complete design with plant placement</li>
-                            </ol>
-                          </div>
-                        </>
-                      )}
+                      <FormField
+                        control={form.control}
+                        name="design_approach"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>How would you like to design your garden?</FormLabel>
+                            <FormControl>
+                              <RadioGroup
+                                value={localDesignApproach || field.value || ""}
+                                onValueChange={(value) => {
+                                  const typedValue = value as "ai" | "manual";
+                                  setLocalDesignApproach(typedValue);
+                                  field.onChange(typedValue);
+                                  form.setValue("design_approach", typedValue);
+                                }}
+                                className="space-y-3"
+                              >
+                                <div className="flex items-start space-x-3">
+                                  <RadioGroupItem value="ai" id="ai" />
+                                  <div>
+                                    <Label htmlFor="ai" className="font-medium">
+                                      AI-Powered Design
+                                    </Label>
+                                    <p className="text-sm text-muted-foreground">
+                                      Choose from our curated garden styles and let AI create your complete design
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-start space-x-3">
+                                  <RadioGroupItem value="manual" id="manual" />
+                                  <div>
+                                    <Label htmlFor="manual" className="font-medium">
+                                      Manual Design
+                                    </Label>
+                                    <p className="text-sm text-muted-foreground">
+                                      Full control: Choose plants yourself and design your garden on the interactive canvas
+                                    </p>
+                                  </div>
+                                </div>
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </CardContent>
                   </Card>
-                  
-                  {/* Garden Style Selection for AI approach */}
-                  <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
+                )}
+
+                {/* Show AI Style options only if AI approach is chosen AND no style selected from Step 2 */}
+                {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && !selectedStyleFromAI && (
+                  <>
+                    {/* Garden Style Selection for AI approach when no photos were analyzed */}
+                    <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-purple-600" />
@@ -2010,7 +2110,7 @@ export default function GardenProperties() {
                     </CardContent>
                   </Card>
                   
-                  {/* Safety Preferences for AI approach (after selecting a style) */}
+                  {/* Safety Preferences for AI approach (after selecting a style from predefined list) */}
                   {selectedGardenStyle && (
                     <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-safety-preferences">
                       <CardHeader className="py-3">

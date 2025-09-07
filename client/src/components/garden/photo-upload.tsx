@@ -10,6 +10,7 @@ interface PhotoUploadProps {
   onPhotosChange?: (photos: File[]) => void;
   onAnalysisComplete?: (analysis: GardenPhotoAnalysis) => void;
   onStylesGenerated?: (styles: DesignStyleSuggestion[]) => void;
+  onStyleSelected?: (style: DesignStyleSuggestion | null) => void;
   maxPhotos?: number;
   gardenData?: any; // Full form data from Steps 2 and 3
 }
@@ -42,6 +43,7 @@ export default function PhotoUpload({
   onPhotosChange,
   onAnalysisComplete,
   onStylesGenerated,
+  onStyleSelected,
   maxPhotos = 6,
   gardenData
 }: PhotoUploadProps) {
@@ -593,6 +595,7 @@ export default function PhotoUpload({
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedStyleIndex(index);
+                      onStyleSelected?.(style);
                       toast({
                         title: "Style Selected",
                         description: `You've selected the ${style.styleName} design style.`
