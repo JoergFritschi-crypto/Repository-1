@@ -413,27 +413,6 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
             </div>
           </div>
           
-          {/* Progress Bar */}
-          {generateImagesMutation.isPending && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Generating images...</span>
-                <span>{Math.round(generationProgress)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div 
-                  className="bg-primary h-full transition-all duration-300 ease-out"
-                  style={{ width: `${generationProgress}%` }}
-                />
-              </div>
-              <p className="text-xs text-gray-500">
-                {generationProgress > 0 && generationProgress < 100 && 
-                  `Processing image ${Math.ceil((generationProgress / 100) * imageCount)} of ${imageCount}...`
-                }
-              </p>
-            </div>
-          )}
-          
           {/* Action Buttons */}
           <div className="flex gap-3">
             <Button
