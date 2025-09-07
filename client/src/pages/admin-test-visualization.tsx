@@ -87,21 +87,21 @@ export default function AdminTestVisualization() {
                     onClick={() => setTestingTier('free')}
                   >
                     <Badge variant="secondary" className="mr-2">Free</Badge>
-                    2 images, 3 iterations
+                    Up to 2 images, 3 iterations
                   </Button>
                   <Button
                     variant={testingTier === 'pay_per_design' ? "default" : "outline"}
                     onClick={() => setTestingTier('pay_per_design')}
                   >
                     <Badge className="mr-2 bg-blue-500">Tier 2</Badge>
-                    6 images, unlimited
+                    Up to 6 images, unlimited
                   </Button>
                   <Button
                     variant={testingTier === 'premium' ? "default" : "outline"}
                     onClick={() => setTestingTier('premium')}
                   >
                     <Badge className="mr-2 bg-purple-500">Premium</Badge>
-                    6 images, unlimited
+                    Up to 6 images, unlimited
                   </Button>
                 </div>
               </div>
@@ -147,7 +147,7 @@ export default function AdminTestVisualization() {
           </CardHeader>
           <CardContent>
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-              <li>Free tier: Limited to 2 images and 3 iterations</li>
+              <li>Free tier: Limited to up to 2 images and 3 iterations</li>
               <li>Paid tiers: Up to 6 images with unlimited iterations</li>
               <li>Images are evenly distributed across the selected time period</li>
               <li>Saved images persist in the garden's metadata</li>
