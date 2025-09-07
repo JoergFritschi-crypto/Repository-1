@@ -145,8 +145,8 @@ export default function GardenLayoutCanvas({
       if (canvasRef.current) {
         const container = canvasRef.current.parentElement;
         if (container) {
-          // Canvas takes most of container width
-          const availableWidth = container.clientWidth * 0.8;
+          // Canvas takes 80% of container width
+          const availableWidth = window.innerWidth * 0.8;
           const availableHeight = window.innerHeight * 0.75; // Use 75% of viewport height
           
           // Calculate aspect ratio based on actual garden dimensions
@@ -178,7 +178,7 @@ export default function GardenLayoutCanvas({
           }
           
           // Add extra space for visibility
-          width = Math.min(width + rulerPadding, container.clientWidth * 0.85);
+          width = Math.min(width + rulerPadding, window.innerWidth * 0.85);
           height = Math.min(height + rulerPadding, availableHeight);
           
           setCanvasSize({ width, height });
