@@ -511,10 +511,7 @@ export default function GardenLayoutCanvas({
           propagationMethod: '',
           commercialProduction: '',
           climateAdaptability: null,
-          humanSafety: 'safe',
           petSafety: 'safe',
-          humanToxicityDetails: null,
-          petToxicityDetails: null,
           childSafe: false,
           toxicParts: null,
           toxicSymptoms: null,
@@ -566,135 +563,30 @@ export default function GardenLayoutCanvas({
   }, {} as Record<string, { name: string; scientificName?: string; quantity: number }>);
 
   return (
-    <div className="w-full space-y-3">
-      {/* Advanced Search Module at Top */}
-      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
-        <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Search className="w-4 h-4" />
-            Plant Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-3 px-4">
-          <Button 
-            onClick={onOpenPlantSearch}
-            className="w-full"
-            data-testid="button-open-plant-search"
-          >
-            Go to Advanced Search Tab →
-          </Button>
-        </CardContent>
-      </Card>
+    <div className="w-full flex gap-3">
+      {/* Left side: Canvas area with info bars */}
+      <div className="flex flex-col gap-3">
+        {/* Advanced Search Module at Top */}
+        <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+          <CardHeader className="py-3 px-4 bg-muted/50">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              Plant Search
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <Button 
+              onClick={onOpenPlantSearch}
+              className="w-full"
+              data-testid="button-open-plant-search"
+            >
+              Go to Advanced Search Tab →
+            </Button>
+          </CardContent>
+        </Card>
 
-      {/* Plants Inventory Above Canvas */}
-      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
-        <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm font-medium">
-            Plants Inventory ({unplacedPlants.length} unplaced)
-          </CardTitle>
-        </CardHeader>
-        <CardContent 
-          className={`py-3 px-4 relative transition-colors ${isDraggingOverInventory ? 'bg-destructive/10 border-2 border-destructive border-dashed' : ''}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            const placedPlantId = e.dataTransfer.types.includes('text/plain') ? e.dataTransfer.getData('text/plain') : '';
-            if (placedPlantId || e.dataTransfer.types.includes('placedPlantId')) {
-              setIsDraggingOverInventory(true);
-            }
-          }}
-          onDragLeave={() => setIsDraggingOverInventory(false)}
-          onDrop={(e) => {
-            handleInventoryDrop(e);
-            setIsDraggingOverInventory(false);
-          }}
-        >
-          <ScrollArea className="h-24">
-            {unplacedPlants.length === 0 && placedPlants.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {aiDesign ? "AI has placed all plants on the canvas" : "No plants in inventory. Use Advanced Search above to add plants."}
-              </p>
-            ) : unplacedPlants.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                All plants are on the canvas. Drag them back here to remove.
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-3">
-                <TooltipProvider>
-                  {(() => {
-                    // Group plants by scientificName
-                    const groupedPlants = unplacedPlants.reduce((acc, plant) => {
-                      const key = plant.scientificName || plant.commonName;
-                      if (!acc[key]) {
-                        acc[key] = {
-                          ...plant,
-                          count: 0,
-                          plants: []
-                        };
-                      }
-                      acc[key].count++;
-                      acc[key].plants.push(plant);
-                      return acc;
-                    }, {} as Record<string, any>);
-
-                    return Object.values(groupedPlants).map((group: any, index: number) => (
-                      <Tooltip key={`${group.scientificName || group.commonName}-${index}`}>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center gap-1 bg-background border rounded-lg px-2 py-1 shadow-sm hover:shadow-md transition-shadow">
-                            <div
-                              className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
-                              style={{
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: getPlantColor(group),
-                              }}
-                            >
-                              <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
-                                {getPlantInitials(group.scientificName)}
-                              </span>
-                            </div>
-                            <span className="text-xs font-medium">×{group.count}</span>
-                            <div className="flex gap-1">
-                              {group.plants.map((plant: any, index: number) => (
-                                <div
-                                  key={plant.id}
-                                  draggable
-                                  onDragStart={(e) => handleDragStart(plant, e)}
-                                  onDragEnd={handleDragEnd}
-                                  className="rounded-full border border-foreground/60 cursor-move hover:scale-125 transition-transform flex items-center justify-center"
-                                  style={{
-                                    width: '20px',
-                                    height: '20px',
-                                    backgroundColor: getPlantColor(plant),
-                                  }}
-                                  data-testid={`inventory-plant-${plant.id}`}
-                                >
-                                  <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
-                                    {getPlantInitials(plant.scientificName)}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent className="p-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg">
-                          <div className="text-sm">
-                            <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
-                            <div className="text-xs opacity-75">{group.commonName}</div>
-                            <div className="text-xs opacity-75 mt-1">Quantity: {group.count}</div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    ));
-                  })()}
-                </TooltipProvider>
-              </div>
-            )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
-
-      {/* Garden Info Bar Above Canvas */}
-      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        {/* Garden Info Bar Above Canvas */}
+        <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
         <CardContent className="py-2 px-4 flex items-center justify-between">
           <div className="flex gap-6">
             <div className="flex items-center gap-2">
@@ -989,61 +881,171 @@ export default function GardenLayoutCanvas({
         </Card>
       </div>
 
-      {/* Placed Plants List Below Canvas */}
-      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        {/* Placed Plants List Below Canvas */}
+        <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+          <CardHeader className="py-3 px-4 bg-muted/50">
+            <CardTitle className="text-sm">
+              Placed Plants ({placedPlants.length} total, {Object.keys(plantSummary).length} unique species)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <ScrollArea className="h-32">
+              {placedPlants.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No plants placed yet. Drag plants from the inventory to the canvas.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  <TooltipProvider>
+                    {(() => {
+                      // Group placed plants by plantName and scientificName
+                      const groupedPlacedPlants = placedPlants.reduce((acc, plant) => {
+                        const key = `${plant.plantName}-${plant.scientificName || 'unknown'}`;
+                        if (!acc[key]) {
+                          acc[key] = {
+                            plantName: plant.plantName,
+                            scientificName: plant.scientificName,
+                            plants: []
+                          };
+                        }
+                        acc[key].plants.push(plant);
+                        return acc;
+                      }, {} as Record<string, any>);
+
+                      return Object.values(groupedPlacedPlants).map((group: any, groupIndex: number) => (
+                        <Tooltip key={`placed-group-${groupIndex}`}>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-2 bg-background border rounded-lg px-3 py-1.5 shadow-sm">
+                              <div
+                                className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  backgroundColor: getPlantColor(group),
+                                }}
+                              >
+                                <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
+                                  {getPlantInitials(group.scientificName)}
+                                </span>
+                              </div>
+                              <span className="text-sm font-medium">{group.plants.length}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="p-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg">
+                            <div className="text-sm">
+                              <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
+                              <div className="text-xs opacity-75">{group.plantName}</div>
+                              <div className="text-xs opacity-75 mt-1">Quantity on canvas: {group.plants.length}</div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      ));
+                    })()}
+                  </TooltipProvider>
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Right side: Plant Inventory - Full Height */}
+      <Card className="shadow-md h-fit sticky top-4">
         <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm">
-            Placed Plants ({placedPlants.length} total, {Object.keys(plantSummary).length} unique species)
+          <CardTitle className="text-sm font-medium">
+            Plants Inventory ({unplacedPlants.length} unplaced)
           </CardTitle>
         </CardHeader>
-        <CardContent className="py-3 px-4">
-          <ScrollArea className="h-32">
-            {placedPlants.length === 0 ? (
+        <CardContent 
+          className={`py-3 px-4 relative transition-colors ${isDraggingOverInventory ? 'bg-destructive/10 border-2 border-destructive border-dashed' : ''}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            const placedPlantId = e.dataTransfer.types.includes('text/plain') ? e.dataTransfer.getData('text/plain') : '';
+            if (placedPlantId || e.dataTransfer.types.includes('placedPlantId')) {
+              setIsDraggingOverInventory(true);
+            }
+          }}
+          onDragLeave={() => setIsDraggingOverInventory(false)}
+          onDrop={(e) => {
+            handleInventoryDrop(e);
+            setIsDraggingOverInventory(false);
+          }}
+        >
+          <ScrollArea className="h-[600px]">
+            {unplacedPlants.length === 0 && placedPlants.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No plants placed yet. Drag plants from the inventory above to the canvas.
+                {aiDesign ? "AI has placed all plants on the canvas" : "No plants in inventory. Use Advanced Search to add plants."}
+              </p>
+            ) : unplacedPlants.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                All plants are on the canvas. Drag them back here to remove.
               </p>
             ) : (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-3">
                 <TooltipProvider>
                   {(() => {
-                    // Group placed plants by plantName and scientificName
-                    const groupedPlacedPlants = placedPlants.reduce((acc, plant) => {
-                      const key = `${plant.plantName}-${plant.scientificName || 'unknown'}`;
+                    // Group plants by scientificName
+                    const groupedPlants = unplacedPlants.reduce((acc, plant) => {
+                      const key = plant.scientificName || plant.commonName;
                       if (!acc[key]) {
                         acc[key] = {
-                          plantName: plant.plantName,
-                          scientificName: plant.scientificName,
+                          ...plant,
+                          count: 0,
                           plants: []
                         };
                       }
+                      acc[key].count++;
                       acc[key].plants.push(plant);
                       return acc;
                     }, {} as Record<string, any>);
 
-                    return Object.values(groupedPlacedPlants).map((group: any, groupIndex: number) => (
-                      <Tooltip key={`placed-group-${groupIndex}`}>
+                    return Object.values(groupedPlants).map((group: any, index: number) => (
+                      <Tooltip key={`${group.scientificName || group.commonName}-${index}`}>
                         <TooltipTrigger asChild>
-                          <div className="flex items-center gap-2 bg-background border rounded-lg px-3 py-1.5 shadow-sm">
-                            <div
-                              className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
-                              style={{
-                                width: '24px',
-                                height: '24px',
-                                backgroundColor: getPlantColor(group),
-                              }}
-                            >
-                              <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
-                                {getPlantInitials(group.scientificName)}
-                              </span>
+                          <div className="flex flex-col gap-2 bg-background border rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
+                                style={{
+                                  width: '20px',
+                                  height: '20px',
+                                  backgroundColor: getPlantColor(group),
+                                }}
+                              >
+                                <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
+                                  {getPlantInitials(group.scientificName)}
+                                </span>
+                              </div>
+                              <span className="text-xs font-medium">×{group.count}</span>
                             </div>
-                            <span className="text-sm font-medium">{group.plants.length}</span>
+                            <div className="flex flex-wrap gap-1">
+                              {group.plants.map((plant: any, index: number) => (
+                                <div
+                                  key={plant.id}
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(plant, e)}
+                                  onDragEnd={handleDragEnd}
+                                  className="rounded-full border border-foreground/60 cursor-move hover:scale-125 transition-transform flex items-center justify-center"
+                                  style={{
+                                    width: '20px',
+                                    height: '20px',
+                                    backgroundColor: getPlantColor(plant),
+                                  }}
+                                  data-testid={`inventory-plant-${plant.id}`}
+                                >
+                                  <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
+                                    {getPlantInitials(plant.scientificName)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent className="p-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg">
                           <div className="text-sm">
                             <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
-                            <div className="text-xs opacity-75">{group.plantName}</div>
-                            <div className="text-xs opacity-75 mt-1">Quantity on canvas: {group.plants.length}</div>
+                            <div className="text-xs opacity-75">{group.commonName}</div>
+                            <div className="text-xs opacity-75 mt-1">Quantity: {group.count}</div>
                           </div>
                         </TooltipContent>
                       </Tooltip>
