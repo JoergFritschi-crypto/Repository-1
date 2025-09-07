@@ -572,6 +572,87 @@ export default function GardenProperties() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Soil Information</h3>
+                    
+                    <FormField
+                      control={form.control}
+                      name="soilType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Soil Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-soil-type">
+                                <SelectValue placeholder="Select soil type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="clay">Clay - Heavy, holds moisture</SelectItem>
+                              <SelectItem value="sand">Sandy - Light, drains quickly</SelectItem>
+                              <SelectItem value="loam">Loam - Ideal mix, well-balanced</SelectItem>
+                              <SelectItem value="silt">Silt - Smooth, retains moisture</SelectItem>
+                              <SelectItem value="chalk">Chalk - Alkaline, free-draining</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription className="text-xs">
+                            Your garden's primary soil composition
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="soilPh"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Soil pH Level</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.1" 
+                              min="3" 
+                              max="11" 
+                              placeholder="e.g. 6.5" 
+                              {...field}
+                              onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                              value={field.value || ''}
+                              data-testid="input-soil-ph"
+                            />
+                          </FormControl>
+                          <FormDescription className="text-xs">
+                            pH value between 3.0 and 11.0 (7.0 is neutral)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasSoilAnalysis"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-soil-analysis"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>I have professional soil test results</FormLabel>
+                            <FormDescription className="text-xs">
+                              Check this if you have detailed soil analysis data
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             )}
