@@ -65,7 +65,7 @@ export default function GardenLayoutCanvas({
   // Get plant color based on type or characteristics
   const getPlantColor = (plant: any): string => {
     // Special colors for specific plants we know we have
-    const commonName = plant.commonName?.toLowerCase() || '';
+    const commonName = (plant.commonName || plant.plantName)?.toLowerCase() || '';
     const scientificName = plant.scientificName?.toLowerCase() || '';
     
     // Specific plant colors
@@ -362,77 +362,82 @@ export default function GardenLayoutCanvas({
         // Remove from placed plants
         setPlacedPlants(placedPlants.filter(p => p.id !== placedPlantId));
         
-        // Add back to unplaced plants
-        const restoredPlant: Plant = {
-          id: placedPlant.plantId,
-          commonName: placedPlant.plantName,
-          scientificName: placedPlant.scientificName,
-          family: '',
-          genus: '',
-          species: '',
-          cultivar: '',
-          type: placedPlant.plantType,
-          dimension: null,
-          cycle: '',
-          foliage: '',
-          hardiness: '',
-          sunlight: null,
-          soil: null,
-          soilPH: '',
-          watering: '',
-          wateringGeneralBenchmark: null,
-          wateringPeriod: '',
-          depthWaterRequirement: null,
-          volumeWaterRequirement: null,
-          growthRate: '',
-          droughtTolerant: false,
-          saltTolerant: false,
-          thorny: false,
-          tropical: false,
-          careLevel: '',
-          maintenance: '',
-          baseAvailabilityScore: null,
-          cultivationDifficulty: '',
-          propagationMethod: '',
-          commercialProduction: '',
-          climateAdaptability: null,
-          toxicity: {
-            humanSafety: 'safe',
-            petSafety: 'safe',
-            humanToxicityDetails: null,
-            petToxicityDetails: null,
-            childSafe: false,
-            toxicParts: null,
-            toxicSymptoms: null
-          },
-          culinary: false,
-          medicinal: false,
-          attractedWildlife: null,
-          propagation: null,
-          pruningMonth: null,
-          pruningCount: null,
-          pestSusceptibility: null,
-          description: null,
-          careGuideUrl: null,
-          perenualCareGuideUrl: null,
-          imageUrl: null,
-          defaultImageUrl: null,
-          mediumImageUrl: null,
-          smallImageUrl: null,
-          thumbnailImageUrl: null,
-          seedImageUrl: null,
-          otherImages: null,
-          aiGeneratedImages: null,
-          lastImageGenerationAt: null,
-          generatedImageUrl: null,
-          dataSource: 'perenual',
-          importedAt: null,
-          verificationStatus: 'pending',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          perenualId: null
-        };
-        setUnplacedPlants([...unplacedPlants, restoredPlant]);
+        // Find the original plant data if it exists, or create a minimal version
+        const existingPlant = unplacedPlants.find(p => p.scientificName === placedPlant.scientificName);
+        
+        if (!existingPlant) {
+          // Add back to unplaced plants with minimal but complete data for color matching
+          const restoredPlant: Plant = {
+            id: placedPlant.plantId,
+            commonName: placedPlant.plantName,
+            scientificName: placedPlant.scientificName,
+            family: '',
+            genus: '',
+            species: '',
+            cultivar: '',
+            type: placedPlant.plantType,
+            dimension: null,
+            cycle: '',
+            foliage: '',
+            hardiness: '',
+            sunlight: null,
+            soil: null,
+            soilPH: '',
+            watering: '',
+            wateringGeneralBenchmark: null,
+            wateringPeriod: '',
+            depthWaterRequirement: null,
+            volumeWaterRequirement: null,
+            growthRate: '',
+            droughtTolerant: false,
+            saltTolerant: false,
+            thorny: false,
+            tropical: false,
+            careLevel: '',
+            maintenance: '',
+            baseAvailabilityScore: null,
+            cultivationDifficulty: '',
+            propagationMethod: '',
+            commercialProduction: '',
+            climateAdaptability: null,
+            toxicity: {
+              humanSafety: 'safe',
+              petSafety: 'safe',
+              humanToxicityDetails: null,
+              petToxicityDetails: null,
+              childSafe: false,
+              toxicParts: null,
+              toxicSymptoms: null
+            },
+            culinary: false,
+            medicinal: false,
+            attractedWildlife: null,
+            propagation: null,
+            pruningMonth: null,
+            pruningCount: null,
+            pestSusceptibility: null,
+            description: null,
+            careGuideUrl: null,
+            perenualCareGuideUrl: null,
+            imageUrl: null,
+            defaultImageUrl: null,
+            mediumImageUrl: null,
+            smallImageUrl: null,
+            thumbnailImageUrl: null,
+            seedImageUrl: null,
+            otherImages: null,
+            aiGeneratedImages: null,
+            lastImageGenerationAt: null,
+            generatedImageUrl: null,
+            dataSource: 'perenual',
+            importedAt: null,
+            verificationStatus: 'pending',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            perenualId: null
+          };
+          setUnplacedPlants([...unplacedPlants, restoredPlant]);
+        }
       }
     }
     setDraggedPlant(null);
