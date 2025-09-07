@@ -86,7 +86,7 @@ export default function GardenLayoutCanvas({
     }
   };
 
-  // Update canvas size to maintain 4:3 aspect ratio and fill more space
+  // Update canvas size to match garden aspect ratio
   useEffect(() => {
     const updateCanvasSize = () => {
       if (canvasRef.current) {
@@ -94,20 +94,37 @@ export default function GardenLayoutCanvas({
         if (container) {
           // Canvas takes most of container width, leaving some for garden info sidebar
           const availableWidth = container.clientWidth * 0.75;
-          const availableHeight = window.innerHeight * 0.5; // Use 50% of viewport height
+          const availableHeight = window.innerHeight * 0.7; // Use 70% of viewport height for better visibility
           
-          // Maintain 4:3 aspect ratio
+          // Calculate aspect ratio based on actual garden dimensions
+          const gardenAspectRatio = gardenWidth / gardenHeight;
+          
           let width = availableWidth;
-          let height = (width * 3) / 4;
+          let height = width / gardenAspectRatio;
           
+          // If height exceeds available space, scale down
           if (height > availableHeight) {
             height = availableHeight;
-            width = (height * 4) / 3;
+            width = height * gardenAspectRatio;
           }
           
-          // Ensure minimum size
-          width = Math.max(width, 800);
-          height = Math.max(height, 600);
+          // Ensure minimum size with proper aspect ratio
+          const minSize = 600;
+          if (width < minSize) {
+            width = minSize;
+            height = width / gardenAspectRatio;
+          }
+          if (height < minSize) {
+            height = minSize;
+            width = height * gardenAspectRatio;
+          }
+          
+          // For square gardens, ensure equal dimensions
+          if (Math.abs(gardenAspectRatio - 1) < 0.01) {
+            const size = Math.min(width, height, Math.max(availableWidth, availableHeight * 0.9));
+            width = size;
+            height = size;
+          }
           
           setCanvasSize({ width, height });
         }
@@ -117,7 +134,7 @@ export default function GardenLayoutCanvas({
     updateCanvasSize();
     window.addEventListener('resize', updateCanvasSize);
     return () => window.removeEventListener('resize', updateCanvasSize);
-  }, []);
+  }, [gardenWidth, gardenHeight]);
 
   // Initialize with AI design if provided
   useEffect(() => {
