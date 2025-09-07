@@ -16,7 +16,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles, X, Save } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import InteractiveCanvas from '@/components/garden/interactive-canvas';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
@@ -192,20 +192,32 @@ export default function GardenProperties() {
       const values = form.getValues();
       const errors: string[] = [];
       
-      // Check required fields
+      // Only garden name is absolutely required to proceed
       if (!values.name) errors.push("Garden Name");
-      if (!values.usdaZone && !values.rhsZone) errors.push("At least one Hardiness Zone (USDA or RHS)");
-      if (!values.sunExposure) errors.push("Sun Exposure");
-      if (!values.soilType) errors.push("Soil Type");
-      if (!values.soilPh) errors.push("Soil pH");
+      
+      // Warn about recommended fields but don't block
+      const warnings: string[] = [];
+      if (!values.usdaZone && !values.rhsZone) warnings.push("Hardiness Zone");
+      if (!values.sunExposure) warnings.push("Sun Exposure");
+      if (!values.soilType) warnings.push("Soil Type");
+      if (!values.soilPh) warnings.push("Soil pH");
       
       if (errors.length > 0) {
         toast({
-          title: "Required Fields Missing",
-          description: `Please fill in the following required fields: ${errors.join(", ")}`,
+          title: "Required Field Missing",
+          description: `Please provide a Garden Name to continue.`,
           variant: "destructive",
         });
         return;
+      }
+      
+      // Show warning for missing recommended fields but allow proceeding
+      if (warnings.length > 0) {
+        toast({
+          title: "Some recommended fields are empty",
+          description: `Consider adding: ${warnings.join(", ")} for better design recommendations. You can return to add these later.`,
+          variant: "default",
+        });
       }
       
       // Auto-save if enabled (always true for paid users)
@@ -2416,16 +2428,71 @@ export default function GardenProperties() {
 
             {/* Navigation Buttons */}
             <div className="flex justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                data-testid="button-previous"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-                Previous
-              </Button>
+              <div className="flex gap-2">
+                {currentStep === 1 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      // Save draft if there's any data and user wants to save
+                      const values = form.getValues();
+                      if (values.name && autoSaveEnabled && user && !gardenId) {
+                        // Save as draft before exiting
+                        createGardenMutation.mutate(values);
+                      }
+                      setLocation('/gardens');
+                    }}
+                    data-testid="button-exit"
+                  >
+                    <X className="w-3.5 h-3.5 mr-1.5" />
+                    Exit
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    data-testid="button-previous"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
+                    Previous
+                  </Button>
+                )}
+                
+                {/* Save Draft button for all steps */}
+                {currentStep < 5 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const values = form.getValues();
+                      if (values.name) {
+                        if (gardenId) {
+                          updateGardenMutation.mutate({ id: gardenId, data: values });
+                        } else {
+                          createGardenMutation.mutate(values);
+                        }
+                        toast({
+                          title: "Draft Saved",
+                          description: "Your garden has been saved. You can continue editing it later.",
+                        });
+                        setTimeout(() => setLocation('/gardens'), 1500);
+                      } else {
+                        toast({
+                          title: "Name Required",
+                          description: "Please provide a garden name to save as draft.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    disabled={createGardenMutation.isPending || updateGardenMutation.isPending}
+                    data-testid="button-save-draft"
+                  >
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    Save Draft
+                  </Button>
+                )}
+              </div>
 
               <Button
                 type={currentStep === 5 ? "submit" : "button"}
