@@ -339,14 +339,15 @@ export default function GardenLayoutCanvas({
                 {Array.from({ length: Math.ceil(gardenWidthInBaseUnits / gridSpacing) + 1 }, (_, i) => {
                   const x = i * gridSpacing * scaleX;
                   const label = units === 'metric' 
-                    ? i % 4 === 0 ? `${i * 25 / 100}m` : `${i * 25}cm`
+                    ? `${(i * 25 / 100).toFixed(1)}m`
                     : `${i}ft`;
-                  const showLabel = units === 'metric' ? (i % 2 === 0) : true; // Show every 50cm for metric
+                  const showLabel = units === 'metric' ? (i % 4 === 0) : (i % 2 === 0); // Show every 1m for metric, every 2ft for imperial
+                  const tickHeight = showLabel ? 10 : 5; // Longer ticks for labeled marks
                   return (
                     <g key={`h-ruler-${i}`}>
-                      <line x1={x} y1={0} x2={x} y2={8} stroke="#047857" strokeWidth="1" />
+                      <line x1={x} y1={0} x2={x} y2={tickHeight} stroke="#047857" strokeWidth={showLabel ? "1.5" : "0.5"} />
                       {showLabel && i > 0 && (
-                        <text x={x} y={18} fill="#047857" fontSize="9" textAnchor="middle">
+                        <text x={x} y={20} fill="#047857" fontSize="10" textAnchor="middle" fontWeight="500">
                           {label}
                         </text>
                       )}
@@ -358,14 +359,15 @@ export default function GardenLayoutCanvas({
                 {Array.from({ length: Math.ceil(gardenHeightInBaseUnits / gridSpacing) + 1 }, (_, i) => {
                   const y = i * gridSpacing * scaleY;
                   const label = units === 'metric' 
-                    ? i % 4 === 0 ? `${i * 25 / 100}m` : `${i * 25}cm`
+                    ? `${(i * 25 / 100).toFixed(1)}m`
                     : `${i}ft`;
-                  const showLabel = units === 'metric' ? (i % 2 === 0) : true; // Show every 50cm for metric
+                  const showLabel = units === 'metric' ? (i % 4 === 0) : (i % 2 === 0); // Show every 1m for metric, every 2ft for imperial
+                  const tickWidth = showLabel ? 10 : 5; // Longer ticks for labeled marks
                   return (
                     <g key={`v-ruler-${i}`}>
-                      <line x1={0} y1={y} x2={8} y2={y} stroke="#047857" strokeWidth="1" />
+                      <line x1={0} y1={y} x2={tickWidth} y2={y} stroke="#047857" strokeWidth={showLabel ? "1.5" : "0.5"} />
                       {showLabel && i > 0 && (
-                        <text x={15} y={y + 3} fill="#047857" fontSize="9">
+                        <text x={18} y={y + 3} fill="#047857" fontSize="10" fontWeight="500">
                           {label}
                         </text>
                       )}
