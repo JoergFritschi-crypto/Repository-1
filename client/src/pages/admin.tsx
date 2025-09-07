@@ -67,7 +67,7 @@ export default function Admin() {
       sessionStorage.removeItem('tierTestingMode');
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     }
-  }, [testingTier, toast]);
+  }, [testingTier]);
 
   // Admin access check and make admin
   useEffect(() => {
