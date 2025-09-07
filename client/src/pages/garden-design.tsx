@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import InteractiveCanvas from "@/components/garden/interactive-canvas";
+import GardenLayoutCanvas from "@/components/garden/garden-layout-canvas";
+import PlantSearchModal from "@/components/plant/plant-search-modal";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Palette, 
   Eye, 
@@ -30,7 +32,10 @@ export default function GardenDesign() {
   const { id } = useParams<{ id: string }>();
   const [selectedSeason, setSelectedSeason] = useState("spring");
   const [viewMode, setViewMode] = useState("2d");
+  const [showPlantSearch, setShowPlantSearch] = useState(false);
+  const [inventoryPlants, setInventoryPlants] = useState<any[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const { data: garden, isLoading: gardenLoading } = useQuery({
     queryKey: ["/api/gardens", id],
@@ -49,6 +54,19 @@ export default function GardenDesign() {
       return response.json();
     },
   });
+
+  const { data: myCollection } = useQuery({
+    queryKey: ["/api/my-collection"],
+    enabled: user?.userTier === 'premium',
+  });
+
+  const handleAddPlantsToInventory = (plants: any[]) => {
+    setInventoryPlants(prev => [...prev, ...plants]);
+    toast({
+      title: "Plants Added",
+      description: `Added ${plants.length} plant${plants.length !== 1 ? 's' : ''} to your inventory`,
+    });
+  };
 
   const saveDesignMutation = useMutation({
     mutationFn: async (designData: any) => {
@@ -286,11 +304,13 @@ export default function GardenDesign() {
               <CardContent>
                 <Tabs value={viewMode} className="w-full">
                   <TabsContent value="2d" className="mt-0">
-                    <InteractiveCanvas
+                    <GardenLayoutCanvas
                       shape={garden.shape}
                       dimensions={garden.dimensions}
                       units={garden.units}
                       gardenId={garden.id}
+                      aiDesign={garden.layout_data}
+                      onOpenPlantSearch={() => setShowPlantSearch(true)}
                     />
                   </TabsContent>
 
@@ -402,6 +422,15 @@ export default function GardenDesign() {
           </div>
         </div>
       </div>
+
+      {/* Plant Search Modal */}
+      <PlantSearchModal
+        open={showPlantSearch}
+        onClose={() => setShowPlantSearch(false)}
+        onAddPlants={handleAddPlantsToInventory}
+        userTier={user?.userTier || 'free'}
+        existingCollection={myCollection || []}
+      />
     </div>
   );
 }
