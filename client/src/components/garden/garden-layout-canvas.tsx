@@ -561,11 +561,11 @@ export default function GardenLayoutCanvas({
                             </div>
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent className="p-2">
+                        <TooltipContent className="p-2 bg-popover text-popover-foreground border">
                           <div className="text-sm">
                             <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
-                            <div className="text-xs text-muted-foreground">{group.commonName}</div>
-                            <div className="text-xs text-muted-foreground mt-1">Quantity: {group.count}</div>
+                            <div className="text-xs opacity-90">{group.commonName}</div>
+                            <div className="text-xs opacity-90 mt-1">Quantity: {group.count}</div>
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -766,10 +766,10 @@ export default function GardenLayoutCanvas({
                         </span>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="p-2">
+                    <TooltipContent className="p-2 bg-popover text-popover-foreground border">
                       <div className="text-sm">
                         <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
-                        <div className="text-xs text-muted-foreground">{plant.plantName}</div>
+                        <div className="text-xs opacity-90">{plant.plantName}</div>
                       </div>
                     </TooltipContent>
                   </Tooltip>
@@ -858,11 +858,11 @@ export default function GardenLayoutCanvas({
                             </div>
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent className="p-2">
+                        <TooltipContent className="p-2 bg-popover text-popover-foreground border">
                           <div className="text-sm">
                             <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
-                            <div className="text-xs text-muted-foreground">{group.plantName}</div>
-                            <div className="text-xs text-muted-foreground mt-1">Quantity on canvas: {group.plants.length}</div>
+                            <div className="text-xs opacity-90">{group.plantName}</div>
+                            <div className="text-xs opacity-90 mt-1">Quantity on canvas: {group.plants.length}</div>
                           </div>
                         </TooltipContent>
                       </Tooltip>
