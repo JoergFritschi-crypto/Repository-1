@@ -338,21 +338,14 @@ export default function GardenProperties() {
                     )}
                   />
 
-                  {/* Location Options Tabs */}
+                  {/* Location Information */}
                   <div className="space-y-4">
                     <Label>Location Information</Label>
-                    <Tabs defaultValue="city" className="w-full">
-                      <TabsList className="grid grid-cols-2 w-full">
-                        <TabsTrigger value="city">City Search</TabsTrigger>
-                        <TabsTrigger value="zone">USDA Zone</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="city" className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Enter your location details for accurate climate data and plant recommendations
-                        </p>
-                        
-                        <div className="grid grid-cols-2 gap-4">
+                    <p className="text-sm text-muted-foreground">
+                      Enter your location details for accurate climate data and plant recommendations
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="city"
@@ -738,14 +731,6 @@ export default function GardenProperties() {
                             )}
                           />
                         </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="zone" className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Enter your location details above to get climate data, or manually select zones if you know them.
-                        </p>
-                      </TabsContent>
-                    </Tabs>
                   </div>
 
                   <FormField
@@ -2212,7 +2197,7 @@ export default function GardenProperties() {
                     <h3 className="font-semibold mb-3">Your Garden Summary</h3>
                     <div className="space-y-2 text-sm">
                       <p><strong>Name:</strong> {watchedName || "Not set"}</p>
-                      <p><strong>Location:</strong> {watchedCity || watchedLocation || "Not set"}</p>
+                      <p><strong>Location:</strong> {watchedCity || "Not set"}</p>
                       <p><strong>Shape:</strong> {watchedShape || "Rectangle"}</p>
                       <p><strong>Sun Exposure:</strong> {watchedSunExposure?.replace("_", " ") || "Not set"}</p>
                       <p><strong>Design Approach:</strong> {watchedDesignApproach?.toUpperCase() || "Not set"}</p>
