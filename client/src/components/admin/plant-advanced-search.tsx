@@ -200,8 +200,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       title: "Special Features",
       icon: Flower,
       options: [
-        'Drought Tolerant', 'Frost Hardy', 'Fast Growing', 
-        'Fragrant', 'Thorny', 'Native', 'Rare',
+        'Drought Tolerant', 'Salt Tolerant', 'Fast Growing', 
+        'Fragrant', 'Thorny', 'Tropical',
         'Culinary', 'Medicinal'
       ]
     },
