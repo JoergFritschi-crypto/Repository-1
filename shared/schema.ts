@@ -152,6 +152,14 @@ export const plants = pgTable("plants", {
   careLevel: varchar("care_level"), // Easy, moderate, hard
   maintenance: varchar("maintenance"), // Low, moderate, high
   
+  // Availability scoring fields
+  baseAvailabilityScore: integer("base_availability_score"), // 1-10, inherent ease of cultivation
+  cultivationDifficulty: varchar("cultivation_difficulty"), // easy, moderate, difficult
+  propagationMethod: varchar("propagation_method"), // seed, cutting, division, tissue-culture
+  commercialProduction: varchar("commercial_production"), // mass, specialty, rare, collector
+  climateAdaptability: integer("climate_adaptability"), // 1-5, how widely it can be grown
+  regionalAvailability: jsonb("regional_availability"), // {europe: {score, suppliers, lastSeen}, northAmerica: {...}}
+  
   // Appearance
   leaf: jsonb("leaf"), // Leaf information
   leafColor: jsonb("leaf_color"), // Array of colors
