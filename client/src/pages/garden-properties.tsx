@@ -187,6 +187,11 @@ export default function GardenProperties() {
   const watchedPetSafe = form.watch("preferences.petSafe");
   const watchedChildSafe = form.watch("preferences.childSafe");
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
+
   const nextStep = async () => {
     // Skip validation for admin users
     const isAdmin = user?.isAdmin === true;
