@@ -614,11 +614,9 @@ export default function GardenLayoutCanvas({
                 ))}
               </TooltipProvider>
 
-              {/* Drag indicator */}
+              {/* Drag indicator - subtle border only */}
               {isDragging && (
-                <div className="absolute inset-0 bg-green-200/30 backdrop-blur-sm pointer-events-none flex items-center justify-center rounded-lg">
-                  <p className="text-green-800 font-semibold text-lg bg-white/80 px-4 py-2 rounded-lg">Drop plant here</p>
-                </div>
+                <div className="absolute inset-0 border-3 border-green-500 border-dashed rounded-lg pointer-events-none animate-pulse" />
               )}
             </div>
           </CardContent>
