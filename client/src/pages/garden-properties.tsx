@@ -122,6 +122,7 @@ export default function GardenProperties() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showClimateModal, setShowClimateModal] = useState(false);
   const [showSoilTestingModal, setShowSoilTestingModal] = useState(false);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true); // Default to checked
   const [locationToFetch, setLocationToFetch] = useState<string | null>(null);
   const [climateData, setClimateData] = useState<any>(null);
   const [hasUploadedPhotos, setHasUploadedPhotos] = useState(false);
@@ -343,6 +344,34 @@ export default function GardenProperties() {
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
+                  {/* Auto-save preference */}
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id="auto-save"
+                        checked={autoSaveEnabled}
+                        onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-[#004025] focus:ring-[#004025]"
+                        data-testid="checkbox-auto-save"
+                      />
+                      <label htmlFor="auto-save" className="text-sm text-gray-700 cursor-pointer">
+                        <span className="font-semibold">Save my garden data for future use</span>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Your garden information will be automatically saved as you progress, allowing you to:
+                        </p>
+                        <ul className="text-xs text-gray-600 mt-1 ml-4 list-disc">
+                          <li>Return anytime to continue where you left off</li>
+                          <li>Keep your designs and access them later</li>
+                          <li>Upgrade to premium for unlimited design iterations</li>
+                        </ul>
+                        <p className="text-xs text-gray-500 mt-2 italic">
+                          Uncheck this if you prefer to keep data only in your browser for this session
+                        </p>
+                      </label>
+                    </div>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="name"
