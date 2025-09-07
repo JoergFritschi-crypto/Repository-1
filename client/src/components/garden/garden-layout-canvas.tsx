@@ -215,12 +215,20 @@ export default function GardenLayoutCanvas({
   useEffect(() => {
     if (gardenPlants && gardenPlants.length > 0 && !aiDesign) {
       // Convert garden plants to the format needed for the inventory
-      const inventoryPlants = gardenPlants.map((gp: any) => ({
-        id: gp.id,
-        commonName: gp.plant?.commonName || 'Unknown Plant',
-        scientificName: gp.plant?.scientificName || '',
-        ...gp.plant // Include all plant details
-      }));
+      // Create individual entries for each plant based on quantity
+      const inventoryPlants: Plant[] = [];
+      let uniqueCounter = 0;
+      gardenPlants.forEach((gp: any) => {
+        const quantity = gp.quantity || 1;
+        for (let i = 0; i < quantity; i++) {
+          inventoryPlants.push({
+            ...gp.plant, // Include all plant details first
+            id: `inventory-${uniqueCounter++}-${Math.random()}`, // Override with unique ID
+            commonName: gp.plant?.commonName || 'Unknown Plant',
+            scientificName: gp.plant?.scientificName || ''
+          });
+        }
+      });
       setUnplacedPlants(inventoryPlants);
     }
   }, [gardenPlants, aiDesign]);
@@ -279,13 +287,13 @@ export default function GardenLayoutCanvas({
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
     const newPlacedPlant: PlacedPlant = {
-      id: `placed-${Date.now()}`,
+      id: `placed-${Date.now()}-${Math.random()}`,
       plantId: draggedPlant.id,
       plantName: draggedPlant.commonName,
       scientificName: draggedPlant.scientificName,
       x: Math.max(5, Math.min(95, x)), // Keep within bounds
       y: Math.max(5, Math.min(95, y)),
-      quantity: 1,
+      quantity: 1, // Always 1 since each dot represents one plant
       plantType: (draggedPlant as any).plantType,
       flowerColor: (draggedPlant as any).flowerColor
     };
@@ -305,7 +313,7 @@ export default function GardenLayoutCanvas({
         quantity: 0
       };
     }
-    acc[plant.plantId].quantity += plant.quantity;
+    acc[plant.plantId].quantity += 1; // Each dot represents one plant
     return acc;
   }, {} as Record<string, { name: string; scientificName?: string; quantity: number }>);
 
@@ -523,9 +531,6 @@ export default function GardenLayoutCanvas({
                       <div className="text-sm">
                         <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
                         <div className="text-xs text-muted-foreground">{plant.plantName}</div>
-                        {plant.quantity > 1 && (
-                          <div className="text-xs mt-1">Quantity: {plant.quantity}</div>
-                        )}
                       </div>
                     </TooltipContent>
                   </Tooltip>
