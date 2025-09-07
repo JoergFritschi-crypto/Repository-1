@@ -63,6 +63,22 @@ export default function GardenLayoutCanvas({
 
   // Get plant color based on type or characteristics
   const getPlantColor = (plant: any): string => {
+    // Special colors for specific plants we know we have
+    const commonName = plant.commonName?.toLowerCase() || '';
+    const scientificName = plant.scientificName?.toLowerCase() || '';
+    
+    // Specific plant colors
+    if (commonName.includes('lavender') || scientificName.includes('lavandula')) return '#a78bfa'; // Lavender purple
+    if (commonName.includes('rose') || scientificName.includes('rosa')) return '#dc2626'; // Red for roses
+    if (commonName.includes('hydrangea')) return '#ec4899'; // Pink
+    if (commonName.includes('peony') || scientificName.includes('paeonia')) return '#f472b6'; // Light pink
+    if (commonName.includes('iris')) return '#7c3aed'; // Deep purple
+    if (commonName.includes('salvia')) return '#6366f1'; // Indigo
+    if (commonName.includes('astilbe')) return '#db2777'; // Dark pink
+    if (commonName.includes('daylily') || scientificName.includes('hemerocallis')) return '#fb923c'; // Orange
+    if (commonName.includes('hosta')) return '#059669'; // Deep green for foliage plant
+    if (commonName.includes('maple') || scientificName.includes('acer')) return '#b91c1c'; // Deep red for Japanese Maple
+    
     // If flower color is specified, use that
     if (plant.flowerColor && typeof plant.flowerColor === 'string') {
       const colorMap: Record<string, string> = {
@@ -82,12 +98,12 @@ export default function GardenLayoutCanvas({
     }
     
     // Default colors based on plant type
-    if (plant.plantType && typeof plant.plantType === 'string') {
-      if (plant.plantType.includes('tree')) return '#059669'; // Emerald for trees
-      if (plant.plantType.includes('shrub')) return '#16a34a'; // Green for shrubs
-      if (plant.plantType.includes('perennial')) return '#8b5cf6'; // Violet for perennials
-      if (plant.plantType.includes('annual')) return '#f59e0b'; // Amber for annuals
-      if (plant.plantType.includes('herb')) return '#10b981'; // Light green for herbs
+    if (plant.type && typeof plant.type === 'string') {
+      if (plant.type.includes('tree')) return '#059669'; // Emerald for trees
+      if (plant.type.includes('shrub')) return '#16a34a'; // Green for shrubs
+      if (plant.type.includes('perennial')) return '#8b5cf6'; // Violet for perennials
+      if (plant.type.includes('annual')) return '#f59e0b'; // Amber for annuals
+      if (plant.type.includes('herb')) return '#10b981'; // Light green for herbs
     }
     
     // Default green
@@ -362,10 +378,6 @@ export default function GardenLayoutCanvas({
               <div className="flex flex-wrap gap-2">
                 <TooltipProvider>
                   {unplacedPlants.map((plant) => {
-                    const plantData = {
-                      plantType: (plant as any).plantType,
-                      flowerColor: (plant as any).flowerColor
-                    };
                     return (
                       <Tooltip key={plant.id}>
                         <TooltipTrigger asChild>
@@ -377,7 +389,7 @@ export default function GardenLayoutCanvas({
                             style={{
                               width: '24px',
                               height: '24px',
-                              backgroundColor: getPlantColor(plantData as any),
+                              backgroundColor: getPlantColor(plant),
                             }}
                             data-testid={`inventory-plant-${plant.id}`}
                           >
