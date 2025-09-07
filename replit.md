@@ -8,6 +8,16 @@ GardenScape Pro is a full-stack web application for designing ornamental gardens
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+### Navigation Improvements (January 2025)
+- Enhanced garden properties form navigation to prevent users from getting trapped
+- Added "Exit" button on step 1 and "Save Draft" button on all steps for better UX
+- Relaxed field validation - only garden name is truly required to proceed from step 1
+- Added clear visual indicators: required fields marked with red asterisk, recommended fields marked with orange "(Recommended)" label
+- Implemented auto-save behavior based on user tier: always enabled for paid users, optional for free users with default opt-in
+- Added helper note explaining that recommended fields can be filled in later for better flexibility
+
 ## System Architecture
 
 ### Frontend Architecture
