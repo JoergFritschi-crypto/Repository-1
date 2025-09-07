@@ -367,7 +367,14 @@ export default function GardenLayoutCanvas({
                     <g key={`v-ruler-${i}`}>
                       <line x1={0} y1={y} x2={tickWidth} y2={y} stroke="#047857" strokeWidth={showLabel ? "1.5" : "0.5"} />
                       {showLabel && i > 0 && (
-                        <text x={18} y={y + 3} fill="#047857" fontSize="10" fontWeight="500">
+                        <text 
+                          x={18} 
+                          y={y} 
+                          fill="#047857" 
+                          fontSize="10" 
+                          fontWeight="500"
+                          dominantBaseline="middle"
+                        >
                           {label}
                         </text>
                       )}
