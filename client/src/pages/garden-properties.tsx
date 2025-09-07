@@ -181,6 +181,28 @@ export default function GardenProperties() {
   const watchedChildSafe = form.watch("preferences.childSafe");
 
   const nextStep = () => {
+    // Validate required fields for Step 1 before proceeding
+    if (currentStep === 1) {
+      const values = form.getValues();
+      const errors: string[] = [];
+      
+      // Check required fields
+      if (!values.name) errors.push("Garden Name");
+      if (!values.usdaZone && !values.rhsZone) errors.push("At least one Hardiness Zone (USDA or RHS)");
+      if (!values.sunExposure) errors.push("Sun Exposure");
+      if (!values.soilType) errors.push("Soil Type");
+      if (!values.soilPh) errors.push("Soil pH");
+      
+      if (errors.length > 0) {
+        toast({
+          title: "Required Fields Missing",
+          description: `Please fill in the following required fields: ${errors.join(", ")}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     setCurrentStep(prev => Math.min(prev + 1, 5));
   };
 
