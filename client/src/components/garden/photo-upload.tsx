@@ -9,8 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 interface PhotoUploadProps {
   onPhotosChange?: (photos: File[]) => void;
   onAnalysisComplete?: (analysis: GardenPhotoAnalysis) => void;
-  onStylesGenerated?: (styles: DesignStyleSuggestion[]) => void;
-  onStyleSelected?: (style: DesignStyleSuggestion | null) => void;
   maxPhotos?: number;
   gardenData?: any; // Full form data from Steps 2 and 3
 }
@@ -42,8 +40,6 @@ interface DesignStyleSuggestion {
 export default function PhotoUpload({ 
   onPhotosChange,
   onAnalysisComplete,
-  onStylesGenerated,
-  onStyleSelected,
   maxPhotos = 6,
   gardenData
 }: PhotoUploadProps) {
@@ -116,10 +112,7 @@ export default function PhotoUpload({
         description: 'Claude has analyzed your garden photos successfully!'
       });
 
-      // Automatically generate design styles after analysis
-      if (photos.length > 0) {
-        generateStylesMutation.mutate(data);
-      }
+      // Don't generate styles here - that happens in Step 3 now
     },
     onError: (error) => {
       console.error('Analysis error:', error);
