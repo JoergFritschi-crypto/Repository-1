@@ -16,12 +16,13 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles, X, Save } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import InteractiveCanvas from '@/components/garden/interactive-canvas';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
 import PhotoUpload from '@/components/garden/photo-upload';
+import Navigation from '@/components/layout/navigation';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -192,32 +193,20 @@ export default function GardenProperties() {
       const values = form.getValues();
       const errors: string[] = [];
       
-      // Only garden name is absolutely required to proceed
+      // Check required fields
       if (!values.name) errors.push("Garden Name");
-      
-      // Warn about recommended fields but don't block
-      const warnings: string[] = [];
-      if (!values.usdaZone && !values.rhsZone) warnings.push("Hardiness Zone");
-      if (!values.sunExposure) warnings.push("Sun Exposure");
-      if (!values.soilType) warnings.push("Soil Type");
-      if (!values.soilPh) warnings.push("Soil pH");
+      if (!values.usdaZone && !values.rhsZone) errors.push("At least one Hardiness Zone (USDA or RHS)");
+      if (!values.sunExposure) errors.push("Sun Exposure");
+      if (!values.soilType) errors.push("Soil Type");
+      if (!values.soilPh) errors.push("Soil pH");
       
       if (errors.length > 0) {
         toast({
-          title: "Required Field Missing",
-          description: `Please provide a Garden Name to continue.`,
+          title: "Required Fields Missing",
+          description: `Please fill in the following required fields: ${errors.join(", ")}`,
           variant: "destructive",
         });
         return;
-      }
-      
-      // Show warning for missing recommended fields but allow proceeding
-      if (warnings.length > 0) {
-        toast({
-          title: "Some recommended fields are empty",
-          description: `Consider adding: ${warnings.join(", ")} for better design recommendations. You can return to add these later.`,
-          variant: "default",
-        });
       }
       
       // Auto-save if enabled (always true for paid users)
@@ -373,6 +362,7 @@ export default function GardenProperties() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50">
+      <Navigation />
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
         <div className="mb-6">
@@ -446,13 +436,6 @@ export default function GardenProperties() {
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
-                  {/* Helper note about required fields */}
-                  <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Note:</strong> Only the garden name is required to proceed. Other fields are recommended for better design recommendations but can be added later. You can save your progress at any time using the "Save Draft" button.
-                    </p>
-                  </div>
-                  
                   {/* Auto-save preference - only shown for free users */}
                   {!isPaidUser && (
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -943,7 +926,7 @@ export default function GardenProperties() {
                     name="sunExposure"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Primary Sun Exposure <span className="text-orange-500">(Recommended)</span></FormLabel>
+                        <FormLabel>Primary Sun Exposure <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-sun-exposure">
@@ -993,7 +976,7 @@ export default function GardenProperties() {
                       name="soilType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Soil Type <span className="text-orange-500">(Recommended)</span></FormLabel>
+                          <FormLabel>Soil Type <span className="text-red-500">*</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-soil-type">
@@ -1021,7 +1004,7 @@ export default function GardenProperties() {
                       name="soilPh"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Soil pH <span className="text-orange-500">(Recommended)</span></FormLabel>
+                          <FormLabel>Soil pH <span className="text-red-500">*</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-soil-ph">
@@ -2435,71 +2418,16 @@ export default function GardenProperties() {
 
             {/* Navigation Buttons */}
             <div className="flex justify-between">
-              <div className="flex gap-2">
-                {currentStep === 1 ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      // Save draft if there's any data and user wants to save
-                      const values = form.getValues();
-                      if (values.name && autoSaveEnabled && user && !gardenId) {
-                        // Save as draft before exiting
-                        createGardenMutation.mutate(values);
-                      }
-                      setLocation('/gardens');
-                    }}
-                    data-testid="button-exit"
-                  >
-                    <X className="w-3.5 h-3.5 mr-1.5" />
-                    Exit
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevStep}
-                    data-testid="button-previous"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-                    Previous
-                  </Button>
-                )}
-                
-                {/* Save Draft button for all steps */}
-                {currentStep < 5 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const values = form.getValues();
-                      if (values.name) {
-                        if (gardenId) {
-                          updateGardenMutation.mutate({ id: gardenId, data: values });
-                        } else {
-                          createGardenMutation.mutate(values);
-                        }
-                        toast({
-                          title: "Draft Saved",
-                          description: "Your garden has been saved. You can continue editing it later.",
-                        });
-                        setTimeout(() => setLocation('/gardens'), 1500);
-                      } else {
-                        toast({
-                          title: "Name Required",
-                          description: "Please provide a garden name to save as draft.",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    disabled={createGardenMutation.isPending || updateGardenMutation.isPending}
-                    data-testid="button-save-draft"
-                  >
-                    <Save className="w-3.5 h-3.5 mr-1.5" />
-                    Save Draft
-                  </Button>
-                )}
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 1}
+                data-testid="button-previous"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
+                Previous
+              </Button>
 
               <Button
                 type={currentStep === 5 ? "submit" : "button"}
