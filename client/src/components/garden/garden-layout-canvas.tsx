@@ -370,12 +370,12 @@ export default function GardenLayoutCanvas({
           const restoredPlant: Plant = {
             id: placedPlant.plantId,
             commonName: placedPlant.plantName,
-            scientificName: placedPlant.scientificName,
+            scientificName: placedPlant.scientificName || '',
             family: '',
             genus: '',
             species: '',
             cultivar: '',
-            type: placedPlant.plantType,
+            type: placedPlant.plantType || null,
             dimension: null,
             cycle: '',
             foliage: '',
@@ -459,8 +459,8 @@ export default function GardenLayoutCanvas({
   return (
     <div className="w-full space-y-3">
       {/* Advanced Search Module at Top */}
-      <Card className="border-2 border-blue-400 shadow-md" style={{ width: `${canvasSize.width}px` }}>
-        <CardHeader className="py-3 px-4 bg-blue-50">
+      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        <CardHeader className="py-3 px-4 bg-muted/50">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Search className="w-4 h-4" />
             Plant Search
@@ -469,7 +469,7 @@ export default function GardenLayoutCanvas({
         <CardContent className="py-3 px-4">
           <Button 
             onClick={onOpenPlantSearch}
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full"
             data-testid="button-open-plant-search"
           >
             Go to Advanced Search Tab →
@@ -478,14 +478,14 @@ export default function GardenLayoutCanvas({
       </Card>
 
       {/* Plants Inventory Above Canvas */}
-      <Card className="border-2 border-gray-300 shadow-md" style={{ width: `${canvasSize.width}px` }}>
-        <CardHeader className="py-3 px-4 bg-gray-50">
+      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        <CardHeader className="py-3 px-4 bg-muted/50">
           <CardTitle className="text-sm font-medium">
             Plants Inventory ({unplacedPlants.length} unplaced)
           </CardTitle>
         </CardHeader>
         <CardContent 
-          className={`py-3 px-4 relative transition-colors ${isDraggingOverInventory ? 'bg-red-50 border-2 border-red-400 border-dashed' : ''}`}
+          className={`py-3 px-4 relative transition-colors ${isDraggingOverInventory ? 'bg-destructive/10 border-2 border-destructive border-dashed' : ''}`}
           onDragOver={(e) => {
             e.preventDefault();
             const placedPlantId = e.dataTransfer.types.includes('text/plain') ? e.dataTransfer.getData('text/plain') : '';
@@ -530,9 +530,9 @@ export default function GardenLayoutCanvas({
                     return Object.values(groupedPlants).map((group: any, index: number) => (
                       <Tooltip key={`${group.scientificName || group.commonName}-${index}`}>
                         <TooltipTrigger asChild>
-                          <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg px-2 py-1 shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex items-center gap-1 bg-background border rounded-lg px-2 py-1 shadow-sm hover:shadow-md transition-shadow">
                             <div
-                              className="rounded-full border border-gray-700 shadow-sm flex items-center justify-center"
+                              className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
                               style={{
                                 width: '20px',
                                 height: '20px',
@@ -543,7 +543,7 @@ export default function GardenLayoutCanvas({
                                 {getPlantInitials(group.scientificName)}
                               </span>
                             </div>
-                            <span className="text-xs font-medium text-gray-700">×{group.count}</span>
+                            <span className="text-xs font-medium">×{group.count}</span>
                             <div className="flex gap-1">
                               {group.plants.map((plant: any, index: number) => (
                                 <div
@@ -551,7 +551,7 @@ export default function GardenLayoutCanvas({
                                   draggable
                                   onDragStart={(e) => handleDragStart(plant, e)}
                                   onDragEnd={handleDragEnd}
-                                  className="rounded-full border border-gray-600 cursor-move hover:scale-125 transition-transform flex items-center justify-center"
+                                  className="rounded-full border border-foreground/60 cursor-move hover:scale-125 transition-transform flex items-center justify-center"
                                   style={{
                                     width: '20px',
                                     height: '20px',
@@ -567,11 +567,11 @@ export default function GardenLayoutCanvas({
                             </div>
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent className="p-2 bg-gray-900 text-white border-gray-700">
+                        <TooltipContent className="p-2">
                           <div className="text-sm">
-                            <div className="font-semibold italic text-white">{group.scientificName || 'Unknown'}</div>
-                            <div className="text-xs text-gray-300">{group.commonName}</div>
-                            <div className="text-xs text-gray-300 mt-1">Quantity: {group.count}</div>
+                            <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
+                            <div className="text-xs text-muted-foreground">{group.commonName}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Quantity: {group.count}</div>
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -587,11 +587,11 @@ export default function GardenLayoutCanvas({
       {/* Main Layout: Canvas Left, Garden Info Right */}
       <div className="flex gap-3">
         {/* Canvas Section */}
-        <Card className="border-2 border-green-600 shadow-lg overflow-visible" style={{ width: `${canvasSize.width}px` }}>
+        <Card className="shadow-lg overflow-visible" style={{ width: `${canvasSize.width}px` }}>
           <CardContent className="p-3 overflow-visible">
             <div 
               ref={canvasRef}
-              className="relative bg-gradient-to-br from-green-100 via-emerald-50 to-green-100 rounded-lg shadow-inner"
+              className="relative bg-gradient-to-br from-muted/30 via-background to-muted/30 rounded-lg shadow-inner"
               style={{ 
                 width: `${canvasSize.width - 24}px`, 
                 height: `${canvasSize.height}px`,
@@ -722,8 +722,8 @@ export default function GardenLayoutCanvas({
                         draggable
                         onDragStart={(e) => handlePlacedPlantDragStart(plant, e)}
                         onDragEnd={handleDragEnd}
-                        className={`absolute rounded-full border-2 border-gray-800 shadow-lg cursor-move hover:scale-125 transition-transform flex items-center justify-center ${
-                          selectedPlant === plant.id ? 'ring-2 ring-blue-500' : ''
+                        className={`absolute rounded-full border-2 border-foreground/80 shadow-lg cursor-move hover:scale-125 transition-transform flex items-center justify-center ${
+                          selectedPlant === plant.id ? 'ring-2 ring-primary' : ''
                         }`}
                         style={{
                           width: '24px',
@@ -741,10 +741,10 @@ export default function GardenLayoutCanvas({
                         </span>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="p-2 bg-gray-900 text-white border-gray-700">
+                    <TooltipContent className="p-2">
                       <div className="text-sm">
-                        <div className="font-semibold italic text-white">{plant.scientificName || 'Unknown'}</div>
-                        <div className="text-xs text-gray-300">{plant.plantName}</div>
+                        <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
+                        <div className="text-xs text-muted-foreground">{plant.plantName}</div>
                       </div>
                     </TooltipContent>
                   </Tooltip>
@@ -753,15 +753,15 @@ export default function GardenLayoutCanvas({
 
               {/* Drag indicator - subtle border only */}
               {isDragging && (
-                <div className="absolute inset-0 border-3 border-green-500 border-dashed rounded-lg pointer-events-none animate-pulse" />
+                <div className="absolute inset-0 border-3 border-primary/50 border-dashed rounded-lg pointer-events-none animate-pulse" />
               )}
             </div>
           </CardContent>
         </Card>
 
         {/* Garden Info Sidebar - Right */}
-        <Card className="border-2 border-gray-300 shadow-md flex-1">
-          <CardHeader className="py-3 px-4 bg-gray-50">
+        <Card className="shadow-md flex-1">
+          <CardHeader className="py-3 px-4 bg-muted/50">
             <CardTitle className="text-sm flex items-center gap-1">
               <Info className="w-4 h-4" />
               Garden Details
@@ -769,11 +769,11 @@ export default function GardenLayoutCanvas({
           </CardHeader>
           <CardContent className="py-3 px-4 space-y-3">
             <div>
-              <p className="text-xs text-gray-600 uppercase tracking-wider">Shape</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Shape</p>
               <p className="text-base font-semibold">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-600 uppercase tracking-wider">Dimensions</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Dimensions</p>
               <p className="text-base font-semibold">
                 {shape === 'circle' ? 
                   `Radius: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
@@ -784,16 +784,16 @@ export default function GardenLayoutCanvas({
               </p>
             </div>
             <div className="pt-2 border-t">
-              <p className="text-xs text-gray-600 uppercase tracking-wider">Total Area</p>
-              <p className="text-xl font-bold text-green-700">{calculateArea()} {unitSquared}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Area</p>
+              <p className="text-xl font-bold text-primary">{calculateArea()} {unitSquared}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Placed Plants List Below Canvas */}
-      <Card className="border-2 border-gray-300 shadow-md" style={{ width: `${canvasSize.width}px` }}>
-        <CardHeader className="py-3 px-4 bg-gray-50">
+      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        <CardHeader className="py-3 px-4 bg-muted/50">
           <CardTitle className="text-sm">
             Placed Plants ({Object.keys(plantSummary).length} unique species)
           </CardTitle>
@@ -809,13 +809,13 @@ export default function GardenLayoutCanvas({
                 {Object.values(plantSummary).map((summary) => (
                   <div 
                     key={summary.name}
-                    className="flex justify-between items-center p-2 bg-green-50 rounded-lg border border-green-200"
+                    className="flex justify-between items-center p-2 bg-muted/30 rounded-lg border"
                     data-testid={`summary-${summary.name}`}
                   >
                     <div className="flex-1 min-w-0 pr-2">
                       <p className="font-medium text-sm truncate">{summary.name}</p>
                       {summary.scientificName && (
-                        <p className="text-xs text-gray-600 italic truncate">{summary.scientificName}</p>
+                        <p className="text-xs text-muted-foreground italic truncate">{summary.scientificName}</p>
                       )}
                     </div>
                     <Badge variant="secondary" className="ml-2 flex-shrink-0">
