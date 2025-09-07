@@ -22,6 +22,16 @@ export default function AdminTestVisualization() {
     enabled: !!selectedGardenId,
   });
   
+  // Log garden data to see what's loaded
+  if (garden) {
+    console.log('Garden loaded:', {
+      name: garden.name,
+      hasCanvasDesign: !!garden.canvasDesign,
+      plantCount: garden.canvasDesign?.plants?.length || 0,
+      plants: garden.canvasDesign?.plants?.slice(0, 3) // Show first 3 plants
+    });
+  }
+  
   return (
     <div className="min-h-screen bg-background">
       <AdminNavigation currentPage="Testing Tools" />
