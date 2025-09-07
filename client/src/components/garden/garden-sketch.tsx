@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, TrendingUp } from 'lucide-react';
+import { Lightbulb, TrendingUp, Brain, Sparkles } from 'lucide-react';
 
 interface GardenSketchProps {
   shape: string;
@@ -539,17 +539,27 @@ export default function GardenSketch({
             </div>
           </div>
           
-          {/* Assessment Button */}
-          <Button 
-            onClick={generateAssessment}
-            className="w-full mt-3"
-            variant="outline"
-            size="sm"
-            data-testid="button-assess-garden"
-          >
-            <Lightbulb className="w-4 h-4 mr-2" />
-            Analyze Garden Conditions
-          </Button>
+          {/* AI Assessment Button - Prominent Feature */}
+          <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border-2 border-purple-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Brain className="w-5 h-5 text-purple-600" />
+              <span className="text-sm font-semibold text-purple-800">AI Garden Analysis</span>
+              <Sparkles className="w-4 h-4 text-purple-500" />
+            </div>
+            <p className="text-xs text-gray-600 mb-2">
+              Let AI analyze your garden's unique conditions for personalized insights
+            </p>
+            <Button 
+              onClick={generateAssessment}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md"
+              size="default"
+              data-testid="button-assess-garden"
+            >
+              <Brain className="w-5 h-5 mr-2" />
+              Analyze My Garden with AI
+              <Sparkles className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
 
         {/* Right side - Assessment Panel */}
@@ -557,8 +567,8 @@ export default function GardenSketch({
           <Card className="border-green-300 bg-green-50/50">
             <CardHeader className="py-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-600" />
-                Garden Assessment
+                <Brain className="w-4 h-4 text-green-600" />
+                AI Garden Assessment
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
