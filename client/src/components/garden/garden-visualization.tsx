@@ -23,7 +23,6 @@ import { apiRequest } from '@/lib/queryClient';
 
 interface GardenVisualizationProps {
   gardenId: string;
-  userTier: 'free' | 'pay_per_design' | 'premium';
   onReturn?: () => void;
 }
 
@@ -53,13 +52,12 @@ const getPeriodDetails = (periodIndex: number) => {
   };
 };
 
-export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisualizationProps) {
+export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Tier-based limits
-  const maxImages = userTier === 'free' ? 2 : 6;
-  const maxIterations = userTier === 'free' ? 3 : Infinity;
+  // Admin testing always has full access
+  const maxImages = 6;
   
   // State
   const [imageCount, setImageCount] = useState(maxImages);
@@ -70,13 +68,6 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [iterationCount, setIterationCount] = useState(0);
   const [generationProgress, setGenerationProgress] = useState(0);
-  
-  // Update imageCount when tier changes
-  useEffect(() => {
-    // When switching tiers, default to the maximum available for that tier
-    setImageCount(maxImages);
-  }, [userTier, maxImages]);
-  const canIterate = iterationCount < maxIterations;
   
   // Query to get existing iteration count and saved images from storage
   const { data: visualizationData } = useQuery<{
@@ -90,17 +81,12 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   
   useEffect(() => {
     if (visualizationData) {
-      // For premium tier, don't limit by saved iteration count
-      if (visualizationData.iterationCount && userTier === 'free') {
-        setIterationCount(visualizationData.iterationCount);
-      } else if (userTier !== 'free') {
-        setIterationCount(0); // Reset for paid tiers
-      }
+      // Admin testing doesn't track iteration count
       if (visualizationData.savedImages && visualizationData.savedImages.length > 0) {
         setGeneratedImages(visualizationData.savedImages);
       }
     }
-  }, [visualizationData, userTier]);
+  }, [visualizationData]);
   
   // Calculate distributed periods
   const getDistributedPeriods = useCallback(() => {
@@ -307,20 +293,8 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
           <CardTitle>Garden Seasonal Visualization</CardTitle>
           <CardDescription>
             Generate photorealistic views of your garden throughout the year
-            <span className="block mt-1">
-              {userTier === 'free' ? (
-                <span className="text-orange-600">
-                  Free tier: {maxImages} images, {maxIterations - iterationCount} iterations remaining
-                </span>
-              ) : userTier === 'pay_per_design' ? (
-                <span className="text-blue-600">
-                  Tier 2: Up to {maxImages} images, unlimited iterations
-                </span>
-              ) : (
-                <span className="text-purple-600">
-                  Premium tier: Up to {maxImages} images, unlimited iterations
-                </span>
-              )}
+            <span className="block mt-1 text-purple-600">
+              Admin Testing: Up to {maxImages} images, unlimited iterations
             </span>
           </CardDescription>
         </CardHeader>
@@ -436,7 +410,7 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
           <div className="flex gap-3">
             <Button
               onClick={() => generateImagesMutation.mutate()}
-              disabled={generateImagesMutation.isPending || !canIterate}
+              disabled={generateImagesMutation.isPending}
               className="flex-1"
             >
               {generateImagesMutation.isPending ? `Generating... ${Math.round(generationProgress)}%` : 'Generate Images'}

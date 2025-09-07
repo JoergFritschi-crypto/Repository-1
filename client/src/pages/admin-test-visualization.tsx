@@ -99,7 +99,6 @@ export default function AdminTestVisualization() {
           <GardenVisualization 
             key={selectedGardenId}
             gardenId={selectedGardenId}
-            userTier="premium"
             onReturn={() => toast({
               title: "Return to Design",
               description: "This would return to the garden design in production"
