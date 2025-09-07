@@ -409,7 +409,7 @@ export default function Admin() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="testing" className="mt-8">
+              <TabsContent value="testing" className="mt-8 space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle data-testid="text-testing-tools-title">Testing Tools</CardTitle>
@@ -462,21 +462,30 @@ export default function Admin() {
                         </div>
                         
                         {testingTier && (
-                          <div className="mt-4 p-3 bg-white rounded-lg border border-purple-200">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-sm font-medium">Testing as: {testingTier.replace('_', ' ').toUpperCase()}</span>
+                          <div className="mt-4 space-y-3">
+                            <div className="p-3 bg-white rounded-lg border border-purple-200">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                  <span className="text-sm font-medium">Testing as: {testingTier.replace('_', ' ').toUpperCase()}</span>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setTestingTier(null)}
+                                  data-testid="button-clear-testing-tier"
+                                >
+                                  <X className="w-4 h-4 mr-1" />
+                                  Clear
+                                </Button>
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setTestingTier(null)}
-                                data-testid="button-clear-testing-tier"
-                              >
-                                <X className="w-4 h-4 mr-1" />
-                                Clear
-                              </Button>
+                            </div>
+                            
+                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <p className="text-sm text-blue-800">
+                                <strong>How to exit testing mode:</strong> Look for the floating indicator at the bottom-right of your screen. 
+                                Click "Exit to Admin" to return to your normal admin privileges, or click the minimize button to hide it temporarily.
+                              </p>
                             </div>
                           </div>
                         )}
