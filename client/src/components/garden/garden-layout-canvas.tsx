@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Info, Image, Sun, Cloud, Snowflake, Flower2 } from 'lucide-react';
+import { Search, Info, Image, Sun, Cloud, Snowflake, Flower2, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -388,6 +388,15 @@ export default function GardenLayoutCanvas({
   const handleDragEnd = () => {
     setIsDragging(false);
     setDraggedPlant(null);
+  };
+
+  // Handle plant deletion from canvas
+  const handleDeletePlant = (plantId: string) => {
+    setPlacedPlants(prev => prev.filter(p => p.id !== plantId));
+    toast({
+      title: "Plant Removed",
+      description: "Plant has been removed from the canvas",
+    });
   };
 
   const handleCanvasDrop = (e: React.DragEvent) => {
@@ -925,9 +934,23 @@ export default function GardenLayoutCanvas({
                       </div>
                     </TooltipTrigger>
                     <TooltipContent className="p-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg">
-                      <div className="text-sm">
-                        <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
-                        <div className="text-xs opacity-75">{plant.plantName}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm flex-1">
+                          <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
+                          <div className="text-xs opacity-75">{plant.plantName}</div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePlant(plant.id);
+                          }}
+                          data-testid={`delete-plant-${plant.id}`}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
                       </div>
                     </TooltipContent>
                   </Tooltip>
