@@ -71,8 +71,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   
   // Body parser middleware (MUST come after auth setup)
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
+  // Increase limit to 50MB to handle multiple image uploads
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
