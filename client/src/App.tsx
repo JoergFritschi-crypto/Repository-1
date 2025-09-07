@@ -14,6 +14,7 @@ import PlantLibrary from "@/pages/plant-library";
 import PlantDoctor from "@/pages/plant-doctor";
 import PremiumDashboard from "@/pages/premium-dashboard";
 import Admin from "@/pages/admin";
+import AdminTestVisualization from "@/pages/admin-test-visualization";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -35,6 +36,7 @@ function Router() {
           <Route path="/plant-doctor" component={PlantDoctor} />
           <Route path="/premium" component={PremiumDashboard} />
           <Route path="/admin" component={Admin} />
+          <Route path="/admin/test-visualization" component={AdminTestVisualization} />
         </>
       )}
       <Route component={NotFound} />
