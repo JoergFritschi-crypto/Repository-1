@@ -402,18 +402,6 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
             </div>
           </div>
           
-          {/* Preview of selected periods */}
-          <div className="bg-gray-50 p-3 rounded-lg">
-            <p className="text-sm font-medium mb-2">Images will be generated for:</p>
-            <div className="flex flex-wrap gap-2">
-              {getDistributedPeriods().map((periodIndex, i) => (
-                <span key={i} className="px-2 py-1 bg-white rounded text-xs">
-                  {getPeriodDetails(periodIndex).fullPeriod}
-                </span>
-              ))}
-            </div>
-          </div>
-          
           {/* Progress Bar */}
           {generateImagesMutation.isPending && (
             <div className="space-y-2">
