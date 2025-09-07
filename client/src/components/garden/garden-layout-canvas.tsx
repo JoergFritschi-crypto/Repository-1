@@ -76,9 +76,9 @@ export default function GardenLayoutCanvas({
       if (canvasRef.current) {
         const container = canvasRef.current.parentElement;
         if (container) {
-          // Canvas takes 80% of container width, leaving 20% for sidebar
-          const availableWidth = container.clientWidth * 0.78;
-          const availableHeight = window.innerHeight * 0.7; // 70% of viewport (40% increase from 0.5)
+          // Canvas takes most of container width, leaving just enough for sidebar
+          const availableWidth = container.clientWidth * 0.82;
+          const availableHeight = window.innerHeight * 0.85; // Use 85% of viewport height
           
           // Maintain 4:3 aspect ratio
           let width = availableWidth;
@@ -88,6 +88,10 @@ export default function GardenLayoutCanvas({
             height = availableHeight;
             width = (height * 4) / 3;
           }
+          
+          // Ensure minimum size
+          width = Math.max(width, 900);
+          height = Math.max(height, 675);
           
           setCanvasSize({ width, height });
         }
@@ -333,7 +337,7 @@ export default function GardenLayoutCanvas({
         </div>
 
         {/* Info Sidebar - Compact on Right */}
-        <div className="w-72 space-y-2">
+        <div className="w-64 space-y-2">
           {/* Garden Info */}
           <Card className="border border-gray-200">
             <CardHeader className="py-2 px-3">
