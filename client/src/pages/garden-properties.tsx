@@ -658,7 +658,16 @@ export default function GardenProperties() {
                                 USDA Hardiness Zone <span className="text-red-500">*</span>
                                 <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>
                               </FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select 
+                                    onValueChange={(value) => {
+                                      field.onChange(value);
+                                      // Clear RHS zone when USDA is selected (mutually exclusive)
+                                      if (value) {
+                                        form.setValue("rhsZone", "");
+                                      }
+                                    }} 
+                                    defaultValue={field.value}
+                                  >
                                     <FormControl>
                                       <SelectTrigger data-testid="select-usda-zone">
                                         <SelectValue placeholder="Select zone" />
@@ -701,7 +710,16 @@ export default function GardenProperties() {
                                     RHS Hardiness Rating <span className="text-red-500">*</span>
                                     <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>
                                   </FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select 
+                                    onValueChange={(value) => {
+                                      field.onChange(value);
+                                      // Clear USDA zone when RHS is selected (mutually exclusive)
+                                      if (value) {
+                                        form.setValue("usdaZone", "");
+                                      }
+                                    }} 
+                                    defaultValue={field.value}
+                                  >
                                     <FormControl>
                                       <SelectTrigger data-testid="select-rhs-zone">
                                         <SelectValue placeholder="Select rating" />
