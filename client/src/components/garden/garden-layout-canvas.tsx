@@ -359,21 +359,21 @@ export default function GardenLayoutCanvas({
                 {Array.from({ length: Math.ceil(gardenHeightInBaseUnits / gridSpacing) + 1 }, (_, i) => {
                   const y = i * gridSpacing * scaleY;
                   const label = units === 'metric' 
-                    ? `${(i * 25 / 100).toFixed(1)}m`
+                    ? (i * 25 / 100) >= 1 ? `${(i * 25 / 100).toFixed(0)}m` : `${i * 25}cm`
                     : `${i}ft`;
                   const showLabel = units === 'metric' ? (i % 4 === 0) : (i % 2 === 0); // Show every 1m for metric, every 2ft for imperial
                   const tickWidth = showLabel ? 10 : 5; // Longer ticks for labeled marks
                   return (
                     <g key={`v-ruler-${i}`}>
                       <line x1={0} y1={y} x2={tickWidth} y2={y} stroke="#047857" strokeWidth={showLabel ? "1.5" : "0.5"} />
-                      {showLabel && i > 0 && (
+                      {showLabel && (
                         <text 
-                          x={18} 
-                          y={y} 
+                          x={20} 
+                          y={y + 4} 
                           fill="#047857" 
                           fontSize="10" 
                           fontWeight="500"
-                          dominantBaseline="middle"
+                          textAnchor="start"
                         >
                           {label}
                         </text>
