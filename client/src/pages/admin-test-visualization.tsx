@@ -111,41 +111,11 @@ export default function AdminTestVisualization() {
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-sm">
                       <strong>Garden:</strong> {garden.name} | 
-                      <strong> Plants:</strong> {garden.layout_data?.plants?.length || 0} | 
+                      <strong> Plants:</strong> {garden.canvasDesign?.plants?.length || garden.layout_data?.plants?.length || 0} | 
                       <strong> Shape:</strong> {garden.shape} | 
                       <strong> Size:</strong> {garden.dimensions?.width}x{garden.dimensions?.length} {garden.units}
                     </p>
                   </div>
-                  
-                  {(!garden.layout_data?.plants || garden.layout_data.plants.length === 0) && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch('/api/admin/populate-test-garden', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
-                          });
-                          const data = await response.json();
-                          toast({
-                            title: "Test Garden Populated",
-                            description: `Added ${data.plantCount} sample plants to Test Garden 1`
-                          });
-                          // Refresh the page to load the new data
-                          window.location.reload();
-                        } catch (error) {
-                          toast({
-                            title: "Error",
-                            description: "Failed to populate test garden",
-                            variant: "destructive"
-                          });
-                        }
-                      }}
-                    >
-                      Populate Test Garden with Sample Plants
-                    </Button>
-                  )}
                 </div>
               )}
             </div>
