@@ -39,7 +39,7 @@ const gardenSchema = z.object({
   shape: z.enum(['rectangle', 'square', 'circle', 'oval', 'triangle', 'l_shaped', 'r_shaped']),
   dimensions: z.record(z.number()).default({}),
   units: z.enum(['feet', 'meters']),
-  sunExposure: z.enum(['full_sun', 'partial_shade', 'full_shade', 'varied']).optional(),
+  sunExposure: z.enum(['full_sun', 'partial_sun', 'partial_shade', 'full_shade']).optional(),
   soilType: z.enum(['clay', 'sand', 'loam', 'silt', 'chalk']).optional(),
   soilPh: z.enum(['acidic', 'neutral', 'alkaline']).optional(),
   hasSoilAnalysis: z.boolean().optional(),
@@ -603,22 +603,22 @@ export default function GardenProperties() {
                                 Full Sun (6+ hours)
                               </div>
                             </SelectItem>
+                            <SelectItem value="partial_sun">
+                              <div className="flex items-center">
+                                <Sun className="w-4 h-4 mr-2 text-yellow-300" />
+                                Partial Sun (4-6 hours)
+                              </div>
+                            </SelectItem>
                             <SelectItem value="partial_shade">
                               <div className="flex items-center">
                                 <Cloud className="w-4 h-4 mr-2 text-gray-400" />
-                                Partial Shade (3-6 hours)
+                                Partial Shade (2-4 hours)
                               </div>
                             </SelectItem>
                             <SelectItem value="full_shade">
                               <div className="flex items-center">
                                 <CloudRain className="w-4 h-4 mr-2 text-gray-600" />
-                                Full Shade (Less than 3 hours)
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="varied">
-                              <div className="flex items-center">
-                                <Wind className="w-4 h-4 mr-2 text-blue-400" />
-                                Varied (Different areas)
+                                Full Shade (Less than 2 hours)
                               </div>
                             </SelectItem>
                           </SelectContent>
