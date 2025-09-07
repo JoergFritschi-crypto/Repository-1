@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import Navigation from "@/components/layout/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import GardenLayoutCanvas from "@/components/garden/garden-layout-canvas";
 import PlantSearchModal from "@/components/plant/plant-search-modal";
 import { useAuth } from "@/hooks/useAuth";
+import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { 
   Save, 
   Download, 
@@ -22,11 +23,15 @@ import {
 
 export default function GardenDesign() {
   const { id } = useParams<{ id: string }>();
+  const [location] = useLocation();
   const [viewMode, setViewMode] = useState("canvas");
   const [showPlantSearch, setShowPlantSearch] = useState(false);
   const [inventoryPlants, setInventoryPlants] = useState<any[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Check if we came from admin
+  const isFromAdmin = sessionStorage.getItem('navigationSource') === 'admin';
 
   const { data: garden, isLoading: gardenLoading } = useQuery({
     queryKey: ["/api/gardens", id],
@@ -120,6 +125,10 @@ export default function GardenDesign() {
       <Navigation />
       
       <div className="container mx-auto px-4 py-6">
+        {/* Show admin navigation if accessed from admin */}
+        {isFromAdmin && (
+          <AdminNavigation gardenId={id} />
+        )}
         {/* Garden Header */}
         <div className="flex justify-between items-start mb-6">
           <div>

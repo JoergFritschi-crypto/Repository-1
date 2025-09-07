@@ -18,6 +18,8 @@ import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import { ImageGenerationMonitor } from "@/components/admin/image-generation-monitor";
 import { ImageComparisonTool } from "@/components/admin/image-comparison-tool";
+import { AdminNavigation } from "@/components/admin/admin-navigation";
+import { useLocation } from "wouter";
 import { 
   Settings, 
   Database, 
@@ -45,7 +47,8 @@ import {
   CreditCard,
   Zap,
   Trash2,
-  Lock
+  Lock,
+  Map
 } from "lucide-react";
 
 export default function Admin() {
@@ -193,11 +196,33 @@ export default function Admin() {
     { id: "api-keys", label: "API Keys", icon: Key },
   ];
 
+  // Create test garden mutation
+  const createTestGardenMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/create-test-garden");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Mark that we're navigating from admin
+      sessionStorage.setItem('navigationSource', 'admin');
+      window.location.href = `/garden-design/${data.id}`;
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Admin Navigation Bar */}
+        <AdminNavigation currentPage={activeTab === 'plants' ? 'Plant Database' : activeTab === 'testing' ? 'Testing Tools' : undefined} />
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-serif font-bold text-foreground mb-2" data-testid="text-admin-title">
@@ -264,6 +289,17 @@ export default function Admin() {
                           </div>
                         )}
                         <div className="ml-auto flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="bg-green-600 hover:bg-green-700"
+                            data-testid="button-create-test-garden"
+                            onClick={() => createTestGardenMutation.mutate()}
+                            disabled={createTestGardenMutation.isPending}
+                          >
+                            <Map className="w-4 h-4 mr-1" />
+                            Create Test Garden
+                          </Button>
                           <Button 
                             size="sm" 
                             variant="outline"
