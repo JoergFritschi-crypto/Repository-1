@@ -468,10 +468,10 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
               <div className="relative h-8">
                 <div className="absolute inset-0 bg-gray-300 rounded-full"></div>
                 <div 
-                  className="absolute h-full bg-primary rounded-full transition-all"
+                  className="absolute h-full bg-green-500 rounded-full transition-all"
                   style={{
                     left: `${(periodRange[0] / 23) * 100}%`,
-                    width: `${((periodRange[1] - periodRange[0]) / 23) * 100}%`
+                    width: `${((periodRange[1] - periodRange[0] + 1) / 23) * 100}%`
                   }}
                 ></div>
               </div>
