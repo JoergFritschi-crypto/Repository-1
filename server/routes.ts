@@ -1451,6 +1451,72 @@ Rules:
     }
   });
 
+  // Generate seasonal images from canvas design using Gemini
+  app.post('/api/gardens/:id/generate-seasonal-images', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!geminiAI) {
+        return res.status(503).json({ message: "Gemini AI not configured. Please add GEMINI_API_KEY." });
+      }
+
+      const garden = await storage.getGarden(req.params.id);
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const { canvasDesign, season } = req.body;
+      
+      if (!canvasDesign || !canvasDesign.plants) {
+        return res.status(400).json({ message: "Canvas design with plants is required" });
+      }
+
+      // Create a detailed prompt for Gemini to generate seasonal images
+      const plantList = canvasDesign.plants.map((p: any) => 
+        `${p.plantName || p.commonName} (${p.scientificName}) at position ${p.x}%, ${p.y}%`
+      ).join(', ');
+
+      const prompt = `Generate a photorealistic garden image for ${season || 'summer'} season.
+
+Garden Details:
+- Shape: ${garden.shape}
+- Dimensions: ${JSON.stringify(garden.dimensions)} ${garden.units}
+- Location: ${garden.location || 'United Kingdom'}
+- Style: ${garden.design_style || 'mixed border'}
+
+Plants in Design (with positions):
+${plantList}
+
+Instructions:
+1. Create a realistic garden view from eye level
+2. Show plants in their ${season || 'summer'} appearance
+3. Include appropriate seasonal colors and lighting
+4. Maintain the spatial arrangement from the design
+5. Show mature plant sizes realistically
+6. Include natural garden elements like soil, mulch, and edges
+7. Use ${season === 'winter' ? 'soft winter light' : season === 'autumn' ? 'golden autumn light' : season === 'spring' ? 'fresh spring light' : 'bright summer light'}
+
+Style: Photorealistic, professional garden photography, natural lighting, high detail`;
+
+      // Generate the image using Gemini
+      const imageResult = await geminiAI.generateImage(prompt);
+      
+      res.json({
+        success: true,
+        season: season || 'summer',
+        imageUrl: imageResult.imageUrl || null,
+        prompt: prompt,
+        message: imageResult.imageUrl ? 'Seasonal image generated successfully' : 'Image generation in progress'
+      });
+    } catch (error) {
+      console.error("Error generating seasonal images:", error);
+      res.status(500).json({ message: "Failed to generate seasonal images", error: (error as Error).message });
+    }
+  });
+
   // Gemini AI endpoints for additional features
   app.post('/api/gardens/:id/companion-plants', isAuthenticated, async (req: any, res) => {
     try {

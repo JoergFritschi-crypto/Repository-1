@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Info } from 'lucide-react';
+import { Search, Info, Image, Sun, Cloud, Snowflake, Flower2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 import {
   Tooltip,
   TooltipContent,
@@ -53,6 +55,9 @@ export default function GardenLayoutCanvas({
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingOverInventory, setIsDraggingOverInventory] = useState(false);
   const [draggedPlant, setDraggedPlant] = useState<Plant | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [selectedSeason, setSelectedSeason] = useState<string>('summer');
+  const { toast } = useToast();
 
   // Get plant initials from scientific name (e.g., "Acer palmatum" -> "AP")
   const getPlantInitials = (scientificName?: string): string => {
@@ -267,6 +272,68 @@ export default function GardenLayoutCanvas({
       setUnplacedPlants(prev => [...prev, ...newPlants]);
     }
   }, [inventoryPlants]);
+
+  // Generate seasonal image using Gemini
+  const generateSeasonalImage = async (season: string) => {
+    if (!gardenId) {
+      toast({
+        title: "Error",
+        description: "Garden ID is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (placedPlants.length === 0) {
+      toast({
+        title: "No Plants",
+        description: "Please add plants to the canvas before generating images",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingImage(true);
+    try {
+      const canvasDesign = {
+        plants: placedPlants.map(p => ({
+          id: p.plantId,
+          plantName: p.plantName,
+          scientificName: p.scientificName,
+          commonName: p.plantName,
+          x: p.x,
+          y: p.y,
+          quantity: p.quantity
+        }))
+      };
+
+      const response = await apiRequest('POST', `/api/gardens/${gardenId}/generate-seasonal-images`, {
+        canvasDesign,
+        season
+      });
+      
+      const result = await response.json();
+      
+      toast({
+        title: "Image Generation Started",
+        description: `Generating ${season} garden visualization...`,
+      });
+      
+      if (result.imageUrl) {
+        // Could open the image in a modal or new tab
+        window.open(result.imageUrl, '_blank');
+      }
+    } catch (error) {
+      console.error("Error generating seasonal image:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate seasonal image",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
 
   // Get garden shape path for SVG - with proper padding
   const getShapePath = () => {
@@ -621,6 +688,81 @@ export default function GardenLayoutCanvas({
           <div className="text-xs text-muted-foreground">
             <Info className="w-3 h-3 inline mr-1" />
             Drag plants to/from canvas
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Seasonal Image Generation */}
+      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        <CardContent className="py-2 px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground uppercase">Visualize Garden:</span>
+              <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  variant={selectedSeason === 'spring' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setSelectedSeason('spring');
+                    generateSeasonalImage('spring');
+                  }}
+                  disabled={isGeneratingImage}
+                  className="h-7 px-2"
+                  data-testid="button-generate-spring"
+                >
+                  <Flower2 className="w-3 h-3 mr-1" />
+                  Spring
+                </Button>
+                <Button
+                  size="sm"
+                  variant={selectedSeason === 'summer' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setSelectedSeason('summer');
+                    generateSeasonalImage('summer');
+                  }}
+                  disabled={isGeneratingImage}
+                  className="h-7 px-2"
+                  data-testid="button-generate-summer"
+                >
+                  <Sun className="w-3 h-3 mr-1" />
+                  Summer
+                </Button>
+                <Button
+                  size="sm"
+                  variant={selectedSeason === 'autumn' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setSelectedSeason('autumn');
+                    generateSeasonalImage('autumn');
+                  }}
+                  disabled={isGeneratingImage}
+                  className="h-7 px-2"
+                  data-testid="button-generate-autumn"
+                >
+                  <Cloud className="w-3 h-3 mr-1" />
+                  Autumn
+                </Button>
+                <Button
+                  size="sm"
+                  variant={selectedSeason === 'winter' ? 'default' : 'outline'}
+                  onClick={() => {
+                    setSelectedSeason('winter');
+                    generateSeasonalImage('winter');
+                  }}
+                  disabled={isGeneratingImage}
+                  className="h-7 px-2"
+                  data-testid="button-generate-winter"
+                >
+                  <Snowflake className="w-3 h-3 mr-1" />
+                  Winter
+                </Button>
+              </div>
+            </div>
+            {isGeneratingImage && (
+              <span className="text-xs text-muted-foreground animate-pulse">
+                <Image className="w-3 h-3 inline mr-1" />
+                Generating {selectedSeason} visualization...
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
