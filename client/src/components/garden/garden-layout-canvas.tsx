@@ -49,6 +49,7 @@ export default function GardenLayoutCanvas({
   const [placedPlants, setPlacedPlants] = useState<PlacedPlant[]>([]);
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDraggingOverInventory, setIsDraggingOverInventory] = useState(false);
   const [draggedPlant, setDraggedPlant] = useState<Plant | null>(null);
 
   // Get plant initials from scientific name (e.g., "Acer palmatum" -> "AP")
@@ -294,6 +295,13 @@ export default function GardenLayoutCanvas({
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  const handlePlacedPlantDragStart = (placedPlant: PlacedPlant, e: React.DragEvent) => {
+    setDraggedPlant(placedPlant as any);
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('placedPlantId', placedPlant.id);
+  };
+
   const handleDragEnd = () => {
     setIsDragging(false);
     setDraggedPlant(null);
@@ -305,25 +313,128 @@ export default function GardenLayoutCanvas({
     
     if (!draggedPlant || !canvasRef.current) return;
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    // Check if we're dragging from placed plants back to canvas (just moving position)
+    const placedPlantId = e.dataTransfer.getData('placedPlantId');
+    if (placedPlantId) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      
+      setPlacedPlants(placedPlants.map(p => 
+        p.id === placedPlantId 
+          ? { ...p, x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) }
+          : p
+      ));
+    } else {
+      // Adding new plant from inventory
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      
+      const newPlacedPlant: PlacedPlant = {
+        id: `placed-${Date.now()}-${Math.random()}`,
+        plantId: draggedPlant.id,
+        plantName: draggedPlant.commonName,
+        scientificName: draggedPlant.scientificName,
+        x: Math.max(5, Math.min(95, x)), // Keep within bounds
+        y: Math.max(5, Math.min(95, y)),
+        quantity: 1, // Always 1 since each dot represents one plant
+        plantType: (draggedPlant as any).plantType,
+        flowerColor: (draggedPlant as any).flowerColor
+      };
+      
+      setPlacedPlants([...placedPlants, newPlacedPlant]);
+      // Remove from unplaced if it was there
+      setUnplacedPlants(unplacedPlants.filter(p => p.id !== draggedPlant.id));
+    }
+    setDraggedPlant(null);
+  };
+
+  const handleInventoryDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
     
-    const newPlacedPlant: PlacedPlant = {
-      id: `placed-${Date.now()}-${Math.random()}`,
-      plantId: draggedPlant.id,
-      plantName: draggedPlant.commonName,
-      scientificName: draggedPlant.scientificName,
-      x: Math.max(5, Math.min(95, x)), // Keep within bounds
-      y: Math.max(5, Math.min(95, y)),
-      quantity: 1, // Always 1 since each dot represents one plant
-      plantType: (draggedPlant as any).plantType,
-      flowerColor: (draggedPlant as any).flowerColor
-    };
-    
-    setPlacedPlants([...placedPlants, newPlacedPlant]);
-    // Remove from unplaced if it was there
-    setUnplacedPlants(unplacedPlants.filter(p => p.id !== draggedPlant.id));
+    const placedPlantId = e.dataTransfer.getData('placedPlantId');
+    if (placedPlantId) {
+      // Find the plant being dragged back
+      const placedPlant = placedPlants.find(p => p.id === placedPlantId);
+      if (placedPlant) {
+        // Remove from placed plants
+        setPlacedPlants(placedPlants.filter(p => p.id !== placedPlantId));
+        
+        // Add back to unplaced plants
+        const restoredPlant: Plant = {
+          id: placedPlant.plantId,
+          commonName: placedPlant.plantName,
+          scientificName: placedPlant.scientificName,
+          family: '',
+          genus: '',
+          species: '',
+          cultivar: '',
+          type: placedPlant.plantType,
+          dimension: null,
+          cycle: '',
+          foliage: '',
+          hardiness: '',
+          sunlight: null,
+          soil: null,
+          soilPH: '',
+          watering: '',
+          wateringGeneralBenchmark: null,
+          wateringPeriod: '',
+          depthWaterRequirement: null,
+          volumeWaterRequirement: null,
+          growthRate: '',
+          droughtTolerant: false,
+          saltTolerant: false,
+          thorny: false,
+          tropical: false,
+          careLevel: '',
+          maintenance: '',
+          baseAvailabilityScore: null,
+          cultivationDifficulty: '',
+          propagationMethod: '',
+          commercialProduction: '',
+          climateAdaptability: null,
+          toxicity: {
+            humanSafety: 'safe',
+            petSafety: 'safe',
+            humanToxicityDetails: null,
+            petToxicityDetails: null,
+            childSafe: false,
+            toxicParts: null,
+            toxicSymptoms: null
+          },
+          culinary: false,
+          medicinal: false,
+          attractedWildlife: null,
+          propagation: null,
+          pruningMonth: null,
+          pruningCount: null,
+          pestSusceptibility: null,
+          description: null,
+          careGuideUrl: null,
+          perenualCareGuideUrl: null,
+          imageUrl: null,
+          defaultImageUrl: null,
+          mediumImageUrl: null,
+          smallImageUrl: null,
+          thumbnailImageUrl: null,
+          seedImageUrl: null,
+          otherImages: null,
+          aiGeneratedImages: null,
+          lastImageGenerationAt: null,
+          generatedImageUrl: null,
+          dataSource: 'perenual',
+          importedAt: null,
+          verificationStatus: 'pending',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          perenualId: null
+        };
+        setUnplacedPlants([...unplacedPlants, restoredPlant]);
+      }
+    }
     setDraggedPlant(null);
   };
 
@@ -368,11 +479,29 @@ export default function GardenLayoutCanvas({
             Plants Inventory ({unplacedPlants.length} unplaced)
           </CardTitle>
         </CardHeader>
-        <CardContent className="py-3 px-4">
+        <CardContent 
+          className={`py-3 px-4 relative transition-colors ${isDraggingOverInventory ? 'bg-red-50 border-2 border-red-400 border-dashed' : ''}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            const placedPlantId = e.dataTransfer.types.includes('text/plain') ? e.dataTransfer.getData('text/plain') : '';
+            if (placedPlantId || e.dataTransfer.types.includes('placedPlantId')) {
+              setIsDraggingOverInventory(true);
+            }
+          }}
+          onDragLeave={() => setIsDraggingOverInventory(false)}
+          onDrop={(e) => {
+            handleInventoryDrop(e);
+            setIsDraggingOverInventory(false);
+          }}
+        >
           <ScrollArea className="h-24">
-            {unplacedPlants.length === 0 ? (
+            {unplacedPlants.length === 0 && placedPlants.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 {aiDesign ? "AI has placed all plants on the canvas" : "No plants in inventory. Use Advanced Search above to add plants."}
+              </p>
+            ) : unplacedPlants.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                All plants are on the canvas. Drag them back here to remove.
               </p>
             ) : (
               <div className="flex flex-wrap gap-3">
@@ -585,7 +714,10 @@ export default function GardenLayoutCanvas({
                   <Tooltip key={plant.id}>
                     <TooltipTrigger asChild>
                       <div
-                        className={`absolute rounded-full border-2 border-gray-800 shadow-lg cursor-pointer hover:scale-125 transition-transform flex items-center justify-center ${
+                        draggable
+                        onDragStart={(e) => handlePlacedPlantDragStart(plant, e)}
+                        onDragEnd={handleDragEnd}
+                        className={`absolute rounded-full border-2 border-gray-800 shadow-lg cursor-move hover:scale-125 transition-transform flex items-center justify-center ${
                           selectedPlant === plant.id ? 'ring-2 ring-blue-500' : ''
                         }`}
                         style={{
