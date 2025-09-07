@@ -1840,13 +1840,8 @@ export default function GardenProperties() {
                     console.log(`Uploaded ${photos.length} photos`);
                   }}
                   gardenData={form.getValues()}
-                  onStylesGenerated={(styles) => {
-                    setGeneratedStyles(styles);
-                    console.log(`Generated ${styles.length} design styles`);
-                  }}
-                  onStyleSelected={(style) => {
-                    setSelectedStyleFromAI(style);
-                    console.log(`Selected style: ${style?.styleName}`);
+                  onAnalysisComplete={(analysis) => {
+                    console.log('Garden analysis complete', analysis);
                   }}
                 />
               </div>
