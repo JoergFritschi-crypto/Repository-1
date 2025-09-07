@@ -672,6 +672,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advanced plant search endpoint
+  app.get('/api/plants/advanced-search', async (req, res) => {
+    try {
+      const filters: any = {};
+      
+      // Text search fields
+      if (req.query.genus) filters.genus = req.query.genus;
+      if (req.query.species) filters.species = req.query.species;
+      if (req.query.cultivar) filters.cultivar = req.query.cultivar;
+      
+      // Radio fields (single selection)
+      if (req.query.plantType && req.query.plantType !== 'Any') filters.plantType = req.query.plantType;
+      if (req.query.foliageType && req.query.foliageType !== 'Any') filters.foliageType = req.query.foliageType;
+      if (req.query.hardiness && req.query.hardiness !== 'Any') filters.hardiness = req.query.hardiness;
+      if (req.query.sunlight && req.query.sunlight !== 'Any') filters.sunlight = req.query.sunlight;
+      if (req.query.soilType && req.query.soilType !== 'Any') filters.soilType = req.query.soilType;
+      if (req.query.soilPH && req.query.soilPH !== 'Any') filters.soilPH = req.query.soilPH;
+      if (req.query.careLevel && req.query.careLevel !== 'Any') filters.careLevel = req.query.careLevel;
+      if (req.query.watering && req.query.watering !== 'Any') filters.watering = req.query.watering;
+      if (req.query.maintenance && req.query.maintenance !== 'Any') filters.maintenance = req.query.maintenance;
+      
+      // Range fields
+      if (req.query.minHeight) filters.minHeight = parseInt(req.query.minHeight as string);
+      if (req.query.maxHeight) filters.maxHeight = parseInt(req.query.maxHeight as string);
+      if (req.query.minSpread) filters.minSpread = parseInt(req.query.minSpread as string);
+      if (req.query.maxSpread) filters.maxSpread = parseInt(req.query.maxSpread as string);
+      
+      // Checkbox fields (multiple selections)
+      if (req.query.specialFeatures) filters.specialFeatures = Array.isArray(req.query.specialFeatures) 
+        ? req.query.specialFeatures 
+        : [req.query.specialFeatures];
+      if (req.query.attractsWildlife) filters.attractsWildlife = Array.isArray(req.query.attractsWildlife)
+        ? req.query.attractsWildlife
+        : [req.query.attractsWildlife];
+      if (req.query.bloomMonths) filters.bloomMonths = Array.isArray(req.query.bloomMonths)
+        ? req.query.bloomMonths
+        : [req.query.bloomMonths];
+      if (req.query.colors) filters.colors = Array.isArray(req.query.colors)
+        ? req.query.colors
+        : [req.query.colors];
+      
+      // Boolean fields
+      if (req.query.isSafe) filters.isSafe = req.query.isSafe === 'true';
+      if (req.query.hasFlower) filters.hasFlower = req.query.hasFlower === 'true';
+      
+      const plants = await storage.advancedSearchPlants(filters);
+      res.json(plants);
+    } catch (error) {
+      console.error("Error in advanced plant search:", error);
+      res.status(500).json({ message: "Failed to search plants" });
+    }
+  });
+
   app.get('/api/plants/:id', async (req, res) => {
     try {
       const plant = await storage.getPlant(req.params.id);

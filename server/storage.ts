@@ -28,7 +28,7 @@ import {
   type InsertFileVault,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, ilike, and, or, desc, isNotNull, lte, sql } from "drizzle-orm";
+import { eq, ilike, and, or, desc, isNotNull, lte, sql, gte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -55,6 +55,7 @@ export interface IStorage {
     sun_requirements?: string;
     pet_safe?: boolean;
   }): Promise<Plant[]>;
+  advancedSearchPlants(filters: any): Promise<Plant[]>;
   createPlant(plant: InsertPlant): Promise<Plant>;
   updatePlant(id: string, plant: Partial<InsertPlant>): Promise<Plant>;
   getPendingPlants(): Promise<Plant[]>;
@@ -220,6 +221,121 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await queryBuilder.orderBy(plants.commonName);
+  }
+
+  async advancedSearchPlants(filters: any): Promise<Plant[]> {
+    const conditions = [];
+    
+    // Text fields
+    if (filters.genus) conditions.push(ilike(plants.genus, `%${filters.genus}%`));
+    if (filters.species) conditions.push(ilike(plants.species, `%${filters.species}%`));
+    if (filters.cultivar) conditions.push(ilike(plants.cultivar, `%${filters.cultivar}%`));
+    
+    // Single selection fields
+    if (filters.plantType) conditions.push(eq(plants.plantType, filters.plantType));
+    if (filters.sunlight) {
+      const sunMap: any = {
+        'Full Sun': 'full sun',
+        'Partial Sun': 'partial sun',
+        'Partial Shade': 'partial shade',
+        'Full Shade': 'full shade'
+      };
+      conditions.push(eq(plants.sunRequirements, sunMap[filters.sunlight] || filters.sunlight));
+    }
+    if (filters.soilType) conditions.push(ilike(plants.soilType, `%${filters.soilType}%`));
+    if (filters.maintenance) conditions.push(eq(plants.maintenanceLevel, filters.maintenance.toLowerCase()));
+    if (filters.watering) {
+      const waterMap: any = {
+        'Minimal': 'low',
+        'Average': 'medium',
+        'Frequent': 'high'
+      };
+      conditions.push(eq(plants.wateringNeeds, waterMap[filters.watering] || filters.watering));
+    }
+    
+    // Range fields
+    if (filters.minHeight) conditions.push(gte(plants.heightMax, filters.minHeight));
+    if (filters.maxHeight) conditions.push(lte(plants.heightMin, filters.maxHeight));
+    if (filters.minSpread) conditions.push(gte(plants.spreadMax, filters.minSpread));
+    if (filters.maxSpread) conditions.push(lte(plants.spreadMin, filters.maxSpread));
+    
+    // Boolean fields
+    if (filters.isSafe) {
+      conditions.push(and(
+        eq(plants.poisonousToHumans, 0),
+        eq(plants.poisonousToPets, 0)
+      ));
+    }
+    
+    // Special features
+    if (filters.specialFeatures && filters.specialFeatures.length > 0) {
+      const featureConditions = [];
+      if (filters.specialFeatures.includes('Drought Tolerant')) {
+        featureConditions.push(eq(plants.droughtTolerant, true));
+      }
+      if (filters.specialFeatures.includes('Salt Tolerant')) {
+        featureConditions.push(eq(plants.saltTolerant, true));
+      }
+      if (filters.specialFeatures.includes('Fast Growing')) {
+        featureConditions.push(eq(plants.growthRate, 'fast'));
+      }
+      if (filters.specialFeatures.includes('Fragrant')) {
+        featureConditions.push(eq(plants.fragrant, true));
+      }
+      if (featureConditions.length > 0) {
+        conditions.push(or(...featureConditions));
+      }
+    }
+    
+    // Wildlife attractants
+    if (filters.attractsWildlife && filters.attractsWildlife.length > 0) {
+      const wildlifeConditions = [];
+      if (filters.attractsWildlife.includes('Butterflies')) {
+        wildlifeConditions.push(eq(plants.attractsButterflies, true));
+      }
+      if (filters.attractsWildlife.includes('Birds')) {
+        wildlifeConditions.push(eq(plants.attractsBirds, true));
+      }
+      if (filters.attractsWildlife.includes('Bees')) {
+        wildlifeConditions.push(eq(plants.attractsBees, true));
+      }
+      if (filters.attractsWildlife.includes('Hummingbirds')) {
+        wildlifeConditions.push(eq(plants.attractsHummingbirds, true));
+      }
+      if (wildlifeConditions.length > 0) {
+        conditions.push(or(...wildlifeConditions));
+      }
+    }
+    
+    // Bloom months
+    if (filters.bloomMonths && filters.bloomMonths.length > 0) {
+      const monthConditions = filters.bloomMonths.map((month: string) => {
+        const monthName = month.replace('Early ', '').replace('Late ', '').toLowerCase();
+        return ilike(plants.bloomTime, `%${monthName}%`);
+      });
+      if (monthConditions.length > 0) {
+        conditions.push(or(...monthConditions));
+      }
+    }
+    
+    // Colors
+    if (filters.colors && filters.colors.length > 0) {
+      const colorConditions = filters.colors.map((color: string) => 
+        ilike(plants.flowerColor, `%${color}%`)
+      );
+      if (colorConditions.length > 0) {
+        conditions.push(or(...colorConditions));
+      }
+    }
+    
+    // Only return verified plants
+    conditions.push(eq(plants.verificationStatus, 'verified'));
+    
+    const result = conditions.length > 0
+      ? await db.select().from(plants).where(and(...conditions)).limit(100)
+      : await db.select().from(plants).where(eq(plants.verificationStatus, 'verified')).limit(100);
+      
+    return result;
   }
 
   async createPlant(plant: InsertPlant): Promise<Plant> {
