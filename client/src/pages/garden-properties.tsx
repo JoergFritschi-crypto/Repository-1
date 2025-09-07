@@ -16,7 +16,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles, Shield } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import InteractiveCanvas from '@/components/garden/interactive-canvas';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
@@ -26,7 +26,7 @@ import Navigation from '@/components/layout/navigation';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { Lock, Crown, CreditCard, Shield } from 'lucide-react';
+import { Lock, Crown, CreditCard } from 'lucide-react';
 
 const gardenSchema = z.object({
   name: z.string().min(1, 'Garden name is required'),
@@ -188,8 +188,11 @@ export default function GardenProperties() {
   const watchedChildSafe = form.watch("preferences.childSafe");
 
   const nextStep = async () => {
-    // Validate required fields for Step 1 before proceeding
-    if (currentStep === 1) {
+    // Skip validation for admin users
+    const isAdmin = user?.isAdmin === true;
+    
+    // Validate required fields for Step 1 before proceeding (unless admin)
+    if (currentStep === 1 && !isAdmin) {
       const values = form.getValues();
       const errors: string[] = [];
       
@@ -436,6 +439,21 @@ export default function GardenProperties() {
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
+                  {/* Admin mode indicator */}
+                  {user?.isAdmin && (
+                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                      <div className="flex items-center space-x-2">
+                        <Shield className="w-5 h-5 text-purple-600" />
+                        <p className="text-sm font-medium text-purple-800">
+                          Admin Mode - All validation bypassed
+                        </p>
+                      </div>
+                      <p className="text-xs text-purple-700 mt-1 ml-7">
+                        You can navigate freely through all steps without field requirements.
+                      </p>
+                    </div>
+                  )}
+                  
                   {/* Auto-save preference - only shown for free users */}
                   {!isPaidUser && (
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
