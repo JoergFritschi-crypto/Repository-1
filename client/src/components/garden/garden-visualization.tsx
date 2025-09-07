@@ -59,7 +59,7 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   
   // State
   const [imageCount, setImageCount] = useState(2);
-  const [periodRange, setPeriodRange] = useState([8, 15]); // Default: Early May to Late July
+  const [periodRange, setPeriodRange] = useState([4, 21]); // Default: Early March to Late October
   const [generatedImages, setGeneratedImages] = useState<Array<{ url: string; period: string; season: string }>>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
