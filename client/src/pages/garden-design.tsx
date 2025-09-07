@@ -449,7 +449,10 @@ export default function GardenDesign() {
                     key={garden.id} 
                     className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/10 cursor-pointer transition-colors"
                     onClick={() => {
-                      window.location.href = `/garden-design/${garden.id}`;
+                      setShowLoadDesignDialog(false);
+                      // Navigate to the new garden design
+                      window.history.pushState({}, '', `/garden-design/${garden.id}`);
+                      window.location.reload();
                     }}
                   >
                     <div>
@@ -473,7 +476,10 @@ export default function GardenDesign() {
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.location.href = `/garden-design/${garden.id}`;
+                        setShowLoadDesignDialog(false);
+                        // Navigate to the new garden design
+                        window.history.pushState({}, '', `/garden-design/${garden.id}`);
+                        window.location.reload();
                       }}
                     >
                       Load
