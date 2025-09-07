@@ -2,25 +2,27 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { 
   Search, 
-  Filter, 
   RotateCcw,
   TreePine,
   Sun,
   Droplets,
-  Thermometer,
   Leaf,
   Heart,
   AlertTriangle,
   ChefHat,
   Pill,
-  Bird
+  Bird,
+  Flower,
+  Ruler,
+  Palette,
+  Mountain,
+  Wind
 } from "lucide-react";
 
 interface PlantAdvancedSearchProps {
@@ -28,108 +30,121 @@ interface PlantAdvancedSearchProps {
   totalResults?: number;
 }
 
+// Color options for plants
+const colorOptions = [
+  { name: "Red", color: "#ef4444" },
+  { name: "Pink", color: "#ec4899" },
+  { name: "Purple", color: "#a855f7" },
+  { name: "Blue", color: "#3b82f6" },
+  { name: "White", color: "#f9fafb" },
+  { name: "Yellow", color: "#eab308" },
+  { name: "Orange", color: "#f97316" },
+  { name: "Green", color: "#22c55e" },
+  { name: "Brown", color: "#92400e" },
+  { name: "Black", color: "#18181b" },
+  { name: "Multicolor", color: "linear-gradient(90deg, #ef4444, #eab308, #22c55e, #3b82f6)" }
+];
+
 export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSearchProps) {
   const [filters, setFilters] = useState<any>({
-    // Botanical identity
-    scientificName: '',
-    commonName: '',
+    // Botanical identity (simplified)
     genus: '',
     species: '',
     cultivar: '',
     
     // Plant types
-    type: [],
-    foliage: '',
-    cycle: '',
+    plantTypes: [],
+    
+    // Foliage types
+    foliageTypes: [],
     
     // Growing conditions
-    hardiness: '',
     sunlight: [],
     soil: [],
-    watering: '',
-    careLevel: '',
     
-    // Features
-    droughtTolerant: undefined,
-    tropical: undefined,
-    thorny: undefined,
+    // Care level
+    careLevel: [],
     
-    // Safety & Uses
-    poisonousToHumans: undefined,
-    poisonousToPets: undefined,
-    cuisine: undefined,
-    medicinal: undefined,
+    // Height range (in cm)
+    minHeight: 0,
+    maxHeight: 500,
     
-    // Attracts
-    attracts: []
+    // Special features
+    specialFeatures: [],
+    
+    // Attracts wildlife
+    attractsWildlife: [],
+    
+    // Safety
+    safety: [],
+    
+    // Colors
+    colors: []
   });
 
-  // Plant type options - as specified by user
-  const plantTypes = [
-    'annuals',
-    'perennials',
-    'herbaceous perennials',
-    'biennials',
-    'shrubs',
-    'ornamental trees',
-    'bulbs',
-    'climbers',
-    'ground covers',
-    'ornamental grasses',
-    'herbs-medicinal',
-    'herbs-culinary',
-    'succulents',
-    'cacti',
-    'aquatic plants',
-    'ferns',
-    'alpine rock garden plants'
-  ];
-
-  const foliageTypes = [
-    'variegated',
-    'deciduous',
-    'evergreen'
-  ];
-
-  const sunlightOptions = [
-    'full sun',
-    'partial sun',
-    'partial shade',
-    'full shade'
-  ];
-
-  const soilTypes = [
-    'clay',
-    'loam',
-    'sand',
-    'chalk',
-    'acidic',
-    'alkaline',
-    'well-drained',
-    'moist'
-  ];
-
-  const wateringOptions = [
-    'minimal',
-    'low',
-    'average',
-    'frequent',
-    'high'
-  ];
-
-  const careLevels = [
-    'easy',
-    'moderate',
-    'hard'
-  ];
-
-  const attractsOptions = [
-    'butterflies',
-    'birds',
-    'bees',
-    'hummingbirds',
-    'pollinators'
-  ];
+  // Options for each category
+  const searchModules = {
+    plantTypes: {
+      title: "Plant Types",
+      icon: TreePine,
+      options: [
+        'Annuals', 'Perennials', 'Biennials', 'Shrubs', 'Trees',
+        'Bulbs', 'Climbers', 'Ground Covers', 'Grasses', 'Herbs',
+        'Succulents', 'Cacti', 'Aquatic', 'Ferns', 'Alpine'
+      ]
+    },
+    foliageTypes: {
+      title: "Foliage Types",
+      icon: Leaf,
+      options: [
+        'Variegated', 'Deciduous', 'Evergreen', 'Semi-evergreen'
+      ]
+    },
+    sunlight: {
+      title: "Sunlight",
+      icon: Sun,
+      options: [
+        'Full Sun', 'Partial Sun', 'Partial Shade', 'Full Shade'
+      ]
+    },
+    soil: {
+      title: "Soil",
+      icon: Mountain,
+      options: [
+        'Clay', 'Loam', 'Sand', 'Chalk', 'Acidic', 'Alkaline', 
+        'Well-drained', 'Moist', 'Dry'
+      ]
+    },
+    careLevel: {
+      title: "Care Level",
+      icon: Heart,
+      options: [
+        'Easy', 'Moderate', 'Difficult'
+      ]
+    },
+    specialFeatures: {
+      title: "Special Features",
+      icon: Flower,
+      options: [
+        'Drought Tolerant', 'Frost Hardy', 'Fast Growing', 
+        'Fragrant', 'Thorny', 'Native', 'Rare'
+      ]
+    },
+    attractsWildlife: {
+      title: "Attracts Wildlife",
+      icon: Bird,
+      options: [
+        'Butterflies', 'Birds', 'Bees', 'Hummingbirds', 'Pollinators'
+      ]
+    },
+    safety: {
+      title: "Safety",
+      icon: AlertTriangle,
+      options: [
+        'Child Safe', 'Pet Safe', 'Non-toxic', 'Edible', 'Medicinal'
+      ]
+    }
+  };
 
   const handleSearch = () => {
     // Filter out empty values
@@ -146,27 +161,20 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
 
   const handleReset = () => {
     setFilters({
-      scientificName: '',
-      commonName: '',
       genus: '',
       species: '',
       cultivar: '',
-      type: [],
-      foliage: '',
-      cycle: '',
-      hardiness: '',
+      plantTypes: [],
+      foliageTypes: [],
       sunlight: [],
       soil: [],
-      watering: '',
-      careLevel: '',
-      droughtTolerant: undefined,
-      tropical: undefined,
-      thorny: undefined,
-      poisonousToHumans: undefined,
-      poisonousToPets: undefined,
-      cuisine: undefined,
-      medicinal: undefined,
-      attracts: []
+      careLevel: [],
+      minHeight: 0,
+      maxHeight: 500,
+      specialFeatures: [],
+      attractsWildlife: [],
+      safety: [],
+      colors: []
     });
     onSearch({});
   };
@@ -184,342 +192,197 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     }));
   };
 
+  const toggleColor = (color: string) => {
+    toggleArrayFilter('colors', color);
+  };
+
+  // Render a search module (modular approach)
+  const renderSearchModule = (moduleKey: string) => {
+    const module = searchModules[moduleKey as keyof typeof searchModules];
+    if (!module) return null;
+    
+    const Icon = module.icon;
+    
+    return (
+      <Card key={moduleKey} className="border shadow-sm">
+        <CardHeader className="py-3 px-4">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Icon className="w-4 h-4" />
+            {module.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-3 px-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {module.options.map((option) => (
+              <div key={option} className="flex items-center gap-2">
+                <Checkbox
+                  checked={filters[moduleKey].includes(option)}
+                  onCheckedChange={() => toggleArrayFilter(moduleKey, option)}
+                  className="data-[state=checked]:bg-green-600"
+                />
+                <Label className="text-xs cursor-pointer" onClick={() => toggleArrayFilter(moduleKey, option)}>
+                  {option}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full border-2 border-blue-200">
+      <CardHeader className="bg-blue-50">
         <CardTitle className="flex items-center gap-2">
           <Search className="w-5 h-5" />
           Advanced Plant Search
         </CardTitle>
         <CardDescription>
-          Find plants based on specific characteristics and requirements
+          Find plants using specific criteria - modular search system
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Botanical Identity Section */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Leaf className="w-4 h-4" />
-            Botanical Identity
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <Label>Scientific Name</Label>
-              <Input
-                placeholder="e.g., Rosa rugosa"
-                value={filters.scientificName}
-                onChange={(e) => updateFilter('scientificName', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Common Name</Label>
-              <Input
-                placeholder="e.g., Beach Rose"
-                value={filters.commonName}
-                onChange={(e) => updateFilter('commonName', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Genus</Label>
-              <Input
-                placeholder="e.g., Rosa"
-                value={filters.genus}
-                onChange={(e) => updateFilter('genus', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Species</Label>
-              <Input
-                placeholder="e.g., rugosa"
-                value={filters.species}
-                onChange={(e) => updateFilter('species', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Cultivar</Label>
-              <Input
-                placeholder="e.g., Alba"
-                value={filters.cultivar}
-                onChange={(e) => updateFilter('cultivar', e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Plant Type Section */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <TreePine className="w-4 h-4" />
-            Plant Type & Characteristics
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <Label>Plant Types</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {plantTypes.map((type) => (
-                  <Badge
-                    key={type}
-                    variant={filters.type.includes(type) ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => toggleArrayFilter('type', type)}
-                  >
-                    {type}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <CardContent className="space-y-4 pt-6">
+        {/* Botanical Identity - Simplified */}
+        <Card className="border shadow-sm">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Leaf className="w-4 h-4" />
+              Botanical Identity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <Label>Foliage Type</Label>
-                <Select value={filters.foliage || 'any'} onValueChange={(v) => updateFilter('foliage', v === 'any' ? '' : v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select foliage type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any</SelectItem>
-                    {foliageTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Genus</Label>
+                <Input
+                  placeholder="e.g., Rosa"
+                  value={filters.genus}
+                  onChange={(e) => updateFilter('genus', e.target.value)}
+                  className="h-8 text-sm"
+                />
               </div>
               <div>
-                <Label>Growth Cycle</Label>
-                <Select value={filters.cycle || 'any'} onValueChange={(v) => updateFilter('cycle', v === 'any' ? '' : v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select cycle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any</SelectItem>
-                    <SelectItem value="annual">Annual</SelectItem>
-                    <SelectItem value="biennial">Biennial</SelectItem>
-                    <SelectItem value="perennial">Perennial</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Species</Label>
+                <Input
+                  placeholder="e.g., rugosa"
+                  value={filters.species}
+                  onChange={(e) => updateFilter('species', e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Cultivar</Label>
+                <Input
+                  placeholder="e.g., Alba"
+                  value={filters.cultivar}
+                  onChange={(e) => updateFilter('cultivar', e.target.value)}
+                  className="h-8 text-sm"
+                />
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Growing Conditions Section */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Sun className="w-4 h-4" />
-            Growing Conditions
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Hardiness Zone</Label>
-              <Input
-                placeholder="e.g., 5-9"
-                value={filters.hardiness}
-                onChange={(e) => updateFilter('hardiness', e.target.value)}
-              />
+        {/* Height Criteria */}
+        <Card className="border shadow-sm">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Ruler className="w-4 h-4" />
+              Height Range
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span>{filters.minHeight} cm</span>
+                <span>{filters.maxHeight} cm</span>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label className="text-xs">Min Height</Label>
+                  <Slider
+                    value={[filters.minHeight]}
+                    onValueChange={(value) => updateFilter('minHeight', value[0])}
+                    max={500}
+                    step={10}
+                    className="mt-2"
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs">Max Height</Label>
+                  <Slider
+                    value={[filters.maxHeight]}
+                    onValueChange={(value) => updateFilter('maxHeight', value[0])}
+                    max={500}
+                    step={10}
+                    className="mt-2"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <Label>Watering Needs</Label>
-              <Select value={filters.watering || 'any'} onValueChange={(v) => updateFilter('watering', v === 'any' ? '' : v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select watering needs" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  {wateringOptions.map(opt => (
-                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Care Level</Label>
-              <Select value={filters.careLevel || 'any'} onValueChange={(v) => updateFilter('careLevel', v === 'any' ? '' : v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select care level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  {careLevels.map(level => (
-                    <SelectItem key={level} value={level}>{level}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div>
-            <Label>Sunlight Requirements</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {sunlightOptions.map((opt) => (
-                <Badge
-                  key={opt}
-                  variant={filters.sunlight.includes(opt) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleArrayFilter('sunlight', opt)}
+          </CardContent>
+        </Card>
+
+        {/* Color Selection - Large Visual Field */}
+        <Card className="border shadow-sm">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Palette className="w-4 h-4" />
+              Colors
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <div className="grid grid-cols-6 md:grid-cols-11 gap-3">
+              {colorOptions.map((colorOption) => (
+                <div 
+                  key={colorOption.name}
+                  className="flex flex-col items-center gap-1 cursor-pointer"
+                  onClick={() => toggleColor(colorOption.name)}
                 >
-                  <Sun className="w-3 h-3 mr-1" />
-                  {opt}
-                </Badge>
+                  <div
+                    className={`w-12 h-12 rounded-lg border-2 transition-all ${
+                      filters.colors.includes(colorOption.name) 
+                        ? 'border-blue-500 shadow-lg scale-110' 
+                        : 'border-gray-300'
+                    }`}
+                    style={{
+                      background: colorOption.color,
+                      border: colorOption.name === 'White' ? '2px solid #e5e7eb' : undefined
+                    }}
+                  />
+                  <span className="text-xs text-center">{colorOption.name}</span>
+                </div>
               ))}
             </div>
-          </div>
-          <div>
-            <Label>Soil Types</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {soilTypes.map((type) => (
-                <Badge
-                  key={type}
-                  variant={filters.soil.includes(type) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleArrayFilter('soil', type)}
-                >
-                  {type}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Features Section */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Heart className="w-4 h-4" />
-            Special Features
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                checked={filters.droughtTolerant === true}
-                onCheckedChange={(checked) => 
-                  updateFilter('droughtTolerant', checked === true ? true : undefined)
-                }
-              />
-              <Label className="text-sm">Drought Tolerant</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                checked={filters.tropical === true}
-                onCheckedChange={(checked) => 
-                  updateFilter('tropical', checked === true ? true : undefined)
-                }
-              />
-              <Label className="text-sm">Tropical</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                checked={filters.thorny === true}
-                onCheckedChange={(checked) => 
-                  updateFilter('thorny', checked === true ? true : undefined)
-                }
-              />
-              <Label className="text-sm">Has Thorns</Label>
-            </div>
-          </div>
-          <div>
-            <Label>Attracts Wildlife</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {attractsOptions.map((opt) => (
-                <Badge
-                  key={opt}
-                  variant={filters.attracts.includes(opt) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleArrayFilter('attracts', opt)}
-                >
-                  <Bird className="w-3 h-3 mr-1" />
-                  {opt}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Safety & Uses Section */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" />
-            Safety & Uses
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Toxicity to Humans</Label>
-              <Select 
-                value={filters.poisonousToHumans?.toString() || 'any'} 
-                onValueChange={(v) => updateFilter('poisonousToHumans', v === 'any' ? undefined : parseInt(v))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select toxicity level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="0">Safe (0)</SelectItem>
-                  <SelectItem value="1">Very Mild (1)</SelectItem>
-                  <SelectItem value="2">Mild (2)</SelectItem>
-                  <SelectItem value="3">Moderate (3)</SelectItem>
-                  <SelectItem value="4">High (4)</SelectItem>
-                  <SelectItem value="5">Severe (5)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Toxicity to Pets</Label>
-              <Select 
-                value={filters.poisonousToPets?.toString() || 'any'} 
-                onValueChange={(v) => updateFilter('poisonousToPets', v === 'any' ? undefined : parseInt(v))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select toxicity level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="0">Safe (0)</SelectItem>
-                  <SelectItem value="1">Very Mild (1)</SelectItem>
-                  <SelectItem value="2">Mild (2)</SelectItem>
-                  <SelectItem value="3">Moderate (3)</SelectItem>
-                  <SelectItem value="4">High (4)</SelectItem>
-                  <SelectItem value="5">Severe (5)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                checked={filters.cuisine === true}
-                onCheckedChange={(checked) => 
-                  updateFilter('cuisine', checked === true ? true : undefined)
-                }
-              />
-              <Label className="text-sm flex items-center gap-1">
-                <ChefHat className="w-4 h-4" />
-                Culinary Use
-              </Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                checked={filters.medicinal === true}
-                onCheckedChange={(checked) => 
-                  updateFilter('medicinal', checked === true ? true : undefined)
-                }
-              />
-              <Label className="text-sm flex items-center gap-1">
-                <Pill className="w-4 h-4" />
-                Medicinal Use
-              </Label>
-            </div>
-          </div>
+        {/* Modular Search Sections in 2 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {renderSearchModule('plantTypes')}
+          {renderSearchModule('foliageTypes')}
+          {renderSearchModule('sunlight')}
+          {renderSearchModule('soil')}
+          {renderSearchModule('careLevel')}
+          {renderSearchModule('specialFeatures')}
+          {renderSearchModule('attractsWildlife')}
+          {renderSearchModule('safety')}
         </div>
 
         {/* Search Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="text-sm text-muted-foreground">
             {totalResults !== undefined && (
-              <span>{totalResults} plants found</span>
+              <span className="font-medium">{totalResults} plants found</span>
             )}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleReset}>
               <RotateCcw className="w-4 h-4 mr-2" />
-              Reset
+              Reset All
             </Button>
-            <Button onClick={handleSearch}>
+            <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700">
               <Search className="w-4 h-4 mr-2" />
               Search Plants
             </Button>
