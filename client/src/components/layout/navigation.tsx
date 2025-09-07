@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, MoreHorizontal, Shield } from "lucide-react";
+import { Menu, X, MoreVertical, Shield } from "lucide-react";
 import { GardenScapeIcon } from "@/components/ui/brand-icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -47,10 +47,10 @@ export default function Navigation() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="mr-2 h-8 w-8"
+                    className="mr-1 h-7 w-7"
                     data-testid="button-admin-menu"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
