@@ -69,6 +69,7 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [iterationCount, setIterationCount] = useState(0);
+  const [generationProgress, setGenerationProgress] = useState(0);
   
   // Tier-based limits
   const maxImages = userTier === 'free' ? 2 : 6;
@@ -120,6 +121,8 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const generateImagesMutation = useMutation({
     mutationFn: async () => {
       const periods = getDistributedPeriods();
+      setGenerationProgress(0);
+      
       // Get canvas design from current garden
       const gardenResponse = await apiRequest('GET', `/api/gardens/${gardenId}`);
       const gardenData = await gardenResponse.json();
@@ -128,41 +131,51 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
         throw new Error('Please add plants to your garden design before generating visualizations');
       }
       
-      const requests = periods.map(periodIndex => {
+      // Generate images one by one to show progress
+      const images = [];
+      for (let i = 0; i < periods.length; i++) {
+        const periodIndex = periods[i];
         const details = getPeriodDetails(periodIndex);
-        return apiRequest('POST', `/api/gardens/${gardenId}/generate-seasonal-images`, {
+        
+        // Update progress
+        setGenerationProgress((i / periods.length) * 100);
+        
+        const response = await apiRequest('POST', `/api/gardens/${gardenId}/generate-seasonal-images`, {
           season: details.season,
           specificTime: details.fullPeriod,
           canvasDesign: gardenData.canvasDesign
         });
-      });
-      
-      const responses = await Promise.all(requests);
-      const images = await Promise.all(responses.map(r => r.json()));
-      
-      // Update iteration count will be handled in onSuccess
+        
+        const image = await response.json();
+        images.push({
+          url: image.imageUrl || image.imageData,
+          period: details.fullPeriod,
+          season: details.season
+        });
+        
+        // Update progress after each image
+        setGenerationProgress(((i + 1) / periods.length) * 100);
+      }
       
       // Update iteration count
       await apiRequest('POST', `/api/gardens/${gardenId}/update-visualization-data`, {
         iterationCount: iterationCount + 1
       });
       
-      return images.map((img: any, index: number) => ({
-        url: img.imageUrl || img.imageData,
-        period: getPeriodDetails(periods[index]).fullPeriod,
-        season: getPeriodDetails(periods[index]).season
-      }));
+      return images;
     },
     onSuccess: (images) => {
       setGeneratedImages(images);
       setIterationCount(prev => prev + 1);
       setCurrentImageIndex(0);
+      setGenerationProgress(0);
       toast({
         title: "Images Generated",
         description: `Successfully generated ${images.length} seasonal visualizations`
       });
     },
     onError: (error) => {
+      setGenerationProgress(0);
       toast({
         title: "Generation Failed",
         description: (error as Error).message,
@@ -307,6 +320,27 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
             </div>
           </div>
           
+          {/* Progress Bar */}
+          {generateImagesMutation.isPending && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Generating images...</span>
+                <span>{Math.round(generationProgress)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="bg-primary h-full transition-all duration-300 ease-out"
+                  style={{ width: `${generationProgress}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-500">
+                {generationProgress > 0 && generationProgress < 100 && 
+                  `Processing image ${Math.ceil((generationProgress / 100) * imageCount)} of ${imageCount}...`
+                }
+              </p>
+            </div>
+          )}
+          
           {/* Action Buttons */}
           <div className="flex gap-3">
             <Button
@@ -314,7 +348,7 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
               disabled={generateImagesMutation.isPending || !canIterate}
               className="flex-1"
             >
-              {generateImagesMutation.isPending ? 'Generating...' : 'Generate Images'}
+              {generateImagesMutation.isPending ? `Generating... ${Math.round(generationProgress)}%` : 'Generate Images'}
             </Button>
             
             {generatedImages.length > 0 && (
