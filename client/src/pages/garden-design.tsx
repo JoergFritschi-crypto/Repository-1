@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import GardenLayoutCanvas from "@/components/garden/garden-layout-canvas";
@@ -19,12 +20,13 @@ import {
   RefreshCw, 
   Settings, 
   Leaf,
-  Eye
+  Eye,
+  FolderOpen
 } from "lucide-react";
 
 export default function GardenDesign() {
   const { id } = useParams<{ id: string }>();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [viewMode, setViewMode] = useState("canvas");
   const [showPlantSearch, setShowPlantSearch] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -32,11 +34,13 @@ export default function GardenDesign() {
   const [searchFilters, setSearchFilters] = useState<any>({});
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showLoadDesignDialog, setShowLoadDesignDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   
-  // Check if we came from admin
+  // Check if we're admin or came from admin
   const isFromAdmin = sessionStorage.getItem('navigationSource') === 'admin';
+  const isAdmin = user?.isAdmin === true;
 
   const { data: garden, isLoading: gardenLoading } = useQuery({
     queryKey: ["/api/gardens", id],
@@ -51,6 +55,12 @@ export default function GardenDesign() {
   const { data: myCollection } = useQuery({
     queryKey: ["/api/my-collection"],
     enabled: user?.userTier === 'premium',
+  });
+
+  // Fetch all gardens for the load design dialog
+  const { data: allGardens, isLoading: gardensLoading } = useQuery({
+    queryKey: ["/api/gardens"],
+    enabled: showLoadDesignDialog,
   });
 
   const handleAddPlantToInventory = (plant: any) => {
@@ -139,6 +149,32 @@ export default function GardenDesign() {
       <Navigation />
       
       <div className="container mx-auto px-4 py-6">
+        {/* Admin Testing Controls */}
+        {isAdmin && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                Admin Testing Mode
+              </h3>
+              <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/40">
+                Garden ID: {id || 'None'}
+              </Badge>
+            </div>
+            <p className="text-xs text-yellow-700 dark:text-yellow-300 mb-3">
+              Testing environment with admin privileges. Load any saved design for testing.
+            </p>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setShowLoadDesignDialog(true)}
+              className="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-900/60"
+            >
+              <FolderOpen className="w-4 h-4 mr-2" />
+              Load Design
+            </Button>
+          </div>
+        )}
+
         {/* Show admin navigation if accessed from admin */}
         {isFromAdmin && (
           <AdminNavigation gardenId={id} />
@@ -393,6 +429,66 @@ export default function GardenDesign() {
         userTier={user?.userTier || 'free'}
         existingCollection={myCollection || []}
       />
+
+      {/* Load Design Dialog */}
+      <Dialog open={showLoadDesignDialog} onOpenChange={setShowLoadDesignDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Load Garden Design</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {gardensLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">Loading gardens...</p>
+              </div>
+            ) : allGardens && allGardens.length > 0 ? (
+              <div className="space-y-2">
+                {allGardens.map((garden: any) => (
+                  <div 
+                    key={garden.id} 
+                    className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/10 cursor-pointer transition-colors"
+                    onClick={() => {
+                      window.location.href = `/garden-design/${garden.id}`;
+                    }}
+                  >
+                    <div>
+                      <h3 className="font-medium">{garden.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {garden.location} • {garden.shape} • Created {new Date(garden.createdAt).toLocaleDateString()}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <Badge variant={garden.status === 'completed' ? 'default' : 'secondary'}>
+                          {garden.status}
+                        </Badge>
+                        {garden.ai_generated && (
+                          <Badge variant="outline" className="border-accent text-accent">
+                            AI Generated
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/garden-design/${garden.id}`;
+                      }}
+                    >
+                      Load
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground">No saved gardens found</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
