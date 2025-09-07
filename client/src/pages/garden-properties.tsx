@@ -1821,7 +1821,8 @@ export default function GardenProperties() {
                 {/* Garden Sketch with rotatable rings */}
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-garden-sketch">
                   <CardHeader className="py-7 flower-band-autumn rounded-t-lg">
-                    <CardTitle className="text-base">Garden Orientation & View</CardTitle>
+                    <CardTitle className="text-base">Garden Orientation & View <span className="text-red-500">*</span></CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">Set north direction and viewing point using the interactive controls below</p>
                   </CardHeader>
                   <CardContent>
                     <GardenSketch
