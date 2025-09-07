@@ -446,6 +446,13 @@ export default function GardenProperties() {
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
+                  {/* Helper note about required fields */}
+                  <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Note:</strong> Only the garden name is required to proceed. Other fields are recommended for better design recommendations but can be added later. You can save your progress at any time using the "Save Draft" button.
+                    </p>
+                  </div>
+                  
                   {/* Auto-save preference - only shown for free users */}
                   {!isPaidUser && (
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -936,7 +943,7 @@ export default function GardenProperties() {
                     name="sunExposure"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Primary Sun Exposure <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Primary Sun Exposure <span className="text-orange-500">(Recommended)</span></FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-sun-exposure">
@@ -986,7 +993,7 @@ export default function GardenProperties() {
                       name="soilType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Soil Type <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>Soil Type <span className="text-orange-500">(Recommended)</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-soil-type">
@@ -1014,7 +1021,7 @@ export default function GardenProperties() {
                       name="soilPh"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Soil pH <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>Soil pH <span className="text-orange-500">(Recommended)</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-soil-ph">
