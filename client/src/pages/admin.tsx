@@ -42,7 +42,10 @@ import {
   RefreshCw,
   Loader2,
   Crown,
-  CreditCard
+  CreditCard,
+  Zap,
+  Trash2,
+  Lock
 } from "lucide-react";
 
 export default function Admin() {
@@ -496,12 +499,62 @@ export default function Admin() {
                         )}
                       </div>
                       
-                      {/* Placeholder for future testing tools */}
-                      <div className="text-center py-8 border-t" data-testid="testing-tools-placeholder">
-                        <FlaskConical className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-sm text-muted-foreground">
-                          More testing utilities coming soon
-                        </p>
+                      {/* Testing Tools Section */}
+                      <div className="border-t pt-6" data-testid="testing-tools-section">
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-yellow-500" />
+                          Quick Actions
+                        </h3>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            variant="outline"
+                            className="h-auto flex flex-col items-center py-4 hover:bg-green-50 hover:border-green-300"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest('POST', '/api/admin/create-test-garden');
+                                const garden = await response.json();
+                                toast({
+                                  title: "Test Garden Created!",
+                                  description: `Garden "${garden.name}" created with ID: ${garden.id}`,
+                                });
+                                // Navigate to the garden design page
+                                window.location.href = `/garden/${garden.id}/design`;
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to create test garden",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                            data-testid="button-create-test-garden"
+                          >
+                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-2">
+                              <Leaf className="w-5 h-5 text-green-600" />
+                            </div>
+                            <span className="font-medium text-sm">Create Test Garden</span>
+                            <span className="text-xs text-muted-foreground mt-1">Jump to Step 4 instantly</span>
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            className="h-auto flex flex-col items-center py-4 hover:bg-blue-50 hover:border-blue-300"
+                            onClick={() => {
+                              toast({
+                                title: "Coming Soon",
+                                description: "Database seeding will be available soon",
+                              });
+                            }}
+                            data-testid="button-seed-database"
+                          >
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                              <Database className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <span className="font-medium text-sm">Seed Database</span>
+                            <span className="text-xs text-muted-foreground mt-1">Add sample plants</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

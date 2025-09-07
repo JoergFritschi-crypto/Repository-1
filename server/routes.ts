@@ -1699,6 +1699,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create test garden for quick testing
+  app.post('/api/admin/create-test-garden', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Create a test garden with all required fields
+      const testGarden = {
+        userId,
+        name: `Test Garden ${Date.now()}`,
+        location: 'London, UK',
+        shape: 'rectangle',
+        dimensions: JSON.stringify({ width: 10, length: 15 }),
+        units: 'metric',
+        hardiness_zone: '8b',
+        toxicity_category: 'low',
+        toxicity_priorities: JSON.stringify({
+          childSafe: true,
+          petSafe: true,
+          edibleOnly: false,
+          medicinalOk: true
+        }),
+        safety_preferences: JSON.stringify({
+          avoidToxicPlants: true,
+          prioritizePetSafe: true,
+          includeChildFriendly: true
+        }),
+        garden_style: 'cottage',
+        plant_availability_preference: 'easy_to_find',
+        status: 'design',
+        ai_generated: false,
+        layout_data: null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      const garden = await storage.createGarden(testGarden);
+      
+      res.json({
+        id: garden.id,
+        name: garden.name,
+        message: "Test garden created successfully!"
+      });
+    } catch (error) {
+      console.error("Error creating test garden:", error);
+      res.status(500).json({ message: "Failed to create test garden" });
+    }
+  });
+
   // Stripe payment routes (if Stripe is configured)
   if (stripe) {
     app.post("/api/create-payment-intent", async (req, res) => {
