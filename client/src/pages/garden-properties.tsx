@@ -780,7 +780,7 @@ export default function GardenProperties() {
                                         form.setValue("rhsZone", "");
                                       }
                                     }} 
-                                    defaultValue={field.value}
+                                    value={field.value}
                                   >
                                     <FormControl>
                                       <SelectTrigger data-testid="select-usda-zone">
@@ -832,7 +832,7 @@ export default function GardenProperties() {
                                         form.setValue("usdaZone", "");
                                       }
                                     }} 
-                                    defaultValue={field.value}
+                                    value={field.value}
                                   >
                                     <FormControl>
                                       <SelectTrigger data-testid="select-rhs-zone">
