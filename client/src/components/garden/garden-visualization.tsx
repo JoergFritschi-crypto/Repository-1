@@ -324,162 +324,81 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
             </RadioGroup>
           </div>
           
-          {/* Time Period Selection */}
+          {/* Time Period Selection - Draggable Timeline */}
           <div className="space-y-3">
-            <Label className="text-base font-medium">Select Time Period</Label>
+            <Label className="text-base font-medium">Drag to Select Time Period</Label>
             
-            {/* Month Range Selectors */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm text-gray-600 mb-1">Start Month</Label>
-                <select 
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={Math.floor(periodRange[0] / 2)}
-                  onChange={(e) => {
-                    const monthIndex = parseInt(e.target.value);
-                    const newStart = monthIndex * 2; // Convert to period index (early month)
-                    setPeriodRange([newStart, Math.max(newStart, periodRange[1])]);
-                  }}
-                  disabled={generateImagesMutation.isPending}
-                >
-                  {MONTHS.map((month, idx) => (
-                    <option key={idx} value={idx}>{month}</option>
-                  ))}
-                </select>
-                <div className="mt-1">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input 
-                      type="radio" 
-                      checked={periodRange[0] % 2 === 0}
-                      onChange={() => {
-                        const monthIndex = Math.floor(periodRange[0] / 2);
-                        setPeriodRange([monthIndex * 2, periodRange[1]]);
-                      }}
-                      disabled={generateImagesMutation.isPending}
-                    />
-                    Early {MONTHS[Math.floor(periodRange[0] / 2)]}
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input 
-                      type="radio" 
-                      checked={periodRange[0] % 2 === 1}
-                      onChange={() => {
-                        const monthIndex = Math.floor(periodRange[0] / 2);
-                        setPeriodRange([monthIndex * 2 + 1, periodRange[1]]);
-                      }}
-                      disabled={generateImagesMutation.isPending}
-                    />
-                    Late {MONTHS[Math.floor(periodRange[0] / 2)]}
-                  </label>
-                </div>
-              </div>
-              
-              <div>
-                <Label className="text-sm text-gray-600 mb-1">End Month</Label>
-                <select 
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={Math.floor(periodRange[1] / 2)}
-                  onChange={(e) => {
-                    const monthIndex = parseInt(e.target.value);
-                    const newEnd = monthIndex * 2 + 1; // Convert to period index (late month)
-                    setPeriodRange([Math.min(periodRange[0], newEnd), newEnd]);
-                  }}
-                  disabled={generateImagesMutation.isPending}
-                >
-                  {MONTHS.map((month, idx) => (
-                    <option 
-                      key={idx} 
-                      value={idx}
-                      disabled={idx < Math.floor(periodRange[0] / 2)}
-                    >
-                      {month}
-                    </option>
-                  ))}
-                </select>
-                <div className="mt-1">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input 
-                      type="radio" 
-                      checked={periodRange[1] % 2 === 0}
-                      onChange={() => {
-                        const monthIndex = Math.floor(periodRange[1] / 2);
-                        setPeriodRange([periodRange[0], monthIndex * 2]);
-                      }}
-                      disabled={generateImagesMutation.isPending}
-                    />
-                    Early {MONTHS[Math.floor(periodRange[1] / 2)]}
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input 
-                      type="radio" 
-                      checked={periodRange[1] % 2 === 1}
-                      onChange={() => {
-                        const monthIndex = Math.floor(periodRange[1] / 2);
-                        setPeriodRange([periodRange[0], monthIndex * 2 + 1]);
-                      }}
-                      disabled={generateImagesMutation.isPending}
-                    />
-                    Late {MONTHS[Math.floor(periodRange[1] / 2)]}
-                  </label>
-                </div>
-              </div>
-            </div>
-            
-            {/* Quick Selection Buttons */}
-            <div className="flex gap-2 flex-wrap">
-              <span className="text-sm text-gray-600">Quick select:</span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPeriodRange([8, 19])} // May to October
-                disabled={generateImagesMutation.isPending}
+            {/* Draggable Visual Timeline */}
+            <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="text-sm font-medium mb-3">Selected: {formatPeriodRange()}</div>
+              <div 
+                className="relative h-12 bg-gray-300 rounded-full cursor-pointer select-none"
+                onMouseDown={(e) => {
+                  if (generateImagesMutation.isPending) return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const width = rect.width;
+                  const clickPosition = (x / width) * 23;
+                  
+                  // Determine if clicking near start or end of range
+                  const distToStart = Math.abs(clickPosition - periodRange[0]);
+                  const distToEnd = Math.abs(clickPosition - periodRange[1]);
+                  
+                  const isDraggingStart = distToStart < distToEnd;
+                  
+                  const handleDrag = (moveEvent: MouseEvent) => {
+                    const newX = moveEvent.clientX - rect.left;
+                    const newPosition = Math.round((newX / width) * 23);
+                    const clampedPosition = Math.max(0, Math.min(23, newPosition));
+                    
+                    if (isDraggingStart) {
+                      setPeriodRange([Math.min(clampedPosition, periodRange[1]), periodRange[1]]);
+                    } else {
+                      setPeriodRange([periodRange[0], Math.max(periodRange[0], clampedPosition)]);
+                    }
+                  };
+                  
+                  const handleRelease = () => {
+                    document.removeEventListener('mousemove', handleDrag);
+                    document.removeEventListener('mouseup', handleRelease);
+                  };
+                  
+                  document.addEventListener('mousemove', handleDrag);
+                  document.addEventListener('mouseup', handleRelease);
+                }}
               >
-                May - Oct
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPeriodRange([6, 17])} // April to September
-                disabled={generateImagesMutation.isPending}
-              >
-                Apr - Sep
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPeriodRange([4, 15])} // March to August
-                disabled={generateImagesMutation.isPending}
-              >
-                Mar - Aug
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPeriodRange([0, 23])} // Full year
-                disabled={generateImagesMutation.isPending}
-              >
-                Full Year
-              </Button>
-            </div>
-            
-            {/* Visual Timeline */}
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <div className="text-sm font-medium mb-2">Selected: {formatPeriodRange()}</div>
-              <div className="relative h-8">
-                <div className="absolute inset-0 bg-gray-300 rounded-full"></div>
+                {/* Selected Range Bar */}
                 <div 
-                  className="absolute h-full bg-green-500 rounded-full transition-all"
+                  className="absolute h-full bg-green-500 rounded-full pointer-events-none"
                   style={{
                     left: `${(periodRange[0] / 23) * 100}%`,
                     width: `${((periodRange[1] - periodRange[0] + 1) / 23) * 100}%`
                   }}
-                ></div>
+                >
+                  {/* Start Handle */}
+                  <div 
+                    className="absolute w-4 h-full bg-green-600 rounded-l-full left-0 cursor-ew-resize pointer-events-auto"
+                    style={{ marginLeft: '-2px' }}
+                  />
+                  {/* End Handle */}
+                  <div 
+                    className="absolute w-4 h-full bg-green-600 rounded-r-full right-0 cursor-ew-resize pointer-events-auto"
+                    style={{ marginRight: '-2px' }}
+                  />
+                </div>
               </div>
-              <div className="flex justify-between text-xs text-gray-600 mt-1">
-                {['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'].map((m, i) => (
-                  <span key={i}>{m}</span>
+              
+              {/* Month Labels */}
+              <div className="flex justify-between text-xs text-gray-600 mt-2 px-1">
+                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                  <span key={i} className="text-center" style={{ width: '8.33%' }}>{m}</span>
                 ))}
               </div>
+              
+              {/* Help Text */}
+              <p className="text-xs text-gray-500 mt-3 text-center">
+                Click and drag the green bar to adjust your time period
+              </p>
             </div>
           </div>
           
