@@ -1507,9 +1507,9 @@ Style: Photorealistic, professional garden photography, natural lighting, high d
       res.json({
         success: true,
         season: season || 'summer',
-        imageUrl: imageResult.imageUrl || null,
+        imageUrl: imageResult.imageData || imageResult.imageUrl || null,
         prompt: prompt,
-        message: imageResult.imageUrl ? 'Seasonal image generated successfully' : 'Image generation in progress'
+        message: imageResult.imageData || imageResult.imageUrl ? 'Seasonal image generated successfully' : 'Image generation in progress'
       });
     } catch (error) {
       console.error("Error generating seasonal images:", error);

@@ -1,8 +1,12 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
+import * as fs from "fs";
+import { randomUUID } from "crypto";
 
 // The newest Gemini model is "gemini-2.5-flash"
 // Do not change this unless explicitly requested by the user
 const DEFAULT_MODEL = "gemini-2.5-flash";
+// IMPORTANT: only this gemini model supports image generation
+const IMAGE_GENERATION_MODEL = "gemini-2.0-flash-preview-image-generation";
 
 interface GardenVisualizationResult {
   description: string;
@@ -182,6 +186,42 @@ class GeminiAI {
     } catch (error) {
       console.error('Error suggesting companion plants with Gemini:', error);
       throw new Error('Failed to suggest companion plants');
+    }
+  }
+
+  async generateImage(prompt: string): Promise<{ imageUrl?: string; imageData?: string }> {
+    try {
+      // Use the special image generation model
+      const response = await this.ai.models.generateContent({
+        model: IMAGE_GENERATION_MODEL,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
+      });
+
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
+        return {};
+      }
+
+      const content = candidates[0].content;
+      if (!content || !content.parts) {
+        return {};
+      }
+
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          // Return base64 encoded image data
+          const imageData = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+          return { imageData };
+        }
+      }
+
+      return {};
+    } catch (error) {
+      console.error('Error generating image with Gemini:', error);
+      throw new Error('Failed to generate image');
     }
   }
 }
