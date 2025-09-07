@@ -112,9 +112,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     // Soil type (single selection)
     soilType: '',
     
-    // Soil pH (single selection)
-    soilPH: '',
-    
     // Care level (single selection)
     careLevel: '',
     
@@ -175,14 +172,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       title: "Soil Type",
       icon: Mountain,
       options: [
-        'Any', 'Clay', 'Loam', 'Sand', 'Chalk'
-      ]
-    },
-    soilPH: {
-      title: "Soil pH",
-      icon: FlaskConical,
-      options: [
-        'Any', 'Acidic', 'Neutral', 'Alkaline'
+        'Any', 'Clay', 'Loam', 'Sand', 'Chalk', 'Well-drained', 'Moist'
       ]
     },
     careLevel: {
@@ -201,7 +191,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       icon: Flower,
       options: [
         'Drought Tolerant', 'Salt Tolerant', 'Fast Growing', 
-        'Fragrant', 'Thorny', 'Tropical',
+        'Thorny', 'Tropical',
         'Culinary', 'Medicinal'
       ]
     },
@@ -241,7 +231,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       hardiness: '',
       sunlight: '',
       soilType: '',
-      soilPH: '',
       careLevel: '',
       minHeight: 0,
       maxHeight: 500,
@@ -483,7 +472,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           {renderRadioModule('hardiness')}
           {renderRadioModule('sunlight')}
           {renderRadioModule('soilType')}
-          {renderRadioModule('soilPH')}
           {renderRadioModule('careLevel')}
         </div>
 
