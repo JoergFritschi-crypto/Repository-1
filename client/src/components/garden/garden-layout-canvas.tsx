@@ -396,11 +396,9 @@ export default function GardenLayoutCanvas({
   };
 
   const handleDragStart = (plant: Plant, e: React.DragEvent) => {
-    console.log('Drag started for plant:', plant.commonName, plant.scientificName, plant);
     setDraggedPlant(plant);
     setIsDragging(true);
     e.dataTransfer.effectAllowed = 'move';
-    // Set some data to ensure drag is initiated
     e.dataTransfer.setData('text/plain', plant.id);
   };
 
@@ -412,7 +410,6 @@ export default function GardenLayoutCanvas({
   };
 
   const handleDragEnd = () => {
-    console.log('Drag ended - clearing draggedPlant');
     setIsDragging(false);
     setDraggedPlant(null);
   };
@@ -430,13 +427,7 @@ export default function GardenLayoutCanvas({
     e.preventDefault();
     setIsDragging(false);
     
-    console.log('Canvas drop - draggedPlant:', draggedPlant);
-    console.log('Canvas drop - canvasRef.current:', !!canvasRef.current);
-    
-    if (!draggedPlant || !canvasRef.current) {
-      console.log('Drop cancelled - missing draggedPlant or canvasRef');
-      return;
-    }
+    if (!draggedPlant || !canvasRef.current) return;
     
     // Check if we're dragging from placed plants back to canvas (just moving position)
     const placedPlantId = e.dataTransfer.getData('placedPlantId');
@@ -468,17 +459,9 @@ export default function GardenLayoutCanvas({
         flowerColor: (draggedPlant as any).flowerColor
       };
       
-      console.log('Before removing - unplacedPlants count:', unplacedPlants.length);
-      console.log('Removing plant with ID:', draggedPlant.id);
-      console.log('Unplaced plant IDs:', unplacedPlants.map(p => p.id));
-      
       setPlacedPlants([...placedPlants, newPlacedPlant]);
       // Remove from unplaced if it was there
-      setUnplacedPlants(prev => {
-        const filtered = prev.filter(p => p.id !== draggedPlant.id);
-        console.log('After filtering - remaining plants:', filtered.length);
-        return filtered;
-      });
+      setUnplacedPlants(prev => prev.filter(p => p.id !== draggedPlant.id));
     }
     setDraggedPlant(null);
   };
