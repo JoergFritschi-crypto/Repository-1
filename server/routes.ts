@@ -560,11 +560,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Garden Design Generation
+  // AI Garden Design Generation with Claude for spatial accuracy
   app.post('/api/gardens/:id/generate-ai-design', isAuthenticated, async (req: any, res) => {
     try {
-      if (!perplexityAI) {
-        return res.status(503).json({ message: "AI service not configured. Please add PERPLEXITY_API_KEY." });
+      if (!anthropicAI) {
+        return res.status(503).json({ message: "AI service not configured. Please add ANTHROPIC_API_KEY." });
       }
 
       const garden = await storage.getGarden(req.params.id);
@@ -577,38 +577,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
-      // Generate AI design using Perplexity
-      const aiDesign = await perplexityAI.generateGardenDesign({
-        location: garden.location || 'United Kingdom',
-        shape: garden.shape || 'rectangular',
-        dimensions: garden.dimensions,
-        hardiness_zone: garden.hardiness_zone || undefined,
-        sun_exposure: garden.sunExposure || undefined,
-        design_approach: garden.design_approach || undefined,
-        preferences: garden.preferences
-      });
+      // Get verified plants from database
+      const availablePlants = await storage.getAllPlants();
+      const verifiedPlants = availablePlants.filter(p => p.verificationStatus === 'verified').slice(0, 30);
+      
+      // Generate AI design using Claude with spatial layout
+      const prompt = `Create a garden design with precise spatial placement for a ${garden.shape} garden.
+      
+Garden Details:
+- Shape: ${garden.shape}
+- Dimensions: ${JSON.stringify(garden.dimensions)} ${garden.units}
+- Location: ${garden.location || 'United Kingdom'}
+- Sun Exposure: ${garden.sunExposure || 'mixed'}
+- Style: ${garden.design_style || 'mixed border'}
+
+Available Plants (use these exact names and IDs):
+${verifiedPlants.map(p => `- ID: ${p.id}, Name: ${p.commonName}, Scientific: ${p.scientificName}, Height: ${p.heightMax}cm, Spread: ${p.spreadMax}cm`).join('\n')}
+
+Generate a JSON response with this exact structure:
+{
+  "plants": [
+    {
+      "id": "plant_id_from_list",
+      "plantName": "common name",
+      "scientificName": "scientific name", 
+      "x": 10,  // percentage position (0-100)
+      "y": 20,  // percentage position (0-100)
+      "quantity": 1
+    }
+  ],
+  "designNotes": "Brief description of the design approach"
+}
+
+Rules:
+1. Position plants as percentages (0-100) within the garden shape
+2. Consider mature plant sizes for spacing
+3. Place taller plants towards the back/center
+4. Group plants for visual impact
+5. Ensure good coverage without overcrowding
+6. Use only plants from the provided list`;
+
+      const response = await anthropicAI.generateText(prompt);
+      
+      // Parse the AI response
+      let aiDesign;
+      try {
+        // Extract JSON from the response
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          aiDesign = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("No valid JSON in response");
+        }
+      } catch (parseError) {
+        console.error("Error parsing AI response:", parseError);
+        // Fallback to a simple design
+        aiDesign = {
+          plants: verifiedPlants.slice(0, 5).map((p, i) => ({
+            id: p.id,
+            plantName: p.commonName,
+            scientificName: p.scientificName,
+            x: 20 + (i * 15),
+            y: 30 + (i % 2 * 20),
+            quantity: 1
+          })),
+          designNotes: "AI-assisted garden design with selected plants"
+        };
+      }
 
       // Update garden with AI-generated layout
       const updatedGarden = await storage.updateGarden(req.params.id, {
-        layout_data: aiDesign.layout,
+        layout_data: aiDesign,
         ai_generated: true
       });
 
-      // Store plant recommendations if needed
-      if (aiDesign.plantRecommendations && aiDesign.plantRecommendations.length > 0) {
-        // Store recommendations in garden preferences or separate table
-        await storage.updateGarden(req.params.id, {
-          preferences: {
-            ...(garden.preferences as any || {}),
-            ai_plant_recommendations: aiDesign.plantRecommendations,
-            ai_design_notes: aiDesign.designNotes
-          }
-        });
-      }
-
       res.json({
         garden: updatedGarden,
-        plantRecommendations: aiDesign.plantRecommendations,
+        plantRecommendations: aiDesign.plants,
         designNotes: aiDesign.designNotes
       });
     } catch (error) {
