@@ -44,6 +44,21 @@ export default function GardenLayoutCanvas({
   const unitSymbol = units === 'metric' ? 'm' : 'ft';
   const unitSquared = units === 'metric' ? 'm²' : 'ft²';
   
+  // Get actual garden dimensions in base units (meters or feet)
+  const gardenWidth = dimensions.width || dimensions.side || dimensions.radius * 2 || 10;
+  const gardenHeight = dimensions.height || dimensions.side || dimensions.radius * 2 || 10;
+  
+  // Convert to centimeters or inches for fine measurements
+  const gardenWidthInBaseUnits = units === 'metric' ? gardenWidth * 100 : gardenWidth * 12; // cm or inches
+  const gardenHeightInBaseUnits = units === 'metric' ? gardenHeight * 100 : gardenHeight * 12;
+  
+  // Calculate scale: pixels per base unit (cm or inch)
+  const scaleX = (canvasSize.width - 24) / gardenWidthInBaseUnits;
+  const scaleY = canvasSize.height / gardenHeightInBaseUnits;
+  
+  // Grid spacing in base units
+  const gridSpacing = units === 'metric' ? 25 : 12; // 25cm or 12 inches (1 foot)
+  
   // Calculate area based on shape and dimensions
   const calculateArea = () => {
     const width = dimensions.width || dimensions.side || dimensions.radius || 10;
@@ -281,24 +296,35 @@ export default function GardenLayoutCanvas({
                 style={{ pointerEvents: 'none' }}
               >
                 <defs>
-                  {/* Fine grid pattern for visual reference */}
-                  <pattern id="fineGrid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#86efac" strokeWidth="0.2" opacity="0.2"/>
+                  {/* Fine grid pattern for visual reference - 10cm or 4 inch intervals */}
+                  <pattern 
+                    id="fineGrid" 
+                    width={units === 'metric' ? 10 * scaleX : 4 * scaleX} 
+                    height={units === 'metric' ? 10 * scaleY : 4 * scaleY} 
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path 
+                      d={`M ${units === 'metric' ? 10 * scaleX : 4 * scaleX} 0 L 0 0 0 ${units === 'metric' ? 10 * scaleY : 4 * scaleY}`} 
+                      fill="none" 
+                      stroke="#86efac" 
+                      strokeWidth="0.3" 
+                      opacity="0.3"
+                    />
                   </pattern>
                   
                   {/* Main measurement grid - 25cm or 1ft intervals */}
                   <pattern 
                     id="measurementGrid" 
-                    width={units === 'metric' ? 25 : 30.48} 
-                    height={units === 'metric' ? 25 : 30.48} 
+                    width={gridSpacing * scaleX} 
+                    height={gridSpacing * scaleY} 
                     patternUnits="userSpaceOnUse"
                   >
                     <path 
-                      d={`M ${units === 'metric' ? 25 : 30.48} 0 L 0 0 0 ${units === 'metric' ? 25 : 30.48}`} 
+                      d={`M ${gridSpacing * scaleX} 0 L 0 0 0 ${gridSpacing * scaleY}`} 
                       fill="none" 
                       stroke="#059669" 
                       strokeWidth="1" 
-                      opacity="0.4"
+                      opacity="0.5"
                     />
                   </pattern>
                 </defs>
@@ -310,14 +336,17 @@ export default function GardenLayoutCanvas({
                 <rect width="100%" height="100%" fill="url(#measurementGrid)" />
                 
                 {/* Ruler markings - Horizontal */}
-                {Array.from({ length: Math.floor((canvasSize.width - 24) / (units === 'metric' ? 25 : 30.48)) }, (_, i) => {
-                  const x = i * (units === 'metric' ? 25 : 30.48);
-                  const label = units === 'metric' ? `${i * 25}cm` : `${i}ft`;
+                {Array.from({ length: Math.ceil(gardenWidthInBaseUnits / gridSpacing) + 1 }, (_, i) => {
+                  const x = i * gridSpacing * scaleX;
+                  const label = units === 'metric' 
+                    ? i % 4 === 0 ? `${i * 25 / 100}m` : `${i * 25}cm`
+                    : `${i}ft`;
+                  const showLabel = units === 'metric' ? (i % 2 === 0) : true; // Show every 50cm for metric
                   return (
                     <g key={`h-ruler-${i}`}>
-                      <line x1={x} y1={0} x2={x} y2={10} stroke="#047857" strokeWidth="1" />
-                      {i > 0 && (
-                        <text x={x} y={20} fill="#047857" fontSize="10" textAnchor="middle">
+                      <line x1={x} y1={0} x2={x} y2={8} stroke="#047857" strokeWidth="1" />
+                      {showLabel && i > 0 && (
+                        <text x={x} y={18} fill="#047857" fontSize="9" textAnchor="middle">
                           {label}
                         </text>
                       )}
@@ -326,14 +355,17 @@ export default function GardenLayoutCanvas({
                 })}
                 
                 {/* Ruler markings - Vertical */}
-                {Array.from({ length: Math.floor(canvasSize.height / (units === 'metric' ? 25 : 30.48)) }, (_, i) => {
-                  const y = i * (units === 'metric' ? 25 : 30.48);
-                  const label = units === 'metric' ? `${i * 25}cm` : `${i}ft`;
+                {Array.from({ length: Math.ceil(gardenHeightInBaseUnits / gridSpacing) + 1 }, (_, i) => {
+                  const y = i * gridSpacing * scaleY;
+                  const label = units === 'metric' 
+                    ? i % 4 === 0 ? `${i * 25 / 100}m` : `${i * 25}cm`
+                    : `${i}ft`;
+                  const showLabel = units === 'metric' ? (i % 2 === 0) : true; // Show every 50cm for metric
                   return (
                     <g key={`v-ruler-${i}`}>
-                      <line x1={0} y1={y} x2={10} y2={y} stroke="#047857" strokeWidth="1" />
-                      {i > 0 && (
-                        <text x={15} y={y + 3} fill="#047857" fontSize="10">
+                      <line x1={0} y1={y} x2={8} y2={y} stroke="#047857" strokeWidth="1" />
+                      {showLabel && i > 0 && (
+                        <text x={15} y={y + 3} fill="#047857" fontSize="9">
                           {label}
                         </text>
                       )}
