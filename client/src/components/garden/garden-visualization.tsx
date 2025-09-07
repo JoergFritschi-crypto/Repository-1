@@ -32,11 +32,6 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-const MONTH_PERIODS = MONTHS.flatMap(month => [
-  `Early ${month}`,
-  `Late ${month}`
-]);
-
 // Map period indices to season and specific time
 const getPeriodDetails = (periodIndex: number) => {
   const monthIndex = Math.floor(periodIndex / 2);
@@ -280,9 +275,9 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   };
   
   const formatPeriodRange = () => {
-    const start = MONTH_PERIODS[periodRange[0]];
-    const end = MONTH_PERIODS[periodRange[1]];
-    return `${start} - ${end}`;
+    const start = getPeriodDetails(periodRange[0]);
+    const end = getPeriodDetails(periodRange[1]);
+    return `${start.fullPeriod} - ${end.fullPeriod}`;
   };
   
   return (
