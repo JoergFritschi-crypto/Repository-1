@@ -546,24 +546,7 @@ export default function Admin() {
                           <Button
                             variant="outline"
                             className="h-auto flex flex-col items-center py-4 hover:bg-green-50 hover:border-green-300"
-                            onClick={async () => {
-                              try {
-                                const response = await apiRequest('POST', '/api/admin/create-test-garden');
-                                const garden = await response.json();
-                                toast({
-                                  title: "Test Garden Created!",
-                                  description: `Garden "${garden.name}" created with ID: ${garden.id}`,
-                                });
-                                // Navigate to the garden design page
-                                window.location.href = `/garden/${garden.id}/design`;
-                              } catch (error) {
-                                toast({
-                                  title: "Error",
-                                  description: "Failed to create test garden",
-                                  variant: "destructive",
-                                });
-                              }
-                            }}
+                            onClick={() => createTestGardenMutation.mutate()}
                             data-testid="button-create-test-garden"
                           >
                             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-2">
