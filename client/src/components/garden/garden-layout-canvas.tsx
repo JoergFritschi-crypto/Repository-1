@@ -527,8 +527,8 @@ export default function GardenLayoutCanvas({
                       return acc;
                     }, {} as Record<string, any>);
 
-                    return Object.values(groupedPlants).map((group: any) => (
-                      <Tooltip key={group.scientificName || group.commonName}>
+                    return Object.values(groupedPlants).map((group: any, index: number) => (
+                      <Tooltip key={`${group.scientificName || group.commonName}-${index}`}>
                         <TooltipTrigger asChild>
                           <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg px-2 py-1 shadow-sm hover:shadow-md transition-shadow">
                             <div
