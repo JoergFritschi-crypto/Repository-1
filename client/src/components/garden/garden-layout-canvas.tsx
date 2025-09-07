@@ -44,7 +44,7 @@ export default function GardenLayoutCanvas({
   onOpenPlantSearch
 }: GardenLayoutCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 900, height: 900 });
+  const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 800 });
   const [unplacedPlants, setUnplacedPlants] = useState<Plant[]>([]);
   const [placedPlants, setPlacedPlants] = useState<PlacedPlant[]>([]);
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
@@ -578,9 +578,40 @@ export default function GardenLayoutCanvas({
         </CardContent>
       </Card>
 
-      {/* Main Layout: Canvas Left, Garden Info Right */}
+      {/* Garden Info Bar Above Canvas */}
+      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        <CardContent className="py-2 px-4 flex items-center justify-between">
+          <div className="flex gap-6">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground uppercase">Shape:</span>
+              <span className="text-sm font-semibold">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground uppercase">Dimensions:</span>
+              <span className="text-sm font-semibold">
+                {shape === 'circle' ? 
+                  `R: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
+                shape === 'square' ?
+                  `${dimensions.width || dimensions.side || 10}${unitSymbol}` :
+                  `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 10}${unitSymbol}`
+                }
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground uppercase">Area:</span>
+              <span className="text-sm font-bold text-primary">{calculateArea()} {unitSquared}</span>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            <Info className="w-3 h-3 inline mr-1" />
+            Drag plants to/from canvas
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Main Canvas */}
       <div className="flex gap-3">
-        {/* Canvas Section */}
+        {/* Canvas Section - Full Width */}
         <Card className="shadow-lg overflow-visible" style={{ width: `${canvasSize.width}px` }}>
           <CardContent className="p-3 overflow-visible">
             <div 
@@ -749,37 +780,6 @@ export default function GardenLayoutCanvas({
               {isDragging && (
                 <div className="absolute inset-0 border-3 border-primary/50 border-dashed rounded-lg pointer-events-none animate-pulse" />
               )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Garden Info Sidebar - Right */}
-        <Card className="shadow-md flex-1">
-          <CardHeader className="py-3 px-4 bg-muted/50">
-            <CardTitle className="text-sm flex items-center gap-1">
-              <Info className="w-4 h-4" />
-              Garden Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-3 px-4 space-y-3">
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Shape</p>
-              <p className="text-base font-semibold">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Dimensions</p>
-              <p className="text-base font-semibold">
-                {shape === 'circle' ? 
-                  `Radius: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
-                shape === 'square' ?
-                  `Side: ${dimensions.width || dimensions.side || 10}${unitSymbol}` :
-                  `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 10}${unitSymbol}`
-                }
-              </p>
-            </div>
-            <div className="pt-2 border-t">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Area</p>
-              <p className="text-xl font-bold text-primary">{calculateArea()} {unitSquared}</p>
             </div>
           </CardContent>
         </Card>
