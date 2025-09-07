@@ -353,20 +353,41 @@ export default function GardenLayoutCanvas({
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {unplacedPlants.map((plant) => (
-                  <div
-                    key={plant.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(plant, e)}
-                    className="bg-green-100 border border-green-400 rounded-lg px-3 py-2 cursor-move hover:bg-green-200 transition-colors"
-                    data-testid={`inventory-plant-${plant.id}`}
-                  >
-                    <p className="font-medium text-sm">{plant.commonName}</p>
-                    {plant.scientificName && (
-                      <p className="text-xs text-gray-600 italic">{plant.scientificName}</p>
-                    )}
-                  </div>
-                ))}
+                <TooltipProvider>
+                  {unplacedPlants.map((plant) => {
+                    const plantData = {
+                      plantType: (plant as any).plantType,
+                      flowerColor: (plant as any).flowerColor
+                    };
+                    return (
+                      <Tooltip key={plant.id}>
+                        <TooltipTrigger asChild>
+                          <div
+                            draggable
+                            onDragStart={(e) => handleDragStart(plant, e)}
+                            className="rounded-full border border-gray-700 shadow-md cursor-move hover:scale-125 transition-transform flex items-center justify-center"
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              backgroundColor: getPlantColor(plantData as any),
+                            }}
+                            data-testid={`inventory-plant-${plant.id}`}
+                          >
+                            <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
+                              {getPlantInitials(plant.scientificName)}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="p-2">
+                          <div className="text-sm">
+                            <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
+                            <div className="text-xs text-muted-foreground">{plant.commonName}</div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </TooltipProvider>
               </div>
             )}
           </ScrollArea>
