@@ -50,7 +50,7 @@ export default function PlantSearchModal({
   
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-6xl h-[80vh] flex flex-col">
+      <DialogContent className="max-w-6xl h-[80vh] flex flex-col bg-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Search className="w-5 h-5" />
