@@ -298,11 +298,21 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
           <CardTitle>Garden Seasonal Visualization</CardTitle>
           <CardDescription>
             Generate photorealistic views of your garden throughout the year
-            {userTier === 'free' && (
-              <span className="block mt-1 text-orange-600">
-                Free tier: {maxImages} images, {maxIterations - iterationCount} iterations remaining
-              </span>
-            )}
+            <span className="block mt-1">
+              {userTier === 'free' ? (
+                <span className="text-orange-600">
+                  Free tier: {maxImages} images, {maxIterations - iterationCount} iterations remaining
+                </span>
+              ) : userTier === 'pay_per_design' ? (
+                <span className="text-blue-600">
+                  Tier 2: Up to {maxImages} images, unlimited iterations
+                </span>
+              ) : (
+                <span className="text-purple-600">
+                  Premium tier: Up to {maxImages} images, unlimited iterations
+                </span>
+              )}
+            </span>
           </CardDescription>
         </CardHeader>
         
