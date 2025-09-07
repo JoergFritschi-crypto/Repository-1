@@ -326,7 +326,9 @@ export default function GardenProperties() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Garden Name</FormLabel>
+                        <FormLabel>
+                          Garden Name <span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="My Beautiful Garden" {...field} data-testid="input-garden-name" />
                         </FormControl>
@@ -630,7 +632,10 @@ export default function GardenProperties() {
                               name="usdaZone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>USDA Hardiness Zone</FormLabel>
+                                  <FormLabel>
+                                USDA Hardiness Zone <span className="text-red-500">*</span>
+                                <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>
+                              </FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger data-testid="select-usda-zone">
@@ -670,7 +675,10 @@ export default function GardenProperties() {
                               name="rhsZone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>RHS Hardiness Rating</FormLabel>
+                                  <FormLabel>
+                                    RHS Hardiness Rating <span className="text-red-500">*</span>
+                                    <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>
+                                  </FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger data-testid="select-rhs-zone">
@@ -738,7 +746,7 @@ export default function GardenProperties() {
                     name="sunExposure"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Primary Sun Exposure</FormLabel>
+                        <FormLabel>Primary Sun Exposure <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-sun-exposure">
@@ -788,7 +796,7 @@ export default function GardenProperties() {
                       name="soilType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Soil Type</FormLabel>
+                          <FormLabel>Soil Type <span className="text-red-500">*</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-soil-type">
@@ -816,7 +824,7 @@ export default function GardenProperties() {
                       name="soilPh"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Soil pH</FormLabel>
+                          <FormLabel>Soil pH <span className="text-red-500">*</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-soil-ph">
