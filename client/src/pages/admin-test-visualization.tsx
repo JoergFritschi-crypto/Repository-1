@@ -84,26 +84,32 @@ export default function AdminTestVisualization() {
                 <div className="flex gap-2">
                   <Button
                     variant={testingTier === 'free' ? "default" : "outline"}
-                    onClick={() => setTestingTier('free')}
+                    onClick={() => {
+                      console.log('Free button clicked');
+                      setTestingTier('free');
+                    }}
                   >
-                    <Badge variant="secondary" className="mr-2">Free</Badge>
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 mr-2">Free</span>
                     Up to 2 images, 3 iterations
                   </Button>
                   <Button
                     variant={testingTier === 'pay_per_design' ? "default" : "outline"}
-                    onClick={() => setTestingTier('pay_per_design')}
+                    onClick={() => {
+                      console.log('Tier 2 button clicked');
+                      setTestingTier('pay_per_design');
+                    }}
                   >
-                    <Badge className="mr-2 bg-blue-500">Tier 2</Badge>
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-500 text-white mr-2">Tier 2</span>
                     Up to 6 images, unlimited
                   </Button>
                   <Button
                     variant={testingTier === 'premium' ? "default" : "outline"}
                     onClick={() => {
-                      console.log('Premium button clicked, setting tier to premium');
+                      console.log('Premium button clicked');
                       setTestingTier('premium');
                     }}
                   >
-                    <Badge className="mr-2 bg-purple-500">Premium</Badge>
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-500 text-white mr-2">Premium</span>
                     Up to 6 images, unlimited
                   </Button>
                 </div>
