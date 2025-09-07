@@ -237,25 +237,51 @@ export default function GardenLayoutCanvas({
     }
   }, [aiDesign]);
 
-  // Initialize inventory with garden plants
+  // Load saved garden plants onto canvas
   useEffect(() => {
     if (gardenPlants && gardenPlants.length > 0 && !aiDesign) {
-      // Convert garden plants to the format needed for the inventory
-      // Create individual entries for each plant based on quantity
-      const inventoryPlantsFromGarden: Plant[] = [];
-      let uniqueCounter = 0;
+      // Restore placed plants on canvas from saved positions
+      const restoredPlants: PlacedPlant[] = [];
       gardenPlants.forEach((gp: any) => {
-        const quantity = gp.quantity || 1;
-        for (let i = 0; i < quantity; i++) {
-          inventoryPlantsFromGarden.push({
-            ...gp.plant, // Include all plant details first
-            id: `inventory-${uniqueCounter++}-${Math.random()}`, // Override with unique ID
-            commonName: gp.plant?.commonName || 'Unknown Plant',
-            scientificName: gp.plant?.scientificName || ''
+        if (gp.position_x !== null && gp.position_y !== null) {
+          // Plant has saved position, place it on canvas
+          restoredPlants.push({
+            id: `placed-${gp.id}`,
+            plantId: gp.plantId || gp.plant?.id || `plant-${Math.random()}`,
+            plantName: gp.plant?.commonName || gp.plant?.scientificName || 'Unknown',
+            scientificName: gp.plant?.scientificName,
+            x: gp.position_x,
+            y: gp.position_y,
+            quantity: gp.quantity || 1,
+            plantType: gp.plant?.type,
+            flowerColor: gp.plant?.flowerColor
           });
         }
       });
-      setUnplacedPlants(inventoryPlantsFromGarden);
+      setPlacedPlants(restoredPlants);
+      
+      // Don't add plants to inventory if they're already placed on canvas
+      // Only add plants without positions to inventory
+      const unplacedGardenPlants = gardenPlants.filter(gp => 
+        gp.position_x === null || gp.position_y === null
+      );
+      
+      if (unplacedGardenPlants.length > 0) {
+        const inventoryPlantsFromGarden: Plant[] = [];
+        let uniqueCounter = 0;
+        unplacedGardenPlants.forEach((gp: any) => {
+          const quantity = gp.quantity || 1;
+          for (let i = 0; i < quantity; i++) {
+            inventoryPlantsFromGarden.push({
+              ...gp.plant,
+              id: `inventory-${uniqueCounter++}-${Math.random()}`,
+              commonName: gp.plant?.commonName || 'Unknown Plant',
+              scientificName: gp.plant?.scientificName || ''
+            });
+          }
+        });
+        setUnplacedPlants(inventoryPlantsFromGarden);
+      }
     }
   }, [gardenPlants, aiDesign]);
 
