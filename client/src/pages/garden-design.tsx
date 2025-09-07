@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import GardenLayoutCanvas from "@/components/garden/garden-layout-canvas";
 import PlantSearchModal from "@/components/plant/plant-search-modal";
+import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { 
@@ -26,7 +27,9 @@ export default function GardenDesign() {
   const [location] = useLocation();
   const [viewMode, setViewMode] = useState("canvas");
   const [showPlantSearch, setShowPlantSearch] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [inventoryPlants, setInventoryPlants] = useState<any[]>([]);
+  const [searchFilters, setSearchFilters] = useState<any>({});
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -177,6 +180,7 @@ export default function GardenDesign() {
             <div className="flex justify-between items-center mb-4">
               <TabsList data-testid="tabs-view-mode">
                 <TabsTrigger value="canvas" data-testid="tab-canvas">Garden Canvas</TabsTrigger>
+                <TabsTrigger value="advanced-search" data-testid="tab-advanced-search">Advanced Plant Search</TabsTrigger>
                 <TabsTrigger value="3d" data-testid="tab-3d-view">3D View</TabsTrigger>
                 <TabsTrigger value="plants" data-testid="tab-plant-list">Plant List</TabsTrigger>
               </TabsList>
@@ -192,6 +196,37 @@ export default function GardenDesign() {
                 aiDesign={garden.layout_data}
                 onOpenPlantSearch={() => setShowPlantSearch(true)}
               />
+            </TabsContent>
+
+            {/* Advanced Plant Search */}
+            <TabsContent value="advanced-search" className="mt-0">
+              <div className="space-y-4">
+                <PlantAdvancedSearch 
+                  onSearch={(filters) => {
+                    console.log('Advanced search filters:', filters);
+                    setSearchFilters(filters);
+                    // TODO: Implement actual search with these filters
+                    toast({
+                      title: "Search Applied",
+                      description: `Searching with ${Object.keys(filters).length} active filters`,
+                    });
+                  }}
+                  totalResults={0}
+                />
+                
+                {/* Search Results */}
+                <Card className="border-2 border-gray-200">
+                  <CardHeader>
+                    <CardTitle>Search Results</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Use the advanced search above to find plants</p>
+                      <p className="text-sm mt-2">Results will appear here</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             {/* 3D View - Premium Feature */}
