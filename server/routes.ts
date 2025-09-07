@@ -115,6 +115,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch garden" });
     }
   });
+
+  // Get plants in a garden
+  app.get('/api/gardens/:id/plants', isAuthenticated, async (req: any, res) => {
+    try {
+      const garden = await storage.getGarden(req.params.id);
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const gardenPlants = await storage.getGardenPlants(req.params.id);
+      
+      // Fetch plant details for each garden plant
+      const plantsWithDetails = await Promise.all(
+        gardenPlants.map(async (gp) => {
+          const plant = await storage.getPlant(gp.plantId);
+          return {
+            ...gp,
+            plant
+          };
+        })
+      );
+      
+      res.json(plantsWithDetails);
+    } catch (error) {
+      console.error("Error fetching garden plants:", error);
+      res.status(500).json({ message: "Failed to fetch garden plants" });
+    }
+  });
+
+  // Add plants to a garden
+  app.post('/api/gardens/:id/plants', isAuthenticated, async (req: any, res) => {
+    try {
+      const garden = await storage.getGarden(req.params.id);
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { plants } = req.body; // Array of { plantId, quantity, position_x?, position_y? }
+      
+      if (!Array.isArray(plants) || plants.length === 0) {
+        return res.status(400).json({ message: "Plants array is required" });
+      }
+      
+      const addedPlants = await Promise.all(
+        plants.map(async (plant) => {
+          const gardenPlant = await storage.addPlantToGarden({
+            gardenId: req.params.id,
+            plantId: plant.plantId,
+            quantity: plant.quantity || 1,
+            position_x: plant.position_x || null,
+            position_y: plant.position_y || null,
+            notes: plant.notes || null
+          });
+          return gardenPlant;
+        })
+      );
+      
+      res.json({ 
+        message: "Plants added successfully", 
+        plants: addedPlants 
+      });
+    } catch (error) {
+      console.error("Error adding plants to garden:", error);
+      res.status(500).json({ message: "Failed to add plants to garden" });
+    }
+  });
   
   // Design generation tracking routes
   app.get('/api/design-generations', isAuthenticated, async (req: any, res) => {
