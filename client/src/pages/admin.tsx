@@ -545,15 +545,18 @@ export default function Admin() {
                         <div className="grid grid-cols-2 gap-3">
                           <Button
                             variant="outline"
-                            className="h-auto flex flex-col items-center py-4 hover:bg-green-50 hover:border-green-300"
-                            onClick={() => createTestGardenMutation.mutate()}
-                            data-testid="button-create-test-garden"
+                            className="h-auto flex flex-col items-center py-4 hover:bg-blue-50 hover:border-blue-300"
+                            onClick={() => {
+                              // Navigate to Test Garden 1
+                              window.location.href = '/garden-design/1';
+                            }}
+                            data-testid="button-load-test-garden"
                           >
-                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-2">
-                              <Leaf className="w-5 h-5 text-green-600" />
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                              <Map className="w-5 h-5 text-blue-600" />
                             </div>
-                            <span className="font-medium text-sm">Create Test Garden</span>
-                            <span className="text-xs text-muted-foreground mt-1">Jump to Step 4 instantly</span>
+                            <span className="font-medium text-sm">Load Test Garden 1</span>
+                            <span className="text-xs text-muted-foreground mt-1">Continue saved design</span>
                           </Button>
                           
                           <Button
