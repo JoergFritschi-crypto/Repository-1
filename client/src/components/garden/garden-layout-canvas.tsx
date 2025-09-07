@@ -410,19 +410,25 @@ export default function GardenLayoutCanvas({
                               </span>
                             </div>
                             <span className="text-xs font-medium text-gray-700">×{group.count}</span>
-                            <div className="flex gap-0.5">
+                            <div className="flex gap-1">
                               {group.plants.map((plant: any, index: number) => (
                                 <div
                                   key={plant.id}
                                   draggable
                                   onDragStart={(e) => handleDragStart(plant, e)}
                                   onDragEnd={handleDragEnd}
-                                  className="w-2 h-2 rounded-full cursor-move hover:scale-150 transition-transform"
+                                  className="rounded-full border border-gray-600 cursor-move hover:scale-125 transition-transform flex items-center justify-center"
                                   style={{
+                                    width: '20px',
+                                    height: '20px',
                                     backgroundColor: getPlantColor(plant),
                                   }}
                                   data-testid={`inventory-plant-${plant.id}`}
-                                />
+                                >
+                                  <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
+                                    {getPlantInitials(plant.scientificName)}
+                                  </span>
+                                </div>
                               ))}
                             </div>
                           </div>
