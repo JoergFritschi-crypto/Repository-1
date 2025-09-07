@@ -391,46 +391,30 @@ export default function GardenProperties() {
                           />
                         </div>
 
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                              const city = form.getValues('city');
-                              const country = form.getValues('country');
-                              if (city && country) {
-                                setLocationToFetch(`${city}, ${country}`);
-                                setShowClimateModal(true);
-                              } else {
-                                toast({
-                                  title: 'Missing Information',
-                                  description: 'Please enter both city and country',
-                                  variant: 'destructive'
-                                });
-                              }
-                            }}
-                            disabled={!watchedCity || !watchedCountry}
-                            className="flex-1"
-                            data-testid="button-get-climate"
-                          >
-                            <Thermometer className="w-4 h-4 mr-2" />
-                            Get Climate Data
-                          </Button>
-
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                              setLocationToFetch(watchedCountry || watchedCity || '');
-                              setShowSoilTestingModal(true);
-                            }}
-                            className="flex-1"
-                            data-testid="button-find-soil-testing"
-                          >
-                            <Beaker className="w-4 h-4 mr-2" />
-                            Find Soil Testing
-                          </Button>
-                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const city = form.getValues('city');
+                            const country = form.getValues('country');
+                            if (city && country) {
+                              setLocationToFetch(`${city}, ${country}`);
+                              setShowClimateModal(true);
+                            } else {
+                              toast({
+                                title: 'Missing Information',
+                                description: 'Please enter both city and country',
+                                variant: 'destructive'
+                              });
+                            }
+                          }}
+                          disabled={!watchedCity || !watchedCountry}
+                          className="w-full"
+                          data-testid="button-get-climate"
+                        >
+                          <Thermometer className="w-4 h-4 mr-2" />
+                          Get Climate Data
+                        </Button>
                       </TabsContent>
                       
                       <TabsContent value="zone" className="space-y-4">
@@ -609,22 +593,21 @@ export default function GardenProperties() {
                       name="soilPh"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Soil pH Level</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              step="0.1" 
-                              min="3" 
-                              max="11" 
-                              placeholder="e.g. 6.5" 
-                              {...field}
-                              onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                              value={field.value || ''}
-                              data-testid="input-soil-ph"
-                            />
-                          </FormControl>
+                          <FormLabel>Soil pH</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-soil-ph">
+                                <SelectValue placeholder="Select pH level" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="acidic">Acidic (below 7.0)</SelectItem>
+                              <SelectItem value="neutral">Neutral (around 7.0)</SelectItem>
+                              <SelectItem value="alkaline">Alkaline (above 7.0)</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormDescription className="text-xs">
-                            pH value between 3.0 and 11.0 (7.0 is neutral)
+                            General soil acidity level
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -652,6 +635,20 @@ export default function GardenProperties() {
                         </FormItem>
                       )}
                     />
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setLocationToFetch(watchedCountry || watchedCity || '');
+                        setShowSoilTestingModal(true);
+                      }}
+                      className="w-full"
+                      data-testid="button-find-soil-testing"
+                    >
+                      <Beaker className="w-4 h-4 mr-2" />
+                      Find Soil Testing
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
