@@ -2094,6 +2094,123 @@ Photography style: Professional garden photography captured in natural ${season 
     });
   }
 
+  // Populate Test Garden 1 with sample plants
+  app.post('/api/admin/populate-test-garden', isAuthenticated, async (req: any, res) => {
+    try {
+      const testGardenId = "1";
+      
+      // Sample canvas design with plants
+      const sampleCanvasDesign = {
+        plants: [
+          {
+            id: "plant1",
+            plantId: "1",
+            x: 200,
+            y: 150,
+            size: "medium",
+            color: "#FF6B6B",
+            initials: "RO",
+            name: "Rosa 'Queen Elizabeth'",
+            quantity: 1
+          },
+          {
+            id: "plant2",
+            plantId: "2",
+            x: 400,
+            y: 200,
+            size: "large",
+            color: "#4ECDC4",
+            initials: "LA",
+            name: "Lavandula angustifolia",
+            quantity: 3
+          },
+          {
+            id: "plant3",
+            plantId: "3",
+            x: 600,
+            y: 150,
+            size: "medium",
+            color: "#FFD93D",
+            initials: "HE",
+            name: "Helianthus annuus",
+            quantity: 2
+          },
+          {
+            id: "plant4",
+            plantId: "4",
+            x: 300,
+            y: 350,
+            size: "small",
+            color: "#6BCB77",
+            initials: "SA",
+            name: "Salvia officinalis",
+            quantity: 4
+          },
+          {
+            id: "plant5",
+            plantId: "5",
+            x: 500,
+            y: 400,
+            size: "large",
+            color: "#FF6B6B",
+            initials: "PE",
+            name: "Paeonia lactiflora",
+            quantity: 1
+          },
+          {
+            id: "plant6",
+            plantId: "6",
+            x: 700,
+            y: 300,
+            size: "medium",
+            color: "#4ECDC4",
+            initials: "HO",
+            name: "Hosta 'Patriot'",
+            quantity: 2
+          },
+          {
+            id: "plant7",
+            plantId: "7",
+            x: 150,
+            y: 450,
+            size: "small",
+            color: "#FFD93D",
+            initials: "TH",
+            name: "Thymus vulgaris",
+            quantity: 5
+          },
+          {
+            id: "plant8",
+            plantId: "8",
+            x: 800,
+            y: 200,
+            size: "large",
+            color: "#6BCB77",
+            initials: "RH",
+            name: "Rhododendron 'Nova Zembla'",
+            quantity: 1
+          }
+        ],
+        gardenShape: "rectangular",
+        width: 1200,
+        height: 800
+      };
+      
+      // Update Test Garden 1 with the canvas design
+      await storage.updateGarden(testGardenId, {
+        layout_data: sampleCanvasDesign
+      });
+      
+      res.json({ 
+        message: "Test Garden 1 populated with sample plants", 
+        plantCount: sampleCanvasDesign.plants.length 
+      });
+    } catch (error) {
+      console.error("Error populating test garden:", error);
+      res.status(500).json({ message: "Failed to populate test garden" });
+    }
+  });
+
   // Get visualization data (iteration count, saved images, etc)
   app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req: any, res) => {
     try {
