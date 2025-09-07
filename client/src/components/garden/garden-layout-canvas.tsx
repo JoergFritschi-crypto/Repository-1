@@ -396,9 +396,12 @@ export default function GardenLayoutCanvas({
   };
 
   const handleDragStart = (plant: Plant, e: React.DragEvent) => {
+    console.log('Drag started for plant:', plant.commonName, plant.scientificName, plant);
     setDraggedPlant(plant);
     setIsDragging(true);
     e.dataTransfer.effectAllowed = 'move';
+    // Set some data to ensure drag is initiated
+    e.dataTransfer.setData('text/plain', plant.id);
   };
 
   const handlePlacedPlantDragStart = (placedPlant: PlacedPlant, e: React.DragEvent) => {
@@ -409,6 +412,7 @@ export default function GardenLayoutCanvas({
   };
 
   const handleDragEnd = () => {
+    console.log('Drag ended - clearing draggedPlant');
     setIsDragging(false);
     setDraggedPlant(null);
   };
@@ -426,7 +430,13 @@ export default function GardenLayoutCanvas({
     e.preventDefault();
     setIsDragging(false);
     
-    if (!draggedPlant || !canvasRef.current) return;
+    console.log('Canvas drop - draggedPlant:', draggedPlant);
+    console.log('Canvas drop - canvasRef.current:', !!canvasRef.current);
+    
+    if (!draggedPlant || !canvasRef.current) {
+      console.log('Drop cancelled - missing draggedPlant or canvasRef');
+      return;
+    }
     
     // Check if we're dragging from placed plants back to canvas (just moving position)
     const placedPlantId = e.dataTransfer.getData('placedPlantId');
