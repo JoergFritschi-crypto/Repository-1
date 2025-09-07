@@ -534,6 +534,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const updatedGarden = await storage.updateGarden(req.params.id, req.body);
+      
+      // If layout_data with plantPlacements is provided, update individual plant positions
+      if (req.body.layout_data?.plantPlacements) {
+        const placements = req.body.layout_data.plantPlacements;
+        for (const placement of placements) {
+          // Extract garden plant ID from the placement ID (format: "placed-{garden_plant_id}")
+          const gardenPlantId = placement.id.replace('placed-', '');
+          if (gardenPlantId) {
+            await storage.updateGardenPlant(gardenPlantId, {
+              position_x: placement.x,
+              position_y: placement.y
+            });
+          }
+        }
+      }
+      
       res.json(updatedGarden);
     } catch (error) {
       console.error("Error updating garden:", error);

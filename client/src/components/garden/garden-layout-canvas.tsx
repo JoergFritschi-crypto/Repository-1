@@ -23,9 +23,10 @@ interface GardenLayoutCanvasProps {
   gardenPlants?: any[];
   inventoryPlants?: any[];
   onOpenPlantSearch?: () => void;
+  onPlacedPlantsChange?: (plants: PlacedPlant[]) => void;
 }
 
-interface PlacedPlant {
+export interface PlacedPlant {
   id: string;
   plantId: string;
   plantName: string;
@@ -45,7 +46,8 @@ export default function GardenLayoutCanvas({
   aiDesign,
   gardenPlants,
   inventoryPlants,
-  onOpenPlantSearch
+  onOpenPlantSearch,
+  onPlacedPlantsChange
 }: GardenLayoutCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 800 });
@@ -239,27 +241,13 @@ export default function GardenLayoutCanvas({
 
   // Load saved garden plants onto canvas
   useEffect(() => {
-    console.log('gardenPlants useEffect triggered:', { 
-      hasGardenPlants: !!gardenPlants, 
-      gardenPlantsLength: gardenPlants?.length,
-      hasAiDesign: !!aiDesign,
-      gardenPlants 
-    });
-    
     if (gardenPlants && gardenPlants.length > 0 && !aiDesign) {
       // Restore placed plants on canvas from saved positions
       const restoredPlants: PlacedPlant[] = [];
       gardenPlants.forEach((gp: any) => {
-        console.log('Processing garden plant:', {
-          id: gp.id,
-          position_x: gp.position_x,
-          position_y: gp.position_y,
-          plant: gp.plant
-        });
-        
         if (gp.position_x !== null && gp.position_y !== null) {
           // Plant has saved position, place it on canvas
-          const placedPlant = {
+          restoredPlants.push({
             id: `placed-${gp.id}`,
             plantId: gp.plantId || gp.plant?.id || `plant-${Math.random()}`,
             plantName: gp.plant?.commonName || gp.plant?.scientificName || 'Unknown',
@@ -269,12 +257,9 @@ export default function GardenLayoutCanvas({
             quantity: gp.quantity || 1,
             plantType: gp.plant?.type,
             flowerColor: gp.plant?.flowerColor
-          };
-          console.log('Adding to canvas:', placedPlant);
-          restoredPlants.push(placedPlant);
+          });
         }
       });
-      console.log('Setting placed plants:', restoredPlants);
       setPlacedPlants(restoredPlants);
       
       // Don't add plants to inventory if they're already placed on canvas
@@ -301,6 +286,13 @@ export default function GardenLayoutCanvas({
       }
     }
   }, [gardenPlants, aiDesign]);
+
+  // Notify parent when placed plants change
+  useEffect(() => {
+    if (onPlacedPlantsChange) {
+      onPlacedPlantsChange(placedPlants);
+    }
+  }, [placedPlants, onPlacedPlantsChange]);
 
   // Add inventory plants from advanced search
   useEffect(() => {

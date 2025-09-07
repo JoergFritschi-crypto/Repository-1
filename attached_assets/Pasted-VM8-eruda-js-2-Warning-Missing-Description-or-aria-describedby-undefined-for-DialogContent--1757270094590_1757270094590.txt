@@ -1,0 +1,54 @@
+VM8 eruda.js:2 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+VM8 eruda.js:2 gardenPlants useEffect triggered: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Processing garden plant: 
+Object
+VM8 eruda.js:2 Setting placed plants: 
+Array(0)
+VM8 eruda.js:2 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+Console.js:61 gardenPlants useEffect triggered: 
+{hasGardenPlants: false, gardenPlantsLength: undefined, hasAiDesign: false, gardenPlants: undefined}
+Console.js:61 gardenPlants useEffect triggered: 
+{hasGardenPlants: true, gardenPlantsLength: 10, hasAiDesign: false, gardenPlants: Array(10)}
+Console.js:61 Processing garden plant: 
+{id: 'a5d179ec-fbd5-48d3-9e49-7a2257d54095', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: 'fa861b9b-d6b3-43d7-a6a2-1dc8bf3d07c1', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: '8a95090b-6a1e-4a6a-88a6-789cd5fb00ee', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: 'abe6f56b-16cc-4229-a434-d078edb82e17', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: '5589d707-2a6a-4dfb-9eee-9e49b45efa74', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: '329c6ade-646f-45a5-8d15-219caab91b7a', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: '8fc32faa-ee03-41d4-8074-242e51e43819', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: '3a3a48af-4b95-4c72-b161-0abb2303f129', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: '5d558b21-00ca-41a4-becc-643711f654f6', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Processing garden plant: 
+{id: '21133eb4-c87c-4aa2-aa88-0df82a569be2', position_x: null, position_y: null, plant: {…}}
+Console.js:61 Setting placed plants: 
+[]
+﻿
+

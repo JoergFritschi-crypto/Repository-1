@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import GardenLayoutCanvas from "@/components/garden/garden-layout-canvas";
+import GardenLayoutCanvas, { type PlacedPlant } from "@/components/garden/garden-layout-canvas";
 import PlantSearchModal from "@/components/plant/plant-search-modal";
 import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,6 +35,7 @@ export default function GardenDesign() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showLoadDesignDialog, setShowLoadDesignDialog] = useState(false);
+  const [canvasPlacedPlants, setCanvasPlacedPlants] = useState<PlacedPlant[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -211,7 +212,12 @@ export default function GardenDesign() {
               {generateAIDesignMutation.isPending ? "Generating..." : "Regenerate AI"}
             </Button>
             <Button
-              onClick={() => saveDesignMutation.mutate({ status: 'completed' })}
+              onClick={() => saveDesignMutation.mutate({ 
+                status: 'completed',
+                layout_data: {
+                  plantPlacements: canvasPlacedPlants
+                }
+              })}
               disabled={saveDesignMutation.isPending}
               data-testid="button-save-design"
             >
@@ -244,6 +250,7 @@ export default function GardenDesign() {
                 gardenPlants={gardenPlants}
                 inventoryPlants={inventoryPlants}
                 onOpenPlantSearch={() => setViewMode('advanced-search')}
+                onPlacedPlantsChange={setCanvasPlacedPlants}
               />
             </TabsContent>
 
