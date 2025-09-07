@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -209,20 +210,24 @@ export default function Admin() {
         <Card className="mb-8">
           <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-3 lg:grid-cols-7 gap-1" data-testid="tabs-admin">
+              <TabsList className="inline-flex h-10 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground w-full" data-testid="tabs-admin">
                 {adminTabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
-                    <TabsTrigger
-                      key={tab.id}
-                      value={tab.id}
-                      className="flex flex-col p-3 text-xs"
-                      data-testid={`tab-${tab.id}`}
-                    >
-                      <Icon className="w-4 h-4 mb-1" />
-                      <span className="hidden lg:inline">{tab.label}</span>
-                      <span className="lg:hidden">{tab.label.split(' ')[0]}</span>
-                    </TabsTrigger>
+                    <Tooltip key={tab.id}>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger
+                          value={tab.id}
+                          className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                          data-testid={`tab-${tab.id}`}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{tab.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   );
                 })}
               </TabsList>
