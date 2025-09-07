@@ -415,44 +415,113 @@ export default function GardenProperties() {
                           <Thermometer className="w-4 h-4 mr-2" />
                           Get Climate Data
                         </Button>
-                      </TabsContent>
-                      
-                      <TabsContent value="zone" className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div className="space-y-4 mt-4">
+                          <div className="text-sm text-muted-foreground">
+                            Climate zones (auto-filled after getting climate data)
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="usdaZone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>USDA Hardiness Zone</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger data-testid="select-usda-zone">
+                                        <SelectValue placeholder="Select zone" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="3a">Zone 3a (-40 to -35°F)</SelectItem>
+                                      <SelectItem value="3b">Zone 3b (-35 to -30°F)</SelectItem>
+                                      <SelectItem value="4a">Zone 4a (-30 to -25°F)</SelectItem>
+                                      <SelectItem value="4b">Zone 4b (-25 to -20°F)</SelectItem>
+                                      <SelectItem value="5a">Zone 5a (-20 to -15°F)</SelectItem>
+                                      <SelectItem value="5b">Zone 5b (-15 to -10°F)</SelectItem>
+                                      <SelectItem value="6a">Zone 6a (-10 to -5°F)</SelectItem>
+                                      <SelectItem value="6b">Zone 6b (-5 to 0°F)</SelectItem>
+                                      <SelectItem value="7a">Zone 7a (0 to 5°F)</SelectItem>
+                                      <SelectItem value="7b">Zone 7b (5 to 10°F)</SelectItem>
+                                      <SelectItem value="8a">Zone 8a (10 to 15°F)</SelectItem>
+                                      <SelectItem value="8b">Zone 8b (15 to 20°F)</SelectItem>
+                                      <SelectItem value="9a">Zone 9a (20 to 25°F)</SelectItem>
+                                      <SelectItem value="9b">Zone 9b (25 to 30°F)</SelectItem>
+                                      <SelectItem value="10a">Zone 10a (30 to 35°F)</SelectItem>
+                                      <SelectItem value="10b">Zone 10b (35 to 40°F)</SelectItem>
+                                      <SelectItem value="11">Zone 11 (Above 40°F)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormDescription className="text-xs">
+                                    Primary cold hardiness zone
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="rhsZone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>RHS Hardiness Rating (UK)</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger data-testid="select-rhs-zone">
+                                        <SelectValue placeholder="Select rating" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="H1">H1 - Tropical (Above 15°C)</SelectItem>
+                                      <SelectItem value="H2">H2 - Subtropical (10-15°C)</SelectItem>
+                                      <SelectItem value="H3">H3 - Warm temperate (5-10°C)</SelectItem>
+                                      <SelectItem value="H4">H4 - Cool temperate (-5 to 5°C)</SelectItem>
+                                      <SelectItem value="H5">H5 - Cold (-10 to -5°C)</SelectItem>
+                                      <SelectItem value="H6">H6 - Very cold (-15 to -10°C)</SelectItem>
+                                      <SelectItem value="H7">H7 - Extremely cold (Below -15°C)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormDescription className="text-xs">
+                                    For UK gardeners (optional)
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
                           <FormField
                             control={form.control}
-                            name="usdaZone"
+                            name="heatZone"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>USDA Hardiness Zone</FormLabel>
+                                <FormLabel>AHS Heat Zone</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
-                                    <SelectTrigger data-testid="select-usda-zone">
-                                      <SelectValue placeholder="Select zone" />
+                                    <SelectTrigger data-testid="select-heat-zone">
+                                      <SelectValue placeholder="Select heat zone" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="3a">Zone 3a (-40 to -35°F)</SelectItem>
-                                    <SelectItem value="3b">Zone 3b (-35 to -30°F)</SelectItem>
-                                    <SelectItem value="4a">Zone 4a (-30 to -25°F)</SelectItem>
-                                    <SelectItem value="4b">Zone 4b (-25 to -20°F)</SelectItem>
-                                    <SelectItem value="5a">Zone 5a (-20 to -15°F)</SelectItem>
-                                    <SelectItem value="5b">Zone 5b (-15 to -10°F)</SelectItem>
-                                    <SelectItem value="6a">Zone 6a (-10 to -5°F)</SelectItem>
-                                    <SelectItem value="6b">Zone 6b (-5 to 0°F)</SelectItem>
-                                    <SelectItem value="7a">Zone 7a (0 to 5°F)</SelectItem>
-                                    <SelectItem value="7b">Zone 7b (5 to 10°F)</SelectItem>
-                                    <SelectItem value="8a">Zone 8a (10 to 15°F)</SelectItem>
-                                    <SelectItem value="8b">Zone 8b (15 to 20°F)</SelectItem>
-                                    <SelectItem value="9a">Zone 9a (20 to 25°F)</SelectItem>
-                                    <SelectItem value="9b">Zone 9b (25 to 30°F)</SelectItem>
-                                    <SelectItem value="10a">Zone 10a (30 to 35°F)</SelectItem>
-                                    <SelectItem value="10b">Zone 10b (35 to 40°F)</SelectItem>
-                                    <SelectItem value="11">Zone 11 (Above 40°F)</SelectItem>
+                                    <SelectItem value="1">Zone 1 (Less than 1 day above 86°F)</SelectItem>
+                                    <SelectItem value="2">Zone 2 (1-7 days above 86°F)</SelectItem>
+                                    <SelectItem value="3">Zone 3 (8-14 days above 86°F)</SelectItem>
+                                    <SelectItem value="4">Zone 4 (15-30 days above 86°F)</SelectItem>
+                                    <SelectItem value="5">Zone 5 (31-45 days above 86°F)</SelectItem>
+                                    <SelectItem value="6">Zone 6 (46-60 days above 86°F)</SelectItem>
+                                    <SelectItem value="7">Zone 7 (61-90 days above 86°F)</SelectItem>
+                                    <SelectItem value="8">Zone 8 (91-120 days above 86°F)</SelectItem>
+                                    <SelectItem value="9">Zone 9 (121-150 days above 86°F)</SelectItem>
+                                    <SelectItem value="10">Zone 10 (151-180 days above 86°F)</SelectItem>
+                                    <SelectItem value="11">Zone 11 (181-210 days above 86°F)</SelectItem>
+                                    <SelectItem value="12">Zone 12 (More than 210 days above 86°F)</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormDescription className="text-xs">
-                                  Select your USDA hardiness zone
+                                  American Horticultural Society heat tolerance zone
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
@@ -461,51 +530,27 @@ export default function GardenProperties() {
 
                           <FormField
                             control={form.control}
-                            name="rhsZone"
+                            name="location"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>RHS Hardiness Rating (UK)</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger data-testid="select-rhs-zone">
-                                      <SelectValue placeholder="Select rating" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="H1">H1 - Tropical (Above 15°C)</SelectItem>
-                                    <SelectItem value="H2">H2 - Subtropical (10-15°C)</SelectItem>
-                                    <SelectItem value="H3">H3 - Warm temperate (5-10°C)</SelectItem>
-                                    <SelectItem value="H4">H4 - Cool temperate (-5 to 5°C)</SelectItem>
-                                    <SelectItem value="H5">H5 - Cold (-10 to -5°C)</SelectItem>
-                                    <SelectItem value="H6">H6 - Very cold (-15 to -10°C)</SelectItem>
-                                    <SelectItem value="H7">H7 - Extremely cold (Below -15°C)</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <FormLabel>General Location</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Pacific Northwest, Southern California, etc." {...field} data-testid="input-location" />
+                                </FormControl>
                                 <FormDescription className="text-xs">
-                                  For UK gardeners (optional)
+                                  Describe your general region
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
-
-                        <FormField
-                          control={form.control}
-                          name="location"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>General Location</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Pacific Northwest, Southern California, etc." {...field} data-testid="input-location" />
-                              </FormControl>
-                              <FormDescription className="text-xs">
-                                Describe your general region
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="zone" className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Enter your location details above to get climate data, or manually select zones if you know them.
+                        </p>
                       </TabsContent>
                     </Tabs>
                   </div>
