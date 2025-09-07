@@ -16,7 +16,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles, Shield } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles, Shield, Wand2, Palette } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import InteractiveCanvas from '@/components/garden/interactive-canvas';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
@@ -1949,6 +1949,42 @@ export default function GardenProperties() {
                     {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
                       <SafetyPreferences form={form} showAvailabilityPreference={true} />
                     )}
+                    
+                    {/* Generate Design Button when style was selected from AI analysis */}
+                    {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
+                      <Card className="border-2 border-green-500 bg-green-50 shadow-sm">
+                        <CardContent className="py-6">
+                          <div className="text-center space-y-3">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <Sparkles className="w-5 h-5 text-green-600" />
+                              <h3 className="text-lg font-semibold text-green-800">
+                                Ready to Generate Your Garden Design!
+                              </h3>
+                            </div>
+                            <p className="text-sm text-gray-600 max-w-md mx-auto">
+                              You've selected the <strong>{selectedStyleFromAI?.styleName}</strong> style based on Claude's analysis.
+                              Click below to generate your personalized garden design.
+                            </p>
+                            <Button
+                              type="button"
+                              size="lg"
+                              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                              onClick={() => {
+                                // Advance to Step 4 where the design will be generated
+                                setCurrentStep(4);
+                              }}
+                              data-testid="button-generate-ai-design"
+                            >
+                              <Wand2 className="w-5 h-5 mr-2" />
+                              Generate My Garden Design
+                            </Button>
+                            <p className="text-xs text-gray-500">
+                              This will create a complete garden layout with plant selections based on Claude's recommendations.
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </>
                 ) : (
                   /* Original flow if no AI style was selected */
@@ -2034,6 +2070,42 @@ export default function GardenProperties() {
                   {/* Safety Preferences for AI approach (after selecting a style from predefined list) */}
                   {selectedGardenStyle && (
                     <SafetyPreferences form={form} showAvailabilityPreference={true} />
+                  )}
+                  
+                  {/* Generate Design Button - Manual trigger to proceed to Step 4 */}
+                  {selectedGardenStyle && (
+                    <Card className="border-2 border-green-500 bg-green-50 shadow-sm">
+                      <CardContent className="py-6">
+                        <div className="text-center space-y-3">
+                          <div className="flex items-center justify-center gap-2 mb-2">
+                            <Sparkles className="w-5 h-5 text-green-600" />
+                            <h3 className="text-lg font-semibold text-green-800">
+                              Ready to Generate Your Garden Design!
+                            </h3>
+                          </div>
+                          <p className="text-sm text-gray-600 max-w-md mx-auto">
+                            You've selected the <strong>{selectedGardenStyle}</strong> style.
+                            Click below to generate your personalized garden design based on your preferences.
+                          </p>
+                          <Button
+                            type="button"
+                            size="lg"
+                            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                            onClick={() => {
+                              // Advance to Step 4 where the design will be generated
+                              setCurrentStep(4);
+                            }}
+                            data-testid="button-generate-design"
+                          >
+                            <Wand2 className="w-5 h-5 mr-2" />
+                            Generate My Garden Design
+                          </Button>
+                          <p className="text-xs text-gray-500">
+                            This will create a complete garden layout with plant selections based on your chosen style and preferences.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
                   </>
                 )}
@@ -2133,6 +2205,40 @@ export default function GardenProperties() {
                             )}
                           />
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Generate Design Button for Manual approach */}
+                  <Card className="border-2 border-green-500 bg-green-50 shadow-sm">
+                    <CardContent className="py-6">
+                      <div className="text-center space-y-3">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Palette className="w-5 h-5 text-green-600" />
+                          <h3 className="text-lg font-semibold text-green-800">
+                            Ready to Design Your Garden!
+                          </h3>
+                        </div>
+                        <p className="text-sm text-gray-600 max-w-md mx-auto">
+                          You've chosen manual design mode.
+                          Click below to proceed to the interactive garden canvas where you can place plants and design your garden.
+                        </p>
+                        <Button
+                          type="button"
+                          size="lg"
+                          className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                          onClick={() => {
+                            // Advance to Step 4 for manual design
+                            setCurrentStep(4);
+                          }}
+                          data-testid="button-proceed-to-canvas"
+                        >
+                          <Palette className="w-5 h-5 mr-2" />
+                          Proceed to Garden Canvas
+                        </Button>
+                        <p className="text-xs text-gray-500">
+                          You'll have full control to manually place plants and design your garden layout.
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
