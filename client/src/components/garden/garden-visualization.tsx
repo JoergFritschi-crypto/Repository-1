@@ -73,7 +73,8 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   
   // Update imageCount when tier changes
   useEffect(() => {
-    setImageCount(prevCount => Math.min(prevCount, maxImages));
+    // When switching tiers, default to the maximum available for that tier
+    setImageCount(maxImages);
   }, [userTier, maxImages]);
   const canIterate = iterationCount < maxIterations;
   
@@ -89,14 +90,17 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   
   useEffect(() => {
     if (visualizationData) {
-      if (visualizationData.iterationCount) {
+      // For premium tier, don't limit by saved iteration count
+      if (visualizationData.iterationCount && userTier === 'free') {
         setIterationCount(visualizationData.iterationCount);
+      } else if (userTier !== 'free') {
+        setIterationCount(0); // Reset for paid tiers
       }
       if (visualizationData.savedImages && visualizationData.savedImages.length > 0) {
         setGeneratedImages(visualizationData.savedImages);
       }
     }
-  }, [visualizationData]);
+  }, [visualizationData, userTier]);
   
   // Calculate distributed periods
   const getDistributedPeriods = useCallback(() => {
