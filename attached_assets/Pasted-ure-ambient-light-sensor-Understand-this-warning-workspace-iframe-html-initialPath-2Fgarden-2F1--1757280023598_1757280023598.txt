@@ -1,0 +1,72 @@
+ure: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html?initialPath=%2Fgarden%2F1%2Fdesign&id=%3Argg%3A:1 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+injected.js:253  GET https://767d25f5-ae73-4949-8494-92d8d3bcf0e4-00-zxm2kkvrdgx4.spock.replit.dev/api/gardens/1/plants 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+(anonymous) @ queryClient.ts:32
+fetchFn @ @tanstack_react-query.js?v=8bb88e7c:840
+run @ @tanstack_react-query.js?v=8bb88e7c:494
+start @ @tanstack_react-query.js?v=8bb88e7c:536
+fetch @ @tanstack_react-query.js?v=8bb88e7c:926
+executeFetch_fn @ @tanstack_react-query.js?v=8bb88e7c:2211
+onSubscribe @ @tanstack_react-query.js?v=8bb88e7c:1898
+subscribe @ @tanstack_react-query.js?v=8bb88e7c:24
+(anonymous) @ @tanstack_react-query.js?v=8bb88e7c:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=8bb88e7c:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=8bb88e7c:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=8bb88e7c:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=8bb88e7c:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=8bb88e7c:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=8bb88e7c:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=8bb88e7c:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=8bb88e7c:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=8bb88e7c:19416
+commitRoot @ chunk-RPCDYKBN.js?v=8bb88e7c:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=8bb88e7c:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=8bb88e7c:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=8bb88e7c:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=8bb88e7c:555
+flush @ @tanstack_react-query.js?v=8bb88e7c:569
+batch @ @tanstack_react-query.js?v=8bb88e7c:587
+dispatch_fn @ @tanstack_react-query.js?v=8bb88e7c:996
+setData @ @tanstack_react-query.js?v=8bb88e7c:696
+onSuccess @ @tanstack_react-query.js?v=8bb88e7c:897
+resolve @ @tanstack_react-query.js?v=8bb88e7c:456
+Promise.then
+run @ @tanstack_react-query.js?v=8bb88e7c:498
+start @ @tanstack_react-query.js?v=8bb88e7c:536
+fetch @ @tanstack_react-query.js?v=8bb88e7c:926
+executeFetch_fn @ @tanstack_react-query.js?v=8bb88e7c:2211
+onSubscribe @ @tanstack_react-query.js?v=8bb88e7c:1898
+subscribe @ @tanstack_react-query.js?v=8bb88e7c:24
+(anonymous) @ @tanstack_react-query.js?v=8bb88e7c:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=8bb88e7c:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=8bb88e7c:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=8bb88e7c:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=8bb88e7c:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=8bb88e7c:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=8bb88e7c:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=8bb88e7c:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=8bb88e7c:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=8bb88e7c:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=8bb88e7c:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=8bb88e7c:19432
+commitRoot @ chunk-RPCDYKBN.js?v=8bb88e7c:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=8bb88e7c:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=8bb88e7c:18718
+workLoop @ chunk-RPCDYKBN.js?v=8bb88e7c:197
+flushWork @ chunk-RPCDYKBN.js?v=8bb88e7c:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=8bb88e7c:384Understand this error

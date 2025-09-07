@@ -138,7 +138,12 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
       const gardenResponse = await apiRequest('GET', `/api/gardens/${gardenId}`);
       const gardenData = await gardenResponse.json();
       
-      if (!gardenData.canvasDesign || !gardenData.canvasDesign.plants || gardenData.canvasDesign.plants.length === 0) {
+      // Handle both canvasDesign and layout_data (backwards compatibility)
+      const canvasDesign = gardenData.canvasDesign || (gardenData.layout_data ? {
+        plants: gardenData.layout_data.plantPlacements
+      } : null);
+      
+      if (!canvasDesign || !canvasDesign.plants || canvasDesign.plants.length === 0) {
         throw new Error('Please add plants to your garden design before generating visualizations');
       }
       
@@ -154,7 +159,7 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
         const response = await apiRequest('POST', `/api/gardens/${gardenId}/generate-seasonal-images`, {
           season: details.season,
           specificTime: details.fullPeriod,
-          canvasDesign: gardenData.canvasDesign
+          canvasDesign: canvasDesign
         });
         
         const image = await response.json();

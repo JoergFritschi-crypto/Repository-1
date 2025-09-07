@@ -22,15 +22,6 @@ export default function AdminTestVisualization() {
     enabled: !!selectedGardenId,
   });
   
-  // Log garden data to see what's loaded
-  if (garden) {
-    console.log('Garden loaded:', {
-      name: garden.name,
-      hasCanvasDesign: !!garden.canvasDesign,
-      plantCount: garden.canvasDesign?.plants?.length || 0,
-      plants: garden.canvasDesign?.plants?.slice(0, 3) // Show first 3 plants
-    });
-  }
   
   return (
     <div className="min-h-screen bg-background">
@@ -93,7 +84,7 @@ export default function AdminTestVisualization() {
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-sm">
                       <strong>Garden:</strong> {garden.name} | 
-                      <strong> Plants:</strong> {garden.canvasDesign?.plants?.length || garden.layout_data?.plants?.length || 0} | 
+                      <strong> Plants:</strong> {garden.canvasDesign?.plants?.length || garden.layout_data?.plantPlacements?.length || 0} | 
                       <strong> Shape:</strong> {garden.shape} | 
                       <strong> Size:</strong> {garden.dimensions?.width}x{garden.dimensions?.length} {garden.units}
                     </p>
