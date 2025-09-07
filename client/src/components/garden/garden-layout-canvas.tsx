@@ -585,12 +585,12 @@ export default function GardenLayoutCanvas({
                   <Tooltip key={plant.id}>
                     <TooltipTrigger asChild>
                       <div
-                        className={`absolute rounded-full border border-gray-700 shadow-md cursor-pointer hover:scale-125 transition-transform flex items-center justify-center ${
+                        className={`absolute rounded-full border-2 border-gray-800 shadow-lg cursor-pointer hover:scale-125 transition-transform flex items-center justify-center ${
                           selectedPlant === plant.id ? 'ring-2 ring-blue-500' : ''
                         }`}
                         style={{
-                          width: '20px',
-                          height: '20px',
+                          width: '24px',
+                          height: '24px',
                           backgroundColor: getPlantColor(plant),
                           left: `${plant.x}%`,
                           top: `${plant.y}%`,
@@ -599,7 +599,7 @@ export default function GardenLayoutCanvas({
                         onClick={() => setSelectedPlant(plant.id)}
                         data-testid={`placed-plant-${plant.id}`}
                       >
-                        <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
+                        <span className="text-white font-bold drop-shadow-md" style={{ fontSize: '11px', textShadow: '0 0 2px rgba(0,0,0,0.8)' }}>
                           {getPlantInitials(plant.scientificName)}
                         </span>
                       </div>
