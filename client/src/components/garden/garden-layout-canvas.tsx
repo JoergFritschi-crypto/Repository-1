@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Info } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import type { Plant } from '@shared/schema';
 
 interface GardenLayoutCanvasProps {
@@ -24,6 +30,8 @@ interface PlacedPlant {
   x: number; // percentage of canvas width
   y: number; // percentage of canvas height
   quantity: number;
+  plantType?: string;
+  flowerColor?: string;
 }
 
 export default function GardenLayoutCanvas({
@@ -42,6 +50,47 @@ export default function GardenLayoutCanvas({
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedPlant, setDraggedPlant] = useState<Plant | null>(null);
+
+  // Get plant initials from scientific name (e.g., "Acer palmatum" -> "AP")
+  const getPlantInitials = (scientificName?: string): string => {
+    if (!scientificName) return '??';
+    const parts = scientificName.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return scientificName.substring(0, 2).toUpperCase();
+  };
+
+  // Get plant color based on type or characteristics
+  const getPlantColor = (plant: PlacedPlant): string => {
+    // If flower color is specified, use that
+    if (plant.flowerColor) {
+      const colorMap: Record<string, string> = {
+        'red': '#dc2626',
+        'pink': '#ec4899',
+        'purple': '#9333ea',
+        'lavender': '#a78bfa',
+        'blue': '#2563eb',
+        'white': '#f3f4f6',
+        'yellow': '#facc15',
+        'orange': '#fb923c',
+      };
+      const lowerColor = plant.flowerColor.toLowerCase();
+      for (const [key, value] of Object.entries(colorMap)) {
+        if (lowerColor.includes(key)) return value;
+      }
+    }
+    
+    // Default colors based on plant type
+    if (plant.plantType?.includes('tree')) return '#059669'; // Emerald for trees
+    if (plant.plantType?.includes('shrub')) return '#16a34a'; // Green for shrubs
+    if (plant.plantType?.includes('perennial')) return '#8b5cf6'; // Violet for perennials
+    if (plant.plantType?.includes('annual')) return '#f59e0b'; // Amber for annuals
+    if (plant.plantType?.includes('herb')) return '#10b981'; // Light green for herbs
+    
+    // Default green
+    return '#22c55e';
+  };
 
   const unitSymbol = units === 'metric' ? 'm' : 'ft';
   const unitSquared = units === 'metric' ? 'm²' : 'ft²';
@@ -152,7 +201,9 @@ export default function GardenLayoutCanvas({
         scientificName: plant.scientificName,
         x: plant.x, // Already in percentage
         y: plant.y, // Already in percentage
-        quantity: plant.quantity || 1
+        quantity: plant.quantity || 1,
+        plantType: plant.plantType,
+        flowerColor: plant.flowerColor
       }));
       setPlacedPlants(placed);
       // For AI design, inventory starts empty
@@ -234,7 +285,9 @@ export default function GardenLayoutCanvas({
       scientificName: draggedPlant.scientificName,
       x: Math.max(5, Math.min(95, x)), // Keep within bounds
       y: Math.max(5, Math.min(95, y)),
-      quantity: 1
+      quantity: 1,
+      plantType: (draggedPlant as any).plantType,
+      flowerColor: (draggedPlant as any).flowerColor
     };
     
     setPlacedPlants([...placedPlants, newPlacedPlant]);
@@ -442,24 +495,42 @@ export default function GardenLayoutCanvas({
               </svg>
 
               {/* Placed Plants */}
-              {placedPlants.map((plant) => (
-                <div
-                  key={plant.id}
-                  className={`absolute w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
-                    selectedPlant === plant.id ? 'ring-4 ring-blue-400' : ''
-                  }`}
-                  style={{
-                    left: `${plant.x}%`,
-                    top: `${plant.y}%`,
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                  onClick={() => setSelectedPlant(plant.id)}
-                  title={plant.plantName}
-                  data-testid={`placed-plant-${plant.id}`}
-                >
-                  <span className="text-white text-sm font-bold">{plant.quantity}</span>
-                </div>
-              ))}
+              <TooltipProvider>
+                {placedPlants.map((plant) => (
+                  <Tooltip key={plant.id}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`absolute rounded-full border border-gray-700 shadow-md cursor-pointer hover:scale-125 transition-transform flex items-center justify-center ${
+                          selectedPlant === plant.id ? 'ring-2 ring-blue-500' : ''
+                        }`}
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          backgroundColor: getPlantColor(plant),
+                          left: `${plant.x}%`,
+                          top: `${plant.y}%`,
+                          transform: 'translate(-50%, -50%)'
+                        }}
+                        onClick={() => setSelectedPlant(plant.id)}
+                        data-testid={`placed-plant-${plant.id}`}
+                      >
+                        <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
+                          {getPlantInitials(plant.scientificName)}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="p-2">
+                      <div className="text-sm">
+                        <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
+                        <div className="text-xs text-muted-foreground">{plant.plantName}</div>
+                        {plant.quantity > 1 && (
+                          <div className="text-xs mt-1">Quantity: {plant.quantity}</div>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </TooltipProvider>
 
               {/* Drag indicator */}
               {isDragging && (
