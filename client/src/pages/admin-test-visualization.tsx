@@ -125,6 +125,7 @@ export default function AdminTestVisualization() {
         {/* Visualization Component */}
         {garden ? (
           <GardenVisualization 
+            key={`${selectedGardenId}-${testingTier}`}
             gardenId={selectedGardenId}
             userTier={testingTier}
             onReturn={() => toast({
