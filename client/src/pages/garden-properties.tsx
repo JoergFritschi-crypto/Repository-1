@@ -1255,7 +1255,7 @@ export default function GardenProperties() {
                       data-testid="button-find-soil-testing"
                     >
                       <Beaker className="w-4 h-4 mr-2" />
-                      Find Soil Testing
+                      Find Soil Testing in Your Region
                     </Button>
                   </div>
                 </CardContent>
