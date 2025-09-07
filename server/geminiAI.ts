@@ -5,8 +5,9 @@ import { randomUUID } from "crypto";
 // The newest Gemini model is "gemini-2.5-flash"
 // Do not change this unless explicitly requested by the user
 const DEFAULT_MODEL = "gemini-2.5-flash";
-// IMPORTANT: only this gemini model supports image generation
-const IMAGE_GENERATION_MODEL = "gemini-2.0-flash-preview-image-generation";
+// IMPORTANT: Gemini 2.5 Flash Image is Google's most advanced image generation model
+// Also known as "Nano Banana" - supports sophisticated image generation with consistency
+const IMAGE_GENERATION_MODEL = "gemini-2.5-flash-image-preview";
 
 interface GardenVisualizationResult {
   description: string;
