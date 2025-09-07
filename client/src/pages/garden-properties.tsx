@@ -29,7 +29,6 @@ import { Lock, Crown, CreditCard, Shield } from 'lucide-react';
 
 const gardenSchema = z.object({
   name: z.string().min(1, 'Garden name is required'),
-  location: z.string().optional(),
   city: z.string().optional(),
   zipCode: z.string().optional(),
   country: z.string().optional(),
@@ -163,7 +162,6 @@ export default function GardenProperties() {
 
   // Watch country to show/hide Perplexity search button
   const watchedCountry = form.watch("country");
-  const watchedLocation = form.watch("location");
   const watchedCity = form.watch("city");
   const watchedZipCode = form.watch("zipCode");
   const watchedDesignApproach = form.watch("design_approach");
@@ -734,23 +732,6 @@ export default function GardenProperties() {
                                 </Select>
                                 <FormDescription className="text-xs">
                                   American Horticultural Society heat tolerance zone
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="location"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>General Location</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Pacific Northwest, Southern California, etc." {...field} data-testid="input-location" />
-                                </FormControl>
-                                <FormDescription className="text-xs">
-                                  Describe your general region
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
