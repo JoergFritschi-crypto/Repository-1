@@ -130,6 +130,7 @@ export default function GardenProperties() {
   const [climateData, setClimateData] = useState<any>(null);
   const [hasUploadedPhotos, setHasUploadedPhotos] = useState(false);
   const [generatedStyles, setGeneratedStyles] = useState<any[]>([]);
+  const [hasSetOrientation, setHasSetOrientation] = useState(false);
   const [selectedStyleFromAI, setSelectedStyleFromAI] = useState<any>(null);
   const [analysis, setAnalysis] = useState<any>(null);
   const [recommendedStyleIds, setRecommendedStyleIds] = useState<string[]>([]);
@@ -1833,9 +1834,30 @@ export default function GardenProperties() {
                       slopePercentage={watchedSlopePercentage}
                       usdaZone={watchedUsdaZone}
                       rhsZone={watchedRhsZone}
+                      onOrientationChange={(isComplete) => setHasSetOrientation(isComplete)}
                     />
                   </CardContent>
                 </Card>
+
+                {/* Orientation Warning if not set */}
+                {!hasSetOrientation && (
+                  <Card className="border-2 border-orange-400 bg-orange-50 shadow-sm">
+                    <CardContent className="py-4">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold text-orange-800">
+                            Garden Orientation Not Set
+                          </p>
+                          <p className="text-sm text-orange-700">
+                            Please set your garden's actual north direction and viewing point above. 
+                            These are critical for accurate sun exposure calculations and proper plant placement in your design.
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Photo Upload Section - LAST, after defining garden shape and dimensions */}
                 <PhotoUpload 

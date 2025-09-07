@@ -11,6 +11,7 @@ interface GardenSketchProps {
   slopePercentage?: number;
   usdaZone?: string;
   rhsZone?: string;
+  onOrientationChange?: (hasUserInteracted: boolean) => void;
 }
 
 export default function GardenSketch({
@@ -20,7 +21,8 @@ export default function GardenSketch({
   slopeDirection = 'N',
   slopePercentage = 5,
   usdaZone = '',
-  rhsZone = ''
+  rhsZone = '',
+  onOrientationChange
 }: GardenSketchProps) {
   const [cardinalRotation, setCardinalRotation] = useState(0);
   const [viewerRotation, setViewerRotation] = useState(0);
@@ -29,6 +31,8 @@ export default function GardenSketch({
   const [containerSize, setContainerSize] = useState({ width: 400, height: 400 });
   const [showAssessment, setShowAssessment] = useState(false);
   const [assessment, setAssessment] = useState<string[]>([]);
+  const [hasUserSetNorth, setHasUserSetNorth] = useState(false);
+  const [hasUserSetViewer, setHasUserSetViewer] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -196,8 +200,16 @@ export default function GardenSketch({
     e.preventDefault();
     if (ring === 'cardinal') {
       setIsDraggingCardinal(true);
+      if (!hasUserSetNorth) {
+        setHasUserSetNorth(true);
+        onOrientationChange?.(hasUserSetViewer); // Notify parent that north has been set
+      }
     } else {
       setIsDraggingViewer(true);
+      if (!hasUserSetViewer) {
+        setHasUserSetViewer(true);
+        onOrientationChange?.(hasUserSetNorth); // Notify parent that viewer has been set
+      }
     }
   };
 
@@ -220,6 +232,10 @@ export default function GardenSketch({
     };
 
     const handleMouseUp = () => {
+      if (isDraggingCardinal || isDraggingViewer) {
+        // Notify parent that both have been set if applicable
+        onOrientationChange?.(hasUserSetNorth && hasUserSetViewer);
+      }
       setIsDraggingCardinal(false);
       setIsDraggingViewer(false);
     };
@@ -499,9 +515,28 @@ export default function GardenSketch({
         />
       </svg>
 
-          <div className="mt-3 text-xs text-muted-foreground space-y-1">
-            <p>🔴 Drag the red N marker to orient North to your property</p>
-            <p>👁️ Drag the blue eye to set your main viewing angle</p>
+          {/* Orientation Instructions and Warnings */}
+          <div className="mt-3 space-y-2">
+            {(!hasUserSetNorth || !hasUserSetViewer) && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                <p className="text-xs font-semibold text-yellow-800 mb-1">
+                  ⚠️ Important: Set your garden's actual orientation
+                </p>
+                <p className="text-xs text-yellow-700">
+                  The default orientation is likely incorrect. Please adjust both controls below for accurate design:
+                </p>
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p className={`${!hasUserSetNorth ? 'font-semibold text-red-600' : ''}`}>
+                🔴 {!hasUserSetNorth ? '(Required)' : ''} Drag the red N marker to orient North to your property
+                {hasUserSetNorth && ' ✓'}
+              </p>
+              <p className={`${!hasUserSetViewer ? 'font-semibold text-blue-600' : ''}`}>
+                👁️ {!hasUserSetViewer ? '(Required)' : ''} Drag the blue eye to set your main viewing angle
+                {hasUserSetViewer && ' ✓'}
+              </p>
+            </div>
           </div>
           
           {/* Assessment Button */}
