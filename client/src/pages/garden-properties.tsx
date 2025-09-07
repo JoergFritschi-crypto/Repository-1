@@ -31,6 +31,7 @@ const gardenSchema = z.object({
   name: z.string().min(1, 'Garden name is required'),
   location: z.string().optional(),
   city: z.string().optional(),
+  zipCode: z.string().optional(),
   country: z.string().optional(),
   usdaZone: z.string().optional(),
   rhsZone: z.string().optional(),
@@ -164,6 +165,7 @@ export default function GardenProperties() {
   const watchedCountry = form.watch("country");
   const watchedLocation = form.watch("location");
   const watchedCity = form.watch("city");
+  const watchedZipCode = form.watch("zipCode");
   const watchedDesignApproach = form.watch("design_approach");
   
   // Watch values for GardenSketch to prevent re-render loops
@@ -348,7 +350,11 @@ export default function GardenProperties() {
                       </TabsList>
                       
                       <TabsContent value="city" className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p className="text-sm text-muted-foreground">
+                          Enter your location details for accurate climate data and plant recommendations
+                        </p>
+                        
+                        <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="city"
@@ -365,44 +371,63 @@ export default function GardenProperties() {
 
                           <FormField
                             control={form.control}
-                            name="country"
+                            name="zipCode"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Country</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger data-testid="select-country">
-                                      <SelectValue placeholder="Select country" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="US">United States</SelectItem>
-                                    <SelectItem value="CA">Canada</SelectItem>
-                                    <SelectItem value="GB">United Kingdom</SelectItem>
-                                    <SelectItem value="DE">Germany</SelectItem>
-                                    <SelectItem value="FR">France</SelectItem>
-                                    <SelectItem value="AU">Australia</SelectItem>
-                                    <SelectItem value="NZ">New Zealand</SelectItem>
-                                    <SelectItem value="JP">Japan</SelectItem>
-                                    <SelectItem value="CN">China</SelectItem>
-                                    <SelectItem value="IN">India</SelectItem>
-                                    <SelectItem value="OTHER">Other</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <FormLabel>ZIP/Postal Code</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="10001" {...field} data-testid="input-zip-code" />
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
 
+                        <FormField
+                          control={form.control}
+                          name="country"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-country">
+                                    <SelectValue placeholder="Select country" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="US">United States</SelectItem>
+                                  <SelectItem value="CA">Canada</SelectItem>
+                                  <SelectItem value="GB">United Kingdom</SelectItem>
+                                  <SelectItem value="DE">Germany</SelectItem>
+                                  <SelectItem value="FR">France</SelectItem>
+                                  <SelectItem value="AU">Australia</SelectItem>
+                                  <SelectItem value="NZ">New Zealand</SelectItem>
+                                  <SelectItem value="JP">Japan</SelectItem>
+                                  <SelectItem value="CN">China</SelectItem>
+                                  <SelectItem value="IN">India</SelectItem>
+                                  <SelectItem value="OTHER">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => {
                             const city = form.getValues('city');
+                            const zipCode = form.getValues('zipCode');
                             const country = form.getValues('country');
                             if (city && country) {
-                              setLocationToFetch(`${city}, ${country}`);
+                              // Include zip code for more accurate geocoding if available
+                              const locationString = zipCode 
+                                ? `${city}, ${zipCode}, ${country}`
+                                : `${city}, ${country}`;
+                              setLocationToFetch(locationString);
                               setShowClimateModal(true);
                             } else {
                               toast({
