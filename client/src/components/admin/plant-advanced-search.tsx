@@ -25,7 +25,10 @@ import {
   Mountain,
   Wind,
   Snowflake,
-  FlaskConical
+  FlaskConical,
+  CalendarDays,
+  Wrench,
+  Maximize
 } from "lucide-react";
 
 interface PlantAdvancedSearchProps {
@@ -118,9 +121,18 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     // Care level (single selection)
     careLevel: '',
     
+    // Additional criteria
+    floweringSeason: '',
+    watering: '',
+    maintenance: '',
+    
     // Height range (in cm)
     minHeight: 0,
     maxHeight: 500,
+    
+    // Spread/Width range (in cm)
+    minSpread: 0,
+    maxSpread: 300,
     
     // Special features (multiple selections)
     specialFeatures: [],
@@ -191,6 +203,27 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       options: [
         'Any', 'Easy', 'Moderate', 'Difficult'
       ]
+    },
+    floweringSeason: {
+      title: "Flowering Season",
+      icon: CalendarDays,
+      options: [
+        'Any', 'Spring', 'Summer', 'Fall', 'Winter', 'Year-round'
+      ]
+    },
+    watering: {
+      title: "Watering Needs",
+      icon: Droplets,
+      options: [
+        'Any', 'Minimal', 'Average', 'Frequent'
+      ]
+    },
+    maintenance: {
+      title: "Maintenance Level",
+      icon: Wrench,
+      options: [
+        'Any', 'Low', 'Moderate', 'High'
+      ]
     }
   };
 
@@ -243,8 +276,13 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       soilType: '',
       soilPH: '',
       careLevel: '',
+      floweringSeason: '',
+      watering: '',
+      maintenance: '',
       minHeight: 0,
       maxHeight: 500,
+      minSpread: 0,
+      maxSpread: 300,
       specialFeatures: [],
       attractsWildlife: [],
       isSafe: false,
@@ -440,6 +478,49 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           </CardContent>
         </Card>
 
+        {/* Spread/Width Criteria */}
+        <Card className="border shadow-sm bg-gradient-to-br from-green-50 to-emerald-50">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Maximize className="w-4 h-4 text-green-600" />
+              Spread/Width Range
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <div className="space-y-4">
+              <div className="bg-white/70 rounded-lg p-3">
+                <div className="flex justify-between text-sm mb-2">
+                  <Label className="text-xs font-medium text-green-700">Min Spread: <span className="text-green-600 font-bold">{filters.minSpread} cm</span></Label>
+                </div>
+                <Slider
+                  value={[filters.minSpread]}
+                  onValueChange={(value) => updateFilter('minSpread', value[0])}
+                  min={0}
+                  max={300}
+                  step={10}
+                  className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
+                />
+              </div>
+              <div className="bg-white/70 rounded-lg p-3">
+                <div className="flex justify-between text-sm mb-2">
+                  <Label className="text-xs font-medium text-green-700">Max Spread: <span className="text-green-600 font-bold">{filters.maxSpread} cm</span></Label>
+                </div>
+                <Slider
+                  value={[filters.maxSpread]}
+                  onValueChange={(value) => updateFilter('maxSpread', value[0])}
+                  min={0}
+                  max={300}
+                  step={10}
+                  className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
+                />
+              </div>
+              <div className="text-center text-xs text-gray-600 italic">
+                Plant width for proper spacing
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Color Selection - Multiple selections allowed */}
         <Card className="border shadow-sm">
           <CardHeader className="py-3 px-4">
@@ -485,6 +566,9 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           {renderRadioModule('soilType')}
           {renderRadioModule('soilPH')}
           {renderRadioModule('careLevel')}
+          {renderRadioModule('floweringSeason')}
+          {renderRadioModule('watering')}
+          {renderRadioModule('maintenance')}
         </div>
 
         {/* Multiple Selection Sections (Checkboxes) */}
