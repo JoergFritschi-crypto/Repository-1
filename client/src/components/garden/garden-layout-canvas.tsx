@@ -281,13 +281,65 @@ export default function GardenLayoutCanvas({
                 style={{ pointerEvents: 'none' }}
               >
                 <defs>
-                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#86efac" strokeWidth="0.5" opacity="0.3"/>
+                  {/* Fine grid pattern for visual reference */}
+                  <pattern id="fineGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#86efac" strokeWidth="0.2" opacity="0.2"/>
+                  </pattern>
+                  
+                  {/* Main measurement grid - 25cm or 1ft intervals */}
+                  <pattern 
+                    id="measurementGrid" 
+                    width={units === 'metric' ? 25 : 30.48} 
+                    height={units === 'metric' ? 25 : 30.48} 
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path 
+                      d={`M ${units === 'metric' ? 25 : 30.48} 0 L 0 0 0 ${units === 'metric' ? 25 : 30.48}`} 
+                      fill="none" 
+                      stroke="#059669" 
+                      strokeWidth="1" 
+                      opacity="0.4"
+                    />
                   </pattern>
                 </defs>
                 
-                {/* Grid background */}
-                <rect width="100%" height="100%" fill="url(#grid)" />
+                {/* Fine grid background */}
+                <rect width="100%" height="100%" fill="url(#fineGrid)" />
+                
+                {/* Measurement grid */}
+                <rect width="100%" height="100%" fill="url(#measurementGrid)" />
+                
+                {/* Ruler markings - Horizontal */}
+                {Array.from({ length: Math.floor((canvasSize.width - 24) / (units === 'metric' ? 25 : 30.48)) }, (_, i) => {
+                  const x = i * (units === 'metric' ? 25 : 30.48);
+                  const label = units === 'metric' ? `${i * 25}cm` : `${i}ft`;
+                  return (
+                    <g key={`h-ruler-${i}`}>
+                      <line x1={x} y1={0} x2={x} y2={10} stroke="#047857" strokeWidth="1" />
+                      {i > 0 && (
+                        <text x={x} y={20} fill="#047857" fontSize="10" textAnchor="middle">
+                          {label}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
+                
+                {/* Ruler markings - Vertical */}
+                {Array.from({ length: Math.floor(canvasSize.height / (units === 'metric' ? 25 : 30.48)) }, (_, i) => {
+                  const y = i * (units === 'metric' ? 25 : 30.48);
+                  const label = units === 'metric' ? `${i * 25}cm` : `${i}ft`;
+                  return (
+                    <g key={`v-ruler-${i}`}>
+                      <line x1={0} y1={y} x2={10} y2={y} stroke="#047857" strokeWidth="1" />
+                      {i > 0 && (
+                        <text x={15} y={y + 3} fill="#047857" fontSize="10">
+                          {label}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
                 
                 {/* Garden shape with color fill */}
                 <path
