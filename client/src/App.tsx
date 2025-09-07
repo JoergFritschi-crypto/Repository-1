@@ -30,6 +30,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/garden-properties" component={GardenProperties} />
           <Route path="/garden-design/:id?" component={GardenDesign} />
+          <Route path="/garden/:id/design" component={GardenDesign} />
           <Route path="/plant-library" component={PlantLibrary} />
           <Route path="/plant-doctor" component={PlantDoctor} />
           <Route path="/premium" component={PremiumDashboard} />
