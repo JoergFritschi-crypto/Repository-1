@@ -77,9 +77,9 @@ export default function GardenLayoutCanvas({
       if (canvasRef.current) {
         const container = canvasRef.current.parentElement;
         if (container) {
-          // Canvas takes most of container width, leaving just enough for sidebar
+          // Canvas takes most of container width, leaving some for garden info sidebar
           const availableWidth = container.clientWidth * 0.75;
-          const availableHeight = window.innerHeight * 0.65; // Use 65% of viewport height
+          const availableHeight = window.innerHeight * 0.5; // Use 50% of viewport height
           
           // Maintain 4:3 aspect ratio
           let width = availableWidth;
@@ -205,174 +205,38 @@ export default function GardenLayoutCanvas({
   }, {} as Record<string, { name: string; scientificName?: string; quantity: number }>);
 
   return (
-    <div className="w-full">
-      {/* Main Layout: Canvas Left, Info Right */}
-      <div className="flex gap-3">
-        {/* Canvas Section - Takes Most Space */}
-        <div className="flex-1">
-          <Card className="border-2 border-green-600 shadow-lg">
-            <CardContent className="p-3">
-              <div 
-                ref={canvasRef}
-                className="relative bg-gradient-to-br from-green-100 via-emerald-50 to-green-100 rounded-lg shadow-inner"
-                style={{ width: `${canvasSize.width}px`, height: `${canvasSize.height}px` }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleCanvasDrop}
-                data-testid="garden-canvas"
-              >
-                {/* Garden Shape SVG */}
-                <svg 
-                  width={canvasSize.width} 
-                  height={canvasSize.height}
-                  className="absolute inset-0"
-                  style={{ pointerEvents: 'none' }}
-                >
-                  <defs>
-                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#86efac" strokeWidth="0.5" opacity="0.3"/>
-                    </pattern>
-                  </defs>
-                  
-                  {/* Grid background */}
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                  
-                  {/* Garden shape with color fill */}
-                  <path
-                    d={getShapePath()}
-                    fill="rgba(134, 239, 172, 0.2)"
-                    stroke="#16a34a"
-                    strokeWidth="3"
-                    strokeDasharray="8,4"
-                  />
-                </svg>
+    <div className="w-full space-y-3">
+      {/* Advanced Search Module at Top */}
+      <Card className="border-2 border-blue-400 shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        <CardHeader className="py-3 px-4 bg-blue-50">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Search className="w-4 h-4" />
+            Advanced Plant Search
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-3 px-4">
+          <Button 
+            onClick={onOpenPlantSearch}
+            className="w-full bg-blue-600 hover:bg-blue-700"
+            data-testid="button-open-plant-search"
+          >
+            Open Advanced Search & Filter
+          </Button>
+        </CardContent>
+      </Card>
 
-                {/* Placed Plants */}
-                {placedPlants.map((plant) => (
-                  <div
-                    key={plant.id}
-                    className={`absolute w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
-                      selectedPlant === plant.id ? 'ring-4 ring-blue-400' : ''
-                    }`}
-                    style={{
-                      left: `${plant.x}%`,
-                      top: `${plant.y}%`,
-                      transform: 'translate(-50%, -50%)'
-                    }}
-                    onClick={() => setSelectedPlant(plant.id)}
-                    title={plant.plantName}
-                    data-testid={`placed-plant-${plant.id}`}
-                  >
-                    <span className="text-white text-sm font-bold">{plant.quantity}</span>
-                  </div>
-                ))}
-
-                {/* Drag indicator */}
-                {isDragging && (
-                  <div className="absolute inset-0 bg-green-200/30 backdrop-blur-sm pointer-events-none flex items-center justify-center rounded-lg">
-                    <p className="text-green-800 font-semibold text-lg bg-white/80 px-4 py-2 rounded-lg">Drop plant here</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Info Sidebar - Right */}
-        <div className="w-80 space-y-3">
-          {/* Garden Info */}
-          <Card className="border-2 border-gray-300 shadow-md">
-            <CardHeader className="py-3 px-4 bg-gray-50">
-              <CardTitle className="text-sm flex items-center gap-1">
-                <Info className="w-4 h-4" />
-                Garden Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="py-3 px-4 space-y-3">
-              <div>
-                <p className="text-xs text-gray-600 uppercase tracking-wider">Shape</p>
-                <p className="text-base font-semibold">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 uppercase tracking-wider">Dimensions</p>
-                <p className="text-base font-semibold">
-                  {shape === 'circle' ? 
-                    `Radius: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
-                  shape === 'square' ?
-                    `Side: ${dimensions.width || dimensions.side || 10}${unitSymbol}` :
-                    `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 10}${unitSymbol}`
-                  }
-                </p>
-              </div>
-              <div className="pt-2 border-t">
-                <p className="text-xs text-gray-600 uppercase tracking-wider">Total Area</p>
-                <p className="text-xl font-bold text-green-700">{calculateArea()} {unitSquared}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Placed Plants Summary */}
-          <Card className="border-2 border-gray-300 shadow-md">
-            <CardHeader className="py-3 px-4 bg-gray-50">
-              <CardTitle className="text-sm">
-                Placed Plants ({Object.keys(plantSummary).length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="py-3 px-4">
-              <ScrollArea className="h-80">
-                {Object.keys(plantSummary).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-6">
-                    No plants placed yet. Drag from inventory below.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {Object.values(plantSummary).map((summary) => (
-                      <div 
-                        key={summary.name}
-                        className="flex justify-between items-center p-2 bg-green-50 rounded-lg border border-green-200"
-                        data-testid={`summary-${summary.name}`}
-                      >
-                        <div className="flex-1 min-w-0 pr-2">
-                          <p className="font-medium text-sm truncate">{summary.name}</p>
-                          {summary.scientificName && (
-                            <p className="text-xs text-gray-600 italic truncate">{summary.scientificName}</p>
-                          )}
-                        </div>
-                        <Badge variant="secondary" className="ml-2 flex-shrink-0">
-                          {summary.quantity}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Plants Inventory Below Canvas */}
-      <Card className="border-2 border-gray-300 shadow-md mt-3">
+      {/* Plants Inventory Above Canvas */}
+      <Card className="border-2 border-gray-300 shadow-md" style={{ width: `${canvasSize.width}px` }}>
         <CardHeader className="py-3 px-4 bg-gray-50">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-sm font-medium">
-              Plants Inventory ({unplacedPlants.length} unplaced)
-            </CardTitle>
-            <Button 
-              onClick={onOpenPlantSearch}
-              size="sm"
-              className="bg-green-600 hover:bg-green-700 h-8"
-              data-testid="button-search-add-plants"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Search & Add Plants
-            </Button>
-          </div>
+          <CardTitle className="text-sm font-medium">
+            Plants Inventory ({unplacedPlants.length} unplaced)
+          </CardTitle>
         </CardHeader>
         <CardContent className="py-3 px-4">
           <ScrollArea className="h-24">
             {unplacedPlants.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                {aiDesign ? "AI has placed all plants on the canvas" : "No plants in inventory. Click 'Search & Add Plants' to get started."}
+                {aiDesign ? "AI has placed all plants on the canvas" : "No plants in inventory. Use Advanced Search above to add plants."}
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -388,6 +252,145 @@ export default function GardenLayoutCanvas({
                     {plant.scientificName && (
                       <p className="text-xs text-gray-600 italic">{plant.scientificName}</p>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      {/* Main Layout: Canvas Left, Garden Info Right */}
+      <div className="flex gap-3">
+        {/* Canvas Section */}
+        <Card className="border-2 border-green-600 shadow-lg" style={{ width: `${canvasSize.width}px` }}>
+          <CardContent className="p-3">
+            <div 
+              ref={canvasRef}
+              className="relative bg-gradient-to-br from-green-100 via-emerald-50 to-green-100 rounded-lg shadow-inner"
+              style={{ width: `${canvasSize.width - 24}px`, height: `${canvasSize.height}px` }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleCanvasDrop}
+              data-testid="garden-canvas"
+            >
+              {/* Garden Shape SVG */}
+              <svg 
+                width={canvasSize.width - 24} 
+                height={canvasSize.height}
+                className="absolute inset-0"
+                style={{ pointerEvents: 'none' }}
+              >
+                <defs>
+                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#86efac" strokeWidth="0.5" opacity="0.3"/>
+                  </pattern>
+                </defs>
+                
+                {/* Grid background */}
+                <rect width="100%" height="100%" fill="url(#grid)" />
+                
+                {/* Garden shape with color fill */}
+                <path
+                  d={getShapePath()}
+                  fill="rgba(134, 239, 172, 0.2)"
+                  stroke="#16a34a"
+                  strokeWidth="3"
+                  strokeDasharray="8,4"
+                />
+              </svg>
+
+              {/* Placed Plants */}
+              {placedPlants.map((plant) => (
+                <div
+                  key={plant.id}
+                  className={`absolute w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
+                    selectedPlant === plant.id ? 'ring-4 ring-blue-400' : ''
+                  }`}
+                  style={{
+                    left: `${plant.x}%`,
+                    top: `${plant.y}%`,
+                    transform: 'translate(-50%, -50%)'
+                  }}
+                  onClick={() => setSelectedPlant(plant.id)}
+                  title={plant.plantName}
+                  data-testid={`placed-plant-${plant.id}`}
+                >
+                  <span className="text-white text-sm font-bold">{plant.quantity}</span>
+                </div>
+              ))}
+
+              {/* Drag indicator */}
+              {isDragging && (
+                <div className="absolute inset-0 bg-green-200/30 backdrop-blur-sm pointer-events-none flex items-center justify-center rounded-lg">
+                  <p className="text-green-800 font-semibold text-lg bg-white/80 px-4 py-2 rounded-lg">Drop plant here</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Garden Info Sidebar - Right */}
+        <Card className="border-2 border-gray-300 shadow-md flex-1">
+          <CardHeader className="py-3 px-4 bg-gray-50">
+            <CardTitle className="text-sm flex items-center gap-1">
+              <Info className="w-4 h-4" />
+              Garden Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4 space-y-3">
+            <div>
+              <p className="text-xs text-gray-600 uppercase tracking-wider">Shape</p>
+              <p className="text-base font-semibold">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600 uppercase tracking-wider">Dimensions</p>
+              <p className="text-base font-semibold">
+                {shape === 'circle' ? 
+                  `Radius: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
+                shape === 'square' ?
+                  `Side: ${dimensions.width || dimensions.side || 10}${unitSymbol}` :
+                  `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 10}${unitSymbol}`
+                }
+              </p>
+            </div>
+            <div className="pt-2 border-t">
+              <p className="text-xs text-gray-600 uppercase tracking-wider">Total Area</p>
+              <p className="text-xl font-bold text-green-700">{calculateArea()} {unitSquared}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Placed Plants List Below Canvas */}
+      <Card className="border-2 border-gray-300 shadow-md" style={{ width: `${canvasSize.width}px` }}>
+        <CardHeader className="py-3 px-4 bg-gray-50">
+          <CardTitle className="text-sm">
+            Placed Plants ({Object.keys(plantSummary).length} unique species)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-3 px-4">
+          <ScrollArea className="h-32">
+            {Object.keys(plantSummary).length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No plants placed yet. Drag plants from the inventory above to the canvas.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {Object.values(plantSummary).map((summary) => (
+                  <div 
+                    key={summary.name}
+                    className="flex justify-between items-center p-2 bg-green-50 rounded-lg border border-green-200"
+                    data-testid={`summary-${summary.name}`}
+                  >
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="font-medium text-sm truncate">{summary.name}</p>
+                      {summary.scientificName && (
+                        <p className="text-xs text-gray-600 italic truncate">{summary.scientificName}</p>
+                      )}
+                    </div>
+                    <Badge variant="secondary" className="ml-2 flex-shrink-0">
+                      {summary.quantity}
+                    </Badge>
                   </div>
                 ))}
               </div>
