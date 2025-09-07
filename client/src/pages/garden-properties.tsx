@@ -677,7 +677,7 @@ export default function GardenProperties() {
                               name="rhsZone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>RHS Hardiness Rating (UK)</FormLabel>
+                                  <FormLabel>RHS Hardiness Rating</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger data-testid="select-rhs-zone">
@@ -695,7 +695,7 @@ export default function GardenProperties() {
                                     </SelectContent>
                                   </Select>
                                   <FormDescription className="text-xs">
-                                    For UK gardeners (optional)
+                                    Temperature hardiness rating
                                   </FormDescription>
                                   <FormMessage />
                                 </FormItem>
