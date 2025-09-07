@@ -22,7 +22,8 @@ import {
   Ruler,
   Palette,
   Mountain,
-  Wind
+  Wind,
+  Snowflake
 } from "lucide-react";
 
 interface PlantAdvancedSearchProps {
@@ -30,19 +31,61 @@ interface PlantAdvancedSearchProps {
   totalResults?: number;
 }
 
-// Color options for plants
+// Expanded color options - 30-40 colors
 const colorOptions = [
-  { name: "Red", color: "#ef4444" },
+  // Reds & Pinks
+  { name: "Red", color: "#dc2626" },
+  { name: "Crimson", color: "#991b1b" },
+  { name: "Rose", color: "#f43f5e" },
   { name: "Pink", color: "#ec4899" },
-  { name: "Purple", color: "#a855f7" },
-  { name: "Blue", color: "#3b82f6" },
-  { name: "White", color: "#f9fafb" },
+  { name: "Hot Pink", color: "#d946ef" },
+  { name: "Pale Pink", color: "#fce7f3" },
+  
+  // Purples & Violets
+  { name: "Purple", color: "#9333ea" },
+  { name: "Violet", color: "#7c3aed" },
+  { name: "Lavender", color: "#c084fc" },
+  { name: "Mauve", color: "#9f7aea" },
+  { name: "Magenta", color: "#c026d3" },
+  
+  // Blues
+  { name: "Blue", color: "#2563eb" },
+  { name: "Navy", color: "#1e3a8a" },
+  { name: "Sky Blue", color: "#0ea5e9" },
+  { name: "Turquoise", color: "#06b6d4" },
+  { name: "Teal", color: "#0d9488" },
+  { name: "Indigo", color: "#4f46e5" },
+  
+  // Greens
+  { name: "Green", color: "#16a34a" },
+  { name: "Dark Green", color: "#14532d" },
+  { name: "Lime", color: "#84cc16" },
+  { name: "Mint", color: "#86efac" },
+  { name: "Olive", color: "#65a30d" },
+  { name: "Sage", color: "#9ca3af" },
+  
+  // Yellows & Oranges
   { name: "Yellow", color: "#eab308" },
-  { name: "Orange", color: "#f97316" },
-  { name: "Green", color: "#22c55e" },
+  { name: "Gold", color: "#f59e0b" },
+  { name: "Amber", color: "#d97706" },
+  { name: "Orange", color: "#ea580c" },
+  { name: "Coral", color: "#fb923c" },
+  { name: "Peach", color: "#fed7aa" },
+  { name: "Apricot", color: "#fb923c" },
+  
+  // Browns & Neutrals
   { name: "Brown", color: "#92400e" },
-  { name: "Black", color: "#18181b" },
-  { name: "Multicolor", color: "linear-gradient(90deg, #ef4444, #eab308, #22c55e, #3b82f6)" }
+  { name: "Tan", color: "#d4a574" },
+  { name: "Rust", color: "#b45309" },
+  { name: "Maroon", color: "#7f1d1d" },
+  { name: "Burgundy", color: "#881337" },
+  
+  // Black, White, Gray
+  { name: "White", color: "#ffffff" },
+  { name: "Cream", color: "#fef3c7" },
+  { name: "Gray", color: "#6b7280" },
+  { name: "Silver", color: "#e5e7eb" },
+  { name: "Black", color: "#18181b" }
 ];
 
 export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSearchProps) {
@@ -57,6 +100,9 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     
     // Foliage types
     foliageTypes: [],
+    
+    // Hardiness (four-tier system)
+    hardiness: [],
     
     // Growing conditions
     sunlight: [],
@@ -82,12 +128,13 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     colors: []
   });
 
-  // Options for each category
+  // Options for each category with "All" as first option where needed
   const searchModules = {
     plantTypes: {
       title: "Plant Types",
       icon: TreePine,
       options: [
+        'All of the above',
         'Annuals', 'Perennials', 'Biennials', 'Shrubs', 'Trees',
         'Bulbs', 'Climbers', 'Ground Covers', 'Grasses', 'Herbs',
         'Succulents', 'Cacti', 'Aquatic', 'Ferns', 'Alpine'
@@ -97,7 +144,18 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       title: "Foliage Types",
       icon: Leaf,
       options: [
+        'All of the above',
         'Variegated', 'Deciduous', 'Evergreen', 'Semi-evergreen'
+      ]
+    },
+    hardiness: {
+      title: "Hardiness Requirements",
+      icon: Snowflake,
+      options: [
+        'Very Hardy (Below -20°C)',
+        'Hardy (-15 to -20°C)', 
+        'Moderately Hardy (-10 to -15°C)',
+        'Tender (Above -10°C)'
       ]
     },
     sunlight: {
@@ -119,6 +177,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       title: "Care Level",
       icon: Heart,
       options: [
+        'All of the above',
         'Easy', 'Moderate', 'Difficult'
       ]
     },
@@ -127,7 +186,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       icon: Flower,
       options: [
         'Drought Tolerant', 'Frost Hardy', 'Fast Growing', 
-        'Fragrant', 'Thorny', 'Native', 'Rare'
+        'Fragrant', 'Thorny', 'Native', 'Rare',
+        'Culinary', 'Medicinal'
       ]
     },
     attractsWildlife: {
@@ -141,7 +201,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       title: "Safety",
       icon: AlertTriangle,
       options: [
-        'Child Safe', 'Pet Safe', 'Non-toxic', 'Edible', 'Medicinal'
+        'Child & Pet Safe'
       ]
     }
   };
@@ -166,6 +226,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       cultivar: '',
       plantTypes: [],
       foliageTypes: [],
+      hardiness: [],
       sunlight: [],
       soil: [],
       careLevel: [],
@@ -184,6 +245,25 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
   };
 
   const toggleArrayFilter = (key: string, value: string) => {
+    // Handle "All of the above" option
+    if (value === 'All of the above') {
+      const module = searchModules[key as keyof typeof searchModules];
+      if (module) {
+        const allOptions = module.options.filter(opt => opt !== 'All of the above');
+        const currentlyAllSelected = allOptions.every(opt => filters[key].includes(opt));
+        
+        if (currentlyAllSelected) {
+          // Deselect all
+          updateFilter(key, []);
+        } else {
+          // Select all
+          updateFilter(key, allOptions);
+        }
+      }
+      return;
+    }
+    
+    // Regular toggle
     setFilters((prev: any) => ({
       ...prev,
       [key]: prev[key].includes(value)
@@ -213,18 +293,27 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         </CardHeader>
         <CardContent className="py-3 px-4">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {module.options.map((option) => (
-              <div key={option} className="flex items-center gap-2">
-                <Checkbox
-                  checked={filters[moduleKey].includes(option)}
-                  onCheckedChange={() => toggleArrayFilter(moduleKey, option)}
-                  className="data-[state=checked]:bg-green-600"
-                />
-                <Label className="text-xs cursor-pointer" onClick={() => toggleArrayFilter(moduleKey, option)}>
-                  {option}
-                </Label>
-              </div>
-            ))}
+            {module.options.map((option) => {
+              const isAllOption = option === 'All of the above';
+              const allOptions = module.options.filter(opt => opt !== 'All of the above');
+              const isAllSelected = isAllOption && allOptions.every(opt => filters[moduleKey].includes(opt));
+              
+              return (
+                <div key={option} className="flex items-center gap-2">
+                  <Checkbox
+                    checked={isAllOption ? isAllSelected : filters[moduleKey].includes(option)}
+                    onCheckedChange={() => toggleArrayFilter(moduleKey, option)}
+                    className="data-[state=checked]:bg-green-600"
+                  />
+                  <Label 
+                    className={`text-xs cursor-pointer ${isAllOption ? 'font-semibold' : ''}`}
+                    onClick={() => toggleArrayFilter(moduleKey, option)}
+                  >
+                    {option}
+                  </Label>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -324,7 +413,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           </CardContent>
         </Card>
 
-        {/* Color Selection - Large Visual Field */}
+        {/* Color Selection - Much smaller swatches, 30-40 colors */}
         <Card className="border shadow-sm">
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -333,25 +422,27 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </CardTitle>
           </CardHeader>
           <CardContent className="py-3 px-4">
-            <div className="grid grid-cols-6 md:grid-cols-11 gap-3">
+            <div className="grid grid-cols-10 md:grid-cols-15 gap-2">
               {colorOptions.map((colorOption) => (
                 <div 
                   key={colorOption.name}
-                  className="flex flex-col items-center gap-1 cursor-pointer"
+                  className="group relative cursor-pointer"
                   onClick={() => toggleColor(colorOption.name)}
                 >
                   <div
-                    className={`w-12 h-12 rounded-lg border-2 transition-all ${
+                    className={`w-8 h-8 rounded border-2 transition-all ${
                       filters.colors.includes(colorOption.name) 
-                        ? 'border-blue-500 shadow-lg scale-110' 
-                        : 'border-gray-300'
+                        ? 'border-blue-500 shadow-md scale-110' 
+                        : 'border-gray-300 hover:border-gray-400'
                     }`}
                     style={{
-                      background: colorOption.color,
-                      border: colorOption.name === 'White' ? '2px solid #e5e7eb' : undefined
+                      backgroundColor: colorOption.color,
+                      border: colorOption.name === 'White' ? '2px solid #d1d5db' : undefined
                     }}
                   />
-                  <span className="text-xs text-center">{colorOption.name}</span>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                    {colorOption.name}
+                  </div>
                 </div>
               ))}
             </div>
@@ -362,6 +453,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {renderSearchModule('plantTypes')}
           {renderSearchModule('foliageTypes')}
+          {renderSearchModule('hardiness')}
           {renderSearchModule('sunlight')}
           {renderSearchModule('soil')}
           {renderSearchModule('careLevel')}
