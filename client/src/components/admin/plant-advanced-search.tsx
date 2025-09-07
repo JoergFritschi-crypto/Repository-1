@@ -398,18 +398,18 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         </Card>
 
         {/* Height Criteria */}
-        <Card className="border shadow-sm">
+        <Card className="border shadow-sm bg-gradient-to-br from-green-50 to-emerald-50">
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Ruler className="w-4 h-4" />
+              <Ruler className="w-4 h-4 text-green-600" />
               Height Range
             </CardTitle>
           </CardHeader>
           <CardContent className="py-3 px-4">
             <div className="space-y-4">
-              <div>
+              <div className="bg-white/70 rounded-lg p-3">
                 <div className="flex justify-between text-sm mb-2">
-                  <Label className="text-xs">Min Height: {filters.minHeight} cm</Label>
+                  <Label className="text-xs font-medium text-green-700">Min Height: <span className="text-green-600 font-bold">{filters.minHeight} cm</span></Label>
                 </div>
                 <Slider
                   value={[filters.minHeight]}
@@ -417,12 +417,12 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   min={0}
                   max={500}
                   step={10}
-                  className="w-full"
+                  className="w-full [&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-600 [&_[role=slider]]:focus:ring-green-500 [&_.bg-primary]:bg-green-500"
                 />
               </div>
-              <div>
+              <div className="bg-white/70 rounded-lg p-3">
                 <div className="flex justify-between text-sm mb-2">
-                  <Label className="text-xs">Max Height: {filters.maxHeight} cm</Label>
+                  <Label className="text-xs font-medium text-green-700">Max Height: <span className="text-green-600 font-bold">{filters.maxHeight} cm</span></Label>
                 </div>
                 <Slider
                   value={[filters.maxHeight]}
@@ -430,8 +430,11 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   min={0}
                   max={500}
                   step={10}
-                  className="w-full"
+                  className="w-full [&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-600 [&_[role=slider]]:focus:ring-green-500 [&_.bg-primary]:bg-green-500"
                 />
+              </div>
+              <div className="text-center text-xs text-gray-600 italic">
+                From tiny ground covers to towering trees
               </div>
             </div>
           </CardContent>
