@@ -417,7 +417,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   min={0}
                   max={500}
                   step={10}
-                  className="w-full [&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-600 [&_[role=slider]]:focus:ring-green-500 [&_.bg-primary]:bg-green-500"
+                  className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
                 />
               </div>
               <div className="bg-white/70 rounded-lg p-3">
@@ -430,7 +430,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   min={0}
                   max={500}
                   step={10}
-                  className="w-full [&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-600 [&_[role=slider]]:focus:ring-green-500 [&_.bg-primary]:bg-green-500"
+                  className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
                 />
               </div>
               <div className="text-center text-xs text-gray-600 italic">
