@@ -2273,27 +2273,6 @@ export default function GardenProperties() {
             {/* Step 4: Interactive Design Canvas */}
             {currentStep === 4 && (
               <div className="space-y-3">
-                {/* Note: Garden style selection has been moved to Step 3 where it belongs */}
-                
-                {/* Interactive canvas for garden design */}
-                <Card className="border-2 border-[#004025] shadow-sm" data-testid="design-canvas">
-                  <CardHeader className="py-3">
-                    <CardTitle className="text-base">Interactive Garden Design</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-0">
-                    <p className="text-sm text-muted-foreground">
-                      {watchedDesignApproach === "ai" 
-                        ? "Your AI-generated garden design will appear here after processing."
-                        : "Use the interactive canvas below to manually design your garden."}
-                    </p>
-                    
-                    {/* Interactive canvas placeholder */}
-                    <div className="bg-gray-50 rounded-lg p-8 text-center">
-                      <p className="text-muted-foreground">Interactive garden design canvas will be displayed here</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Generate Design Button for AI approach */}
                 {watchedDesignApproach === "ai" && selectedGardenStyle && (
                   <Card className="border-2 border-green-500 bg-green-50 shadow-sm" data-testid="generate-ai-design-card">
