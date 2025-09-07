@@ -2294,51 +2294,19 @@ export default function GardenProperties() {
                   </CardContent>
                 </Card>
 
-                {/* Basic Safety Preferences for AI approach */}
+                {/* Generate Design Button for AI approach */}
                 {watchedDesignApproach === "ai" && selectedGardenStyle && (
-                  <Card className="border-2 border-[#004025] shadow-sm" data-testid="safety-preferences">
+                  <Card className="border-2 border-green-500 bg-green-50 shadow-sm" data-testid="generate-ai-design-card">
                     <CardHeader className="py-3">
-                      <CardTitle className="text-base">Safety Preferences</CardTitle>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-green-600" />
+                        Ready to Generate AI Design
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-0">
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="preferences.petSafe"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  data-testid="checkbox-pet-safe"
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-normal">
-                                Pet-safe plants only
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="preferences.childSafe"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  data-testid="checkbox-child-safe"
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-normal">
-                                Child-safe (non-toxic)
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <p className="text-sm text-gray-600">
+                        Your safety preferences have been set in Step 3. Click below to generate your AI garden design.
+                      </p>
                       <Button 
                         type="button"
                         className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
