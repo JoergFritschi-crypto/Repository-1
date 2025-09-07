@@ -137,6 +137,7 @@ export const plants = pgTable("plants", {
   hardiness: varchar("hardiness"), // Hardiness zones
   sunlight: jsonb("sunlight"), // Their 4-tiered system as array
   soil: jsonb("soil"), // Soil requirements
+  soilPH: varchar("soil_ph"), // Preferred soil pH: acidic, neutral, alkaline
   watering: varchar("watering"), // Basic watering needs
   wateringGeneralBenchmark: jsonb("watering_general_benchmark"), // Detailed frequency
   wateringPeriod: varchar("watering_period"), // When to water
