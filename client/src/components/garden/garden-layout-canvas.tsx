@@ -433,11 +433,11 @@ export default function GardenLayoutCanvas({
                             </div>
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent className="p-2">
+                        <TooltipContent className="p-2 bg-gray-900 text-white border-gray-700">
                           <div className="text-sm">
-                            <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
-                            <div className="text-xs text-muted-foreground">{group.commonName}</div>
-                            <div className="text-xs text-muted-foreground mt-1">Quantity: {group.count}</div>
+                            <div className="font-semibold italic text-white">{group.scientificName || 'Unknown'}</div>
+                            <div className="text-xs text-gray-300">{group.commonName}</div>
+                            <div className="text-xs text-gray-300 mt-1">Quantity: {group.count}</div>
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -604,10 +604,10 @@ export default function GardenLayoutCanvas({
                         </span>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent className="p-2">
+                    <TooltipContent className="p-2 bg-gray-900 text-white border-gray-700">
                       <div className="text-sm">
-                        <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
-                        <div className="text-xs text-muted-foreground">{plant.plantName}</div>
+                        <div className="font-semibold italic text-white">{plant.scientificName || 'Unknown'}</div>
+                        <div className="text-xs text-gray-300">{plant.plantName}</div>
                       </div>
                     </TooltipContent>
                   </Tooltip>
