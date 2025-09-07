@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { 
@@ -23,7 +24,8 @@ import {
   Palette,
   Mountain,
   Wind,
-  Snowflake
+  Snowflake,
+  FlaskConical
 } from "lucide-react";
 
 interface PlantAdvancedSearchProps {
@@ -95,63 +97,67 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     species: '',
     cultivar: '',
     
-    // Plant types
-    plantTypes: [],
+    // Plant type (single selection)
+    plantType: '',
     
-    // Foliage types
-    foliageTypes: [],
+    // Foliage type (single selection)
+    foliageType: '',
     
-    // Hardiness (four-tier system)
-    hardiness: [],
+    // Hardiness (single selection)
+    hardiness: '',
     
-    // Growing conditions
-    sunlight: [],
-    soil: [],
+    // Sunlight (single selection)
+    sunlight: '',
     
-    // Care level
-    careLevel: [],
+    // Soil type (single selection)
+    soilType: '',
+    
+    // Soil pH (single selection)
+    soilPH: '',
+    
+    // Care level (single selection)
+    careLevel: '',
     
     // Height range (in cm)
     minHeight: 0,
     maxHeight: 500,
     
-    // Special features
+    // Special features (multiple selections)
     specialFeatures: [],
     
-    // Attracts wildlife
+    // Attracts wildlife (multiple selections)
     attractsWildlife: [],
     
-    // Safety
-    safety: [],
+    // Safety (single yes/no)
+    isSafe: false,
     
-    // Colors
+    // Colors (multiple selections)
     colors: []
   });
 
-  // Options for each category with "All" as first option where needed
-  const searchModules = {
-    plantTypes: {
-      title: "Plant Types",
+  // Options for radio button sections (single selection)
+  const radioModules = {
+    plantType: {
+      title: "Plant Type",
       icon: TreePine,
       options: [
-        'All of the above',
-        'Annuals', 'Perennials', 'Biennials', 'Shrubs', 'Trees',
+        'Any', 'Annuals', 'Perennials', 'Biennials', 'Shrubs', 'Trees',
         'Bulbs', 'Climbers', 'Ground Covers', 'Grasses', 'Herbs',
         'Succulents', 'Cacti', 'Aquatic', 'Ferns', 'Alpine'
       ]
     },
-    foliageTypes: {
-      title: "Foliage Types",
+    foliageType: {
+      title: "Foliage Type",
       icon: Leaf,
       options: [
-        'All of the above',
-        'Variegated', 'Deciduous', 'Evergreen', 'Semi-evergreen'
+        'Any', 'Variegated', 'Deciduous', 'Evergreen', 'Semi-evergreen'
       ]
     },
     hardiness: {
-      title: "Hardiness Requirements",
+      title: "Hardiness",
       icon: Snowflake,
       options: [
+        'Any',
         'Very Hardy (Below -20°C)',
         'Hardy (-15 to -20°C)', 
         'Moderately Hardy (-10 to -15°C)',
@@ -162,25 +168,34 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       title: "Sunlight",
       icon: Sun,
       options: [
-        'Full Sun', 'Partial Sun', 'Partial Shade', 'Full Shade'
+        'Any', 'Full Sun', 'Partial Sun', 'Partial Shade', 'Full Shade'
       ]
     },
-    soil: {
-      title: "Soil",
+    soilType: {
+      title: "Soil Type",
       icon: Mountain,
       options: [
-        'Clay', 'Loam', 'Sand', 'Chalk', 'Acidic', 'Alkaline', 
-        'Well-drained', 'Moist', 'Dry'
+        'Any', 'Clay', 'Loam', 'Sand', 'Chalk'
+      ]
+    },
+    soilPH: {
+      title: "Soil pH",
+      icon: FlaskConical,
+      options: [
+        'Any', 'Acidic', 'Neutral', 'Alkaline'
       ]
     },
     careLevel: {
       title: "Care Level",
       icon: Heart,
       options: [
-        'All of the above',
-        'Easy', 'Moderate', 'Difficult'
+        'Any', 'Easy', 'Moderate', 'Difficult'
       ]
-    },
+    }
+  };
+
+  // Options for checkbox sections (multiple selections)
+  const checkboxModules = {
     specialFeatures: {
       title: "Special Features",
       icon: Flower,
@@ -196,21 +211,18 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       options: [
         'Butterflies', 'Birds', 'Bees', 'Hummingbirds', 'Pollinators'
       ]
-    },
-    safety: {
-      title: "Safety",
-      icon: AlertTriangle,
-      options: [
-        'Child & Pet Safe'
-      ]
     }
   };
 
   const handleSearch = () => {
     // Filter out empty values
     const activeFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-      if (value !== '' && value !== undefined && 
+      if (value !== '' && value !== undefined && value !== false && value !== 0 &&
           (Array.isArray(value) ? value.length > 0 : true)) {
+        // Don't include "Any" selections in search
+        if (typeof value === 'string' && value === 'Any') {
+          return acc;
+        }
         acc[key] = value;
       }
       return acc;
@@ -224,17 +236,18 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       genus: '',
       species: '',
       cultivar: '',
-      plantTypes: [],
-      foliageTypes: [],
-      hardiness: [],
-      sunlight: [],
-      soil: [],
-      careLevel: [],
+      plantType: '',
+      foliageType: '',
+      hardiness: '',
+      sunlight: '',
+      soilType: '',
+      soilPH: '',
+      careLevel: '',
       minHeight: 0,
       maxHeight: 500,
       specialFeatures: [],
       attractsWildlife: [],
-      safety: [],
+      isSafe: false,
       colors: []
     });
     onSearch({});
@@ -245,25 +258,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
   };
 
   const toggleArrayFilter = (key: string, value: string) => {
-    // Handle "All of the above" option
-    if (value === 'All of the above') {
-      const module = searchModules[key as keyof typeof searchModules];
-      if (module) {
-        const allOptions = module.options.filter(opt => opt !== 'All of the above');
-        const currentlyAllSelected = allOptions.every(opt => filters[key].includes(opt));
-        
-        if (currentlyAllSelected) {
-          // Deselect all
-          updateFilter(key, []);
-        } else {
-          // Select all
-          updateFilter(key, allOptions);
-        }
-      }
-      return;
-    }
-    
-    // Regular toggle
     setFilters((prev: any) => ({
       ...prev,
       [key]: prev[key].includes(value)
@@ -276,9 +270,45 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     toggleArrayFilter('colors', color);
   };
 
-  // Render a search module (modular approach)
-  const renderSearchModule = (moduleKey: string) => {
-    const module = searchModules[moduleKey as keyof typeof searchModules];
+  // Render a radio button module (single selection)
+  const renderRadioModule = (moduleKey: string) => {
+    const module = radioModules[moduleKey as keyof typeof radioModules];
+    if (!module) return null;
+    
+    const Icon = module.icon;
+    
+    return (
+      <Card key={moduleKey} className="border shadow-sm">
+        <CardHeader className="py-3 px-4">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Icon className="w-4 h-4" />
+            {module.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-3 px-4">
+          <RadioGroup value={filters[moduleKey] || 'Any'} onValueChange={(value) => updateFilter(moduleKey, value)}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {module.options.map((option) => (
+                <div key={option} className="flex items-center gap-2">
+                  <RadioGroupItem value={option} id={`${moduleKey}-${option}`} className="data-[state=checked]:border-green-600" />
+                  <Label 
+                    htmlFor={`${moduleKey}-${option}`}
+                    className={`text-xs cursor-pointer ${option === 'Any' ? 'font-semibold' : ''}`}
+                  >
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </RadioGroup>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Render a checkbox module (multiple selections)
+  const renderCheckboxModule = (moduleKey: string) => {
+    const module = checkboxModules[moduleKey as keyof typeof checkboxModules];
     if (!module) return null;
     
     const Icon = module.icon;
@@ -293,27 +323,21 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         </CardHeader>
         <CardContent className="py-3 px-4">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {module.options.map((option) => {
-              const isAllOption = option === 'All of the above';
-              const allOptions = module.options.filter(opt => opt !== 'All of the above');
-              const isAllSelected = isAllOption && allOptions.every(opt => filters[moduleKey].includes(opt));
-              
-              return (
-                <div key={option} className="flex items-center gap-2">
-                  <Checkbox
-                    checked={isAllOption ? isAllSelected : filters[moduleKey].includes(option)}
-                    onCheckedChange={() => toggleArrayFilter(moduleKey, option)}
-                    className="data-[state=checked]:bg-green-600"
-                  />
-                  <Label 
-                    className={`text-xs cursor-pointer ${isAllOption ? 'font-semibold' : ''}`}
-                    onClick={() => toggleArrayFilter(moduleKey, option)}
-                  >
-                    {option}
-                  </Label>
-                </div>
-              );
-            })}
+            {module.options.map((option) => (
+              <div key={option} className="flex items-center gap-2">
+                <Checkbox
+                  checked={filters[moduleKey].includes(option)}
+                  onCheckedChange={() => toggleArrayFilter(moduleKey, option)}
+                  className="data-[state=checked]:bg-green-600"
+                />
+                <Label 
+                  className="text-xs cursor-pointer"
+                  onClick={() => toggleArrayFilter(moduleKey, option)}
+                >
+                  {option}
+                </Label>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -328,7 +352,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           Advanced Plant Search
         </CardTitle>
         <CardDescription>
-          Find plants using specific criteria - modular search system
+          Find plants using specific criteria - logical search combinations
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 pt-6">
@@ -413,12 +437,12 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           </CardContent>
         </Card>
 
-        {/* Color Selection - Much smaller swatches, 30-40 colors */}
+        {/* Color Selection - Multiple selections allowed */}
         <Card className="border shadow-sm">
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Palette className="w-4 h-4" />
-              Colors
+              Colors (Select All That Apply)
             </CardTitle>
           </CardHeader>
           <CardContent className="py-3 px-4">
@@ -449,18 +473,44 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           </CardContent>
         </Card>
 
-        {/* Modular Search Sections in 2 columns */}
+        {/* Single Selection Sections (Radio Buttons) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {renderSearchModule('plantTypes')}
-          {renderSearchModule('foliageTypes')}
-          {renderSearchModule('hardiness')}
-          {renderSearchModule('sunlight')}
-          {renderSearchModule('soil')}
-          {renderSearchModule('careLevel')}
-          {renderSearchModule('specialFeatures')}
-          {renderSearchModule('attractsWildlife')}
-          {renderSearchModule('safety')}
+          {renderRadioModule('plantType')}
+          {renderRadioModule('foliageType')}
+          {renderRadioModule('hardiness')}
+          {renderRadioModule('sunlight')}
+          {renderRadioModule('soilType')}
+          {renderRadioModule('soilPH')}
+          {renderRadioModule('careLevel')}
         </div>
+
+        {/* Multiple Selection Sections (Checkboxes) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {renderCheckboxModule('specialFeatures')}
+          {renderCheckboxModule('attractsWildlife')}
+        </div>
+
+        {/* Safety - Simple Yes/No */}
+        <Card className="border shadow-sm">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Safety
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={filters.isSafe}
+                onCheckedChange={(checked) => updateFilter('isSafe', checked === true)}
+                className="data-[state=checked]:bg-green-600"
+              />
+              <Label className="text-sm cursor-pointer" onClick={() => updateFilter('isSafe', !filters.isSafe)}>
+                Child & Pet Safe
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Search Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
