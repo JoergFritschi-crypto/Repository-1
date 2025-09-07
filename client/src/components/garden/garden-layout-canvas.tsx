@@ -247,7 +247,7 @@ export default function GardenLayoutCanvas({
         <CardHeader className="py-3 px-4 bg-blue-50">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Search className="w-4 h-4" />
-            Advanced Plant Search
+            Plant Search
           </CardTitle>
         </CardHeader>
         <CardContent className="py-3 px-4">
@@ -256,7 +256,7 @@ export default function GardenLayoutCanvas({
             className="w-full bg-blue-600 hover:bg-blue-700"
             data-testid="button-open-plant-search"
           >
-            Open Advanced Search & Filter
+            Go to Advanced Search Tab →
           </Button>
         </CardContent>
       </Card>
