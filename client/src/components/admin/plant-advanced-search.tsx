@@ -144,7 +144,10 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     isSafe: false,
     
     // Colors (multiple selections)
-    colors: []
+    colors: [],
+    
+    // Bloom months (multiple selections)
+    bloomMonths: []
   });
 
   // Options for radio button sections (single selection)
@@ -244,6 +247,14 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       options: [
         'Butterflies', 'Birds', 'Bees', 'Hummingbirds', 'Pollinators'
       ]
+    },
+    bloomMonths: {
+      title: "Bloom Time (Months)",
+      icon: CalendarDays,
+      options: [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ]
     }
   };
 
@@ -286,7 +297,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       specialFeatures: [],
       attractsWildlife: [],
       isSafe: false,
-      colors: []
+      colors: [],
+      bloomMonths: []
     });
     onSearch({});
   };
@@ -575,6 +587,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {renderCheckboxModule('specialFeatures')}
           {renderCheckboxModule('attractsWildlife')}
+          {renderCheckboxModule('bloomMonths')}
         </div>
 
         {/* Safety - Simple Yes/No */}
