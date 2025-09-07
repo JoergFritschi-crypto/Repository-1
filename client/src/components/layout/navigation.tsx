@@ -1,11 +1,17 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MoreHorizontal, Shield } from "lucide-react";
 import { GardenScapeIcon } from "@/components/ui/brand-icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -27,8 +33,6 @@ export default function Navigation() {
     { href: "/plant-library", label: "Plant Library" },
     { href: "/plant-doctor", label: "Plant Doctor" },
     { href: "/premium", label: "Premium" },
-    // Always show admin link for actual admins, even in testing mode
-    ...(isActualAdmin ? [{ href: "/admin", label: isTestingMode ? "Admin (Testing)" : "Admin" }] : []),
   ];
 
   return (
@@ -36,6 +40,30 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14">
           <div className="flex items-center">
+            {/* Admin menu - only visible to admins */}
+            {isActualAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mr-2 h-8 w-8"
+                    data-testid="button-admin-menu"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center cursor-pointer">
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>{isTestingMode ? "Admin (Testing)" : "Admin Panel"}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            
             <Link href="/" className="flex items-center space-x-2" data-testid="link-home">
               <GardenScapeIcon className="w-7 h-7" />
               <span className="text-lg font-serif font-semibold text-[#004025]">GardenScape Pro</span>
