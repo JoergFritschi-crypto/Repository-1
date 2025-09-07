@@ -278,6 +278,11 @@ export default function GardenLayoutCanvas({
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDraggedPlant(null);
+  };
+
   const handleCanvasDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
@@ -367,6 +372,7 @@ export default function GardenLayoutCanvas({
                           <div
                             draggable
                             onDragStart={(e) => handleDragStart(plant, e)}
+                            onDragEnd={handleDragEnd}
                             className="rounded-full border border-gray-700 shadow-md cursor-move hover:scale-125 transition-transform flex items-center justify-center"
                             style={{
                               width: '24px',
