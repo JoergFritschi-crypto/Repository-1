@@ -12,6 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import GardenLayoutCanvas, { type PlacedPlant } from "@/components/garden/garden-layout-canvas";
 import PlantSearchModal from "@/components/plant/plant-search-modal";
 import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
+import { GardenVisualization } from "@/components/garden/garden-visualization";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { 
@@ -234,6 +235,7 @@ export default function GardenDesign() {
               <TabsList data-testid="tabs-view-mode">
                 <TabsTrigger value="canvas" data-testid="tab-canvas">Garden Canvas</TabsTrigger>
                 <TabsTrigger value="advanced-search" data-testid="tab-advanced-search">Advanced Plant Search</TabsTrigger>
+                <TabsTrigger value="visualization" data-testid="tab-visualization">Seasonal View</TabsTrigger>
                 <TabsTrigger value="3d" data-testid="tab-3d-view">3D View</TabsTrigger>
                 <TabsTrigger value="plants" data-testid="tab-plant-list">Plant List</TabsTrigger>
               </TabsList>
@@ -351,6 +353,15 @@ export default function GardenDesign() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* Seasonal Visualization */}
+            <TabsContent value="visualization" className="mt-0">
+              <GardenVisualization 
+                gardenId={id!}
+                userTier={user?.subscription || 'free'}
+                onReturn={() => setViewMode('canvas')}
+              />
             </TabsContent>
 
             {/* 3D View - Premium Feature */}

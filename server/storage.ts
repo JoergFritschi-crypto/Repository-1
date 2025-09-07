@@ -94,6 +94,10 @@ export interface IStorage {
   getVaultItem(id: string): Promise<FileVault | undefined>;
   updateVaultAccessTime(id: string): Promise<void>;
   deleteExpiredVaultItems(): Promise<number>;
+  
+  // Visualization data operations
+  getVisualizationData(gardenId: number): Promise<{ iterationCount: number } | undefined>;
+  updateVisualizationData(gardenId: number, data: { iterationCount: number }): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -506,6 +510,33 @@ export class DatabaseStorage implements IStorage {
         lte(fileVault.expiresAt, new Date())
       ));
     return result.count || 0;
+  }
+  
+  // Visualization data operations (stored in garden metadata)
+  async getVisualizationData(gardenId: number): Promise<{ iterationCount: number } | undefined> {
+    const garden = await this.getGarden(gardenId.toString());
+    if (!garden) return undefined;
+    
+    // Store iteration count in garden's additionalInfo JSON field
+    const additionalInfo = garden.additionalInfo as any || {};
+    return {
+      iterationCount: additionalInfo.visualizationIterationCount || 0
+    };
+  }
+  
+  async updateVisualizationData(gardenId: number, data: { iterationCount: number }): Promise<void> {
+    const garden = await this.getGarden(gardenId.toString());
+    if (!garden) return;
+    
+    const additionalInfo = garden.additionalInfo as any || {};
+    additionalInfo.visualizationIterationCount = data.iterationCount;
+    
+    await db.update(gardens)
+      .set({ 
+        additionalInfo,
+        updatedAt: new Date()
+      })
+      .where(eq(gardens.id, gardenId.toString()));
   }
 }
 

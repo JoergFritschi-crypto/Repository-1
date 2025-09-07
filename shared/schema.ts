@@ -166,6 +166,8 @@ export const plants = pgTable("plants", {
   leafColor: jsonb("leaf_color"), // Array of colors
   flowerColor: jsonb("flower_color"), // Array of colors
   floweringSeason: varchar("flowering_season"), // When it blooms
+  bloomStartMonth: integer("bloom_start_month"), // 1-12 (January-December)
+  bloomEndMonth: integer("bloom_end_month"), // 1-12 (January-December)
   
   // Safety - VERY IMPORTANT - Using RHS/HTA 3-tier classification
   toxicityCategory: varchar("toxicity_category").default("low"), // high, moderate, low

@@ -1484,23 +1484,30 @@ Rules:
         return res.status(403).json({ message: "Unauthorized" });
       }
 
-      const { canvasDesign, season } = req.body;
+      const { canvasDesign, season, specificTime } = req.body;
       
       if (!canvasDesign || !canvasDesign.plants) {
         return res.status(400).json({ message: "Canvas design with plants is required" });
       }
 
-      // Convert canvas positions to grid coordinates (10cm precision)
+      // Convert canvas positions to hyperprecise grid coordinates (1cm precision)
       // Canvas is 1200x800px representing garden dimensions
       const gardenWidth = garden.dimensions.width;
       const gardenLength = garden.dimensions.length;
       
-      // Create detailed plant positioning with grid coordinates
-      const plantPositions = canvasDesign.plants.map((p: any) => {
-        // Convert percentage to actual garden coordinates
-        const xMeters = (p.x / 100 * gardenWidth).toFixed(1);
-        const yMeters = (p.y / 100 * gardenLength).toFixed(1);
-        return `${p.plantName || p.commonName} (${p.scientificName}) positioned at exactly ${xMeters}m from left edge and ${yMeters}m from front edge`;
+      // Create hyperprecise plant positioning with centimeter-level grid coordinates
+      const plantPositions = canvasDesign.plants.map((p: any, index: number) => {
+        // Convert percentage to actual garden coordinates with centimeter precision
+        const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
+        const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
+        const xMeters = (xCentimeters / 100).toFixed(2);
+        const yMeters = (yCentimeters / 100).toFixed(2);
+        
+        // Grid reference like a spreadsheet (A1, B2, etc.) for additional precision
+        const gridCol = String.fromCharCode(65 + Math.floor(xCentimeters / 10)); // A-Z for 10cm grid columns
+        const gridRow = Math.floor(yCentimeters / 10) + 1; // 1-N for 10cm grid rows
+        
+        return `Plant ${index + 1}: ${p.plantName || p.commonName} (${p.scientificName}) at precise coordinates X=${xMeters}m, Y=${yMeters}m (Grid ${gridCol}${gridRow}, exact position ${xCentimeters}cm from left, ${yCentimeters}cm from front)`;
       });
 
       // Map season to specific months for more precision
@@ -1510,7 +1517,7 @@ Rules:
         'autumn': 'early October',
         'winter': 'late January'
       };
-      const specificMonth = monthMapping[season || 'summer'] || 'mid July';
+      const specificMonth = specificTime || monthMapping[season || 'summer'] || 'mid July';
 
       // Enhanced prompt using Gemini 2.5 Flash Image best practices
       const prompt = `Create a photorealistic image of this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
@@ -2086,6 +2093,54 @@ Photography style: Professional garden photography captured in natural ${season 
       }
     });
   }
+
+  // Get visualization data (iteration count, etc)
+  app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req: any, res) => {
+    try {
+      const gardenId = parseInt(req.params.id);
+      const garden = await storage.getGarden(gardenId.toString());
+      
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Get or initialize visualization data
+      const vizData = await storage.getVisualizationData(gardenId);
+      res.json(vizData || { iterationCount: 0 });
+    } catch (error) {
+      console.error("Error fetching visualization data:", error);
+      res.status(500).json({ message: "Failed to fetch visualization data" });
+    }
+  });
+  
+  // Update visualization data
+  app.post('/api/gardens/:id/update-visualization-data', isAuthenticated, async (req: any, res) => {
+    try {
+      const gardenId = parseInt(req.params.id);
+      const garden = await storage.getGarden(gardenId.toString());
+      
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { iterationCount } = req.body;
+      await storage.updateVisualizationData(gardenId, { iterationCount });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating visualization data:", error);
+      res.status(500).json({ message: "Failed to update visualization data" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
