@@ -1704,10 +1704,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
+      // Count existing test gardens to generate a simple incremental name
+      const existingGardens = await storage.getUserGardens(userId);
+      const testGardenCount = existingGardens.filter((g: any) => g.name.startsWith('Test Garden')).length;
+      
       // Create a test garden with all required fields
       const testGarden = {
         userId,
-        name: `Test Garden ${Date.now()}`,
+        name: `Test Garden ${testGardenCount + 1}`,
         location: 'London, UK',
         shape: 'rectangle',
         dimensions: JSON.stringify({ width: 10, length: 15 }),
