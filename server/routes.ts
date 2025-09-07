@@ -1490,32 +1490,52 @@ Rules:
         return res.status(400).json({ message: "Canvas design with plants is required" });
       }
 
-      // Create a detailed prompt for Gemini to generate seasonal images
-      const plantList = canvasDesign.plants.map((p: any) => 
-        `${p.plantName || p.commonName} (${p.scientificName}) at position ${p.x}%, ${p.y}%`
-      ).join(', ');
+      // Convert canvas positions to grid coordinates (10cm precision)
+      // Canvas is 1200x800px representing garden dimensions
+      const gardenWidth = garden.dimensions.width;
+      const gardenLength = garden.dimensions.length;
+      
+      // Create detailed plant positioning with grid coordinates
+      const plantPositions = canvasDesign.plants.map((p: any) => {
+        // Convert percentage to actual garden coordinates
+        const xMeters = (p.x / 100 * gardenWidth).toFixed(1);
+        const yMeters = (p.y / 100 * gardenLength).toFixed(1);
+        return `${p.plantName || p.commonName} (${p.scientificName}) positioned at exactly ${xMeters}m from left edge and ${yMeters}m from front edge`;
+      });
 
-      const prompt = `Generate a photorealistic garden image for ${season || 'summer'} season.
+      // Map season to specific months for more precision
+      const monthMapping: { [key: string]: string } = {
+        'spring': 'late April',
+        'summer': 'mid July', 
+        'autumn': 'early October',
+        'winter': 'late January'
+      };
+      const specificMonth = monthMapping[season || 'summer'] || 'mid July';
 
-Garden Details:
-- Shape: ${garden.shape}
-- Dimensions: ${JSON.stringify(garden.dimensions)} ${garden.units}
-- Location: ${garden.location || 'United Kingdom'}
-- Style: ${garden.design_style || 'mixed border'}
+      // Enhanced prompt using Gemini 2.5 Flash Image best practices
+      const prompt = `Create a photorealistic image of this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
 
-Plants in Design (with positions):
-${plantList}
+This exact garden layout measures ${gardenWidth} meters wide by ${gardenLength} meters deep with the following precise plant positions maintained identically:
 
-Instructions:
-1. Create a realistic garden view from eye level
-2. Show plants in their ${season || 'summer'} appearance
-3. Include appropriate seasonal colors and lighting
-4. Maintain the spatial arrangement from the design
-5. Show mature plant sizes realistically
-6. Include natural garden elements like soil, mulch, and edges
-7. Use ${season === 'winter' ? 'soft winter light' : season === 'autumn' ? 'golden autumn light' : season === 'spring' ? 'fresh spring light' : 'bright summer light'}
+${plantPositions.join('\n')}
 
-Style: Photorealistic, professional garden photography, natural lighting, high detail`;
+Critical requirements for maintaining identical layout:
+- Preserve the exact spatial positions of every plant as specified above
+- Maintain identical plant groupings and spacing throughout
+- Keep the same rectangular garden bed shape with visible edging
+- Use consistent eye-level viewing angle from the front of the bed
+- Show this exact same garden bed configuration in every image
+
+Seasonal appearance for ${specificMonth}:
+${season === 'spring' ? 
+  'Fresh spring growth with tulips, daffodils, and early perennials in bloom. Japanese maples showing new red-tinted foliage. Hostas emerging with fresh green leaves.' :
+season === 'summer' ? 
+  'Peak summer bloom with roses, lavender, daylilies, and hydrangeas at their fullest. Lush green foliage on all plants. Japanese maples in full green leaf.' :
+season === 'autumn' ? 
+  'Autumn colors with Japanese maples in brilliant red and orange. Late asters and sedums blooming. Hostas turning golden. Hydrangeas aging to pink and bronze.' :
+  'Winter structure with dormant perennials, bare branches on Japanese maples showing architectural form. Frost on remaining foliage. Evergreen lavender providing structure.'}
+
+Photography style: Professional garden photography captured in natural ${season === 'winter' ? 'soft diffused winter' : season === 'autumn' ? 'warm golden hour' : season === 'spring' ? 'bright morning' : 'clear midday'} light, showing realistic plant sizes and natural garden textures including mulch, soil, and stone edging.`;
 
       // Generate the image using Gemini
       const imageResult = await geminiAI.generateImage(prompt);
