@@ -52,6 +52,7 @@ export default function PhotoUpload({
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [designStyles, setDesignStyles] = useState<DesignStyleSuggestion[]>([]);
   const [showStyles, setShowStyles] = useState(false);
+  const [selectedStyleIndex, setSelectedStyleIndex] = useState<number | null>(null);
   const { toast } = useToast();
 
   // Convert files to base64 for sending to Claude
@@ -490,7 +491,15 @@ export default function PhotoUpload({
             </p>
 
             {designStyles.map((style, index) => (
-              <Card key={index} className="border border-indigo-200 bg-white">
+              <Card 
+                key={index} 
+                className={`border-2 transition-all cursor-pointer ${
+                  selectedStyleIndex === index 
+                    ? 'border-indigo-600 bg-indigo-50 shadow-lg' 
+                    : 'border-indigo-200 bg-white hover:border-indigo-400'
+                }`}
+                onClick={() => setSelectedStyleIndex(index)}
+              >
                 <CardHeader className="py-3">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-sm">{style.styleName}</CardTitle>
@@ -553,12 +562,24 @@ export default function PhotoUpload({
                   )}
 
                   <Button 
-                    className="w-full" 
-                    variant="outline"
+                    className={`w-full transition-all ${
+                      selectedStyleIndex === index 
+                        ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+                        : ''
+                    }`}
+                    variant={selectedStyleIndex === index ? "default" : "outline"}
                     size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedStyleIndex(index);
+                      toast({
+                        title: "Style Selected",
+                        description: `You've selected the ${style.styleName} design style.`
+                      });
+                    }}
                     data-testid={`select-style-${index}`}
                   >
-                    Select This Style
+                    {selectedStyleIndex === index ? '✓ Selected' : 'Select This Style'}
                   </Button>
                 </CardContent>
               </Card>
