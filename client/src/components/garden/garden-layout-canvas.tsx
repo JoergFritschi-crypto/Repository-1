@@ -275,6 +275,8 @@ export default function GardenLayoutCanvas({
 
   // Generate seasonal image using Gemini
   const generateSeasonalImage = async (season: string) => {
+    console.log('generateSeasonalImage called with:', { season, gardenId, placedPlantsCount: placedPlants.length });
+    
     if (!gardenId) {
       toast({
         title: "Error",
@@ -307,12 +309,17 @@ export default function GardenLayoutCanvas({
         }))
       };
 
-      const response = await apiRequest('POST', `/api/gardens/${gardenId}/generate-seasonal-images`, {
+      const url = `/api/gardens/${gardenId}/generate-seasonal-images`;
+      console.log('Making request to:', url, 'with data:', { canvasDesign, season });
+      
+      const response = await apiRequest('POST', url, {
         canvasDesign,
         season
       });
       
+      console.log('Response status:', response.status);
       const result = await response.json();
+      console.log('Response data:', result);
       
       toast({
         title: "Image Generation Started",
@@ -320,8 +327,24 @@ export default function GardenLayoutCanvas({
       });
       
       if (result.imageUrl) {
-        // Could open the image in a modal or new tab
-        window.open(result.imageUrl, '_blank');
+        // For base64 images, create a blob and open in new tab
+        if (result.imageUrl.startsWith('data:')) {
+          // Base64 image - open directly
+          const newWindow = window.open('', '_blank');
+          if (newWindow) {
+            newWindow.document.write(`
+              <html>
+                <head><title>${season} Garden Visualization</title></head>
+                <body style="margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f0f0f0;">
+                  <img src="${result.imageUrl}" style="max-width:100%; height:auto;" alt="${season} garden visualization"/>
+                </body>
+              </html>
+            `);
+          }
+        } else {
+          // Regular URL - open directly
+          window.open(result.imageUrl, '_blank');
+        }
       }
     } catch (error) {
       console.error("Error generating seasonal image:", error);
