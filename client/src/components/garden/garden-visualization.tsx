@@ -57,8 +57,12 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Tier-based limits
+  const maxImages = userTier === 'free' ? 2 : 6;
+  const maxIterations = userTier === 'free' ? 3 : Infinity;
+  
   // State
-  const [imageCount, setImageCount] = useState(2);
+  const [imageCount, setImageCount] = useState(maxImages);
   const [periodRange, setPeriodRange] = useState([4, 21]); // Default: Early March to Late October
   const [generatedImages, setGeneratedImages] = useState<Array<{ url: string; period: string; season: string }>>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -67,9 +71,10 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const [iterationCount, setIterationCount] = useState(0);
   const [generationProgress, setGenerationProgress] = useState(0);
   
-  // Tier-based limits
-  const maxImages = userTier === 'free' ? 2 : 6;
-  const maxIterations = userTier === 'free' ? 3 : Infinity;
+  // Update imageCount when tier changes
+  useEffect(() => {
+    setImageCount(prevCount => Math.min(prevCount, maxImages));
+  }, [userTier, maxImages]);
   const canIterate = iterationCount < maxIterations;
   
   // Query to get existing iteration count and saved images from storage
