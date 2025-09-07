@@ -70,14 +70,15 @@ export default function GardenLayoutCanvas({
     }
   };
 
-  // Update canvas size to maintain 4:3 aspect ratio and fill 80% of available space
+  // Update canvas size to maintain 4:3 aspect ratio and fill more space (30% bigger)
   useEffect(() => {
     const updateCanvasSize = () => {
       if (canvasRef.current) {
         const container = canvasRef.current.parentElement;
         if (container) {
-          const availableWidth = container.clientWidth * 0.95; // Leave some margin
-          const availableHeight = window.innerHeight * 0.5; // Use 50% of viewport height for canvas
+          // Canvas takes 80% of container width, leaving 20% for sidebar
+          const availableWidth = container.clientWidth * 0.78;
+          const availableHeight = window.innerHeight * 0.7; // 70% of viewport (40% increase from 0.5)
           
           // Maintain 4:3 aspect ratio
           let width = availableWidth;
@@ -126,137 +127,121 @@ export default function GardenLayoutCanvas({
       case 'rectangle':
         const rectWidth = canvasSize.width * scale;
         const rectHeight = canvasSize.height * scale;
-        return `M ${(canvasSize.width - rectWidth) / 2} ${(canvasSize.height - rectHeight) / 2} 
-                h ${rectWidth} v ${rectHeight} h -${rectWidth} z`;
+        const rectX = (canvasSize.width - rectWidth) / 2;
+        const rectY = (canvasSize.height - rectHeight) / 2;
+        return `M ${rectX} ${rectY} h ${rectWidth} v ${rectHeight} h -${rectWidth} Z`;
       
       case 'square':
         const squareSize = Math.min(canvasSize.width, canvasSize.height) * scale;
-        return `M ${(canvasSize.width - squareSize) / 2} ${(canvasSize.height - squareSize) / 2} 
-                h ${squareSize} v ${squareSize} h -${squareSize} z`;
+        const squareX = (canvasSize.width - squareSize) / 2;
+        const squareY = (canvasSize.height - squareSize) / 2;
+        return `M ${squareX} ${squareY} h ${squareSize} v ${squareSize} h -${squareSize} Z`;
       
       case 'circle':
         const radius = Math.min(canvasSize.width, canvasSize.height) * scale / 2;
-        return `M ${cx - radius} ${cy} 
-                A ${radius} ${radius} 0 1 0 ${cx + radius} ${cy}
-                A ${radius} ${radius} 0 1 0 ${cx - radius} ${cy}`;
+        return `M ${cx} ${cy - radius} A ${radius} ${radius} 0 1 1 ${cx} ${cy + radius} A ${radius} ${radius} 0 1 1 ${cx} ${cy - radius} Z`;
       
       case 'oval':
         const rx = canvasSize.width * scale / 2;
         const ry = canvasSize.height * scale / 2;
-        return `M ${cx - rx} ${cy} 
-                A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy}
-                A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy}`;
+        return `M ${cx - rx} ${cy} A ${rx} ${ry} 0 1 1 ${cx + rx} ${cy} A ${rx} ${ry} 0 1 1 ${cx - rx} ${cy} Z`;
       
       case 'l-shaped':
         const lWidth = canvasSize.width * scale;
         const lHeight = canvasSize.height * scale;
-        const offsetX = (canvasSize.width - lWidth) / 2;
-        const offsetY = (canvasSize.height - lHeight) / 2;
-        return `M ${offsetX} ${offsetY} 
-                h ${lWidth * 0.6} v ${lHeight * 0.4} h ${lWidth * 0.4} v ${lHeight * 0.6} 
-                h -${lWidth} z`;
+        const lX = (canvasSize.width - lWidth) / 2;
+        const lY = (canvasSize.height - lHeight) / 2;
+        const cutWidth = lWidth * 0.5;
+        const cutHeight = lHeight * 0.5;
+        return `M ${lX} ${lY} h ${lWidth} v ${lHeight} h -${cutWidth} v -${cutHeight} h -${lWidth - cutWidth} Z`;
       
       default:
-        return getShapePath(); // Default to rectangle
+        return '';
     }
   };
 
-  // Handle plant drag start
   const handleDragStart = (plant: Plant, e: React.DragEvent) => {
     setDraggedPlant(plant);
     setIsDragging(true);
-    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.effectAllowed = 'move';
   };
 
-  // Handle plant drop on canvas
   const handleCanvasDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragging(false);
+    
     if (!draggedPlant || !canvasRef.current) return;
-
+    
     const rect = canvasRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-
+    
     const newPlacedPlant: PlacedPlant = {
       id: `placed-${Date.now()}`,
       plantId: draggedPlant.id,
       plantName: draggedPlant.commonName,
-      scientificName: draggedPlant.scientificName || '',
-      x,
-      y,
+      scientificName: draggedPlant.scientificName,
+      x: Math.max(5, Math.min(95, x)), // Keep within bounds
+      y: Math.max(5, Math.min(95, y)),
       quantity: 1
     };
-
+    
     setPlacedPlants([...placedPlants, newPlacedPlant]);
-    setIsDragging(false);
+    // Remove from unplaced if it was there
+    setUnplacedPlants(unplacedPlants.filter(p => p.id !== draggedPlant.id));
     setDraggedPlant(null);
   };
 
-  // Group placed plants by type for summary
+  // Calculate plant summary for placed elements
   const plantSummary = placedPlants.reduce((acc, plant) => {
-    const key = plant.plantName;
-    if (!acc[key]) {
-      acc[key] = { 
-        name: plant.plantName, 
+    if (!acc[plant.plantId]) {
+      acc[plant.plantId] = {
+        name: plant.plantName,
         scientificName: plant.scientificName,
-        quantity: 0 
+        quantity: 0
       };
     }
-    acc[key].quantity += plant.quantity;
+    acc[plant.plantId].quantity += plant.quantity;
     return acc;
   }, {} as Record<string, { name: string; scientificName?: string; quantity: number }>);
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      {/* Plant Search Button */}
-      <div className="flex justify-between items-center">
-        <Button
-          onClick={onOpenPlantSearch}
-          className="flex items-center gap-2"
-          variant="outline"
-          data-testid="button-open-plant-search"
-        >
-          <Search className="w-4 h-4" />
-          Search & Add Plants to Inventory
-        </Button>
-        <Button
-          onClick={() => setIsFullscreen(!isFullscreen)}
-          variant="ghost"
-          size="sm"
-          data-testid="button-toggle-fullscreen"
-        >
-          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-        </Button>
-      </div>
-
-      {/* Plants Inventory (Unplaced Elements) */}
-      <Card className="border-gray-200">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm flex items-center justify-between">
-            Plants Inventory (Unplaced)
-            <Badge variant="outline">{unplacedPlants.length} plants</Badge>
-          </CardTitle>
+    <div className="w-full">
+      {/* Compact Plants Inventory Above Canvas */}
+      <Card className="border border-gray-200 mb-2">
+        <CardHeader className="py-2 px-4">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-sm font-medium">
+              Plants Inventory ({unplacedPlants.length} unplaced)
+            </CardTitle>
+            <Button 
+              onClick={onOpenPlantSearch}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 h-7 text-xs"
+              data-testid="button-search-add-plants"
+            >
+              <Search className="w-3 h-3 mr-1" />
+              Add Plants
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent className="py-2">
-          <ScrollArea className="h-24">
+        <CardContent className="py-2 px-4">
+          <ScrollArea className="h-16">
             {unplacedPlants.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {aiDesign ? "All plants have been placed by AI" : "No plants in inventory. Search to add plants."}
+              <p className="text-xs text-muted-foreground text-center py-2">
+                {aiDesign ? "AI placed all plants" : "No plants. Click 'Add Plants' to start."}
               </p>
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 {unplacedPlants.map((plant) => (
                   <div
                     key={plant.id}
                     draggable
                     onDragStart={(e) => handleDragStart(plant, e)}
-                    className="bg-green-100 border border-green-300 rounded-lg px-3 py-1.5 cursor-move hover:bg-green-200 transition-colors"
-                    data-testid={`unplaced-plant-${plant.id}`}
+                    className="bg-green-50 border border-green-300 rounded px-2 py-1 cursor-move hover:bg-green-100 text-xs"
+                    data-testid={`inventory-plant-${plant.id}`}
                   >
-                    <p className="text-xs font-medium">{plant.commonName}</p>
-                    {plant.scientificName && (
-                      <p className="text-xs text-gray-600 italic">{plant.scientificName}</p>
-                    )}
+                    {plant.commonName}
                   </div>
                 ))}
               </div>
@@ -265,118 +250,160 @@ export default function GardenLayoutCanvas({
         </CardContent>
       </Card>
 
-      {/* Main Garden Canvas */}
-      <Card className="border-2 border-green-600 bg-gradient-to-br from-green-50 to-emerald-50">
-        <div 
-          ref={canvasRef}
-          className="relative overflow-hidden"
-          style={{ width: `${canvasSize.width}px`, height: `${canvasSize.height}px` }}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleCanvasDrop}
-          data-testid="garden-canvas"
-        >
-          {/* Dimensions Display */}
-          <div className="absolute top-2 left-2 bg-white/90 rounded-lg px-3 py-2 shadow-sm z-10">
-            <p className="text-xs font-medium">Dimensions:</p>
-            <p className="text-sm">
-              {shape === 'circle' 
-                ? `Ø ${dimensions.radius || dimensions.width || 10}${unitSymbol}`
-                : `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 8}${unitSymbol}`}
-            </p>
-            <p className="text-xs text-gray-600 mt-1">
-              Area: {calculateArea()} {unitSquared}
-            </p>
-          </div>
-
-          {/* Garden Shape SVG */}
-          <svg 
-            width={canvasSize.width} 
-            height={canvasSize.height}
-            className="absolute inset-0"
-            style={{ pointerEvents: 'none' }}
-          >
-            <defs>
-              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1" opacity="0.5"/>
-              </pattern>
-            </defs>
-            
-            {/* Grid background */}
-            <rect width="100%" height="100%" fill="url(#grid)" />
-            
-            {/* Garden shape */}
-            <path
-              d={getShapePath()}
-              fill="rgba(34, 197, 94, 0.1)"
-              stroke="#16a34a"
-              strokeWidth="2"
-              strokeDasharray="5,5"
-            />
-          </svg>
-
-          {/* Placed Plants */}
-          {placedPlants.map((plant) => (
-            <div
-              key={plant.id}
-              className={`absolute w-10 h-10 bg-green-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
-                selectedPlant === plant.id ? 'ring-2 ring-blue-500' : ''
-              }`}
-              style={{
-                left: `${plant.x}%`,
-                top: `${plant.y}%`,
-                transform: 'translate(-50%, -50%)'
-              }}
-              onClick={() => setSelectedPlant(plant.id)}
-              title={plant.plantName}
-              data-testid={`placed-plant-${plant.id}`}
-            >
-              <span className="text-white text-xs font-bold">{plant.quantity}</span>
-            </div>
-          ))}
-
-          {/* Drag indicator */}
-          {isDragging && (
-            <div className="absolute inset-0 bg-green-100/20 pointer-events-none flex items-center justify-center">
-              <p className="text-green-700 font-medium">Drop plant here</p>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Placed Elements Summary */}
-      <Card className="border-gray-200">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm flex items-center justify-between">
-            Placed Elements Summary
-            <Badge variant="outline">{placedPlants.length} total</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-2">
-          {Object.keys(plantSummary).length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-2">
-              No plants placed yet
-            </p>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {Object.values(plantSummary).map((summary) => (
-                <div 
-                  key={summary.name}
-                  className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-200"
-                  data-testid={`summary-${summary.name}`}
+      {/* Main Layout: Canvas Left, Info Right */}
+      <div className="flex gap-3">
+        {/* Canvas Section - Takes Most Space */}
+        <div className="flex-1">
+          <Card className="border-2 border-green-500">
+            <CardContent className="p-2">
+              <div 
+                ref={canvasRef}
+                className="relative bg-gradient-to-br from-green-50 to-emerald-50 rounded"
+                style={{ width: `${canvasSize.width}px`, height: `${canvasSize.height}px` }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleCanvasDrop}
+                data-testid="garden-canvas"
+              >
+                {/* Fullscreen Toggle */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 z-10 bg-white/80"
+                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  data-testid="button-toggle-fullscreen"
                 >
-                  <p className="text-sm font-medium">{summary.name}</p>
-                  {summary.scientificName && (
-                    <p className="text-xs text-gray-600 italic truncate">{summary.scientificName}</p>
-                  )}
-                  <Badge className="mt-1" variant="secondary">
-                    Qty: {summary.quantity}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </Button>
+
+                {/* Garden Shape SVG */}
+                <svg 
+                  width={canvasSize.width} 
+                  height={canvasSize.height}
+                  className="absolute inset-0"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1" opacity="0.5"/>
+                    </pattern>
+                  </defs>
+                  
+                  {/* Grid background */}
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  
+                  {/* Garden shape */}
+                  <path
+                    d={getShapePath()}
+                    fill="rgba(34, 197, 94, 0.05)"
+                    stroke="#16a34a"
+                    strokeWidth="2"
+                    strokeDasharray="5,5"
+                  />
+                </svg>
+
+                {/* Placed Plants */}
+                {placedPlants.map((plant) => (
+                  <div
+                    key={plant.id}
+                    className={`absolute w-10 h-10 bg-green-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform flex items-center justify-center ${
+                      selectedPlant === plant.id ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    style={{
+                      left: `${plant.x}%`,
+                      top: `${plant.y}%`,
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                    onClick={() => setSelectedPlant(plant.id)}
+                    title={plant.plantName}
+                    data-testid={`placed-plant-${plant.id}`}
+                  >
+                    <span className="text-white text-xs font-bold">{plant.quantity}</span>
+                  </div>
+                ))}
+
+                {/* Drag indicator */}
+                {isDragging && (
+                  <div className="absolute inset-0 bg-green-100/20 pointer-events-none flex items-center justify-center">
+                    <p className="text-green-700 font-medium">Drop plant here</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Info Sidebar - Compact on Right */}
+        <div className="w-72 space-y-2">
+          {/* Garden Info */}
+          <Card className="border border-gray-200">
+            <CardHeader className="py-2 px-3">
+              <CardTitle className="text-sm flex items-center gap-1">
+                <Info className="w-4 h-4" />
+                Garden Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-2 px-3 space-y-2">
+              <div>
+                <p className="text-xs text-gray-600">Shape</p>
+                <p className="text-sm font-medium">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600">Dimensions</p>
+                <p className="text-sm font-medium">
+                  {shape === 'circle' ? 
+                    `Radius: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
+                  shape === 'square' ?
+                    `Side: ${dimensions.width || dimensions.side || 10}${unitSymbol}` :
+                    `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 10}${unitSymbol}`
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600">Total Area</p>
+                <p className="text-sm font-bold text-green-700">{calculateArea()} {unitSquared}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Placed Plants Summary */}
+          <Card className="border border-gray-200">
+            <CardHeader className="py-2 px-3">
+              <CardTitle className="text-sm">
+                Placed Plants ({Object.keys(plantSummary).length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-2 px-3">
+              <ScrollArea className="h-96">
+                {Object.keys(plantSummary).length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    No plants placed yet. Drag from inventory.
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {Object.values(plantSummary).map((summary) => (
+                      <div 
+                        key={summary.name}
+                        className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm"
+                        data-testid={`summary-${summary.name}`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{summary.name}</p>
+                          {summary.scientificName && (
+                            <p className="text-xs text-gray-600 italic truncate">{summary.scientificName}</p>
+                          )}
+                        </div>
+                        <Badge variant="secondary" className="ml-2">
+                          {summary.quantity}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
