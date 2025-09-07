@@ -819,43 +819,20 @@ export default function GardenLayoutCanvas({
                     return Object.values(groupedPlacedPlants).map((group: any, groupIndex: number) => (
                       <Tooltip key={`placed-group-${groupIndex}`}>
                         <TooltipTrigger asChild>
-                          <div className="flex items-center gap-1 bg-background border rounded-lg px-2 py-1 shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex items-center gap-2 bg-background border rounded-lg px-3 py-1.5 shadow-sm">
                             <div
                               className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
                               style={{
-                                width: '20px',
-                                height: '20px',
+                                width: '24px',
+                                height: '24px',
                                 backgroundColor: getPlantColor(group),
                               }}
                             >
-                              <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
+                              <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
                                 {getPlantInitials(group.scientificName)}
                               </span>
                             </div>
-                            <span className="text-xs font-medium">×{group.plants.length}</span>
-                            <div className="flex gap-1">
-                              {group.plants.map((plant: PlacedPlant) => (
-                                <div
-                                  key={plant.id}
-                                  className="rounded-full border border-foreground/60 hover:scale-125 transition-transform flex items-center justify-center cursor-pointer"
-                                  style={{
-                                    width: '20px',
-                                    height: '20px',
-                                    backgroundColor: getPlantColor(plant),
-                                  }}
-                                  onClick={() => {
-                                    // Scroll to and highlight the plant on canvas
-                                    setSelectedPlant(plant.id);
-                                    canvasRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                  }}
-                                  data-testid={`placed-summary-${plant.id}`}
-                                >
-                                  <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
-                                    {getPlantInitials(plant.scientificName)}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
+                            <span className="text-sm font-medium">{group.plants.length}</span>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent className="p-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg">
