@@ -263,11 +263,11 @@ export default function GardenLayoutCanvas({
       {/* Main Layout: Canvas Left, Garden Info Right */}
       <div className="flex gap-3">
         {/* Canvas Section */}
-        <Card className="border-2 border-green-600 shadow-lg" style={{ width: `${canvasSize.width}px` }}>
+        <Card className="border-2 border-green-600 shadow-lg overflow-visible" style={{ width: `${canvasSize.width}px` }}>
           <CardContent className="p-3">
             <div 
               ref={canvasRef}
-              className="relative bg-gradient-to-br from-green-100 via-emerald-50 to-green-100 rounded-lg shadow-inner"
+              className="relative bg-gradient-to-br from-green-100 via-emerald-50 to-green-100 rounded-lg shadow-inner overflow-hidden"
               style={{ width: `${canvasSize.width - 24}px`, height: `${canvasSize.height}px` }}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleCanvasDrop}
