@@ -375,38 +375,68 @@ export default function GardenLayoutCanvas({
                 {aiDesign ? "AI has placed all plants on the canvas" : "No plants in inventory. Use Advanced Search above to add plants."}
               </p>
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 <TooltipProvider>
-                  {unplacedPlants.map((plant) => {
-                    return (
-                      <Tooltip key={plant.id}>
+                  {(() => {
+                    // Group plants by scientificName
+                    const groupedPlants = unplacedPlants.reduce((acc, plant) => {
+                      const key = plant.scientificName || plant.commonName;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          ...plant,
+                          count: 0,
+                          plants: []
+                        };
+                      }
+                      acc[key].count++;
+                      acc[key].plants.push(plant);
+                      return acc;
+                    }, {} as Record<string, any>);
+
+                    return Object.values(groupedPlants).map((group: any) => (
+                      <Tooltip key={group.scientificName || group.commonName}>
                         <TooltipTrigger asChild>
-                          <div
-                            draggable
-                            onDragStart={(e) => handleDragStart(plant, e)}
-                            onDragEnd={handleDragEnd}
-                            className="rounded-full border border-gray-700 shadow-md cursor-move hover:scale-125 transition-transform flex items-center justify-center"
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              backgroundColor: getPlantColor(plant),
-                            }}
-                            data-testid={`inventory-plant-${plant.id}`}
-                          >
-                            <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
-                              {getPlantInitials(plant.scientificName)}
-                            </span>
+                          <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg px-2 py-1 shadow-sm hover:shadow-md transition-shadow">
+                            <div
+                              className="rounded-full border border-gray-700 shadow-sm flex items-center justify-center"
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: getPlantColor(group),
+                              }}
+                            >
+                              <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>
+                                {getPlantInitials(group.scientificName)}
+                              </span>
+                            </div>
+                            <span className="text-xs font-medium text-gray-700">×{group.count}</span>
+                            <div className="flex gap-0.5">
+                              {group.plants.map((plant: any, index: number) => (
+                                <div
+                                  key={plant.id}
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(plant, e)}
+                                  onDragEnd={handleDragEnd}
+                                  className="w-2 h-2 rounded-full cursor-move hover:scale-150 transition-transform"
+                                  style={{
+                                    backgroundColor: getPlantColor(plant),
+                                  }}
+                                  data-testid={`inventory-plant-${plant.id}`}
+                                />
+                              ))}
+                            </div>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent className="p-2">
                           <div className="text-sm">
-                            <div className="font-semibold italic">{plant.scientificName || 'Unknown'}</div>
-                            <div className="text-xs text-muted-foreground">{plant.commonName}</div>
+                            <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
+                            <div className="text-xs text-muted-foreground">{group.commonName}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Quantity: {group.count}</div>
                           </div>
                         </TooltipContent>
                       </Tooltip>
-                    );
-                  })}
+                    ));
+                  })()}
                 </TooltipProvider>
               </div>
             )}
