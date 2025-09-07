@@ -123,6 +123,7 @@ export default function GardenProperties() {
   const [showClimateModal, setShowClimateModal] = useState(false);
   const [showSoilTestingModal, setShowSoilTestingModal] = useState(false);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true); // Default to checked
+  const [gardenId, setGardenId] = useState<string | null>(null); // Track saved garden ID
   const [locationToFetch, setLocationToFetch] = useState<string | null>(null);
   const [climateData, setClimateData] = useState<any>(null);
   const [hasUploadedPhotos, setHasUploadedPhotos] = useState(false);
@@ -139,6 +140,7 @@ export default function GardenProperties() {
     queryKey: ['/api/design-generations'],
     enabled: !!user
   });
+  
 
   const form = useForm<GardenFormValues>({
     resolver: zodResolver(gardenSchema),
@@ -181,7 +183,7 @@ export default function GardenProperties() {
   const watchedPetSafe = form.watch("preferences.petSafe");
   const watchedChildSafe = form.watch("preferences.childSafe");
 
-  const nextStep = () => {
+  const nextStep = async () => {
     // Validate required fields for Step 1 before proceeding
     if (currentStep === 1) {
       const values = form.getValues();
@@ -202,6 +204,56 @@ export default function GardenProperties() {
         });
         return;
       }
+      
+      // Auto-save if enabled
+      if (autoSaveEnabled && user) {
+        try {
+          const gardenData = {
+            name: values.name,
+            city: values.city || undefined,
+            zipCode: values.zipCode || undefined,
+            country: values.country || undefined,
+            usdaZone: values.usdaZone || undefined,
+            rhsZone: values.rhsZone || undefined,
+            heatZone: values.heatZone || undefined,
+            shape: values.shape,
+            dimensions: values.dimensions,
+            units: values.units,
+            sunExposure: values.sunExposure || undefined,
+            soilType: values.soilType || undefined,
+            soilPh: values.soilPh || undefined,
+            slopeDirection: values.slopeDirection,
+            slopePercentage: values.slopePercentage,
+            hasSoilAnalysis: values.hasSoilAnalysis || false,
+            soilAnalysis: values.soilAnalysis || {}
+          };
+          
+          if (gardenId) {
+            // Update existing garden
+            await updateGardenMutation.mutateAsync({ id: gardenId, data: gardenData });
+          } else {
+            // Create new garden
+            await createGardenMutation.mutateAsync(gardenData);
+          }
+        } catch (error) {
+          console.error("Failed to save garden:", error);
+          // Continue to next step even if save fails
+        }
+      }
+    }
+    
+    // Auto-save on other steps if garden exists and auto-save is enabled
+    if (currentStep > 1 && autoSaveEnabled && gardenId && user) {
+      try {
+        const values = form.getValues();
+        await updateGardenMutation.mutateAsync({ 
+          id: gardenId, 
+          data: values 
+        });
+      } catch (error) {
+        console.error("Failed to update garden:", error);
+        // Continue to next step even if save fails
+      }
     }
     
     setCurrentStep(prev => Math.min(prev + 1, 5));
@@ -213,14 +265,22 @@ export default function GardenProperties() {
 
   const createGardenMutation = useMutation({
     mutationFn: async (data: GardenFormValues) => {
-      return apiRequest('POST', '/api/gardens', data);
+      const response = await apiRequest('POST', '/api/gardens', data);
+      return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: 'Garden Created',
-        description: 'Your garden design has been saved successfully!',
-      });
-      setLocation('/gardens');
+    onSuccess: (data) => {
+      setGardenId(data.id);
+      if (currentStep === 5) {
+        // Only redirect on final submission
+        toast({
+          title: 'Garden Created',
+          description: 'Your garden design has been saved successfully!',
+        });
+        setLocation('/gardens');
+      } else if (autoSaveEnabled) {
+        // Silent save during progress
+        console.log('Garden auto-saved with ID:', data.id);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -229,6 +289,31 @@ export default function GardenProperties() {
         variant: 'destructive',
       });
     },
+  });
+  
+  const updateGardenMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest('PUT', `/api/gardens/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      if (currentStep === 5) {
+        toast({
+          title: 'Garden Updated',
+          description: 'Your garden has been updated successfully!',
+        });
+      } else if (autoSaveEnabled) {
+        // Silent save during progress
+        console.log('Garden auto-updated');
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'Failed to update garden',
+        variant: 'destructive',
+      });
+    }
   });
 
   const onSubmit = (data: GardenFormValues) => {
