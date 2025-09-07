@@ -22,6 +22,7 @@ import InteractiveCanvas from '@/components/garden/interactive-canvas';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
 import PhotoUpload from '@/components/garden/photo-upload';
+import StyleSelector from '@/components/garden/style-selector';
 import Navigation from '@/components/layout/navigation';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
 import { useAuthWithTesting } from '@/hooks/useAuth';
@@ -2048,62 +2049,27 @@ export default function GardenProperties() {
                 {/* Show AI Style options only if AI approach is chosen AND no style selected from Step 2 */}
                 {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && !selectedStyleFromAI && (
                   <>
-                    {/* Garden Style Selection for AI approach when no photos were analyzed */}
+                    {/* Garden Style Selection using StyleSelector component */}
                     <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
-                    <CardHeader className="py-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-600" />
-                        Select Your Garden Style
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-0">
-                      <p className="text-sm text-muted-foreground">
-                        Choose from our curated collection of garden styles. Each style has been carefully designed with specific plants and layouts.
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {GARDEN_STYLES && Object.values(GARDEN_STYLES).slice(0, 10).map((style: any) => (
-                          <Card 
-                            key={style.id} 
-                            className={`cursor-pointer transition-all hover:shadow-md ${
-                              selectedGardenStyle === style.id 
-                                ? 'border-purple-500 bg-purple-50' 
-                                : 'hover:border-purple-300'
-                            }`}
-                            onClick={() => setSelectedGardenStyle(style.id)}
-                          >
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-sm">{style.name}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-2 pt-0">
-                              <p className="text-xs text-muted-foreground line-clamp-2">
-                                {style.description}
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {style.signaturePlants?.slice(0, 2).map((plant: string, i: number) => (
-                                  <Badge key={i} variant="outline" className="text-xs">
-                                    {plant}
-                                  </Badge>
-                                ))}
-                              </div>
-                              <Button
-                                type="button"
-                                variant={selectedGardenStyle === style.id ? "default" : "outline"}
-                                size="sm"
-                                className="w-full mt-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedGardenStyle(style.id);
-                                }}
-                              >
-                                {selectedGardenStyle === style.id ? "Selected" : "Select"}
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-purple-600" />
+                          Select Your Garden Style
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <StyleSelector
+                          gardenStyles={Object.values(GARDEN_STYLES)}
+                          selectedStyle={selectedGardenStyle}
+                          onStyleSelect={(styleId) => {
+                            setSelectedGardenStyle(styleId);
+                            form.setValue('style', styleId);
+                          }}
+                          analysisData={analysis}
+                          showAIRecommendations={hasUploadedPhotos}
+                        />
+                      </CardContent>
+                    </Card>
                   
                   {/* Safety Preferences for AI approach (after selecting a style from predefined list) */}
                   {selectedGardenStyle && (
