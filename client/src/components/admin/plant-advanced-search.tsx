@@ -406,32 +406,32 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </CardTitle>
           </CardHeader>
           <CardContent className="py-3 px-4">
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span>{filters.minHeight} cm</span>
-                <span>{filters.maxHeight} cm</span>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <Label className="text-xs">Min Height: {filters.minHeight} cm</Label>
+                </div>
+                <Slider
+                  value={[filters.minHeight]}
+                  onValueChange={(value) => updateFilter('minHeight', value[0])}
+                  min={0}
+                  max={500}
+                  step={10}
+                  className="w-full"
+                />
               </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label className="text-xs">Min Height</Label>
-                  <Slider
-                    value={[filters.minHeight]}
-                    onValueChange={(value) => updateFilter('minHeight', value[0])}
-                    max={500}
-                    step={10}
-                    className="mt-2"
-                  />
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <Label className="text-xs">Max Height: {filters.maxHeight} cm</Label>
                 </div>
-                <div className="flex-1">
-                  <Label className="text-xs">Max Height</Label>
-                  <Slider
-                    value={[filters.maxHeight]}
-                    onValueChange={(value) => updateFilter('maxHeight', value[0])}
-                    max={500}
-                    step={10}
-                    className="mt-2"
-                  />
-                </div>
+                <Slider
+                  value={[filters.maxHeight]}
+                  onValueChange={(value) => updateFilter('maxHeight', value[0])}
+                  min={0}
+                  max={500}
+                  step={10}
+                  className="w-full"
+                />
               </div>
             </div>
           </CardContent>
