@@ -1444,7 +1444,7 @@ export default function GardenProperties() {
                       name="shape"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Garden Shape</FormLabel>
+                          <FormLabel>Garden Shape <span className="text-red-500">*</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-shape">
@@ -1472,7 +1472,7 @@ export default function GardenProperties() {
                         name="units"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Measurement Units</FormLabel>
+                            <FormLabel>Measurement Units <span className="text-red-500">*</span></FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger data-testid="select-units">
@@ -1499,11 +1499,11 @@ export default function GardenProperties() {
                             name="dimensions.length"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Length ({watchedUnits})</FormLabel>
+                                <FormLabel>Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
-                                    placeholder="20" 
+                                    placeholder="10" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     data-testid="input-dimension-length"
@@ -1518,11 +1518,11 @@ export default function GardenProperties() {
                             name="dimensions.width"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Width ({watchedUnits})</FormLabel>
+                                <FormLabel>Width ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
-                                    placeholder="15" 
+                                    placeholder="8" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     data-testid="input-dimension-width"
@@ -1541,11 +1541,11 @@ export default function GardenProperties() {
                           name="dimensions.side"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Side Length ({watchedUnits})</FormLabel>
+                              <FormLabel>Side Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  placeholder="20" 
+                                  placeholder="10" 
                                   {...field} 
                                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                   data-testid="input-dimension-side"
@@ -1563,11 +1563,11 @@ export default function GardenProperties() {
                           name="dimensions.radius"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Radius ({watchedUnits})</FormLabel>
+                              <FormLabel>Radius ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  placeholder="10" 
+                                  placeholder="5" 
                                   {...field} 
                                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                   data-testid="input-dimension-radius"
@@ -1586,11 +1586,11 @@ export default function GardenProperties() {
                             name="dimensions.majorAxis"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Major Axis ({watchedUnits})</FormLabel>
+                                <FormLabel>Major Axis ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
-                                    placeholder="25" 
+                                    placeholder="12" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     data-testid="input-dimension-major"
@@ -1605,11 +1605,11 @@ export default function GardenProperties() {
                             name="dimensions.minorAxis"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Minor Axis ({watchedUnits})</FormLabel>
+                                <FormLabel>Minor Axis ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
-                                    placeholder="15" 
+                                    placeholder="8" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     data-testid="input-dimension-minor"
@@ -1629,11 +1629,11 @@ export default function GardenProperties() {
                             name="dimensions.base"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Base ({watchedUnits})</FormLabel>
+                                <FormLabel>Base ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
-                                    placeholder="20" 
+                                    placeholder="10" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     data-testid="input-dimension-base"
@@ -1648,11 +1648,11 @@ export default function GardenProperties() {
                             name="dimensions.height"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Height ({watchedUnits})</FormLabel>
+                                <FormLabel>Height ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input 
                                     type="number" 
-                                    placeholder="15" 
+                                    placeholder="8" 
                                     {...field} 
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     data-testid="input-dimension-height"
@@ -1676,11 +1676,11 @@ export default function GardenProperties() {
                               name="dimensions.mainLength"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Main Length ({watchedUnits})</FormLabel>
+                                  <FormLabel>Main Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="number" 
-                                      placeholder="30" 
+                                      placeholder="15" 
                                       {...field} 
                                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                       data-testid="input-dimension-main-length"
@@ -1695,11 +1695,11 @@ export default function GardenProperties() {
                               name="dimensions.mainWidth"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Main Width ({watchedUnits})</FormLabel>
+                                  <FormLabel>Main Width ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="number" 
-                                      placeholder="20" 
+                                      placeholder="10" 
                                       {...field} 
                                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                       data-testid="input-dimension-main-width"
@@ -1716,11 +1716,11 @@ export default function GardenProperties() {
                               name="dimensions.cutoutLength"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Cutout Length ({watchedUnits})</FormLabel>
+                                  <FormLabel>Cutout Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="number" 
-                                      placeholder="15" 
+                                      placeholder="8" 
                                       {...field} 
                                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                       data-testid="input-dimension-cutout-length"
@@ -1735,11 +1735,11 @@ export default function GardenProperties() {
                               name="dimensions.cutoutWidth"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Cutout Width ({watchedUnits})</FormLabel>
+                                  <FormLabel>Cutout Width ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="number" 
-                                      placeholder="10" 
+                                      placeholder="5" 
                                       {...field} 
                                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                       data-testid="input-dimension-cutout-width"
