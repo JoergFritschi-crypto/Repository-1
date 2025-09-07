@@ -23,6 +23,7 @@ import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
 import PhotoUpload from '@/components/garden/photo-upload';
 import StyleSelector from '@/components/garden/style-selector';
+import SafetyPreferences from '@/components/garden/safety-preferences';
 import Navigation from '@/components/layout/navigation';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
 import { useAuthWithTesting } from '@/hooks/useAuth';
@@ -80,8 +81,8 @@ const gardenSchema = z.object({
     maintenance: z.enum(['low', 'medium', 'high']).optional(),
     features: z.array(z.string()).optional(),
     avoidFeatures: z.array(z.string()).optional(),
-    petSafe: z.boolean().optional(),
-    childSafe: z.boolean().optional(),
+    toxicityLevel: z.enum(['none', 'low', 'moderate', 'all']).optional(),
+    plantAvailability: z.enum(['common', 'mixed', 'exotic']).optional(),
     noThorns: z.boolean().optional(),
     lowAllergen: z.boolean().optional(),
     nativeOnly: z.boolean().optional(),
@@ -161,8 +162,8 @@ export default function GardenProperties() {
       slopePercentage: 0,
       design_approach: undefined,
       preferences: {
-        petSafe: false,
-        childSafe: false,
+        toxicityLevel: 'low',
+        plantAvailability: 'common',
         noThorns: false,
         lowAllergen: false,
         nativeOnly: false,
@@ -188,8 +189,8 @@ export default function GardenProperties() {
   const watchedName = form.watch("name");
   const watchedSunExposure = form.watch("sunExposure");
   const watchedSelectedStyle = form.watch("selectedStyle");
-  const watchedPetSafe = form.watch("preferences.petSafe");
-  const watchedChildSafe = form.watch("preferences.childSafe");
+  const watchedToxicityLevel = form.watch("preferences.toxicityLevel");
+  const watchedPlantAvailability = form.watch("preferences.plantAvailability");
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -1946,55 +1947,7 @@ export default function GardenProperties() {
 
                     {/* Safety Preferences for AI approach with selected style */}
                     {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
-                      <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-safety-preferences">
-                        <CardHeader className="py-3">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <Shield className="w-4 h-4 text-purple-600" />
-                            Safety Preferences
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 pt-0">
-                          <p className="text-sm text-muted-foreground">
-                            Select any safety considerations for your garden design.
-                          </p>
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="preferences.petSafe"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal">
-                                    Pet-safe plants only
-                                  </FormLabel>
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="preferences.childSafe"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal">
-                                    Child-safe plants only
-                                  </FormLabel>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <SafetyPreferences form={form} showAvailabilityPreference={true} />
                     )}
                   </>
                 ) : (
@@ -2080,106 +2033,24 @@ export default function GardenProperties() {
                   
                   {/* Safety Preferences for AI approach (after selecting a style from predefined list) */}
                   {selectedGardenStyle && (
-                    <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-safety-preferences">
-                      <CardHeader className="py-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-purple-600" />
-                          Safety Preferences
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4 pt-0">
-                        <p className="text-sm text-muted-foreground">
-                          Select any safety considerations for your garden design.
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="preferences.petSafe"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">
-                                  Pet-safe plants only
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="preferences.childSafe"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">
-                                  Child-safe plants only
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <SafetyPreferences form={form} showAvailabilityPreference={true} />
                   )}
                   </>
                 )}
 
-                {/* Show Plant Preferences if Manual approach is chosen */}
+                {/* Show Safety Preferences if Manual approach is chosen */}
                 {(localDesignApproach === "manual" || watchedDesignApproach === "manual") && (
-                  <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-plant-preferences">
-                    <CardHeader className="py-3">
-                      <CardTitle className="text-base">Plant Preferences</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-0">
-                      <div>
-                        <h3 className="font-semibold mb-4">Safety Considerations</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="preferences.petSafe"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    data-testid="checkbox-pet-safe"
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">
-                                  Pet-safe plants only
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="preferences.childSafe"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    data-testid="checkbox-child-safe"
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">
-                                  Child-safe (non-toxic)
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
+                  <>
+                    <SafetyPreferences form={form} showAvailabilityPreference={true} />
+                    
+                    <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-plant-preferences">
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base">Additional Plant Preferences</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-0">
+                        <div>
+                          <h3 className="font-semibold mb-4">Other Considerations</h3>
+                          <div className="grid grid-cols-2 gap-4">
 
                           <FormField
                             control={form.control}
@@ -2265,6 +2136,7 @@ export default function GardenProperties() {
                       </div>
                     </CardContent>
                   </Card>
+                  </>
                 )}
               </div>
             )}
@@ -2350,8 +2222,8 @@ export default function GardenProperties() {
                               selectedStyle: selectedStyle,
                               gardenData: form.getValues(),
                               safetyPreferences: {
-                                petSafe: watchedPetSafe,
-                                childSafe: watchedChildSafe
+                                toxicityLevel: watchedToxicityLevel,
+                                plantAvailability: watchedPlantAvailability
                               }
                             });
                             
