@@ -345,10 +345,10 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
   };
 
   return (
-    <Card className="w-full border-2 border-blue-200">
-      <CardHeader className="bg-blue-50">
+    <Card className="w-full border-2 border-green-500">
+      <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
         <CardTitle className="flex items-center gap-2">
-          <Search className="w-5 h-5" />
+          <Search className="w-5 h-5 text-green-700" />
           Advanced Plant Search
         </CardTitle>
         <CardDescription>
@@ -456,7 +456,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   <div
                     className={`w-8 h-8 rounded border-2 transition-all ${
                       filters.colors.includes(colorOption.name) 
-                        ? 'border-blue-500 shadow-md scale-110' 
+                        ? 'border-green-600 shadow-md scale-110' 
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
                     style={{
@@ -524,7 +524,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               <RotateCcw className="w-4 h-4 mr-2" />
               Reset All
             </Button>
-            <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleSearch} className="bg-green-600 hover:bg-green-700">
               <Search className="w-4 h-4 mr-2" />
               Search Plants
             </Button>
