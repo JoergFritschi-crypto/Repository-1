@@ -874,6 +874,343 @@ export default function GardenProperties() {
                       )}
                     />
 
+                    {form.watch("hasSoilAnalysis") && (
+                      <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-semibold mb-3">Enter Soil Test Results</h4>
+                        <Tabs defaultValue="basic" className="w-full">
+                          <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="basic">Basic</TabsTrigger>
+                            <TabsTrigger value="nutrients">Nutrients</TabsTrigger>
+                            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                          </TabsList>
+                          
+                          <TabsContent value="basic" className="space-y-4 mt-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.ph"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>pH Value</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        step="0.1" 
+                                        placeholder="6.5" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-xs">
+                                      3.0 - 11.0
+                                    </FormDescription>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.organicMatter"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Organic Matter (%)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        step="0.1" 
+                                        placeholder="3.5" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-xs">
+                                      Target: 3-5%
+                                    </FormDescription>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <FormField
+                              control={form.control}
+                              name="soilAnalysis.texture"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Soil Texture</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select texture" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="sandy">Sandy</SelectItem>
+                                      <SelectItem value="sandy_loam">Sandy Loam</SelectItem>
+                                      <SelectItem value="loam">Loam</SelectItem>
+                                      <SelectItem value="silt_loam">Silt Loam</SelectItem>
+                                      <SelectItem value="clay_loam">Clay Loam</SelectItem>
+                                      <SelectItem value="clay">Clay</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormItem>
+                              )}
+                            />
+                          </TabsContent>
+                          
+                          <TabsContent value="nutrients" className="space-y-4 mt-4">
+                            <div className="grid grid-cols-3 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.nitrogen"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Nitrogen (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="40" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.phosphorus"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Phosphorus (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="30" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.potassium"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Potassium (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="150" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.calcium"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Calcium (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="1200" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.magnesium"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Magnesium (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="200" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.sulfur"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Sulfur (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="20" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </TabsContent>
+                          
+                          <TabsContent value="advanced" className="space-y-4 mt-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.cec"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>CEC (meq/100g)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        step="0.1" 
+                                        placeholder="15" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-xs">
+                                      Cation Exchange Capacity
+                                    </FormDescription>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.salinity"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Salinity (dS/m)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        step="0.1" 
+                                        placeholder="0.5" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-xs">
+                                      Electrical Conductivity
+                                    </FormDescription>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div className="grid grid-cols-4 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.iron"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Iron (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="10" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.zinc"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Zinc (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="2" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.copper"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Copper (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="1" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="soilAnalysis.boron"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Boron (ppm)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        step="0.1" 
+                                        placeholder="0.5" 
+                                        {...field}
+                                        onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                        value={field.value || ''}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </TabsContent>
+                        </Tabs>
+                      </div>
+                    )}
+
                     <Button
                       type="button"
                       variant="outline"
