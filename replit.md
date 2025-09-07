@@ -41,6 +41,7 @@ Preferred communication style: Simple, everyday language.
 - **Session Storage**: PostgreSQL-backed sessions with configurable TTL
 - **Security**: HTTP-only cookies, CSRF protection, and secure session management
 - **User Management**: Automatic user creation and profile management
+- **User Tiers**: Three subscription levels (free, pay_per_design, premium) with different feature access
 
 ### Development & Deployment
 - **Build System**: Vite for frontend bundling with esbuild for backend compilation

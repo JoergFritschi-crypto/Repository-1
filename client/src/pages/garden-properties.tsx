@@ -122,7 +122,6 @@ export default function GardenProperties() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showClimateModal, setShowClimateModal] = useState(false);
   const [showSoilTestingModal, setShowSoilTestingModal] = useState(false);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true); // Default to checked
   const [gardenId, setGardenId] = useState<string | null>(null); // Track saved garden ID
   const [locationToFetch, setLocationToFetch] = useState<string | null>(null);
   const [climateData, setClimateData] = useState<any>(null);
@@ -140,6 +139,10 @@ export default function GardenProperties() {
     queryKey: ['/api/design-generations'],
     enabled: !!user
   });
+  
+  // Auto-save is always enabled for paying users, optional for free users
+  const isPaidUser = user?.userTier === 'pay_per_design' || user?.userTier === 'premium';
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true); // Default to checked for free users too
   
 
   const form = useForm<GardenFormValues>({
@@ -205,8 +208,9 @@ export default function GardenProperties() {
         return;
       }
       
-      // Auto-save if enabled
-      if (autoSaveEnabled && user) {
+      // Auto-save if enabled (always true for paid users)
+      const shouldAutoSave = isPaidUser || autoSaveEnabled;
+      if (shouldAutoSave && user) {
         try {
           const gardenData = {
             name: values.name,
@@ -243,7 +247,8 @@ export default function GardenProperties() {
     }
     
     // Auto-save on other steps if garden exists and auto-save is enabled
-    if (currentStep > 1 && autoSaveEnabled && gardenId && user) {
+    const shouldAutoSaveLater = isPaidUser || autoSaveEnabled;
+    if (currentStep > 1 && shouldAutoSaveLater && gardenId && user) {
       try {
         const values = form.getValues();
         await updateGardenMutation.mutateAsync({ 
@@ -277,8 +282,8 @@ export default function GardenProperties() {
           description: 'Your garden design has been saved successfully!',
         });
         setLocation('/gardens');
-      } else if (autoSaveEnabled) {
-        // Silent save during progress
+      } else {
+        // Silent save during progress (for paid users and opted-in free users)
         console.log('Garden auto-saved with ID:', data.id);
       }
     },
@@ -302,8 +307,8 @@ export default function GardenProperties() {
           title: 'Garden Updated',
           description: 'Your garden has been updated successfully!',
         });
-      } else if (autoSaveEnabled) {
-        // Silent save during progress
+      } else {
+        // Silent save during progress (for paid users and opted-in free users)
         console.log('Garden auto-updated');
       }
     },
@@ -429,33 +434,52 @@ export default function GardenProperties() {
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
-                  {/* Auto-save preference */}
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <div className="flex items-start space-x-3">
-                      <input
-                        type="checkbox"
-                        id="auto-save"
-                        checked={autoSaveEnabled}
-                        onChange={(e) => setAutoSaveEnabled(e.target.checked)}
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-[#004025] focus:ring-[#004025]"
-                        data-testid="checkbox-auto-save"
-                      />
-                      <label htmlFor="auto-save" className="text-sm text-gray-700 cursor-pointer">
-                        <span className="font-semibold">Save my garden data for future use</span>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Your garden information will be automatically saved as you progress, allowing you to:
-                        </p>
-                        <ul className="text-xs text-gray-600 mt-1 ml-4 list-disc">
-                          <li>Return anytime to continue where you left off</li>
-                          <li>Keep your designs and access them later</li>
-                          <li>Upgrade to premium for unlimited design iterations</li>
-                        </ul>
-                        <p className="text-xs text-gray-500 mt-2 italic">
-                          Uncheck this if you prefer to keep data only in your browser for this session
-                        </p>
-                      </label>
+                  {/* Auto-save preference - only shown for free users */}
+                  {!isPaidUser && (
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <div className="flex items-start space-x-3">
+                        <input
+                          type="checkbox"
+                          id="auto-save"
+                          checked={autoSaveEnabled}
+                          onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+                          className="mt-1 h-4 w-4 rounded border-gray-300 text-[#004025] focus:ring-[#004025]"
+                          data-testid="checkbox-auto-save"
+                        />
+                        <label htmlFor="auto-save" className="text-sm text-gray-700 cursor-pointer">
+                          <span className="font-semibold">Save my garden data for future use</span>
+                          <p className="text-xs text-gray-600 mt-1">
+                            Your garden information will be automatically saved as you progress, allowing you to:
+                          </p>
+                          <ul className="text-xs text-gray-600 mt-1 ml-4 list-disc">
+                            <li>Return anytime to continue where you left off</li>
+                            <li>Keep your designs and access them later</li>
+                            <li>Upgrade to premium for unlimited design iterations</li>
+                          </ul>
+                          <p className="text-xs text-gray-500 mt-2 italic">
+                            Uncheck this if you prefer to keep data only in your browser for this session
+                          </p>
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  
+                  {/* Auto-save info for paid users */}
+                  {isPaidUser && (
+                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                      <div className="flex items-center space-x-2">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <p className="text-sm font-medium text-green-800">
+                          {user?.userTier === 'premium' ? 'Premium' : 'Pay-Per-Design'} Member - All data automatically saved
+                        </p>
+                      </div>
+                      <p className="text-xs text-green-700 mt-1 ml-7">
+                        Your garden designs and data are permanently stored and accessible anytime.
+                      </p>
+                    </div>
+                  )}
 
                   <FormField
                     control={form.control}
