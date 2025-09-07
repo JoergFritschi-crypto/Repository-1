@@ -57,9 +57,6 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Debug log to see what tier is being passed
-  console.log('GardenVisualization received userTier:', userTier);
-  
   // Tier-based limits
   const maxImages = userTier === 'free' ? 2 : 6;
   const maxIterations = userTier === 'free' ? 3 : Infinity;

@@ -15,7 +15,6 @@ export default function AdminTestVisualization() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [selectedGardenId, setSelectedGardenId] = useState<string>("1");
-  const [testingTier, setTestingTier] = useState<'free' | 'pay_per_design' | 'premium'>('premium');
   
   // Get Test Garden 1
   const { data: garden, isLoading: gardenLoading } = useQuery({
@@ -79,42 +78,6 @@ export default function AdminTestVisualization() {
                 </div>
               </div>
               
-              <div>
-                <label className="text-sm font-medium mb-2 block">Test as Tier</label>
-                <div className="flex gap-2">
-                  <Button
-                    variant={testingTier === 'free' ? "default" : "outline"}
-                    onClick={() => {
-                      console.log('Free button clicked');
-                      setTestingTier('free');
-                    }}
-                  >
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 mr-2">Free</span>
-                    Up to 2 images, 3 iterations
-                  </Button>
-                  <Button
-                    variant={testingTier === 'pay_per_design' ? "default" : "outline"}
-                    onClick={() => {
-                      console.log('Tier 2 button clicked');
-                      setTestingTier('pay_per_design');
-                    }}
-                  >
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-500 text-white mr-2">Tier 2</span>
-                    Up to 6 images, unlimited
-                  </Button>
-                  <Button
-                    variant={testingTier === 'premium' ? "default" : "outline"}
-                    onClick={() => {
-                      console.log('Premium button clicked');
-                      setTestingTier('premium');
-                    }}
-                  >
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-500 text-white mr-2">Premium</span>
-                    Up to 6 images, unlimited
-                  </Button>
-                </div>
-              </div>
-              
               {garden && (
                 <div className="space-y-3">
                   <div className="bg-gray-50 p-3 rounded-lg">
@@ -132,12 +95,11 @@ export default function AdminTestVisualization() {
         </Card>
         
         {/* Visualization Component */}
-        {console.log('Current testingTier state:', testingTier)}
         {garden ? (
           <GardenVisualization 
-            key={`${selectedGardenId}-${testingTier}`}
+            key={selectedGardenId}
             gardenId={selectedGardenId}
-            userTier={testingTier}
+            userTier="premium"
             onReturn={() => toast({
               title: "Return to Design",
               description: "This would return to the garden design in production"
@@ -160,11 +122,9 @@ export default function AdminTestVisualization() {
           </CardHeader>
           <CardContent>
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-              <li>Free tier: Limited to up to 2 images and 3 iterations</li>
-              <li>Paid tiers: Up to 6 images with unlimited iterations</li>
+              <li>Admin testing has full premium access: Up to 6 images with unlimited iterations</li>
               <li>Images are evenly distributed across the selected time period</li>
               <li>Saved images persist in the garden's metadata</li>
-              <li>Progress bar shows real-time generation status</li>
               <li>Full-screen viewer includes YouTube-style controls</li>
               <li>Keyboard shortcuts: Arrow keys, Space (play/pause), F (fullscreen)</li>
             </ul>
