@@ -1536,12 +1536,14 @@ Critical requirements for maintaining identical layout:
 
 Seasonal appearance for ${specificMonth}:
 ${season === 'spring' ? 
-  'Fresh spring growth with tulips, daffodils, and early perennials in bloom. Japanese maples showing new red-tinted foliage. Hostas emerging with fresh green leaves.' :
+  'Fresh spring growth with early blooms on any flowering plants that are in the design above. New foliage emerging on the specified plants. Show ONLY the plants listed above in their spring appearance.' :
 season === 'summer' ? 
-  'Peak summer bloom with roses, lavender, daylilies, and hydrangeas at their fullest. Lush green foliage on all plants. Japanese maples in full green leaf.' :
+  'Peak summer growth with flowering plants in bloom if they naturally flower in summer. Lush green foliage on all specified plants. Show ONLY the plants listed above in their summer appearance.' :
 season === 'autumn' ? 
-  'Autumn colors with Japanese maples in brilliant red and orange. Late asters and sedums blooming. Hostas turning golden. Hydrangeas aging to pink and bronze.' :
-  'Winter structure with dormant perennials, bare branches on Japanese maples showing architectural form. Frost on remaining foliage. Evergreen lavender providing structure.'}
+  'Autumn colors on any deciduous plants in the design. Late season characteristics appropriate for the specified plants. Show ONLY the plants listed above in their autumn appearance.' :
+  'Winter structure with dormant perennials and bare branches on deciduous plants. Any evergreens providing winter interest. Show ONLY the plants listed above in their winter appearance.'}
+
+CRITICAL: You must show ONLY the exact plants listed in the positions above. Do NOT add any additional plants like tulips, daffodils, bulbs, or any other plants that are not explicitly listed. The garden must contain exactly ${canvasDesign.plants.length} plants as specified.
 
 Photography style: Professional garden photography captured in natural ${season === 'winter' ? 'soft diffused winter' : season === 'autumn' ? 'warm golden hour' : season === 'spring' ? 'bright morning' : 'clear midday'} light, showing realistic plant sizes and natural garden textures including mulch, soil, and stone edging.`;
 
