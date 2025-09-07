@@ -383,6 +383,12 @@ export default function PhotoUpload({
             <CardTitle className="text-base flex items-center gap-2">
               <TreePine className="w-4 h-4 text-purple-600" />
               Claude's Garden Analysis
+              {generateStylesMutation.isPending && (
+                <span className="ml-auto text-sm font-normal text-purple-600 flex items-center">
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Generating design styles...
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
@@ -471,6 +477,21 @@ export default function PhotoUpload({
                 </div>
               )}
             </div>
+
+            {/* Loading indicator for style generation */}
+            {generateStylesMutation.isPending && (
+              <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-300 animate-pulse">
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                  <p className="text-sm font-medium text-indigo-800">
+                    Creating personalized design styles based on your garden analysis...
+                  </p>
+                </div>
+                <p className="text-xs text-center mt-2 text-indigo-600">
+                  This may take 30-45 seconds
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

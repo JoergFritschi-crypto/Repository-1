@@ -1428,20 +1428,7 @@ export default function GardenProperties() {
             {/* Step 2: Shape & Orientation - Combined */}
             {currentStep === 2 && (
               <div className="space-y-3">
-                {/* Photo Upload Section */}
-                <PhotoUpload 
-                  maxPhotos={6}
-                  onPhotosChange={(photos) => {
-                    setHasUploadedPhotos(photos.length > 0);
-                    console.log(`Uploaded ${photos.length} photos`);
-                  }}
-                  gardenData={form.getValues()}
-                  onStylesGenerated={(styles) => {
-                    setGeneratedStyles(styles);
-                    console.log(`Generated ${styles.length} design styles`);
-                  }}
-                />
-                
+                {/* Garden Shape & Dimensions - FIRST */}
                 <Card className="border-2 border-[#004025] shadow-sm" data-testid="step-shape-orientation">
                   <CardHeader className="py-7 flower-band-summer rounded-t-lg">
                     <CardTitle className="text-base">Garden Shape & Dimensions</CardTitle>
@@ -1843,6 +1830,20 @@ export default function GardenProperties() {
                     />
                   </CardContent>
                 </Card>
+
+                {/* Photo Upload Section - LAST, after defining garden shape and dimensions */}
+                <PhotoUpload 
+                  maxPhotos={6}
+                  onPhotosChange={(photos) => {
+                    setHasUploadedPhotos(photos.length > 0);
+                    console.log(`Uploaded ${photos.length} photos`);
+                  }}
+                  gardenData={form.getValues()}
+                  onStylesGenerated={(styles) => {
+                    setGeneratedStyles(styles);
+                    console.log(`Generated ${styles.length} design styles`);
+                  }}
+                />
               </div>
             )}
 
