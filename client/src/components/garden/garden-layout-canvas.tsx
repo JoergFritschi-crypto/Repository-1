@@ -468,9 +468,17 @@ export default function GardenLayoutCanvas({
         flowerColor: (draggedPlant as any).flowerColor
       };
       
+      console.log('Before removing - unplacedPlants count:', unplacedPlants.length);
+      console.log('Removing plant with ID:', draggedPlant.id);
+      console.log('Unplaced plant IDs:', unplacedPlants.map(p => p.id));
+      
       setPlacedPlants([...placedPlants, newPlacedPlant]);
       // Remove from unplaced if it was there
-      setUnplacedPlants(unplacedPlants.filter(p => p.id !== draggedPlant.id));
+      setUnplacedPlants(prev => {
+        const filtered = prev.filter(p => p.id !== draggedPlant.id);
+        console.log('After filtering - remaining plants:', filtered.length);
+        return filtered;
+      });
     }
     setDraggedPlant(null);
   };
