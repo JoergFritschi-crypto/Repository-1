@@ -19,6 +19,7 @@ interface GardenLayoutCanvasProps {
   gardenId?: string;
   aiDesign?: any;
   gardenPlants?: any[];
+  inventoryPlants?: any[];
   onOpenPlantSearch?: () => void;
 }
 
@@ -41,6 +42,7 @@ export default function GardenLayoutCanvas({
   gardenId,
   aiDesign,
   gardenPlants,
+  inventoryPlants,
   onOpenPlantSearch
 }: GardenLayoutCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -235,12 +237,12 @@ export default function GardenLayoutCanvas({
     if (gardenPlants && gardenPlants.length > 0 && !aiDesign) {
       // Convert garden plants to the format needed for the inventory
       // Create individual entries for each plant based on quantity
-      const inventoryPlants: Plant[] = [];
+      const inventoryPlantsFromGarden: Plant[] = [];
       let uniqueCounter = 0;
       gardenPlants.forEach((gp: any) => {
         const quantity = gp.quantity || 1;
         for (let i = 0; i < quantity; i++) {
-          inventoryPlants.push({
+          inventoryPlantsFromGarden.push({
             ...gp.plant, // Include all plant details first
             id: `inventory-${uniqueCounter++}-${Math.random()}`, // Override with unique ID
             commonName: gp.plant?.commonName || 'Unknown Plant',
@@ -248,9 +250,23 @@ export default function GardenLayoutCanvas({
           });
         }
       });
-      setUnplacedPlants(inventoryPlants);
+      setUnplacedPlants(inventoryPlantsFromGarden);
     }
   }, [gardenPlants, aiDesign]);
+
+  // Add inventory plants from advanced search
+  useEffect(() => {
+    if (inventoryPlants && inventoryPlants.length > 0) {
+      // Add unique IDs to incoming plants and add them to unplaced
+      const newPlants = inventoryPlants.map((plant, index) => ({
+        ...plant,
+        id: `search-${Date.now()}-${index}-${Math.random()}`,
+        commonName: plant.commonName || 'Unknown Plant',
+        scientificName: plant.scientificName || ''
+      }));
+      setUnplacedPlants(prev => [...prev, ...newPlants]);
+    }
+  }, [inventoryPlants]);
 
   // Get garden shape path for SVG - with proper padding
   const getShapePath = () => {

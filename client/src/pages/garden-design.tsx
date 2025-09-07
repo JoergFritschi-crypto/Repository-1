@@ -30,6 +30,8 @@ export default function GardenDesign() {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [inventoryPlants, setInventoryPlants] = useState<any[]>([]);
   const [searchFilters, setSearchFilters] = useState<any>({});
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -50,6 +52,15 @@ export default function GardenDesign() {
     queryKey: ["/api/my-collection"],
     enabled: user?.userTier === 'premium',
   });
+
+  const handleAddPlantToInventory = (plant: any) => {
+    // Add to inventory plants state that will be passed to canvas
+    setInventoryPlants(prev => [...prev, plant]);
+    toast({
+      title: "Plant Added",
+      description: `${plant.commonName} added to inventory`,
+    });
+  };
 
   const handleAddPlantsToInventory = (plants: any[]) => {
     setInventoryPlants(prev => [...prev, ...plants]);
@@ -195,6 +206,7 @@ export default function GardenDesign() {
                 gardenId={garden.id}
                 aiDesign={garden.layout_data}
                 gardenPlants={gardenPlants}
+                inventoryPlants={inventoryPlants}
                 onOpenPlantSearch={() => setViewMode('advanced-search')}
               />
             </TabsContent>
@@ -203,16 +215,42 @@ export default function GardenDesign() {
             <TabsContent value="advanced-search" className="mt-0">
               <div className="space-y-4">
                 <PlantAdvancedSearch 
-                  onSearch={(filters) => {
+                  onSearch={async (filters) => {
                     console.log('Advanced search filters:', filters);
                     setSearchFilters(filters);
-                    // TODO: Implement actual search with these filters
-                    toast({
-                      title: "Search Applied",
-                      description: `Searching with ${Object.keys(filters).length} active filters`,
-                    });
+                    setIsSearching(true);
+                    
+                    try {
+                      // Build query parameters from filters
+                      const queryParams = new URLSearchParams();
+                      Object.entries(filters).forEach(([key, value]) => {
+                        if (Array.isArray(value)) {
+                          value.forEach(v => queryParams.append(key, v));
+                        } else if (value !== null && value !== undefined && value !== '') {
+                          queryParams.append(key, String(value));
+                        }
+                      });
+                      
+                      const response = await apiRequest('GET', `/api/plants/advanced-search?${queryParams}`);
+                      const results = await response.json();
+                      setSearchResults(results);
+                      
+                      toast({
+                        title: "Search Complete",
+                        description: `Found ${results.length} matching plants`,
+                      });
+                    } catch (error) {
+                      console.error('Search error:', error);
+                      toast({
+                        title: "Search Error",
+                        description: "Failed to search plants",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsSearching(false);
+                    }
                   }}
-                  totalResults={0}
+                  totalResults={searchResults.length}
                 />
                 
                 {/* Search Results */}
@@ -221,10 +259,52 @@ export default function GardenDesign() {
                     <CardTitle>Search Results</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p>Use the advanced search above to find plants</p>
-                      <p className="text-sm mt-2">Results will appear here</p>
-                    </div>
+                    {isSearching ? (
+                      <div className="text-center py-8">
+                        <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-muted-foreground">Searching...</p>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {searchResults.map((plant: any) => (
+                          <div key={plant.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                            <div className="mb-3">
+                              <h4 className="font-medium text-lg">{plant.commonName}</h4>
+                              <p className="text-sm text-muted-foreground italic">{plant.scientificName}</p>
+                            </div>
+                            
+                            <div className="space-y-1 text-sm mb-4">
+                              {plant.plantType && (
+                                <p><span className="font-medium">Type:</span> {plant.plantType}</p>
+                              )}
+                              {plant.height && (
+                                <p><span className="font-medium">Height:</span> {plant.height}cm</p>
+                              )}
+                              {plant.spread && (
+                                <p><span className="font-medium">Spread:</span> {plant.spread}cm</p>
+                              )}
+                              {plant.flowerColor && (
+                                <p><span className="font-medium">Flower:</span> {plant.flowerColor}</p>
+                              )}
+                            </div>
+                            
+                            <Button 
+                              className="w-full"
+                              onClick={() => handleAddPlantToInventory(plant)}
+                              data-testid={`button-add-plant-${plant.id}`}
+                            >
+                              <Leaf className="w-4 h-4 mr-2" />
+                              Add to Inventory
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>Use the advanced search above to find plants</p>
+                        <p className="text-sm mt-2">Results will appear here</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
