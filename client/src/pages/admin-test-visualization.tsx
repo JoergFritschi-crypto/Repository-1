@@ -15,7 +15,7 @@ export default function AdminTestVisualization() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [selectedGardenId, setSelectedGardenId] = useState<string>("1");
-  const [testingTier, setTestingTier] = useState<'free' | 'pay_per_design' | 'premium'>('free');
+  const [testingTier, setTestingTier] = useState<'free' | 'pay_per_design' | 'premium'>('premium');
   
   // Get Test Garden 1
   const { data: garden, isLoading: gardenLoading } = useQuery({
