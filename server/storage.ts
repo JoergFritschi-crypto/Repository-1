@@ -96,8 +96,8 @@ export interface IStorage {
   deleteExpiredVaultItems(): Promise<number>;
   
   // Visualization data operations
-  getVisualizationData(gardenId: number): Promise<{ iterationCount: number } | undefined>;
-  updateVisualizationData(gardenId: number, data: { iterationCount: number }): Promise<void>;
+  getVisualizationData(gardenId: number): Promise<any | undefined>;
+  updateVisualizationData(gardenId: number, data: any): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -513,23 +513,35 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Visualization data operations (stored in garden metadata)
-  async getVisualizationData(gardenId: number): Promise<{ iterationCount: number } | undefined> {
+  async getVisualizationData(gardenId: number): Promise<any | undefined> {
     const garden = await this.getGarden(gardenId.toString());
     if (!garden) return undefined;
     
-    // Store iteration count in garden's additionalInfo JSON field
+    // Store visualization data in garden's additionalInfo JSON field
     const additionalInfo = garden.additionalInfo as any || {};
     return {
-      iterationCount: additionalInfo.visualizationIterationCount || 0
+      iterationCount: additionalInfo.visualizationIterationCount || 0,
+      savedImages: additionalInfo.savedSeasonalImages || [],
+      lastSaved: additionalInfo.lastSeasonalImagesSaved || null
     };
   }
   
-  async updateVisualizationData(gardenId: number, data: { iterationCount: number }): Promise<void> {
+  async updateVisualizationData(gardenId: number, data: any): Promise<void> {
     const garden = await this.getGarden(gardenId.toString());
     if (!garden) return;
     
     const additionalInfo = garden.additionalInfo as any || {};
-    additionalInfo.visualizationIterationCount = data.iterationCount;
+    
+    // Update visualization data
+    if (data.iterationCount !== undefined) {
+      additionalInfo.visualizationIterationCount = data.iterationCount;
+    }
+    if (data.savedImages !== undefined) {
+      additionalInfo.savedSeasonalImages = data.savedImages;
+    }
+    if (data.lastSaved !== undefined) {
+      additionalInfo.lastSeasonalImagesSaved = data.lastSaved;
+    }
     
     await db.update(gardens)
       .set({ 

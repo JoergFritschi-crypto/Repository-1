@@ -2094,7 +2094,7 @@ Photography style: Professional garden photography captured in natural ${season 
     });
   }
 
-  // Get visualization data (iteration count, etc)
+  // Get visualization data (iteration count, saved images, etc)
   app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req: any, res) => {
     try {
       const gardenId = parseInt(req.params.id);
@@ -2111,7 +2111,7 @@ Photography style: Professional garden photography captured in natural ${season 
       
       // Get or initialize visualization data
       const vizData = await storage.getVisualizationData(gardenId);
-      res.json(vizData || { iterationCount: 0 });
+      res.json(vizData || { iterationCount: 0, savedImages: [] });
     } catch (error) {
       console.error("Error fetching visualization data:", error);
       res.status(500).json({ message: "Failed to fetch visualization data" });
@@ -2133,12 +2133,46 @@ Photography style: Professional garden photography captured in natural ${season 
         return res.status(403).json({ message: "Unauthorized" });
       }
       
-      const { iterationCount } = req.body;
-      await storage.updateVisualizationData(gardenId, { iterationCount });
+      const { iterationCount, savedImages } = req.body;
+      await storage.updateVisualizationData(gardenId, { iterationCount, savedImages });
       res.json({ success: true });
     } catch (error) {
       console.error("Error updating visualization data:", error);
       res.status(500).json({ message: "Failed to update visualization data" });
+    }
+  });
+  
+  // Save seasonal images to garden
+  app.post('/api/gardens/:id/save-seasonal-images', isAuthenticated, async (req: any, res) => {
+    try {
+      const gardenId = parseInt(req.params.id);
+      const garden = await storage.getGarden(gardenId.toString());
+      
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { images } = req.body;
+      
+      // Get current visualization data
+      const currentVizData = await storage.getVisualizationData(gardenId) || { iterationCount: 0 };
+      
+      // Update with saved images
+      await storage.updateVisualizationData(gardenId, {
+        ...currentVizData,
+        savedImages: images,
+        lastSaved: new Date().toISOString()
+      });
+      
+      res.json({ success: true, message: "Images saved successfully" });
+    } catch (error) {
+      console.error("Error saving seasonal images:", error);
+      res.status(500).json({ message: "Failed to save seasonal images" });
     }
   });
 

@@ -14,6 +14,7 @@ import {
   Minimize2,
   RotateCcw,
   Download,
+  Save,
   X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -76,15 +77,24 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
   const maxIterations = userTier === 'free' ? 3 : Infinity;
   const canIterate = iterationCount < maxIterations;
   
-  // Query to get existing iteration count from storage
-  const { data: visualizationData } = useQuery({
+  // Query to get existing iteration count and saved images from storage
+  const { data: visualizationData } = useQuery<{
+    iterationCount: number;
+    savedImages?: Array<{ url: string; period: string; season: string }>;
+    lastSaved?: string;
+  }>({
     queryKey: [`/api/gardens/${gardenId}/visualization-data`],
     enabled: !!gardenId
   });
   
   useEffect(() => {
-    if (visualizationData?.iterationCount) {
-      setIterationCount(visualizationData.iterationCount);
+    if (visualizationData) {
+      if (visualizationData.iterationCount) {
+        setIterationCount(visualizationData.iterationCount);
+      }
+      if (visualizationData.savedImages && visualizationData.savedImages.length > 0) {
+        setGeneratedImages(visualizationData.savedImages);
+      }
     }
   }, [visualizationData]);
   
@@ -233,6 +243,42 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
     }
   };
   
+  const handleDownloadAll = async () => {
+    for (let i = 0; i < generatedImages.length; i++) {
+      const image = generatedImages[i];
+      const link = document.createElement('a');
+      link.href = image.url;
+      link.download = `garden-${image.period.replace(' ', '-')}.png`;
+      link.click();
+      // Small delay between downloads to prevent browser blocking
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    toast({
+      title: "Downloads Started",
+      description: `Downloading ${generatedImages.length} images to your downloads folder`
+    });
+  };
+  
+  const handleSaveToGarden = async () => {
+    try {
+      await apiRequest('POST', `/api/gardens/${gardenId}/save-seasonal-images`, {
+        images: generatedImages
+      });
+      
+      toast({
+        title: "Images Saved",
+        description: "Seasonal images have been saved to your garden"
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save images to garden",
+        variant: "destructive"
+      });
+    }
+  };
+  
   const formatPeriodRange = () => {
     const start = MONTH_PERIODS[periodRange[0]];
     const end = MONTH_PERIODS[periodRange[1]];
@@ -352,13 +398,31 @@ export function GardenVisualization({ gardenId, userTier, onReturn }: GardenVisu
             </Button>
             
             {generatedImages.length > 0 && (
-              <Button
-                onClick={() => setIsFullscreen(true)}
-                variant="outline"
-              >
-                <Maximize2 className="w-4 h-4 mr-2" />
-                View Fullscreen
-              </Button>
+              <>
+                <Button
+                  onClick={() => setIsFullscreen(true)}
+                  variant="outline"
+                >
+                  <Maximize2 className="w-4 h-4 mr-2" />
+                  View Fullscreen
+                </Button>
+                
+                <Button
+                  onClick={handleDownloadAll}
+                  variant="outline"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download All
+                </Button>
+                
+                <Button
+                  onClick={handleSaveToGarden}
+                  variant="outline"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save to Garden
+                </Button>
+              </>
             )}
             
             {onReturn && (
