@@ -122,7 +122,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     careLevel: '',
     
     // Additional criteria
-    floweringSeason: '',
     watering: '',
     maintenance: '',
     
@@ -207,13 +206,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         'Any', 'Easy', 'Moderate', 'Difficult'
       ]
     },
-    floweringSeason: {
-      title: "Flowering Season",
-      icon: CalendarDays,
-      options: [
-        'Any', 'Spring', 'Summer', 'Fall', 'Winter', 'Year-round'
-      ]
-    },
     watering: {
       title: "Watering Needs",
       icon: Droplets,
@@ -249,11 +241,15 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       ]
     },
     bloomMonths: {
-      title: "Bloom Time (Months)",
+      title: "Bloom Time (Precise)",
       icon: CalendarDays,
       options: [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+        'Early Jan', 'Late Jan', 'Early Feb', 'Late Feb', 
+        'Early Mar', 'Late Mar', 'Early Apr', 'Late Apr',
+        'Early May', 'Late May', 'Early Jun', 'Late Jun',
+        'Early Jul', 'Late Jul', 'Early Aug', 'Late Aug',
+        'Early Sep', 'Late Sep', 'Early Oct', 'Late Oct',
+        'Early Nov', 'Late Nov', 'Early Dec', 'Late Dec'
       ]
     }
   };
@@ -287,7 +283,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       soilType: '',
       soilPH: '',
       careLevel: '',
-      floweringSeason: '',
       watering: '',
       maintenance: '',
       minHeight: 0,
@@ -578,7 +573,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           {renderRadioModule('soilType')}
           {renderRadioModule('soilPH')}
           {renderRadioModule('careLevel')}
-          {renderRadioModule('floweringSeason')}
           {renderRadioModule('watering')}
           {renderRadioModule('maintenance')}
         </div>
