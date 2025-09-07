@@ -98,7 +98,10 @@ export default function AdminTestVisualization() {
                   </Button>
                   <Button
                     variant={testingTier === 'premium' ? "default" : "outline"}
-                    onClick={() => setTestingTier('premium')}
+                    onClick={() => {
+                      console.log('Premium button clicked, setting tier to premium');
+                      setTestingTier('premium');
+                    }}
                   >
                     <Badge className="mr-2 bg-purple-500">Premium</Badge>
                     Up to 6 images, unlimited
@@ -123,6 +126,7 @@ export default function AdminTestVisualization() {
         </Card>
         
         {/* Visualization Component */}
+        {console.log('Current testingTier state:', testingTier)}
         {garden ? (
           <GardenVisualization 
             key={`${selectedGardenId}-${testingTier}`}
