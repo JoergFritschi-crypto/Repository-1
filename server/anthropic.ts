@@ -15,6 +15,17 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// Helper function to clean JSON from markdown code blocks
+function cleanJsonResponse(text: string): string {
+  let jsonText = text.trim();
+  if (jsonText.startsWith('```json')) {
+    jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (jsonText.startsWith('```')) {
+    jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+  return jsonText;
+}
+
 export interface GardenPhotoAnalysis {
   overallCondition: string;
   existingPlants: string[];
@@ -116,8 +127,8 @@ Design Preferences:
 
     const content = response.content[0];
     if (content.type === 'text') {
-      // Parse JSON response
-      const analysis = JSON.parse(content.text);
+      // Parse JSON response after cleaning markdown blocks
+      const analysis = JSON.parse(cleanJsonResponse(content.text));
       return {
         overallCondition: analysis.overallCondition || 'Unable to assess',
         existingPlants: analysis.existingPlants || [],
@@ -244,7 +255,7 @@ Site Analysis Results:
 
     const content = response.content[0];
     if (content.type === 'text') {
-      const styles = JSON.parse(content.text);
+      const styles = JSON.parse(cleanJsonResponse(content.text));
       return Array.isArray(styles) ? styles : [styles];
     }
 
@@ -379,7 +390,7 @@ Safety Requirements:
 
     const content = response.content[0];
     if (content.type === 'text') {
-      return JSON.parse(content.text);
+      return JSON.parse(cleanJsonResponse(content.text));
     }
 
     throw new Error('Unexpected response format from Claude');
