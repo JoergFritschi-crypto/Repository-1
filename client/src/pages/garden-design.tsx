@@ -194,6 +194,7 @@ export default function GardenDesign() {
                 units={garden.units}
                 gardenId={garden.id}
                 aiDesign={garden.layout_data}
+                gardenPlants={gardenPlants}
                 onOpenPlantSearch={() => setViewMode('advanced-search')}
               />
             </TabsContent>

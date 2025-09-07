@@ -12,6 +12,7 @@ interface GardenLayoutCanvasProps {
   units: 'metric' | 'imperial';
   gardenId?: string;
   aiDesign?: any;
+  gardenPlants?: any[];
   onOpenPlantSearch?: () => void;
 }
 
@@ -31,6 +32,7 @@ export default function GardenLayoutCanvas({
   units,
   gardenId,
   aiDesign,
+  gardenPlants,
   onOpenPlantSearch
 }: GardenLayoutCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -157,6 +159,20 @@ export default function GardenLayoutCanvas({
       setUnplacedPlants([]);
     }
   }, [aiDesign]);
+
+  // Initialize inventory with garden plants
+  useEffect(() => {
+    if (gardenPlants && gardenPlants.length > 0 && !aiDesign) {
+      // Convert garden plants to the format needed for the inventory
+      const inventoryPlants = gardenPlants.map((gp: any) => ({
+        id: gp.id,
+        commonName: gp.plant?.commonName || 'Unknown Plant',
+        scientificName: gp.plant?.scientificName || '',
+        ...gp.plant // Include all plant details
+      }));
+      setUnplacedPlants(inventoryPlants);
+    }
+  }, [gardenPlants, aiDesign]);
 
   // Get garden shape path for SVG - with proper padding
   const getShapePath = () => {
