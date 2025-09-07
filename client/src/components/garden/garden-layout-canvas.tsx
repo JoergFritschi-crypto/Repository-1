@@ -441,16 +441,17 @@ export default function GardenLayoutCanvas({
     setDraggedPlant(null);
   };
 
-  // Calculate plant summary for placed elements
+  // Calculate plant summary for placed elements - group by species, not individual plant IDs
   const plantSummary = placedPlants.reduce((acc, plant) => {
-    if (!acc[plant.plantId]) {
-      acc[plant.plantId] = {
+    const key = `${plant.plantName}-${plant.scientificName || 'unknown'}`;
+    if (!acc[key]) {
+      acc[key] = {
         name: plant.plantName,
         scientificName: plant.scientificName,
         quantity: 0
       };
     }
-    acc[plant.plantId].quantity += 1; // Each dot represents one plant
+    acc[key].quantity += 1; // Each dot represents one plant
     return acc;
   }, {} as Record<string, { name: string; scientificName?: string; quantity: number }>);
 
