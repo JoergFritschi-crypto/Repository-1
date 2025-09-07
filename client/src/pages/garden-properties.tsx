@@ -130,6 +130,8 @@ export default function GardenProperties() {
   const [hasUploadedPhotos, setHasUploadedPhotos] = useState(false);
   const [generatedStyles, setGeneratedStyles] = useState<any[]>([]);
   const [selectedStyleFromAI, setSelectedStyleFromAI] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [recommendedStyleIds, setRecommendedStyleIds] = useState<string[]>([]);
   const [completeDesign, setCompleteDesign] = useState<any>(null);
   const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
   const [selectedGardenStyle, setSelectedGardenStyle] = useState<string | null>(null);
@@ -1843,6 +1845,11 @@ export default function GardenProperties() {
                   gardenData={form.getValues()}
                   onAnalysisComplete={(analysis) => {
                     console.log('Garden analysis complete', analysis);
+                    setAnalysis(analysis);
+                  }}
+                  onRecommendedStyles={(styleIds) => {
+                    console.log('Recommended styles:', styleIds);
+                    setRecommendedStyleIds(styleIds);
                   }}
                 />
               </div>

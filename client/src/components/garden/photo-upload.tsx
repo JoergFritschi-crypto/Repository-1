@@ -9,6 +9,7 @@ import { apiRequest } from '@/lib/queryClient';
 interface PhotoUploadProps {
   onPhotosChange?: (photos: File[]) => void;
   onAnalysisComplete?: (analysis: GardenPhotoAnalysis) => void;
+  onRecommendedStyles?: (styles: string[]) => void;
   maxPhotos?: number;
   gardenData?: any; // Full form data from Steps 2 and 3
 }
@@ -22,11 +23,13 @@ interface GardenPhotoAnalysis {
   recommendations: string[];
   challenges: string[];
   opportunities: string[];
+  recommendedStyles?: string[]; // Style IDs that Claude recommends
 }
 
 export default function PhotoUpload({ 
   onPhotosChange,
   onAnalysisComplete,
+  onRecommendedStyles,
   maxPhotos = 6,
   gardenData
 }: PhotoUploadProps) {
@@ -91,12 +94,13 @@ export default function PhotoUpload({
       if (onAnalysisComplete) {
         onAnalysisComplete(data);
       }
+      if (data.recommendedStyles && onRecommendedStyles) {
+        onRecommendedStyles(data.recommendedStyles);
+      }
       toast({
         title: 'Analysis Complete',
         description: 'Claude has analyzed your garden photos successfully!'
       });
-
-      // Don't generate styles here - that happens in Step 3 now
     },
     onError: (error) => {
       console.error('Analysis error:', error);
@@ -382,6 +386,19 @@ export default function PhotoUpload({
                 </div>
               )}
             </div>
+
+            {/* Brief mention of recommended styles */}
+            {analysis.recommendedStyles && analysis.recommendedStyles.length > 0 && (
+              <div className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-300">
+                <h4 className="font-semibold text-sm mb-1 text-purple-800">
+                  🌟 Style Recommendations Preview
+                </h4>
+                <p className="text-xs text-purple-700">
+                  Based on your garden analysis, Claude recommends {analysis.recommendedStyles.length} styles that would work beautifully with your space. 
+                  You'll see detailed recommendations and can choose from these or other styles in the next step.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

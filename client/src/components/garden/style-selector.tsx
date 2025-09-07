@@ -58,25 +58,52 @@ export default function StyleSelector({
     enabled: !!user
   });
 
+  // Track selected styles in current session
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(selectedStyle ? [selectedStyle] : []);
+  
+  // Get tier limits
+  const getTierLimit = () => {
+    switch(userTier) {
+      case 'free': return 1;
+      case 'pay_per_design': return 3;
+      case 'premium': return 3;
+      default: return 1;
+    }
+  };
+  
   // Check if user can select this style based on tier
   const canSelectStyle = (styleId: string): { allowed: boolean; reason?: string } => {
-    if (!generationHistory) return { allowed: true };
+    const tierLimit = getTierLimit();
+    const totalGenerations = generationHistory?.total || 0;
     
-    const totalGenerations = generationHistory.total || 0;
-    const styleGenerations = generationHistory.byStyle?.[styleId] || 0;
-    
-    if (userTier === 'free' && totalGenerations >= 1) {
-      return { 
-        allowed: false, 
-        reason: 'Free tier: 1 design limit reached. Upgrade to continue.' 
-      };
+    // Check if already selected
+    if (selectedStyles.includes(styleId)) {
+      return { allowed: true }; // Can deselect
     }
     
-    if (userTier === 'pay_per_design' && styleGenerations >= 1) {
-      return { 
-        allowed: false, 
-        reason: 'You\'ve already used this style. Try another or upgrade to premium.' 
-      };
+    // Check tier limits for new selection
+    if (userTier === 'free') {
+      if (selectedStyles.length >= 1) {
+        return { 
+          allowed: false, 
+          reason: 'Free tier: 1 style limit. Upgrade for more options.' 
+        };
+      }
+      if (totalGenerations >= 1) {
+        return { 
+          allowed: false, 
+          reason: 'Free tier: You\'ve already generated your 1 design. Upgrade to continue.' 
+        };
+      }
+    }
+    
+    if (userTier === 'pay_per_design' || userTier === 'premium') {
+      if (selectedStyles.length >= 3) {
+        return { 
+          allowed: false, 
+          reason: `You can select up to 3 styles. Deselect one to choose another.` 
+        };
+      }
     }
     
     return { allowed: true };
@@ -139,6 +166,32 @@ export default function StyleSelector({
     }
   };
 
+  // Handle style selection/deselection
+  const handleStyleSelect = (styleId: string) => {
+    if (selectedStyles.includes(styleId)) {
+      // Deselect
+      setSelectedStyles(selectedStyles.filter(id => id !== styleId));
+      if (selectedStyle === styleId) {
+        onStyleSelect('');
+      }
+    } else {
+      // Select
+      const { allowed } = canSelectStyle(styleId);
+      if (allowed) {
+        if (userTier === 'free') {
+          // Free users can only select one
+          setSelectedStyles([styleId]);
+          onStyleSelect(styleId);
+        } else {
+          // Pay/Premium can select up to 3
+          const newSelection = [...selectedStyles, styleId];
+          setSelectedStyles(newSelection);
+          onStyleSelect(styleId); // Update the main selected style
+        }
+      }
+    }
+  };
+  
   return (
     <div className="space-y-4">
       {/* Tier Information */}
@@ -147,11 +200,16 @@ export default function StyleSelector({
         <AlertDescription className="text-sm">
           <strong className="capitalize">{userTier} Tier:</strong> {
             userTier === 'free' 
-              ? 'You can generate 1 design total. Choose wisely!'
+              ? 'You can select 1 style. Choose from Claude\'s recommendations or pick your own!'
               : userTier === 'pay_per_design'
-              ? 'You can generate 1 design per style. Mix and match!'
-              : 'Unlimited designs! Experiment with all styles freely.'
+              ? 'You can select up to 3 styles. Use Claude\'s recommendations or choose your own!'
+              : 'You can select up to 3 styles. Mix and match as you like!'
           }
+          {selectedStyles.length > 0 && (
+            <span className="ml-2 font-medium">
+              ({selectedStyles.length}/{getTierLimit()} selected)
+            </span>
+          )}
         </AlertDescription>
       </Alert>
 
@@ -181,7 +239,7 @@ export default function StyleSelector({
         {sortedStyles.map((style) => {
           const { allowed, reason } = canSelectStyle(style.id);
           const recommendation = aiRecommendations.find(r => r.styleId === style.id);
-          const isSelected = selectedStyle === style.id;
+          const isSelected = selectedStyles.includes(style.id);
           const hasUsedStyle = (generationHistory?.byStyle?.[style.id] ?? 0) > 0;
           
           return (
@@ -194,7 +252,7 @@ export default function StyleSelector({
                   ? 'hover:border-purple-300 hover:shadow-md cursor-pointer'
                   : 'opacity-60 cursor-not-allowed'
               }`}
-              onClick={() => allowed && !isSelected && onStyleSelect(style.id)}
+              onClick={() => allowed && handleStyleSelect(style.id)}
               data-testid={`style-card-${style.id}`}
             >
               {/* AI Recommendation Badge */}
@@ -290,7 +348,7 @@ export default function StyleSelector({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onStyleSelect(style.id);
+                      handleStyleSelect(style.id);
                     }}
                     data-testid={`button-select-style-${style.id}`}
                   >
