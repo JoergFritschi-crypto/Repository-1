@@ -34,7 +34,7 @@ export default function GardenLayoutCanvas({
   onOpenPlantSearch
 }: GardenLayoutCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 900, height: 675 });
+  const [canvasSize, setCanvasSize] = useState({ width: 900, height: 900 });
   const [unplacedPlants, setUnplacedPlants] = useState<Plant[]>([]);
   const [placedPlants, setPlacedPlants] = useState<PlacedPlant[]>([]);
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
@@ -52,9 +52,11 @@ export default function GardenLayoutCanvas({
   const gardenWidthInBaseUnits = units === 'metric' ? gardenWidth * 100 : gardenWidth * 12; // cm or inches
   const gardenHeightInBaseUnits = units === 'metric' ? gardenHeight * 100 : gardenHeight * 12;
   
-  // Calculate scale: pixels per base unit (cm or inch)
-  const scaleX = (canvasSize.width - 24) / gardenWidthInBaseUnits;
-  const scaleY = canvasSize.height / gardenHeightInBaseUnits;
+  // Calculate scale: pixels per base unit (cm or inch) with padding
+  const effectiveWidth = canvasSize.width - 24 - 70; // Subtract card padding and ruler space
+  const effectiveHeight = canvasSize.height - 70; // Subtract ruler space
+  const scaleX = effectiveWidth / gardenWidthInBaseUnits;
+  const scaleY = effectiveHeight / gardenHeightInBaseUnits;
   
   // Grid spacing in base units
   const gridSpacing = units === 'metric' ? 25 : 12; // 25cm or 12 inches (1 foot)
@@ -86,18 +88,21 @@ export default function GardenLayoutCanvas({
     }
   };
 
-  // Update canvas size to match garden aspect ratio
+  // Update canvas size to match garden aspect ratio with proper padding
   useEffect(() => {
     const updateCanvasSize = () => {
       if (canvasRef.current) {
         const container = canvasRef.current.parentElement;
         if (container) {
-          // Canvas takes most of container width, leaving some for garden info sidebar
-          const availableWidth = container.clientWidth * 0.75;
-          const availableHeight = window.innerHeight * 0.7; // Use 70% of viewport height for better visibility
+          // Canvas takes most of container width
+          const availableWidth = container.clientWidth * 0.8;
+          const availableHeight = window.innerHeight * 0.75; // Use 75% of viewport height
           
           // Calculate aspect ratio based on actual garden dimensions
           const gardenAspectRatio = gardenWidth / gardenHeight;
+          
+          // Add padding for rulers and borders (40px for rulers, 20px for padding)
+          const rulerPadding = 60;
           
           let width = availableWidth;
           let height = width / gardenAspectRatio;
@@ -108,23 +113,22 @@ export default function GardenLayoutCanvas({
             width = height * gardenAspectRatio;
           }
           
-          // Ensure minimum size with proper aspect ratio
-          const minSize = 600;
-          if (width < minSize) {
-            width = minSize;
-            height = width / gardenAspectRatio;
-          }
-          if (height < minSize) {
-            height = minSize;
-            width = height * gardenAspectRatio;
-          }
+          // Ensure minimum size
+          const minWidth = 700;
+          const minHeight = 700;
+          width = Math.max(width, minWidth);
+          height = Math.max(height, minHeight);
           
-          // For square gardens, ensure equal dimensions
+          // For square gardens (10x10m), ensure equal dimensions
           if (Math.abs(gardenAspectRatio - 1) < 0.01) {
-            const size = Math.min(width, height, Math.max(availableWidth, availableHeight * 0.9));
+            const size = Math.min(Math.max(width, height), availableHeight, availableWidth);
             width = size;
             height = size;
           }
+          
+          // Add extra space for visibility
+          width = Math.min(width + rulerPadding, container.clientWidth * 0.85);
+          height = Math.min(height + rulerPadding, availableHeight);
           
           setCanvasSize({ width, height });
         }
@@ -154,12 +158,12 @@ export default function GardenLayoutCanvas({
     }
   }, [aiDesign]);
 
-  // Get garden shape path for SVG - now fills the entire canvas
+  // Get garden shape path for SVG - with proper padding
   const getShapePath = () => {
-    const padding = 10; // Small padding from edges
-    const w = canvasSize.width - (padding * 2);
+    const padding = 35; // Increased padding to ensure full visibility
+    const w = canvasSize.width - 24 - (padding * 2); // Account for card padding
     const h = canvasSize.height - (padding * 2);
-    const cx = canvasSize.width / 2;
+    const cx = (canvasSize.width - 24) / 2;
     const cy = canvasSize.height / 2;
     
     switch (shape) {
@@ -296,21 +300,27 @@ export default function GardenLayoutCanvas({
       <div className="flex gap-3">
         {/* Canvas Section */}
         <Card className="border-2 border-green-600 shadow-lg overflow-visible" style={{ width: `${canvasSize.width}px` }}>
-          <CardContent className="p-3">
+          <CardContent className="p-3 overflow-visible">
             <div 
               ref={canvasRef}
-              className="relative bg-gradient-to-br from-green-100 via-emerald-50 to-green-100 rounded-lg shadow-inner overflow-hidden"
-              style={{ width: `${canvasSize.width - 24}px`, height: `${canvasSize.height}px` }}
+              className="relative bg-gradient-to-br from-green-100 via-emerald-50 to-green-100 rounded-lg shadow-inner"
+              style={{ 
+                width: `${canvasSize.width - 24}px`, 
+                height: `${canvasSize.height}px`,
+                overflow: 'visible'
+              }}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleCanvasDrop}
               data-testid="garden-canvas"
             >
-              {/* Garden Shape SVG */}
+              {/* Garden Shape SVG with padding for full visibility */}
               <svg 
                 width={canvasSize.width - 24} 
                 height={canvasSize.height}
                 className="absolute inset-0"
-                style={{ pointerEvents: 'none' }}
+                style={{ pointerEvents: 'none', overflow: 'visible' }}
+                viewBox={`0 0 ${canvasSize.width - 24} ${canvasSize.height}`}
+                preserveAspectRatio="xMidYMid meet"
               >
                 <defs>
                   {/* Fine grid pattern for visual reference - 10cm or 4 inch intervals */}
@@ -319,6 +329,8 @@ export default function GardenLayoutCanvas({
                     width={units === 'metric' ? 10 * scaleX : 4 * scaleX} 
                     height={units === 'metric' ? 10 * scaleY : 4 * scaleY} 
                     patternUnits="userSpaceOnUse"
+                    x="35"
+                    y="35"
                   >
                     <path 
                       d={`M ${units === 'metric' ? 10 * scaleX : 4 * scaleX} 0 L 0 0 0 ${units === 'metric' ? 10 * scaleY : 4 * scaleY}`} 
@@ -335,6 +347,8 @@ export default function GardenLayoutCanvas({
                     width={gridSpacing * scaleX} 
                     height={gridSpacing * scaleY} 
                     patternUnits="userSpaceOnUse"
+                    x="35"
+                    y="35"
                   >
                     <path 
                       d={`M ${gridSpacing * scaleX} 0 L 0 0 0 ${gridSpacing * scaleY}`} 
@@ -354,7 +368,8 @@ export default function GardenLayoutCanvas({
                 
                 {/* Ruler markings - Horizontal */}
                 {Array.from({ length: Math.ceil(gardenWidthInBaseUnits / gridSpacing) + 1 }, (_, i) => {
-                  const x = i * gridSpacing * scaleX;
+                  const rulerOffset = 35; // Match garden shape padding
+                  const x = rulerOffset + (i * gridSpacing * scaleX);
                   const label = units === 'metric' 
                     ? `${(i * 25 / 100).toFixed(1)}m`
                     : `${i}ft`;
@@ -363,7 +378,7 @@ export default function GardenLayoutCanvas({
                   return (
                     <g key={`h-ruler-${i}`}>
                       <line x1={x} y1={0} x2={x} y2={tickHeight} stroke="#047857" strokeWidth={showLabel ? "1.5" : "0.5"} />
-                      {showLabel && i > 0 && (
+                      {showLabel && (
                         <text x={x} y={20} fill="#047857" fontSize="10" textAnchor="middle" fontWeight="500">
                           {label}
                         </text>
@@ -374,7 +389,8 @@ export default function GardenLayoutCanvas({
                 
                 {/* Ruler markings - Vertical */}
                 {Array.from({ length: Math.ceil(gardenHeightInBaseUnits / gridSpacing) + 1 }, (_, i) => {
-                  const y = i * gridSpacing * scaleY;
+                  const rulerOffset = 35; // Match garden shape padding
+                  const y = rulerOffset + (i * gridSpacing * scaleY);
                   const label = units === 'metric' 
                     ? (i * 25 / 100) >= 1 ? `${(i * 25 / 100).toFixed(0)}m` : `${i * 25}cm`
                     : `${i}ft`;
