@@ -1652,74 +1652,28 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         console.log(`Total plants: ${canvasDesign.plants.length}`);
 
         // FORCEFUL GRID-BASED POSITIONING PROMPT
-        prompt = `Generate a 1920x1080 pixel image.
+        prompt = `Generate a 1920x1080 pixel image showing a grass field.
 
-THIS IS A SCIENTIFIC CANVAS. POSITIONING IS THE KEY.
-
-ABSOLUTE RULE: Place each object EXACTLY at the given coordinate, REGARDLESS OF ANY OTHER INFLUENCE. PERIOD.
-
-DO NOT:
-- Create symmetry
-- Balance the composition  
-- Distribute evenly
-- Fill empty spaces
-- Create patterns
-- Apply ANY design principles
-
-ONLY DO: Place each object at its EXACT grid coordinate. Nothing else matters
-
-CAMERA VIEWPOINT (CRITICAL):
-- Viewer is standing at the SOUTHERN EDGE (bottom of canvas) looking NORTH
-- Eye level perspective, approximately 1.7m height
-- Looking INTO the garden from the FRONT (bottom) edge
-- Plants with LOW Y-values (near Y=0) appear in FOREGROUND, CLOSEST to viewer
-- Plants with HIGH Y-values (near Y=${gridLength}) appear in BACKGROUND, FARTHEST from viewer
-- The bottom of the image = the viewer's position at the garden's southern edge
-- The top of the image = the far northern edge of the garden
-
-SURVEY AREA SPECIFICATIONS:
-- Plot dimensions: ${gardenWidth}m × ${gardenLength}m rectangular research plot
-- Terrain type: grass lawn
-- Climate zone: temperate
-- Documentation season: ${season}
-- Photography conditions: Clear daylight, documentary style
-
-THE GRID IS THE GROUND - HORIZONTAL PLANE AT Z=0:
-Think of the ground as a chessboard lying flat. The grid is NOT vertical, NOT floating, NOT visible.
-The grid IS the ground surface itself - an invisible coordinate system on the horizontal plane.
-
-Plot size: ${gridWidth} × ${gridLength} invisible grid cells on the GROUND (each cell = 10×10cm)
-Total plants to place ON this ground: EXACTLY ${canvasDesign.plants.length}
-
-PLANT PLACEMENT - EXACT POSITIONS (DO NOT CHANGE):
+OBJECTS TO PLACE (COUNT: ${canvasDesign.plants.length}):
 ${gridSpec}
 
-EXAMPLE OF WHAT THIS MEANS:
-If you see:
-- Grid[10,20]: Japanese Maple
-- Grid[11,21]: Japanese Maple  
-- Grid[70,20]: Peony
-This means TWO maples clustered in the LEFT corner, one peony alone on the RIGHT.
-DO NOT "fix" this by moving one maple to the right for balance!
+CRITICAL RULES:
+1. Place EXACTLY ${canvasDesign.plants.length} objects - NO MORE, NO LESS
+2. Each object at its EXACT grid coordinate
+3. Grid[X,Y] means X units from left, Y units from bottom
+4. DO NOT add extra objects
+5. DO NOT move objects from specified positions
+6. DO NOT create symmetry or balance
 
-HOW TO INTERPRET:
-- Grid[X,Y] = X cells from left edge, Y cells from front edge
-- Lower X values = LEFT side of plot
-- Higher X values = RIGHT side of plot
-- Lower Y values = FRONT of plot (CLOSEST to viewer)
-- Higher Y values = BACK of plot (FARTHEST from viewer)
+VIEWING ANGLE:
+Camera at bottom edge looking up into the field.
+Objects with small Y values = foreground (close)
+Objects with large Y values = background (far)
 
-SPECIMEN COUNT VERIFICATION:
-${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
-TOTAL: Must show EXACTLY ${canvasDesign.plants.length} specimens
+VERIFICATION:
+${Object.entries(plantCounts).map(([plant, count]) => `${plant}: EXACTLY ${count}`).join('\n')}
 
-CRITICAL RULE - DO NOT ADD PLANTS:
-- If you see 4 plants listed, show EXACTLY 4 plants
-- DO NOT add extra plants for "balance" or "aesthetics"
-- DO NOT duplicate any plant unless explicitly listed twice
-- DO NOT fill empty spaces with additional plants
-- ONLY show the EXACT plants at their EXACT grid positions
-- Empty areas should remain EMPTY - this is intentional
+If 4 objects are listed above, show EXACTLY 4. Not 5. Not 3. Exactly 4.
 
 DOCUMENTATION REQUIREMENTS:
 1. EXACT POSITIONING: Each specimen MUST appear at its specified grid coordinate
