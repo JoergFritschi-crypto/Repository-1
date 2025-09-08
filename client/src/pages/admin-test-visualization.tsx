@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { GardenVisualization } from "@/components/garden/garden-visualization";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
-import { ArrowLeft, FlaskConical } from "lucide-react";
+import { ArrowLeft, FlaskConical, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminTestVisualization() {
@@ -75,6 +75,14 @@ export default function AdminTestVisualization() {
                     disabled={gardenLoading}
                   >
                     Test Garden 2
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.location.href = '/garden-design?new=true'}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create New Test Garden
                   </Button>
                 </div>
               </div>
