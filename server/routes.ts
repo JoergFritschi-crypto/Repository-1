@@ -1607,11 +1607,12 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         const targetY = gardenCenterY;
         const targetZ = 0; // Ground level
 
-        // TECHNICAL BLUEPRINT PROMPT for precise first image
-        prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio).
+        // CAD-STYLE DATA VISUALIZATION PROMPT
+        prompt = `Generate a 1920x1080 pixel image.
 
-TECHNICAL SPECIFICATION - PLANT PLACEMENT BLUEPRINT
-This is a TECHNICAL RENDERING, not artistic interpretation. Follow these coordinates EXACTLY.
+TASK: Visualize a dataset on a coordinate grid. Render as scatter plot based on exact input XY.
+MODE: Engineering rendering / Object placement by coordinate
+STYLE: CAD positional layout - NO artistic rendering, only faithful representation of data
 
 CAMERA SPECIFICATIONS:
 - Position: ${cameraDistance.toFixed(2)}m directly in front of garden center
@@ -1626,7 +1627,11 @@ GARDEN FRAME (Stone-edged rectangle):
 - Left edge: x=(960 - ${gardenWidth * 120})px
 - Right edge: x=(960 + ${gardenWidth * 120})px
 
-INTERNAL POSITIONING DATA (for placement only - DO NOT render numbers/labels):
+COORDINATE DATASET FOR OBJECT PLACEMENT:
+Place each plant at exactly the coordinates provided, using only the given positions.
+Do not interpret, arrange, stylize, beautify, or change these positions for artistic effect or symmetry.
+Treat each coordinate as an absolute placement—no artistic rendering, only faithful representation of the data.
+
 ${canvasDesign.plants.map((p: any, i: number) => {
   const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
   const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
@@ -1637,9 +1642,8 @@ ${canvasDesign.plants.map((p: any, i: number) => {
   const yPixel = 288 + (yCentimeters / (gardenLength * 100) * gardenPixelHeight);
   
   const plantName = (p.plantName || p.commonName || '').substring(0, 20);
-  const gridCell = `${String.fromCharCode(65 + Math.floor(xCentimeters / 10))}${Math.floor(yCentimeters / 10) + 1}`;
   
-  return `${plantName} at pixel coordinates (${Math.round(xPixel)}, ${Math.round(yPixel)}) - Grid ${gridCell}`;
+  return `Object: ${plantName} → [x=${Math.round(xPixel)}, y=${Math.round(yPixel)}]`;
 }).join('\n')}
 
 CRITICAL POSITIONING RULES:
@@ -1665,20 +1669,23 @@ ${plantPositions.join('\n')}
 PLANT COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} instance${count > 1 ? 's' : ''}`).join('\n')}
 
-RENDERING MODE: TECHNICAL CAD BLUEPRINT
-- This is a TECHNICAL DIAGRAM, not artistic gardening
-- Place plants at EXACT pixel coordinates like placing markers on a map
-- Think of this as plotting points on a graph, not creating a garden
-- Each plant is a PIN dropped at specific X,Y coordinates
-- If coordinates say x=500, y=400, the plant CENTER must be at exactly those pixels
-- Empty spaces between plants are INTENTIONAL - do not fill them
+INSTRUCTION: STRICT COORDINATE-BASED RENDERING
+Output should mimic a CAD positional layout with objects at exact [x,y] values in pixels.
+No auto-alignment or beautification. Draw items exactly at coordinates provided.
 
-CLUSTERING AND SPACING:
-- If multiple plants are at similar coordinates, they MUST appear clustered
-- Example: Two maples both at x≈720, y≈500 should BOTH be in that area
-- Do NOT separate similar plants "for balance" if their coordinates are close
-- An asymmetric garden with all plants on one side is CORRECT if that's what coordinates show
-- Empty corners/areas are INTENTIONAL design choices
+CRITICAL FOR DUPLICATE OBJECTS:
+When two objects have similar coordinates (e.g., two maples at x≈720):
+- Place BOTH at their specified locations
+- Do NOT distribute them for symmetry
+- Do NOT apply compositional rules
+- Clustering is CORRECT if coordinates are close
+
+PROHIBITED ACTIONS:
+- No artistic interpretation
+- No symmetrical arrangement  
+- No compositional decisions
+- No style choices
+- No beautification
 
 BOUNDING BOX PRECISION:
 - Each plant occupies a specific bounding box at its pixel coordinates
@@ -1686,15 +1693,11 @@ BOUNDING BOX PRECISION:
 - Do NOT merge nearby plants into groups
 - Maintain exact spacing even if it looks sparse
 
-CRITICAL ACCURACY RULES:
-- Show EXACTLY ${canvasDesign.plants.length} plants - count them!
-- NO hostas unless specifically listed
-- NO extra maples beyond the count specified
-- NO filler plants for "visual balance"
-- If 2 maples are listed, show BOTH at their specified positions
-- Empty areas remain empty (just mulch)
-- This is TECHNICAL DOCUMENTATION, not art
-- Treat coordinates as ABSOLUTE, not suggestions
+FINAL VERIFICATION:
+Dataset contains exactly ${canvasDesign.plants.length} objects to plot.
+Each object has absolute [x,y] coordinates that must be rendered exactly as specified.
+This is data visualization, not garden design.
+Render as you would a scatter plot: exact positions, no interpretation.
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 

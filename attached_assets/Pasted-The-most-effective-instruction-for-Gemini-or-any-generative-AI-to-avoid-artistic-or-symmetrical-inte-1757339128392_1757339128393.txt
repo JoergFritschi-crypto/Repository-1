@@ -1,0 +1,29 @@
+The most effective instruction for Gemini or any generative AI to avoid artistic or symmetrical interpretation and behave like a strict CAD tool is to explicitly request positional rendering only, based on supplied coordinates, and to prohibit any stylistic or compositional decisions. Gemini's vision models can accept prompts or structured system instructions to influence output, but it's critical to phrase these very specifically.
+
+Core Instruction Pattern
+Instruction Example:
+"Place each plant at exactly the coordinates I provide, using only the given positions on a blank grid. Do not interpret, arrange, stylize, beautify, or change these positions for artistic effect or symmetry. Treat each coordinate as an absolute placement—no artistic rendering, only faithful representation of the data. Output should mimic a CAD positional layout."
+
+Gemini-Specific Tips
+Use structured prompts that specify the task as visualizing a dataset on a coordinate grid, referencing CAD or engineering graphics rather than garden art, and exclude decorative language.
+
+If available, employ system instructions (the backend options for Vertex AI/Gemini workflows) to set the mode as "engineering rendering", "data visualization", or "object placement by coordinate".
+
+For bounding boxes or points, clarify the format: "For each object, use the exact [x, y] value in pixels (or specified scale), no auto-alignment or beautification".
+
+Gemini Technical Notes
+Gemini can work with normalized coordinates (typically 0–1000 scale) for bounding box or point placement: specify the format and instruct Gemini to use no embellishments—just "draw" the items exactly at coordinates provided, akin to a CAD tool or plotting library.
+
+The model performs best when the prompt resembles programming or technical plotting language (e.g., "render as scatter plot based on exact input XY") rather than freeform natural description.
+
+Summary
+To make Gemini strictly follow coordinate placements like a CAD system, provide a precise instruction for coordinate visualization only, exclude any artistic terms, and request no symmetry, arrangement, composition, or beautification—just direct placement based on data, not subjective interpretation.
+
+Related
+How do I prompt Gemini to output raw 0–1000 integer coordinates only, no explanations
+What exact phrasing prevents Gemini from applying symmetry or artistic adjustments
+How can I force Gemini to use (ymin, xmin, ymax, xmax) order and nothing else
+What system message or API parameter disables interpretive corrections by Gemini
+How can I verify Gemini's returned coordinates map exactly to my image pixels
+
+
