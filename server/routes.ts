@@ -1531,7 +1531,7 @@ Rules:
       const focalLength = gardenWidth > 4 ? 24 : 35; // Wide angle for larger gardens
 
       // Concise photography-based prompt for Gemini 2.5 Flash
-      const prompt = `A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a locked tripod at exactly ${cameraDistance.toFixed(1)} meters from the garden's front edge, exactly ${cameraHeight}m height (standing eye-level). Horizon line at 65% up the frame. The camera uses a ${focalLength}mm lens with 15-degree downward tilt, perpendicular to the ${gardenWidth}m × ${gardenLength}m garden bed.
+      const prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a locked tripod at exactly ${cameraDistance.toFixed(1)} meters from the garden's front edge, exactly ${cameraHeight}m height (standing eye-level). Horizon line at 65% up the frame. The camera uses a ${focalLength}mm lens with 15-degree downward tilt, perpendicular to the ${gardenWidth}m × ${gardenLength}m garden bed.
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
