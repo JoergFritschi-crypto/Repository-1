@@ -1,0 +1,124 @@
+Bounding box detection in Gemini 2.5 Flash is a computer vision feature that allows the model to automatically locate objects within an image and return their precise spatial coordinates as rectangles (“bounding boxes”). This technique is foundational for object localization and annotation in automation, research, and app development.
+
+How Bounding Box Detection Works
+Detection Process
+When provided with an image and an appropriate prompt (“Detect all plants and return their bounding boxes”), Gemini analyzes the image, identifies objects, and outputs for each object a bounding box as normalized coordinates in the format 
+[
+y
+m
+i
+n
+,
+x
+m
+i
+n
+,
+y
+m
+a
+x
+,
+x
+m
+a
+x
+]
+[y 
+min
+ ,x 
+min
+ ,y 
+max
+ ,x 
+max
+ ]. The coordinates are relative to the image’s dimensions and normalized to 0–1000 (not pixels).
+
+Interpreting Results
+To convert these normalized bounding box coordinates into pixel locations, multiply the normalized values by the image’s actual height (for y values) or width (for x values).
+For example,
+
+x
+m
+i
+n
+,
+p
+x
+=
+x
+m
+i
+n
+,
+n
+o
+r
+m
+1000
+×
+image width
+x 
+min,px
+ = 
+1000
+x 
+min,norm
+ 
+ ×image width
+y
+m
+i
+n
+,
+p
+x
+=
+y
+m
+i
+n
+,
+n
+o
+r
+m
+1000
+×
+image height
+y 
+min,px
+ = 
+1000
+y 
+min,norm
+ 
+ ×image height
+Labeling
+Each bounding box can be returned with a label, identifying the object (e.g., “Phlox paniculata,” “Geranium”), and location descriptors can be included (“top-left phlox”).
+
+Workflow Example
+Input: Image + Prompt (“Detect all plants, label and provide bounding boxes.”)
+
+Output: JSON containing bounding boxes and labels
+e.g.
+
+text
+[
+  {"box_2d": [120, 230, 340, 370], "label": "Phlox paniculata"},
+  {"box_2d": [410, 500, 590, 660], "label": "Geranium"}
+]
+Visualization: Draw rectangles on the image at the calculated pixel positions with their labels; useful for annotation, monitoring changes over time, or confirming spatial consistency.
+
+Practical Uses in Garden Imaging
+Track Plant Positions
+Automatically register and compare plant locations across seasonal image variations.
+
+Automate Annotation
+Facilitate garden planning apps by tagging plants and verifying species placement using bounding boxes.
+
+Custom Detection Prompts
+Ask Gemini to detect only specific categories or provide extra spatial metadata.
+
+Gemini 2.5 Flash’s bounding box detection thus provides a scalable, code-friendly method of object localization and mapping—essential for structured and repeatable garden visualization workflows.
+

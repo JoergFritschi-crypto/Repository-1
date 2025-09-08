@@ -1556,29 +1556,33 @@ Rules:
       
       // Check if we're using Perplexity's reference image approach
       if (useReferenceMode && referenceImage) {
-        // PERPLEXITY'S APPROACH: Use reference image and only change seasonal aspects
+        // ENHANCED WITH BOUNDING BOX APPROACH: Use reference image with precise spatial instructions
         prompt = `Using the provided garden image as an EXACT reference, create the ${season} version.
         
-CRITICAL INSTRUCTIONS:
+BOUNDING BOX PRESERVATION INSTRUCTIONS:
+1. First, detect and preserve the bounding boxes of all ${canvasDesign.plants.length} plants in the reference image
+2. Each plant must remain at its EXACT pixel coordinates (same bounding box [y_min, x_min, y_max, x_max])
+3. Do NOT move any plant - they are locked in place like a time-lapse camera setup
+
+CRITICAL SPATIAL RULES:
 - This is image ${season} of a 4-season time-lapse series
-- Keep EVERYTHING identical except seasonal changes:
-  * Exact same garden shape and dimensions
-  * Exact same camera position and angle
-  * Exact same plant positions
-  * Exact same composition and framing
-  * Exact same background
+- Maintain EXACT bounding boxes for all objects:
+  * Garden bed edges: same pixel boundaries
+  * Each plant: same x_min, y_min, x_max, y_max coordinates
+  * Camera view: identical framing and crop
+  * Background elements: same positions
 
 ONLY change these seasonal elements for ${specificMonth}:
 ${season === 'spring' ? 
-  '- Fresh green spring foliage\n- Early spring blooms\n- Bright green grass\n- Clear spring sky' :
+  '- Fresh green spring foliage WITHIN existing plant bounding boxes\n- Early spring blooms at SAME positions\n- Bright green grass texture\n- Clear spring sky color' :
 season === 'summer' ? 
-  '- Lush summer growth\n- Peak flowering\n- Deep green foliage\n- Bright summer sky' :
+  '- Lush summer growth WITHIN existing plant bounding boxes\n- Peak flowering at SAME positions\n- Deep green foliage texture\n- Bright summer sky color' :
 season === 'autumn' ? 
-  '- Autumn leaf colors (reds, oranges, yellows)\n- Late season blooms\n- Golden/brown grass hints\n- Autumn sky tones' :
-  '- Winter dormancy\n- Bare branches on deciduous plants\n- Evergreen structure\n- Winter sky and light'}
+  '- Autumn leaf colors WITHIN existing plant bounding boxes\n- Late season blooms at SAME positions\n- Golden/brown grass texture\n- Autumn sky tones' :
+  '- Winter dormancy WITHIN existing plant bounding boxes\n- Bare branches at SAME positions\n- Evergreen structure unchanged\n- Winter sky and light'}
 
-The provided reference image shows the exact garden layout, camera angle, and composition.
-Replicate it EXACTLY with only the seasonal changes listed above.
+Think of this as editing ONLY the textures and colors within fixed bounding boxes.
+The spatial layout is completely locked - only seasonal appearance changes.
 Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         
       } else {
@@ -1649,6 +1653,13 @@ ${plantPositions.join('\n')}
 PLANT COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} instance${count > 1 ? 's' : ''}`).join('\n')}
 
+BOUNDING BOX APPROACH FOR PRECISION:
+1. Mentally create a bounding box for each plant at its grid position
+2. Plant #1's bounding box should be at its exact coordinates, not shifted
+3. Each subsequent plant gets its own bounding box at its specified location
+4. Do NOT let bounding boxes merge or overlap incorrectly
+5. Empty areas between bounding boxes remain empty (no filler plants)
+
 CRITICAL ACCURACY RULES:
 - Show EXACTLY ${canvasDesign.plants.length} plants - no more, no less
 - Do NOT add any hostas unless listed above
@@ -1658,6 +1669,7 @@ CRITICAL ACCURACY RULES:
 - Empty spaces should remain empty (just mulch/soil)
 - This is documentary photography, not artistic interpretation
 - Plants MUST be at their exact grid positions specified above
+- Think of each plant as having a fixed bounding box that cannot move
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
