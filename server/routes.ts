@@ -1547,17 +1547,27 @@ Rules:
       // Concise photography-based prompt for Gemini 2.5 Flash
       const prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). 
 
-FIXED CAMERA GEOMETRY:
-Camera position: X=${cameraX.toFixed(1)}m, Y=${cameraY.toFixed(1)}m, Z=${cameraZ.toFixed(1)}m
-Target point: X=${targetX.toFixed(1)}m, Y=${targetY.toFixed(1)}m, Z=${targetZ}m
-View vector: Camera looks from (${cameraX.toFixed(1)}, ${cameraY.toFixed(1)}, ${cameraZ.toFixed(1)}) to (${targetX.toFixed(1)}, ${targetY.toFixed(1)}, 0)
-Camera faces: 0° azimuth (directly north, parallel to garden's long edge)
-Field of view: ${focalLength}mm lens on full-frame sensor
+TIME-LAPSE SERIES: Image ${season} of 4 for Garden #${req.params.id} (Iteration ${iterationNumber})
+This is a fixed-camera time-lapse where ONLY plants change seasonally. The garden bed, camera position, and framing remain IDENTICAL across all 4 images.
 
-CRITICAL: Camera is positioned DIRECTLY IN FRONT of the garden, NOT at a corner. The view is STRAIGHT ON, showing the full front edge parallel to the bottom of the frame. This is NOT a 45-degree angle view.
+LOCKED CAMERA COORDINATES (NEVER CHANGES):
+Camera position: X=${cameraX.toFixed(2)}m, Y=${cameraY.toFixed(2)}m, Z=${cameraZ}m (exactly)
+Target point: X=${targetX.toFixed(2)}m, Y=${targetY.toFixed(2)}m, Z=${targetZ}m
+Distance from garden: Exactly ${cameraDistance.toFixed(2)}m
+Height: Exactly ${cameraHeight}m (standing eye level)
+Angle: 0° azimuth (perpendicular to front edge), 15° downward tilt
+Lens: ${focalLength}mm on full-frame sensor
 
-Garden dimensions: ${gardenWidth}m wide × ${gardenLength}m deep rectangular bed
-Frame composition: Garden occupies center 40% of frame height, all four edges visible with grass margins
+EXACT FRAMING (MUST BE IDENTICAL IN ALL 4 IMAGES):
+- Garden bed: ${gardenWidth}m wide × ${gardenLength}m deep
+- Front border position: 15% from bottom of frame (ALWAYS visible, NEVER cut off)
+- Back border position: 55% from bottom of frame
+- Left border: 20% from left edge of frame
+- Right border: 80% from left edge of frame  
+- Garden height in frame: Exactly 40% of total image height
+- All 4 borders MUST be fully visible with grass margins
+
+CRITICAL: This is NOT a drone view, NOT a corner view, NOT a 45-degree angle. Camera is positioned DIRECTLY IN FRONT, centered on garden width, looking straight at the garden.
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
