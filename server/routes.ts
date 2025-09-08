@@ -1974,11 +1974,12 @@ DO NOT:
 
 The goal is photorealistic enhancement while preserving exact spatial positioning and botanical accuracy.`;
         
-        const enhancedUrl = await geminiAI.generateImageFromImage(
-          templateBase64,
+        const result = await geminiAI.generateImageWithReference(
           prompt,
-          'enhance-composite'
+          templateBase64
         );
+        
+        const enhancedUrl = result.imageUrl || result.imageData;
         
         res.json({
           success: true,
