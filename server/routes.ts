@@ -1949,12 +1949,20 @@ Photography style: Professional garden photography captured in natural ${season 
         const prompt = `You are a professional garden photographer. 
 Transform this template image into a photorealistic garden photograph.
 
+PLANTS IN THIS GARDEN:
+1. Japanese Maple (Acer palmatum) - Located in far right background at position (30,5)
+   - Should appear as a small ornamental tree with characteristic palmate leaves
+   - Red/orange autumn coloring typical of Japanese Maples
+2. Hosta (Hosta sieboldiana) - Located in right foreground at position (34,21)  
+   - Should show broad, ribbed, blue-green leaves in a clump formation
+   - Typical shade-loving perennial appearance
+
 CRITICAL REQUIREMENTS:
 1. MAINTAIN EXACT PLANT POSITIONS - The Japanese Maple MUST stay in the far right background, the Hosta MUST stay in the right foreground
 2. Keep the same viewing angle and perspective
 3. Transform the simple brown background into realistic garden soil with texture
 4. Add natural lighting, shadows, and depth
-5. Make the plants look photorealistic with proper colors and textures
+5. Make the plants look photorealistic with proper botanical characteristics
 6. Blend the plants naturally into the scene (remove white boxes/backgrounds)
 7. The final image should look like a professional garden photograph
 
@@ -1962,8 +1970,9 @@ DO NOT:
 - Move plants to different positions
 - Add plants that aren't in the template
 - Change the overall composition
+- Mix up plant identities (maple must look like a maple, hosta like a hosta)
 
-The goal is photorealistic enhancement while preserving exact spatial positioning.`;
+The goal is photorealistic enhancement while preserving exact spatial positioning and botanical accuracy.`;
         
         const enhancedUrl = await geminiAI.generateImageFromImage(
           templateBase64,
