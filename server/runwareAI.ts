@@ -82,15 +82,16 @@ class RunwareService {
         // Connect if needed
         await this.connect();
         
-        images = await this.runware.imageInference({
-          taskUUID: `garden-${Date.now()}`,
+        images = await this.runware.requestImages({
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
           model: "runware:100@1", // Use standard model first
           height: 1080,
           width: 1920,
           numberResults: 1,
-          inputImage: options.referenceImage, // Use reference for consistency
+          outputType: "URL",
+          outputFormat: "PNG",
+          seedImage: options.referenceImage, // Use reference for consistency
           strength: 0.65, // Keep composition but change season
           steps: 25,
           CFGScale: 7.5
@@ -100,25 +101,40 @@ class RunwareService {
         // Connect if needed
         await this.connect();
         
-        images = await this.runware.imageInference({
-          taskUUID: `garden-${Date.now()}`,
+        images = await this.runware.requestImages({
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
           model: "runware:100@1", // Use standard model
           height: 1080,
           width: 1920,
           numberResults: 1,
+          outputType: "URL",
+          outputFormat: "PNG",
           steps: 25,
           CFGScale: 7.5,
           seed: 42 // Fixed seed for more consistent layouts
         });
       }
 
+      console.log('Runware: Response received:', JSON.stringify(images, null, 2));
+      
       if (images && images.length > 0) {
-        return images[0].imageURL || images[0].imageBase64 || '';
+        // Check different possible response formats
+        const firstImage = images[0];
+        const imageUrl = firstImage.imageURL || 
+                        firstImage.imageUrl || 
+                        firstImage.url ||
+                        firstImage.imageBase64 ||
+                        firstImage.base64 ||
+                        '';
+        
+        if (imageUrl) {
+          console.log('Runware: Returning image URL');
+          return imageUrl;
+        }
       }
       
-      throw new Error('No image generated');
+      throw new Error('No image generated from Runware');
     } catch (error) {
       console.error('Runware generation error:', error);
       throw error;
