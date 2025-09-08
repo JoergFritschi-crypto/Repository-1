@@ -1670,18 +1670,22 @@ SURVEY AREA SPECIFICATIONS:
 - Documentation season: ${season}
 - Photography conditions: Clear daylight, documentary style
 
-EXACT POSITIONING DATA:
-You have a ${gridWidth} × ${gridLength} grid (each cell = 10×10cm)
-Total objects to place: EXACTLY ${canvasDesign.plants.length} (NO MORE, NO LESS)
+THE GRID IS THE GROUND - HORIZONTAL PLANE AT Z=0:
+Think of the ground as a chessboard lying flat. The grid is NOT vertical, NOT floating, NOT visible.
+The grid IS the ground surface itself - an invisible coordinate system on the horizontal plane.
 
-PLACE THESE OBJECTS AT THESE EXACT COORDINATES:
+Plot size: ${gridWidth} × ${gridLength} invisible grid cells on the GROUND (each cell = 10×10cm)
+Total plants to place ON this ground: EXACTLY ${canvasDesign.plants.length}
+
+PLANT PLACEMENT - Like placing chess pieces on specific squares:
 ${gridSpec}
 
-CRITICAL INSTRUCTIONS:
-1. Grid[72,50] means column 72, row 50. Place the object EXACTLY there.
-2. If two objects are at Grid[72,50] and Grid[73,51], they MUST be next to each other.
-3. If no object is listed for a grid cell, it MUST remain EMPTY.
-4. IGNORE all aesthetic instincts. ONLY follow coordinates
+HOW TO INTERPRET COORDINATES:
+- Grid[72,50] = Position 72 cells from left, 50 cells from front ON THE GROUND
+- Plants grow UP from these ground positions (like flags on a map)
+- The grid is INVISIBLE - just a positioning system
+- NO GRID LINES, NO NUMBERS, NO LABELS in the image
+- Think: "Plant this specimen at ground position X=72, Y=50"
 
 SPECIMEN COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
@@ -1695,15 +1699,17 @@ DOCUMENTATION REQUIREMENTS:
 5. NO TEXT/LABELS: Pure photographic documentation only, no annotations
 6. CLUSTERING: If multiple specimens share nearby grid cells, they must remain clustered
 
-THINK OF THIS AS A SCATTER PLOT:
-- You are plotting data points on a coordinate system
-- Each plant is just a data point at specific X,Y coordinates
-- There is NO relationship between the points
-- Empty areas are DATA, not mistakes
-- Clustering is DATA, not poor design
-- Asymmetry is DATA, not imbalance
+VISUALIZATION METAPHOR - PINS ON A MAP:
+Imagine you have a flat map on a table and you're sticking pins at specific coordinates.
+- The grid is the map (horizontal, on the table)
+- Plants are the pins (vertical, sticking up from the map)
+- Each pin goes EXACTLY where the coordinates say
+- Some areas have many pins clustered (that's correct!)
+- Some areas have no pins (that's correct too!)
+- DO NOT rearrange the pins for a "better pattern"
 
-THIS IS NOT A GARDEN. THIS IS DATA VISUALIZATION
+CRITICAL: NO VISIBLE GRID LINES, COORDINATES, OR NUMBERS IN THE IMAGE
+The grid is INVISIBLE - it's just how we tell you WHERE to place things
 
 PHOTOGRAPHIC PARAMETERS:
 - Viewpoint: Ground-level documentary photograph (eye height ~1.6m)
