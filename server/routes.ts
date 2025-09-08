@@ -1628,10 +1628,6 @@ GARDEN FRAME (Stone-edged rectangle):
 - Right edge: x=(960 + ${gardenWidth * 120})px
 
 COORDINATE DATASET FOR OBJECT PLACEMENT:
-Place each plant at exactly the coordinates provided, using only the given positions.
-Do not interpret, arrange, stylize, beautify, or change these positions for artistic effect or symmetry.
-Treat each coordinate as an absolute placement—no artistic rendering, only faithful representation of the data.
-
 ${canvasDesign.plants.map((p: any, i: number) => {
   const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
   const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
@@ -1645,6 +1641,10 @@ ${canvasDesign.plants.map((p: any, i: number) => {
   
   return `Object: ${plantName} → [x=${Math.round(xPixel)}, y=${Math.round(yPixel)}]`;
 }).join('\n')}
+
+CRITICAL: If two maples are listed above with similar x-coordinates (both around x≈720), they MUST BOTH appear on the LEFT side.
+Do NOT place one maple on each side for balance. Both go where coordinates specify.
+ASYMMETRIC layouts are CORRECT - do not "fix" them.
 
 CRITICAL POSITIONING RULES:
 - DO NOT RENDER ANY NUMBERS, LABELS, OR TEXT IN THE IMAGE
