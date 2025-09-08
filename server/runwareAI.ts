@@ -164,11 +164,13 @@ class RunwareService {
       if (index < plantPositions.length - 1) spatialDesc += ", ";
     });
 
-    return `Professional garden photography, ${seasonDesc}, rectangular garden bed with dark soil, 
-      surrounded by green lawn, eye-level view from south looking north into the garden.
+    return `Wide-angle garden photograph showing EXACTLY ${plantCount} individual plants on a grass lawn.
+      CAMERA: Standing 10 meters away, eye-level view, looking north from the south edge.
+      FRAMING: All ${plantCount} plants fully visible in frame, widely spaced apart.
       ${spatialDesc}.
-      Photorealistic, high detail, natural lighting, landscape photography, wide angle lens,
-      showing exactly ${plantCount} plants with accurate positioning, no extra plants`;
+      ${seasonDesc}, natural daylight, photorealistic outdoor photography.
+      IMPORTANT: Show individual plants planted directly in grass lawn, NOT in a garden bed.
+      Each plant has its own separate planting spot. Wide view showing full spatial arrangement.`;
   }
 
   private buildNegativePrompt(plantCount: number): string {
@@ -177,7 +179,9 @@ class RunwareService {
     return `cartoon, anime, illustration, painting, blurry, distorted, 
       ${extraCount} plants, more than ${plantCount} plants, extra plants, 
       duplicate plants, crowded, overlapping plants, clustered plants,
-      plants in wrong positions, aerial view, top-down view, bird's eye view`;
+      plants in wrong positions, aerial view, top-down view, bird's eye view,
+      garden bed, mulch bed, raised bed, flower bed, border garden,
+      close-up view, zoomed in, macro photography, narrow view`;
   }
 
   private getSeasonDescription(season: string, specificTime: string): string {
