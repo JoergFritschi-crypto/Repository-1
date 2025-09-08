@@ -1713,6 +1713,14 @@ SPECIMEN COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
 TOTAL: Must show EXACTLY ${canvasDesign.plants.length} specimens
 
+CRITICAL RULE - DO NOT ADD PLANTS:
+- If you see 4 plants listed, show EXACTLY 4 plants
+- DO NOT add extra plants for "balance" or "aesthetics"
+- DO NOT duplicate any plant unless explicitly listed twice
+- DO NOT fill empty spaces with additional plants
+- ONLY show the EXACT plants at their EXACT grid positions
+- Empty areas should remain EMPTY - this is intentional
+
 DOCUMENTATION REQUIREMENTS:
 1. EXACT POSITIONING: Each specimen MUST appear at its specified grid coordinate
 2. EMPTY SPACES: Unoccupied grid cells MUST remain empty - these are research control areas
