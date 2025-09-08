@@ -86,8 +86,8 @@ class RunwareService {
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
           model: "runware:100@1", // Use standard model first
-          height: 1080,
-          width: 1920,
+          height: 1088,  // Must be multiple of 64 (1088 = 17 * 64)
+          width: 1920,   // 1920 = 30 * 64
           numberResults: 1,
           outputType: "URL",
           outputFormat: "PNG",
@@ -105,8 +105,8 @@ class RunwareService {
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
           model: "runware:100@1", // Use standard model
-          height: 1080,
-          width: 1920,
+          height: 1088,  // Must be multiple of 64 (1088 = 17 * 64)
+          width: 1920,   // 1920 = 30 * 64
           numberResults: 1,
           outputType: "URL",
           outputFormat: "PNG",
