@@ -1534,6 +1534,15 @@ Critical requirements for maintaining identical layout:
 - Use consistent eye-level viewing angle from the front of the bed
 - Show this exact same garden bed configuration in every image
 
+CRITICAL BACKGROUND REQUIREMENTS FOR CONSISTENCY:
+- The surroundings must be IDENTICAL in every image: simple, well-maintained grass lawn extending to the horizon
+- NO buildings, houses, walls, fences, or structures of any kind in the background
+- NO background trees, shrubs, or plants outside the garden bed itself
+- NO paths, patios, or hardscaping except the simple garden bed edging
+- Just peaceful, uniform green grass surrounding the garden bed on all sides
+- Consistent simple sky appropriate for the season (blue for summer/spring, grey for winter, warm for autumn)
+- The ONLY variation between images should be the seasonal appearance of the plants IN the garden bed
+
 Seasonal appearance for ${specificMonth}:
 ${season === 'spring' ? 
   'Fresh spring growth with early blooms on any flowering plants that are in the design above. New foliage emerging on the specified plants. Show ONLY the plants listed above in their spring appearance.' :

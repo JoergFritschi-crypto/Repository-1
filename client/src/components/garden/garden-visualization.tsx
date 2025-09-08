@@ -200,7 +200,9 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
     }
   });
   
-  // Playback control
+  // Playback control - DISABLED for manual navigation only
+  // Auto-advance disabled per user request
+  /*
   useEffect(() => {
     if (isPlaying && generatedImages.length > 1) {
       const interval = setInterval(() => {
@@ -210,6 +212,7 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
       return () => clearInterval(interval);
     }
   }, [isPlaying, generatedImages.length]);
+  */
   
   // Keyboard controls
   useEffect(() => {
@@ -487,14 +490,7 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  disabled={generatedImages.length <= 1}
-                >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </Button>
+                {/* Play/Pause button removed for manual navigation only */}
                 
                 <Button
                   size="icon"
@@ -569,15 +565,7 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
                     <ChevronLeft className="w-6 h-6" />
                   </Button>
                   
-                  <Button
-                    size="lg"
-                    variant="ghost"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    disabled={generatedImages.length <= 1}
-                    className="text-white hover:bg-white/20"
-                  >
-                    {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
-                  </Button>
+                  {/* Play/Pause button removed for manual navigation only */}
                   
                   <Button
                     size="lg"
