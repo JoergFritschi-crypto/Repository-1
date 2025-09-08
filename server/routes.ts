@@ -1569,40 +1569,29 @@ Rules:
       const prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). 
 
 TIME-LAPSE SERIES: Image ${season} of 4 for Garden #${req.params.id} (Iteration ${iterationNumber})
-This is a fixed-camera time-lapse where ONLY plants change seasonally. The garden bed, camera position, and framing remain IDENTICAL across all 4 images.
+This is a fixed-camera time-lapse where ONLY plants change seasonally. The garden bed shape, camera position, and framing remain IDENTICAL across all 4 images.
 
-LOCKED CAMERA POSITION (ABSOLUTELY FIXED):
-Camera location: X=${cameraX.toFixed(2)}m, Y=${cameraY.toFixed(2)}m, Z=${cameraZ}m
-Looking at: X=${targetX.toFixed(2)}m, Y=${targetY.toFixed(2)}m, Z=${targetZ}m
-Distance: Exactly ${cameraDistance.toFixed(2)}m DIRECTLY SOUTH of garden
-Height: Exactly ${cameraHeight}m (standing person's eye level)
-Direction: Camera faces TRUE NORTH (0° compass bearing)
-Tilt: 15° downward from horizontal
-Lens: ${focalLength}mm on full-frame sensor
+GARDEN SHAPE - CRITICAL:
+The garden is a perfect RECTANGLE with 4 straight edges and 4 right-angle corners.
+- Shape: RECTANGULAR ornamental garden bed (NOT octagon, NOT hexagon, NOT oval)
+- Dimensions: ${gardenWidth}m wide × ${gardenLength}m deep
+- Edges: Stone or brick edging forming a perfect rectangle
+- All 4 corners are 90-degree angles
+- The rectangle is aligned with the camera (not rotated)
 
-VIEWING ANGLE - CRITICAL REQUIREMENT:
-The camera is positioned DIRECTLY SOUTH of the garden, looking STRAIGHT NORTH.
-The front edge of the garden runs EAST-WEST and appears HORIZONTAL in the frame.
-This creates a PERPENDICULAR view where:
-- The front edge is PARALLEL to the bottom of the image
-- Both side edges converge equally toward the horizon
-- This is ABSOLUTELY NOT a diagonal/corner/45-degree view
-- The garden appears SYMMETRICAL left-to-right
+LOCKED CAMERA (NEVER CHANGES):
+Camera at X=${cameraX.toFixed(2)}m, Y=${cameraY.toFixed(2)}m, Z=${cameraZ}m
+Looking at center of rectangular garden
+Distance: ${cameraDistance.toFixed(2)}m from front edge
+View: Straight-on perpendicular view (NOT corner, NOT diagonal)
 
-EXACT FRAMING (LOCKED FOR ALL 4 IMAGES):
-- Garden bed: ${gardenWidth}m wide × ${gardenLength}m deep
-- Front border: Horizontal line at 15% from bottom (NEVER cut off)
-- Back border: Horizontal line at 55% from bottom
-- Left border: Diagonal line from 20% to 35% horizontally
-- Right border: Diagonal line from 80% to 65% horizontally
-- Garden occupies: Exactly 40% of frame height, 60% of frame width
-
-ABSOLUTELY FORBIDDEN VIEWS:
-✗ NO corner views (camera at 45° to garden)
-✗ NO diagonal compositions
-✗ NO drone/aerial views
-✗ NO side angles
-✓ ONLY straight-on view from directly in front
+EXACT RECTANGULAR GARDEN IN FRAME:
+- Front edge: Horizontal straight line at 15% from bottom
+- Back edge: Horizontal straight line at 55% from bottom  
+- Left edge: Straight diagonal from bottom-left to top-left corner
+- Right edge: Straight diagonal from bottom-right to top-right corner
+- The rectangle appears as a trapezoid due to perspective
+- All 4 straight edges and 4 corners visible
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
