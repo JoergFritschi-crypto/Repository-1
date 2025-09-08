@@ -1488,7 +1488,7 @@ Rules:
       const { canvasDesign, season, specificTime, referenceImage, useReferenceMode } = req.body;
       
       // Get current iteration count for this garden
-      const visualizationData = await storage.getVisualizationData(parseInt(req.params.id));
+      const visualizationData = await storage.getVisualizationData(req.params.id);
       const iterationNumber = (visualizationData?.iterationCount || 0) + 1;
       
       if (!canvasDesign || !canvasDesign.plants) {
@@ -2452,8 +2452,8 @@ Photography style: Professional garden photography captured in natural ${season 
   // Get visualization data (iteration count, saved images, etc)
   app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req: any, res) => {
     try {
-      const gardenId = parseInt(req.params.id);
-      const garden = await storage.getGarden(gardenId.toString());
+      const gardenId = req.params.id;
+      const garden = await storage.getGarden(gardenId);
       
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
@@ -2476,8 +2476,8 @@ Photography style: Professional garden photography captured in natural ${season 
   // Update visualization data
   app.post('/api/gardens/:id/update-visualization-data', isAuthenticated, async (req: any, res) => {
     try {
-      const gardenId = parseInt(req.params.id);
-      const garden = await storage.getGarden(gardenId.toString());
+      const gardenId = req.params.id;
+      const garden = await storage.getGarden(gardenId);
       
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
@@ -2500,8 +2500,8 @@ Photography style: Professional garden photography captured in natural ${season 
   // Save seasonal images to garden
   app.post('/api/gardens/:id/save-seasonal-images', isAuthenticated, async (req: any, res) => {
     try {
-      const gardenId = parseInt(req.params.id);
-      const garden = await storage.getGarden(gardenId.toString());
+      const gardenId = req.params.id;
+      const garden = await storage.getGarden(gardenId);
       
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });

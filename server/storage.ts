@@ -96,8 +96,8 @@ export interface IStorage {
   deleteExpiredVaultItems(): Promise<number>;
   
   // Visualization data operations
-  getVisualizationData(gardenId: number): Promise<any | undefined>;
-  updateVisualizationData(gardenId: number, data: any): Promise<void>;
+  getVisualizationData(gardenId: string): Promise<any | undefined>;
+  updateVisualizationData(gardenId: string, data: any): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -513,8 +513,8 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Visualization data operations (stored in garden metadata)
-  async getVisualizationData(gardenId: number): Promise<any | undefined> {
-    const garden = await this.getGarden(gardenId.toString());
+  async getVisualizationData(gardenId: string): Promise<any | undefined> {
+    const garden = await this.getGarden(gardenId);
     if (!garden) return undefined;
     
     // Store visualization data in garden's additionalInfo JSON field
@@ -526,8 +526,8 @@ export class DatabaseStorage implements IStorage {
     };
   }
   
-  async updateVisualizationData(gardenId: number, data: any): Promise<void> {
-    const garden = await this.getGarden(gardenId.toString());
+  async updateVisualizationData(gardenId: string, data: any): Promise<void> {
+    const garden = await this.getGarden(gardenId);
     if (!garden) return;
     
     const additionalInfo = garden.additionalInfo as any || {};
