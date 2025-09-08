@@ -1627,24 +1627,34 @@ GARDEN FRAME (Stone-edged rectangle):
 - Left edge: x=(960 - ${gardenWidth * 120})px
 - Right edge: x=(960 + ${gardenWidth * 120})px
 
-COORDINATE DATASET FOR OBJECT PLACEMENT:
+PLANT POSITIONS (USE FOR PLACEMENT ONLY - NO VISIBLE NUMBERS/TEXT):
 ${canvasDesign.plants.map((p: any, i: number) => {
   const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
   const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
   
-  // More precise pixel mapping using perspective projection
-  const gardenPixelHeight = 306; // 594 - 288
-  const xPixel = 960 + ((xCentimeters / 100 - gardenWidth / 2) * 240);
-  const yPixel = 288 + (yCentimeters / (gardenLength * 100) * gardenPixelHeight);
-  
   const plantName = (p.plantName || p.commonName || '').substring(0, 20);
   
-  return `Object: ${plantName} → [x=${Math.round(xPixel)}, y=${Math.round(yPixel)}]`;
+  // Describe position more naturally to avoid number rendering
+  let position = "";
+  if (xCentimeters < gardenWidth * 33) position = "far left";
+  else if (xCentimeters < gardenWidth * 66) position = "left-center";
+  else if (xCentimeters < gardenWidth * 100) position = "center";
+  else if (xCentimeters < gardenWidth * 133) position = "right-center";
+  else position = "far right";
+  
+  if (yCentimeters < gardenLength * 50) position += ", front";
+  else if (yCentimeters < gardenLength * 150) position += ", middle";
+  else position += ", back";
+  
+  return `${plantName}: ${position} area (${xCentimeters}cm from left, ${yCentimeters}cm from front)`;
 }).join('\n')}
 
-CRITICAL: If two maples are listed above with similar x-coordinates (both around x≈720), they MUST BOTH appear on the LEFT side.
-Do NOT place one maple on each side for balance. Both go where coordinates specify.
-ASYMMETRIC layouts are CORRECT - do not "fix" them.
+ABSOLUTE RULES:
+1. NO NUMBERS OR TEXT visible in the final image - this is a photograph, not a diagram
+2. NO STRAIGHT ROWS - plants are scattered organically as shown in coordinates
+3. COUNT: Exactly ${canvasDesign.plants.length} plants total (verify this!)
+4. If coordinates show clustering (multiple plants near each other), KEEP THEM CLUSTERED
+5. Empty areas are INTENTIONAL - do not fill gaps
 
 CRITICAL POSITIONING RULES:
 - DO NOT RENDER ANY NUMBERS, LABELS, OR TEXT IN THE IMAGE
