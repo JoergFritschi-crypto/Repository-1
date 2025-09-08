@@ -1748,36 +1748,97 @@ CRITICAL: You must show ONLY the exact plants listed in the positions above. Do 
 Photography style: Professional garden photography captured in natural ${season === 'winter' ? 'soft diffused winter' : season === 'autumn' ? 'warm golden hour' : season === 'spring' ? 'bright morning' : 'clear midday'} light, showing realistic plant sizes and natural garden textures including mulch, soil, and stone edging.`;
       } // Close the else block for standard approach
 
-      // Generate the image using Runware (better positioning than Gemini)
-      const { runwareService } = await import('./runwareAI');
-      
+      // Determine which service to use
+      // Use Flux for initial precise image (better plant variety accuracy)
+      // Use Gemini for seasonal variations after initial generation
       let imageUrl;
-      try {
-        imageUrl = await runwareService.generateSeasonalImage({
-          season,
-          specificTime: specificMonth || specificTime,
-          canvasDesign: {
-            plants: canvasDesign.plants.map((p: any) => ({
-              plant: {
-                id: p.id || 'unknown',
-                name: p.plantName || p.commonName || 'Unknown Plant'
+      let generationMethod = 'flux'; // Default to Flux for precision
+      
+      // Check if this is a seasonal variation request (not the initial generation)
+      const isSeasonalVariation = visualizationData?.baseImageUrl && season !== 'summer';
+      
+      if (isSeasonalVariation && geminiAI) {
+        // Use Gemini for seasonal variations
+        generationMethod = 'gemini';
+        console.log('Using Gemini for seasonal variation');
+        
+        try {
+          // Use the existing prompt that was built above
+          const geminiResult = await geminiAI.generateImage(prompt);
+          if (geminiResult) {
+            imageUrl = geminiResult;
+          }
+        } catch (error) {
+          console.error('Gemini generation failed, falling back to Flux:', error);
+          generationMethod = 'flux'; // Fall back to Flux
+        }
+      }
+      
+      // Use Flux for initial generation or if Gemini failed
+      if (generationMethod === 'flux' || !imageUrl) {
+        console.log('Using Flux for precise plant variety generation');
+        const { fluxAI } = await import('./fluxAI');
+        
+        try {
+          // Convert canvas design to Flux format
+          const fluxRequest = {
+            plantPositions: canvasDesign.plants.map((p: any) => {
+              // Calculate depth based on Y position
+              const yPercent = p.y || 50;
+              const depth = yPercent < 33 ? 'background' : 
+                           yPercent > 66 ? 'foreground' : 'midground';
+              
+              return {
+                name: p.plantName || p.commonName || 'Unknown Plant',
+                gridX: Math.round((p.x || 50)),
+                gridY: Math.round((p.y || 50)),
+                depth: depth
+              };
+            }),
+            gardenDimensions: {
+              width: gardenWidth || 4,
+              height: gardenLength || 3
+            },
+            season: season || 'summer',
+            climate: garden.climate
+          };
+          
+          imageUrl = await fluxAI.generateGardenVisualization(fluxRequest);
+          generationMethod = 'flux';
+        } catch (fluxError) {
+          console.error('Flux generation failed, trying Runware as fallback:', fluxError);
+          
+          // Fallback to Runware if Flux fails
+          const { runwareService } = await import('./runwareAI');
+          try {
+            imageUrl = await runwareService.generateSeasonalImage({
+              season,
+              specificTime: specificMonth || specificTime,
+              canvasDesign: {
+                plants: canvasDesign.plants.map((p: any) => ({
+                  plant: {
+                    id: p.id || 'unknown',
+                    name: p.plantName || p.commonName || 'Unknown Plant'
+                  },
+                  position: {
+                    x: p.x || 50,
+                    y: p.y || 50
+                  }
+                }))
               },
-              position: {
-                x: p.x || 50,
-                y: p.y || 50
-              }
-            }))
-          },
-          gardenDimensions: {
-            width: gardenWidth || 4,
-            length: gardenLength || 3
-          },
-          useReferenceMode,
-          referenceImage
-        });
-      } catch (error) {
-        console.error('Runware generation failed:', error);
-        throw error;
+              gardenDimensions: {
+                width: gardenWidth || 4,
+                length: gardenLength || 3
+              },
+              useReferenceMode,
+              referenceImage
+            });
+            generationMethod = 'runware';
+          } catch (runwareError) {
+            console.error('All generation methods failed:', runwareError);
+            throw runwareError;
+          }
+        }
       }
       
       // Add cache buster to prevent browser caching
@@ -1787,8 +1848,11 @@ Photography style: Professional garden photography captured in natural ${season 
         success: true,
         season: season || 'summer',
         imageUrl: imageUrlWithCacheBuster,
-        prompt: 'Generated using Runware Stable Diffusion for precise positioning',
-        message: imageUrl ? 'Seasonal image generated successfully' : 'Image generation in progress'
+        prompt: generationMethod === 'flux' ? 'Generated using Flux for precise plant variety' : 
+                generationMethod === 'gemini' ? 'Generated using Gemini for seasonal variation' :
+                'Generated using Runware Stable Diffusion',
+        generationMethod,
+        message: imageUrl ? `Image generated successfully using ${generationMethod.toUpperCase()}` : 'Image generation in progress'
       });
     } catch (error) {
       console.error("Error generating seasonal images:", error);
