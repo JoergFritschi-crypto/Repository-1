@@ -112,8 +112,8 @@ export default function AdminTestVisualization() {
                     Test Garden 1
                   </Button>
                   <Button
-                    variant={selectedGardenId === "2" ? "default" : "outline"}
-                    onClick={() => setSelectedGardenId("2")}
+                    variant={selectedGardenId === "0ed224de-6416-47d6-aafc-c166deb2d474" ? "default" : "outline"}
+                    onClick={() => setSelectedGardenId("0ed224de-6416-47d6-aafc-c166deb2d474")}
                     disabled={gardenLoading}
                   >
                     Test Garden 2
