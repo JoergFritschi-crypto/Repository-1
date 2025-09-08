@@ -147,38 +147,35 @@ export class FluxAI {
     const { plantPositions } = request;
     const plantCount = plantPositions.length;
     
-    // Group plants by species to emphasize variety
-    const plantSpecies = new Set(plantPositions.map(p => this.simplifyPlantName(p.name)));
-    const speciesCount = plantSpecies.size;
+    // Build a very explicit prompt focusing on spatial distribution
+    let prompt = `Wide-angle garden photograph of a large lawn with ${plantCount} plants SCATTERED ACROSS DIFFERENT AREAS. `;
     
-    // Build a clear, structured prompt that Flux can follow accurately
-    let prompt = `A photorealistic garden photograph showing EXACTLY ${speciesCount} different plant species: `;
+    // Describe each plant with CLEAR spatial positioning
+    prompt += "SPATIAL LAYOUT (plants are NOT grouped together): ";
     
-    // List each unique species clearly
-    const speciesList = Array.from(plantSpecies);
-    speciesList.forEach((species, index) => {
-      const count = plantPositions.filter(p => this.simplifyPlantName(p.name) === species).length;
-      if (count > 1) {
-        prompt += `${count} ${species} plants`;
+    plantPositions.forEach((plant, index) => {
+      const simpleName = this.simplifyPlantName(plant.name);
+      const horizontal = plant.gridX < 33 ? "FAR LEFT" : plant.gridX > 66 ? "FAR RIGHT" : "CENTER";
+      const depth = plant.depth === "background" ? "DISTANT BACKGROUND" : 
+                    plant.depth === "foreground" ? "CLOSE FOREGROUND" : "MIDDLE GROUND";
+      
+      // Make Japanese Maple more prominent
+      if (plant.name.includes('Japanese Maple')) {
+        prompt += `A PROMINENT ${simpleName} standing alone in the ${horizontal} ${depth} (clearly visible as a separate tree)`;
       } else {
-        prompt += `1 ${species}`;
+        prompt += `${simpleName} planted in ${horizontal} ${depth}`;
       }
-      if (index < speciesList.length - 1) prompt += ", ";
+      
+      if (index < plantPositions.length - 1) prompt += "; ";
     });
     
     prompt += ". ";
     
-    // Add positioning details
-    prompt += "Garden layout: ";
-    plantPositions.forEach((plant, index) => {
-      const pos = this.getPositionDescription(plant);
-      prompt += `${this.simplifyPlantName(plant.name)} at ${pos}`;
-      if (index < plantPositions.length - 1) prompt += ", ";
-    });
-    
-    // Add visual style and quality descriptors
-    prompt += ". Professional garden photography, natural daylight, wide angle view showing all plants clearly separated and distinguishable, ";
-    prompt += "each plant species visually distinct, green lawn background, high detail, sharp focus, photorealistic rendering";
+    // Emphasize separation and visibility
+    prompt += "CRITICAL: Each plant is in its OWN SEPARATE LOCATION on the lawn, NOT clustered in one bed. ";
+    prompt += "The Japanese Maple tree must be CLEARLY VISIBLE and PROMINENT in its background position. ";
+    prompt += "Wide lawn spaces between each plant. Professional garden photography, bright daylight, ";
+    prompt += "photorealistic, showing the ENTIRE garden layout with all plants visible but SPATIALLY SEPARATED";
     
     return prompt;
   }
