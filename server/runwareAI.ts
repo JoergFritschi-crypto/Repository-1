@@ -85,7 +85,7 @@ class RunwareService {
         images = await this.runware.requestImages({
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
-          model: "runware:100@1", // Use standard model first
+          model: "civitai:4201@130072", // Realistic Vision V6.0 - photorealistic model
           height: 1088,  // Must be multiple of 64 (1088 = 17 * 64)
           width: 1920,   // 1920 = 30 * 64
           numberResults: 1,
@@ -104,7 +104,7 @@ class RunwareService {
         images = await this.runware.requestImages({
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
-          model: "runware:100@1", // Use standard model
+          model: "civitai:4201@130072", // Realistic Vision V6.0 - photorealistic model
           height: 1088,  // Must be multiple of 64 (1088 = 17 * 64)
           width: 1920,   // 1920 = 30 * 64
           numberResults: 1,
@@ -176,13 +176,14 @@ class RunwareService {
       if (index < plantPositions.length - 1) spatialDesc += ", ";
     });
 
-    return `Wide-angle garden photograph showing EXACTLY ${plantCount} individual plants on a grass lawn.
-      CAMERA: Standing 10 meters away, eye-level view, looking north from the south edge.
-      FRAMING: All ${plantCount} plants fully visible in frame, widely spaced apart.
+    return `RAW photo, photorealistic garden documentation, EXACTLY ${plantCount} real plants on natural grass lawn.
+      CAMERA: Professional DSLR, 24mm lens, standing 10 meters away, eye-level view looking north.
+      FRAMING: Documentary style showing all ${plantCount} plants fully visible, widely spaced.
       ${spatialDesc}.
-      ${seasonDesc}, natural daylight, photorealistic outdoor photography.
-      IMPORTANT: Show individual plants planted directly in grass lawn, NOT in a garden bed.
-      Each plant has its own separate planting spot. Wide view showing full spatial arrangement.`;
+      ${seasonDesc}, natural outdoor lighting, ultra realistic, highly detailed plants.
+      Style: Professional botanical photography, National Geographic quality, no filters.
+      IMPORTANT: Real plants on real grass, NOT stylized, NOT artistic.
+      Each plant individually planted in lawn. Wide documentary view.`;
   }
 
   private buildNegativePrompt(plantCount: number): string {
