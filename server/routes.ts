@@ -1668,6 +1668,15 @@ DO NOT:
 
 ONLY DO: Place each object at its EXACT grid coordinate. Nothing else matters
 
+CAMERA VIEWPOINT (CRITICAL):
+- Viewer is standing at the SOUTHERN EDGE (bottom of canvas) looking NORTH
+- Eye level perspective, approximately 1.7m height
+- Looking INTO the garden from the FRONT (bottom) edge
+- Plants with LOW Y-values (near Y=0) appear in FOREGROUND, CLOSEST to viewer
+- Plants with HIGH Y-values (near Y=${gridLength}) appear in BACKGROUND, FARTHEST from viewer
+- The bottom of the image = the viewer's position at the garden's southern edge
+- The top of the image = the far northern edge of the garden
+
 SURVEY AREA SPECIFICATIONS:
 - Plot dimensions: ${gardenWidth}m × ${gardenLength}m rectangular research plot
 - Terrain type: grass lawn
@@ -1697,8 +1706,8 @@ HOW TO INTERPRET:
 - Grid[X,Y] = X cells from left edge, Y cells from front edge
 - Lower X values = LEFT side of plot
 - Higher X values = RIGHT side of plot
-- Lower Y values = FRONT of plot
-- Higher Y values = BACK of plot
+- Lower Y values = FRONT of plot (CLOSEST to viewer)
+- Higher Y values = BACK of plot (FARTHEST from viewer)
 
 SPECIMEN COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
