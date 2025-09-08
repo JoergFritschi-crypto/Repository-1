@@ -1535,6 +1535,13 @@ Rules:
   Grid: ${gridCol}${gridRow} (${xCentimeters}cm from left, ${yCentimeters}cm from front)
   Exact: X=${xMeters}m, Y=${yMeters}m${relationships.length > 0 ? '\n  Spacing: ' + relationships.join(', ') : ''}`;
       });
+      
+      // Count plant types to prevent additions
+      const plantCounts: Record<string, number> = {};
+      canvasDesign.plants.forEach((plant: any) => {
+        const key = (plant.plantName || plant.commonName || '').toLowerCase();
+        plantCounts[key] = (plantCounts[key] || 0) + 1;
+      });
 
       // Map season to specific months for more precision
       const monthMapping: { [key: string]: string } = {
@@ -1617,19 +1624,40 @@ GARDEN SPECIFICATIONS:
 - Back edge: Horizontal line at 55% from bottom of image
 - Side edges: Diagonal lines converging toward horizon
 
-EXACT PLANT PLACEMENT - CRITICAL:
-You MUST place plants at these EXACT positions (measured from front-left corner):
+NARRATIVE GARDEN DESCRIPTION:
+Standing directly in front of this rectangular garden bed and looking straight ahead, you see ${canvasDesign.plants.length} plants arranged as follows:
+${canvasDesign.plants.map((p: any, i: number) => {
+  const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
+  const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
+  
+  // Describe position narratively
+  let location = "";
+  if (xCentimeters < gardenWidth * 100 * 0.33) location = "left";
+  else if (xCentimeters > gardenWidth * 100 * 0.67) location = "right";
+  else location = "center";
+  
+  if (yCentimeters < gardenLength * 100 * 0.33) location += " front";
+  else if (yCentimeters > gardenLength * 100 * 0.67) location += " back";
+  else location += " middle";
+  
+  return `- ${p.plantName || p.commonName} positioned in the ${location} section`;
+}).join('\n')}
+
+EXACT PLANT LIST (${canvasDesign.plants.length} plants total):
 ${plantPositions.join('\n')}
 
-PLANT POSITIONING RULES:
-- Each plant MUST be at its specified grid position
-- Think of the garden as a grid where each square is 10cm × 10cm
-- Place each plant at the EXACT grid coordinates given (e.g., Grid B3 = 20cm from left, 30cm from front)
-- Plants near the front (low Y values) appear larger
-- Plants near the back (high Y values) appear smaller due to perspective
-- Maintain correct spacing between plants as specified
-- The distance relationships between plants are CRITICAL
-- Do NOT improvise or artistic interpret positions - use EXACT coordinates
+PLANT COUNT VERIFICATION:
+${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} instance${count > 1 ? 's' : ''}`).join('\n')}
+
+CRITICAL ACCURACY RULES:
+- Show EXACTLY ${canvasDesign.plants.length} plants - no more, no less
+- Do NOT add any hostas unless listed above
+- Do NOT add any extra maples beyond the count specified
+- Do NOT add filler plants for "visual balance"
+- If a plant appears twice in the list (e.g., 2 maples), show BOTH
+- Empty spaces should remain empty (just mulch/soil)
+- This is documentary photography, not artistic interpretation
+- Plants MUST be at their exact grid positions specified above
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 

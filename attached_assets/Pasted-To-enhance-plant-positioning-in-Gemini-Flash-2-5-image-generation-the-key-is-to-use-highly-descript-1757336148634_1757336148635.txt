@@ -1,0 +1,36 @@
+To enhance plant positioning in Gemini Flash 2.5 image generation, the key is to use highly descriptive, narrative prompts that specify spatial layout and continuity—not just keywords or lists. Describing the garden scene in detail, including positional anchors and relationships between individual plants, can significantly improve plant arrangement consistency across images.
+
+How to Improve Plant Positioning
+Describe Scene Spatially
+Use prompts that narrate the garden’s spatial arrangement: "Show a rectangular perennial bed viewed from above, with three tall phlox paniculata grouped in the left center, ringed by low geraniums, and a path curving along the right edge". Including orientation (top-down, side view), dimensions, and relative distances enhances positional accuracy.
+
+Refer to a Master Image
+Start by generating or providing a 'master image'—the reference image of the bed with correct plant positions. Use this as input to subsequent prompts like: "Using the provided image, change only the season and leave all plant positions unchanged".
+
+Use Edit-Only Prompts
+For seasonal variations, prompt explicitly: "Using the provided image, change the season to autumn, but keep the positions and size of every plant exactly as shown". Gemini Flash supports localized edits and can maintain layout if prompted to preserve composition.
+
+Template Example
+"A high-resolution top-down image of a perennial garden bed. Three phlox paniculata are at the left edge, with geraniums forming a circle around them, and a gravel path running along the right. In the summer version, phlox are in full bloom; in the autumn version, phlox have faded, with some yellow foliage. Maintain all plant placements and overall geometry in each scene."
+
+Technical Tips
+Image Input for Consistency
+Gemini Flash can accept image inputs and process edits; always provide the actual image, then prompt for changes, e.g., "Preserve locations of every plant; modify only leaf coloration to reflect autumn".
+
+Bounding Box Detection (for API)
+For advanced workflows (API use), Gemini detects objects and their bounding boxes, letting you quantitatively track plant placement and enforce layout consistency programmatically.
+
+Summary Table
+Enhancement Method	Prompt Element Example	Effect on Positioning
+Narrative spatial prompt	"Phlox on left, geraniums circling, path on right" 	High positional consistency
+Master image as reference	"Using provided image, change only the season" 	Layout stays identical
+Explicit edit-only prompt	"Keep positions, change foliage color only" 	Layout unchanged
+Bounding box detection	"Detect object positions programmatically" 	API-based precision
+By combining a narrative description with reference images and targeted edit prompts, Gemini Flash can maintain detailed plant positioning across seasonal image variations.
+
+Related
+How can I prompt Gemini 2.5 Flash to lock exact plant coordinates across images
+What prompt format ensures precise plant bounding boxes are preserved
+How do I use Gemini’s object detection output to transfer plant positions
+What comparative prompt tweaks help keep plants fixed while changing season
+How can I automate aligning plants from edited images back to the original
