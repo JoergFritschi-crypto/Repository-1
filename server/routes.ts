@@ -1609,8 +1609,13 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
 
         // Create 10x10cm grid mapping for precise positioning
         const gridSize = 10; // 10cm grid cells
-        const gridWidth = Math.ceil(gardenWidth * 100 / gridSize);
-        const gridLength = Math.ceil(gardenLength * 100 / gridSize);
+        
+        // Validate garden dimensions
+        const validWidth = gardenWidth && gardenWidth > 0 ? gardenWidth : 4; // Default to 4m if invalid
+        const validLength = gardenLength && gardenLength > 0 ? gardenLength : 3; // Default to 3m if invalid
+        
+        const gridWidth = Math.ceil(validWidth * 100 / gridSize);
+        const gridLength = Math.ceil(validLength * 100 / gridSize);
         
         // Initialize empty grid
         const grid: string[][] = Array(gridLength).fill(null).map(() => 
@@ -1619,8 +1624,8 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         
         // Place plants in grid
         canvasDesign.plants.forEach((p: any) => {
-          const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
-          const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
+          const xCentimeters = Math.round(p.x / 100 * validWidth * 100);
+          const yCentimeters = Math.round(p.y / 100 * validLength * 100);
           
           const gridX = Math.floor(xCentimeters / gridSize);
           const gridY = Math.floor(yCentimeters / gridSize);
