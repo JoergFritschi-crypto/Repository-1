@@ -1528,7 +1528,10 @@ Rules:
       const prompt = `GARDEN PROJECT ID: ${req.params.id} | ITERATION: ${iterationNumber}
 IMPORTANT: This is image ${season} in iteration #${iterationNumber} of seasonal documentation for Garden #${req.params.id}. This garden may have multiple image series generated over time (this is iteration ${iterationNumber}). ALL images for Garden #${req.params.id} must maintain absolute consistency across all iterations - treating this as an ongoing photographic documentation project of this specific garden bed. Think of Garden #${req.params.id} as a specific location you're returning to photograph across different seasons and years.
 
-Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
+TIME-LAPSE PHOTOGRAPHY SETUP FOR GARDEN #${req.params.id}:
+Camera Position: EXACTLY 3.5 meters from the front edge of the garden bed, height 1.6 meters (eye level), pointing straight ahead at 90 degrees perpendicular to the garden's front edge. Camera centered on the garden's width. Focal length: 35mm equivalent. This is a FIXED TRIPOD POSITION that never moves - exactly like time-lapse photography where the camera stays locked in position while only the subject changes over time.
+
+Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed from this precise fixed camera position, photographed in ${specificMonth} in the United Kingdom.
 
 This exact garden layout measures ${gardenWidth} meters wide by ${gardenLength} meters deep with the following precise plant positions maintained identically:
 
@@ -1541,9 +1544,20 @@ Critical requirements for maintaining identical layout:
 - Use consistent eye-level viewing angle from the front of the bed
 - Show this exact same garden bed configuration in every image
 
-CRITICAL SERIES CONSISTENCY REQUIREMENTS FOR GARDEN #${req.params.id}:
-This garden (ID: ${req.params.id}) is being documented across multiple sessions. Whether this is the first series or the tenth series for Garden #${req.params.id}, maintain ABSOLUTE consistency in:
-- Camera position: EXACT same viewing angle and distance in every image
+CRITICAL TIME-LAPSE CONSISTENCY REQUIREMENTS FOR GARDEN #${req.params.id}:
+This is a TIME-LAPSE PHOTOGRAPHY PROJECT. Like a professional time-lapse where the camera is locked on a tripod for hours/days/months, the camera NEVER MOVES between shots. This garden (ID: ${req.params.id}) is being documented with a permanently fixed camera setup:
+
+LOCKED CAMERA SPECIFICATIONS:
+- Distance: EXACTLY 3.5 meters from garden front edge (measured with laser precision)
+- Height: EXACTLY 1.6 meters from ground (tripod height locked)
+- Angle: EXACTLY 90 degrees perpendicular to garden front (spirit level verified)
+- Position: EXACTLY centered on garden width (measured from both sides)
+- Focal length: EXACTLY 35mm equivalent (lens never changes)
+- Frame composition: Garden bed occupies the EXACT same pixels in every image
+
+Think of this as a scientific documentation project where even a 1cm camera shift would ruin the time-lapse. The camera is essentially bolted in place. ONLY the plants and seasons change - nothing else moves.
+
+Additional consistency requirements:
 - Garden bed: IDENTICAL rectangular shape, size, and stone/brick edging style
 - Background: IDENTICAL simple grass lawn extending to horizon (no variations in grass pattern)
 - NO buildings, houses, walls, fences, or structures - maintain this across ALL images
