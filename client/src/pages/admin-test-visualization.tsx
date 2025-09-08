@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { GardenVisualization } from "@/components/garden/garden-visualization";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { ArrowLeft, FlaskConical, Plus } from "lucide-react";
@@ -15,12 +16,53 @@ export default function AdminTestVisualization() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [selectedGardenId, setSelectedGardenId] = useState<string>("1");
+  const [isCreating, setIsCreating] = useState(false);
   
   // Get Test Garden 1
   const { data: garden, isLoading: gardenLoading } = useQuery({
     queryKey: ["/api/gardens", selectedGardenId],
     enabled: !!selectedGardenId,
   });
+  
+  // Create new test garden
+  const createTestGarden = async () => {
+    setIsCreating(true);
+    try {
+      const response = await apiRequest("POST", "/api/gardens", {
+        name: `Test Garden ${new Date().getTime()}`,
+        location: "Test Location",
+        shape: "rectangle",
+        dimensions: { width: 4, length: 3 },
+        units: "metric",
+        sunExposure: "full_sun",
+        soilType: "loam",
+        preferences: {},
+        design_approach: "manual"
+      });
+      
+      const newGarden = await response.json();
+      
+      toast({
+        title: "Test Garden Created",
+        description: `Garden ID: ${newGarden.id}. Redirecting to design page...`
+      });
+      
+      // Redirect to garden design page with the new garden ID
+      setTimeout(() => {
+        window.location.href = `/garden-design/${newGarden.id}`;
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Error creating test garden:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create test garden",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
   
   
   return (
@@ -78,11 +120,12 @@ export default function AdminTestVisualization() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => window.location.href = '/garden-design?new=true'}
+                    onClick={createTestGarden}
+                    disabled={isCreating}
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    Create New Test Garden
+                    {isCreating ? "Creating..." : "Create New Test Garden"}
                   </Button>
                 </div>
               </div>
