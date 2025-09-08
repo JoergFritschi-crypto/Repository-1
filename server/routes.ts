@@ -1780,10 +1780,13 @@ Photography style: Professional garden photography captured in natural ${season 
         throw error;
       }
       
+      // Add cache buster to prevent browser caching
+      const imageUrlWithCacheBuster = imageUrl ? `${imageUrl}?t=${Date.now()}` : null;
+      
       res.json({
         success: true,
         season: season || 'summer',
-        imageUrl: imageUrl || null,
+        imageUrl: imageUrlWithCacheBuster,
         prompt: 'Generated using Runware Stable Diffusion for precise positioning',
         message: imageUrl ? 'Seasonal image generated successfully' : 'Image generation in progress'
       });
