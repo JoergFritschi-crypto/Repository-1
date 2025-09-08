@@ -466,7 +466,7 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
           {/* Image Viewer (inline) */}
           {generatedImages.length > 0 && !isFullscreen && (
             <div className="space-y-3">
-              <div className="relative aspect-[3/2] bg-gray-100 rounded-lg overflow-hidden">
+              <div className="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden">
                 <img
                   src={generatedImages[currentImageIndex].url}
                   alt={generatedImages[currentImageIndex].period}

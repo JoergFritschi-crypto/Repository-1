@@ -1521,7 +1521,7 @@ Rules:
       const specificMonth = specificTime || monthMapping[season || 'summer'] || 'mid July';
 
       // Enhanced prompt using Gemini 2.5 Flash Image best practices
-      const prompt = `Create a photorealistic image of this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
+      const prompt = `Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
 
 This exact garden layout measures ${gardenWidth} meters wide by ${gardenLength} meters deep with the following precise plant positions maintained identically:
 
