@@ -1656,8 +1656,8 @@ This is a scientific positional survey for research documentation, NOT landscapi
 
 SURVEY AREA SPECIFICATIONS:
 - Plot dimensions: ${gardenWidth}m × ${gardenLength}m rectangular research plot
-- Terrain type: ${gardenTerrain}
-- Climate zone: ${climateType}
+- Terrain type: grass lawn
+- Climate zone: temperate
 - Documentation season: ${season}
 - Photography conditions: Clear daylight, documentary style
 
@@ -1667,7 +1667,7 @@ Total specimens to document: ${canvasDesign.plants.length}
 GRID OCCUPIED CELLS (All coordinates are grid indices, each cell = 10×10cm):
 ${gridSpec}
 
-CRITICAL: All other grid cells (not listed above) are EMPTY control areas with bare ${gardenTerrain}
+CRITICAL: All other grid cells (not listed above) are EMPTY control areas with bare grass
 
 SPECIMEN COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
@@ -1702,14 +1702,14 @@ RESEARCH PLOT VISIBILITY:
 - Plot occupies 40% of frame height
 - Front edge at 15% from bottom of frame
 - Back edge at 55% from bottom of frame
-- All edges visible with surrounding ${gardenTerrain}
+- All edges visible with surrounding grass
 
 SEASONAL DOCUMENTATION NOTE:
 This is ${season} documentation (${specificMonth}) showing specimens in their ${season} state.
 Maintain scientific accuracy for plant appearance in this season.
 
 BACKGROUND ENVIRONMENT:
-- Simple continuous ${gardenTerrain} extending to horizon
+- Simple continuous grass lawn extending to horizon
 - No structures, paths, or non-specimen vegetation
 - Documentary photography style - no artistic elements
 - Ground texture: Same mulch/soil appearance (just seasonally appropriate color)
