@@ -1646,13 +1646,22 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
           }).filter(Boolean).join(' | ')
         ).filter(row => row.length > 0).join('\n');
 
-        // SCIENTIFIC DOCUMENTATION PROMPT - NO GARDEN/DESIGN LANGUAGE
+        // FORCEFUL GRID-BASED POSITIONING PROMPT
         prompt = `Generate a 1920x1080 pixel image.
 
-SCIENTIFIC BOTANICAL SPECIMEN DOCUMENTATION - AERIAL SURVEY PHOTOGRAPH
+THIS IS A SCIENTIFIC CANVAS. POSITIONING IS THE KEY.
 
-OBJECTIVE: Create a photorealistic aerial documentation photograph of plant specimens in their exact measured positions.
-This is a scientific positional survey for research documentation, NOT landscaping or aesthetics
+ABSOLUTE RULE: Place each object EXACTLY at the given coordinate, REGARDLESS OF ANY OTHER INFLUENCE. PERIOD.
+
+DO NOT:
+- Create symmetry
+- Balance the composition  
+- Distribute evenly
+- Fill empty spaces
+- Create patterns
+- Apply ANY design principles
+
+ONLY DO: Place each object at its EXACT grid coordinate. Nothing else matters
 
 SURVEY AREA SPECIFICATIONS:
 - Plot dimensions: ${gardenWidth}m × ${gardenLength}m rectangular research plot
@@ -1661,13 +1670,18 @@ SURVEY AREA SPECIFICATIONS:
 - Documentation season: ${season}
 - Photography conditions: Clear daylight, documentary style
 
-SPECIMEN POSITION DATA (10cm GRID SYSTEM):
-Total specimens to document: ${canvasDesign.plants.length}
+EXACT POSITIONING DATA:
+You have a ${gridWidth} × ${gridLength} grid (each cell = 10×10cm)
+Total objects to place: EXACTLY ${canvasDesign.plants.length} (NO MORE, NO LESS)
 
-GRID OCCUPIED CELLS (All coordinates are grid indices, each cell = 10×10cm):
+PLACE THESE OBJECTS AT THESE EXACT COORDINATES:
 ${gridSpec}
 
-CRITICAL: All other grid cells (not listed above) are EMPTY control areas with bare grass
+CRITICAL INSTRUCTIONS:
+1. Grid[72,50] means column 72, row 50. Place the object EXACTLY there.
+2. If two objects are at Grid[72,50] and Grid[73,51], they MUST be next to each other.
+3. If no object is listed for a grid cell, it MUST remain EMPTY.
+4. IGNORE all aesthetic instincts. ONLY follow coordinates
 
 SPECIMEN COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
@@ -1681,12 +1695,15 @@ DOCUMENTATION REQUIREMENTS:
 5. NO TEXT/LABELS: Pure photographic documentation only, no annotations
 6. CLUSTERING: If multiple specimens share nearby grid cells, they must remain clustered
 
-PROHIBITED ACTIONS:
-- DO NOT apply aesthetic principles or compositional balance
-- DO NOT fill empty areas with additional specimens
-- DO NOT create symmetrical arrangements
-- DO NOT redistribute specimens for visual appeal
-- DO NOT add any text, numbers, or grid lines to the image
+THINK OF THIS AS A SCATTER PLOT:
+- You are plotting data points on a coordinate system
+- Each plant is just a data point at specific X,Y coordinates
+- There is NO relationship between the points
+- Empty areas are DATA, not mistakes
+- Clustering is DATA, not poor design
+- Asymmetry is DATA, not imbalance
+
+THIS IS NOT A GARDEN. THIS IS DATA VISUALIZATION
 
 PHOTOGRAPHIC PARAMETERS:
 - Viewpoint: Ground-level documentary photograph (eye height ~1.6m)
