@@ -1642,11 +1642,15 @@ ${canvasDesign.plants.map((p: any, i: number) => {
   return `${plantName} at pixel coordinates (${Math.round(xPixel)}, ${Math.round(yPixel)}) - Grid ${gridCell}`;
 }).join('\n')}
 
-CRITICAL: DO NOT RENDER ANY NUMBERS, LABELS, OR TEXT IN THE IMAGE
+CRITICAL POSITIONING RULES:
+- DO NOT RENDER ANY NUMBERS, LABELS, OR TEXT IN THE IMAGE
 - The coordinate data above is for POSITIONING ONLY
-- Do NOT add plant numbers or labels to the image
-- Do NOT show grid references visually
-- This should look like a natural garden photograph, not a diagram
+- ASYMMETRIC ARRANGEMENTS ARE INTENTIONAL - Do not "balance" the composition
+- If two plants of the same type are close together, KEEP THEM CLOSE
+- If one corner is empty and another has multiple plants, KEEP IT THAT WAY
+- Do NOT spread plants out for "better composition"
+- Example: If both maples are in the left corner, do NOT move one to the right
+- This is documenting an ACTUAL garden design, not creating an idealized one
 
 COORDINATE MAPPING FORMULA:
 - Canvas (0,0) = Garden front-left corner
@@ -1668,6 +1672,13 @@ RENDERING MODE: TECHNICAL CAD BLUEPRINT
 - Each plant is a PIN dropped at specific X,Y coordinates
 - If coordinates say x=500, y=400, the plant CENTER must be at exactly those pixels
 - Empty spaces between plants are INTENTIONAL - do not fill them
+
+CLUSTERING AND SPACING:
+- If multiple plants are at similar coordinates, they MUST appear clustered
+- Example: Two maples both at x≈720, y≈500 should BOTH be in that area
+- Do NOT separate similar plants "for balance" if their coordinates are close
+- An asymmetric garden with all plants on one side is CORRECT if that's what coordinates show
+- Empty corners/areas are INTENTIONAL design choices
 
 BOUNDING BOX PRECISION:
 - Each plant occupies a specific bounding box at its pixel coordinates
