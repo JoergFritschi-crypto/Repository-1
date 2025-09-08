@@ -152,38 +152,27 @@ class RunwareService {
     
     const seasonDesc = this.getSeasonDescription(season, specificTime);
     
-    // Build spatial description with explicit plant identification
-    let spatialDesc = `THESE EXACT ${plantCount} PLANTS ONLY:\n`;
+    // Build concise spatial description
+    let spatialDesc = `Plants: `;
     
     plantPositions.forEach((plant, index) => {
-      const horizontalPos = plant.gridX < 20 ? "far left" : 
-                           plant.gridX > 70 ? "far right" : "center";
-      const depthPos = plant.depth;
+      const pos = plant.gridX < 20 ? "left" : 
+                  plant.gridX > 70 ? "right" : "center";
+      const depth = plant.depth === "foreground" ? "front" :
+                    plant.depth === "background" ? "back" : "mid";
       
-      // Be very explicit about plant identity
-      let plantDescription = plant.name;
-      if (plant.name.includes('Japanese Maple')) {
-        plantDescription = 'Japanese Maple tree (Acer palmatum) with distinctive palmate leaves';
-      } else if (plant.name.includes('Hosta')) {
-        plantDescription = 'Hosta plant with large broad green leaves';
-      } else if (plant.name.includes('Rose')) {
-        plantDescription = 'Red rose bush with red blooms';
-      } else if (plant.name.includes('Lavender')) {
-        plantDescription = 'English Lavender (Lavandula) with purple flower spikes';
-      }
+      // Shorter plant names
+      let plantName = plant.name;
+      if (plant.name.includes('Japanese Maple')) plantName = 'Japanese Maple';
+      else if (plant.name.includes('Hosta')) plantName = 'Hosta';
+      else if (plant.name.includes('Rose')) plantName = 'Red Rose';
+      else if (plant.name.includes('Lavender')) plantName = 'Lavender';
       
-      spatialDesc += `${index + 1}. ${plantDescription} positioned ${horizontalPos} in the ${depthPos}`;
+      spatialDesc += `${plantName} ${pos}-${depth}`;
       if (index < plantPositions.length - 1) spatialDesc += ", ";
     });
 
-    return `RAW photo, photorealistic garden documentation, EXACTLY ${plantCount} real plants on natural grass lawn.
-      CAMERA: Professional DSLR, 24mm lens, standing 10 meters away, eye-level view looking north.
-      FRAMING: Documentary style showing all ${plantCount} plants fully visible, widely spaced.
-      ${spatialDesc}.
-      ${seasonDesc}, natural outdoor lighting, ultra realistic, highly detailed plants.
-      Style: Professional botanical photography, National Geographic quality, no filters.
-      IMPORTANT: Real plants on real grass, NOT stylized, NOT artistic.
-      Each plant individually planted in lawn. Wide documentary view.`;
+    return `RAW photo, ${plantCount} plants on grass lawn, wide view. ${spatialDesc}. ${seasonDesc}, photorealistic, natural light, documentary style, NOT artistic`;
   }
 
   private buildNegativePrompt(plantCount: number): string {
