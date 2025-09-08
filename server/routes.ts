@@ -1485,7 +1485,7 @@ Rules:
         return res.status(403).json({ message: "Unauthorized" });
       }
 
-      const { canvasDesign, season, specificTime } = req.body;
+      const { canvasDesign, season, specificTime, referenceImage, useReferenceMode } = req.body;
       
       // Get current iteration count for this garden
       const visualizationData = await storage.getVisualizationData(parseInt(req.params.id));
@@ -1545,28 +1545,59 @@ Rules:
       };
       const specificMonth = specificTime || monthMapping[season || 'summer'] || 'mid July';
 
-      // Calculate precise camera position using geometric reference system
-      const gardenDiagonal = Math.sqrt(gardenWidth * gardenWidth + gardenLength * gardenLength);
-      const cameraDistance = Math.max(5, gardenDiagonal * 1.3); // Minimum 5m, scales with garden size
-      const cameraHeight = 1.6; // Eye level constant
-      const focalLength = gardenWidth > 4 ? 24 : 35; // Wide angle for larger gardens
+      let prompt: string;
       
-      // Create geometric reference system - camera as fixed hub point
-      const gardenCenterX = gardenWidth / 2;
-      const gardenCenterY = gardenLength / 2;
-      
-      // Camera position in 3D coordinates (origin at garden front-left corner)
-      const cameraX = gardenCenterX; // Centered on width
-      const cameraY = -cameraDistance; // Negative Y = in front of garden
-      const cameraZ = cameraHeight; // Z = height
-      
-      // Target/look-at point (center of garden at ground level)
-      const targetX = gardenCenterX;
-      const targetY = gardenCenterY;
-      const targetZ = 0; // Ground level
+      // Check if we're using Perplexity's reference image approach
+      if (useReferenceMode && referenceImage) {
+        // PERPLEXITY'S APPROACH: Use reference image and only change seasonal aspects
+        prompt = `Using the provided garden image as an EXACT reference, create the ${season} version.
+        
+CRITICAL INSTRUCTIONS:
+- This is image ${season} of a 4-season time-lapse series
+- Keep EVERYTHING identical except seasonal changes:
+  * Exact same garden shape and dimensions
+  * Exact same camera position and angle
+  * Exact same plant positions
+  * Exact same composition and framing
+  * Exact same background
 
-      // Concise photography-based prompt for Gemini 2.5 Flash
-      const prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). 
+ONLY change these seasonal elements for ${specificMonth}:
+${season === 'spring' ? 
+  '- Fresh green spring foliage\n- Early spring blooms\n- Bright green grass\n- Clear spring sky' :
+season === 'summer' ? 
+  '- Lush summer growth\n- Peak flowering\n- Deep green foliage\n- Bright summer sky' :
+season === 'autumn' ? 
+  '- Autumn leaf colors (reds, oranges, yellows)\n- Late season blooms\n- Golden/brown grass hints\n- Autumn sky tones' :
+  '- Winter dormancy\n- Bare branches on deciduous plants\n- Evergreen structure\n- Winter sky and light'}
+
+The provided reference image shows the exact garden layout, camera angle, and composition.
+Replicate it EXACTLY with only the seasonal changes listed above.
+Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
+        
+      } else {
+        // STANDARD APPROACH: Generate from scratch with detailed specifications
+        // Calculate precise camera position using geometric reference system
+        const gardenDiagonal = Math.sqrt(gardenWidth * gardenWidth + gardenLength * gardenLength);
+        const cameraDistance = Math.max(5, gardenDiagonal * 1.3); // Minimum 5m, scales with garden size
+        const cameraHeight = 1.6; // Eye level constant
+        const focalLength = gardenWidth > 4 ? 24 : 35; // Wide angle for larger gardens
+        
+        // Create geometric reference system - camera as fixed hub point
+        const gardenCenterX = gardenWidth / 2;
+        const gardenCenterY = gardenLength / 2;
+        
+        // Camera position in 3D coordinates (origin at garden front-left corner)
+        const cameraX = gardenCenterX; // Centered on width
+        const cameraY = -cameraDistance; // Negative Y = in front of garden
+        const cameraZ = cameraHeight; // Z = height
+        
+        // Target/look-at point (center of garden at ground level)
+        const targetX = gardenCenterX;
+        const targetY = gardenCenterY;
+        const targetZ = 0; // Ground level
+
+        // Concise photography-based prompt for Gemini 2.5 Flash
+        prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). 
 
 TIME-LAPSE SERIES: Image ${season} of 4 for Garden #${req.params.id} (Iteration ${iterationNumber})
 This is a fixed-camera time-lapse where ONLY plants change seasonally. The garden bed shape, camera position, and framing remain IDENTICAL across all 4 images.
@@ -1580,18 +1611,27 @@ The garden is a perfect RECTANGLE with 4 straight edges and 4 right-angle corner
 - The rectangle is aligned with the camera (not rotated)
 
 LOCKED CAMERA (NEVER CHANGES):
-Camera at X=${cameraX.toFixed(2)}m, Y=${cameraY.toFixed(2)}m, Z=${cameraZ}m
-Looking at center of rectangular garden
-Distance: ${cameraDistance.toFixed(2)}m from front edge
-View: Straight-on perpendicular view (NOT corner, NOT diagonal)
+Camera positioned DIRECTLY IN FRONT of the garden's center point
+NOT at a corner, NOT at 45 degrees, NOT diagonal
+Camera is aligned with the garden's front edge (parallel to it)
+Distance: ${cameraDistance.toFixed(2)}m straight back from front edge center
+Height: ${cameraHeight}m (eye level)
+
+VIEWING DIRECTION - ABSOLUTELY CRITICAL:
+The camera looks STRAIGHT at the garden from the FRONT (not corner):
+- You are standing directly in front of the garden bed
+- The front edge runs horizontally across your view
+- You see the garden straight-on like viewing a painting in a gallery
+- Both left and right edges recede equally toward the horizon
+- This is the SAME VIEW as page 2 of the garden design canvas
 
 EXACT RECTANGULAR GARDEN IN FRAME:
-- Front edge: Horizontal straight line at 15% from bottom
-- Back edge: Horizontal straight line at 55% from bottom  
-- Left edge: Straight diagonal from bottom-left to top-left corner
-- Right edge: Straight diagonal from bottom-right to top-right corner
-- The rectangle appears as a trapezoid due to perspective
-- All 4 straight edges and 4 corners visible
+- Front edge: HORIZONTAL line (parallel to frame bottom) at 15% height
+- Back edge: HORIZONTAL line (parallel to frame bottom) at 55% height
+- Left edge: Diagonal line receding from left
+- Right edge: Diagonal line receding from right  
+- The rectangle appears as a symmetrical trapezoid
+- NOT a diamond shape (that would be 45-degree view)
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
@@ -1630,9 +1670,23 @@ season === 'autumn' ?
 CRITICAL: You must show ONLY the exact plants listed in the positions above. Do NOT add any additional plants like tulips, daffodils, bulbs, or any other plants that are not explicitly listed. The garden must contain exactly ${canvasDesign.plants.length} plants as specified.
 
 Photography style: Professional garden photography captured in natural ${season === 'winter' ? 'soft diffused winter' : season === 'autumn' ? 'warm golden hour' : season === 'spring' ? 'bright morning' : 'clear midday'} light, showing realistic plant sizes and natural garden textures including mulch, soil, and stone edging.`;
+      } // Close the else block for standard approach
 
       // Generate the image using Gemini
-      const imageResult = await geminiAI.generateImage(prompt);
+      let imageResult;
+      if (useReferenceMode && referenceImage) {
+        // For reference mode, we need to pass the reference image to Gemini
+        // Extract base64 data from the referenceImage URL if needed
+        const base64Data = referenceImage.startsWith('data:image') 
+          ? referenceImage.split(',')[1] 
+          : referenceImage;
+        
+        // Generate with reference image
+        imageResult = await geminiAI.generateImageWithReference(prompt, base64Data);
+      } else {
+        // Standard generation without reference
+        imageResult = await geminiAI.generateImage(prompt);
+      }
       
       res.json({
         success: true,

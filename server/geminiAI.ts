@@ -225,6 +225,55 @@ class GeminiAI {
       throw new Error('Failed to generate image');
     }
   }
+
+  async generateImageWithReference(prompt: string, referenceImageBase64: string): Promise<{ imageUrl?: string; imageData?: string }> {
+    try {
+      // Use the special image generation model with reference image
+      const response = await this.ai.models.generateContent({
+        model: IMAGE_GENERATION_MODEL,
+        contents: [
+          {
+            role: "user", 
+            parts: [
+              {
+                inlineData: {
+                  data: referenceImageBase64,
+                  mimeType: "image/jpeg"
+                }
+              },
+              { text: prompt }
+            ]
+          }
+        ],
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
+      });
+
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
+        return {};
+      }
+
+      const content = candidates[0].content;
+      if (!content || !content.parts) {
+        return {};
+      }
+
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          // Return base64 encoded image data
+          const imageData = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+          return { imageData };
+        }
+      }
+
+      return {};
+    } catch (error) {
+      console.error('Error generating image with reference using Gemini:', error);
+      throw new Error('Failed to generate image with reference');
+    }
+  }
 }
 
 export default GeminiAI;
