@@ -1748,28 +1748,44 @@ CRITICAL: You must show ONLY the exact plants listed in the positions above. Do 
 Photography style: Professional garden photography captured in natural ${season === 'winter' ? 'soft diffused winter' : season === 'autumn' ? 'warm golden hour' : season === 'spring' ? 'bright morning' : 'clear midday'} light, showing realistic plant sizes and natural garden textures including mulch, soil, and stone edging.`;
       } // Close the else block for standard approach
 
-      // Generate the image using Gemini
-      let imageResult;
-      if (useReferenceMode && referenceImage) {
-        // For reference mode, we need to pass the reference image to Gemini
-        // Extract base64 data from the referenceImage URL if needed
-        const base64Data = referenceImage.startsWith('data:image') 
-          ? referenceImage.split(',')[1] 
-          : referenceImage;
-        
-        // Generate with reference image
-        imageResult = await geminiAI.generateImageWithReference(prompt, base64Data);
-      } else {
-        // Standard generation without reference
-        imageResult = await geminiAI.generateImage(prompt);
+      // Generate the image using Runware (better positioning than Gemini)
+      const { runwareService } = await import('./runwareAI');
+      
+      let imageUrl;
+      try {
+        imageUrl = await runwareService.generateSeasonalImage({
+          season,
+          specificTime: specificMonth || specificTime,
+          canvasDesign: {
+            plants: canvasDesign.plants.map((p: any) => ({
+              plant: {
+                id: p.id || 'unknown',
+                name: p.plantName || p.commonName || 'Unknown Plant'
+              },
+              position: {
+                x: p.x || 50,
+                y: p.y || 50
+              }
+            }))
+          },
+          gardenDimensions: {
+            width: gardenWidth || 4,
+            length: gardenLength || 3
+          },
+          useReferenceMode,
+          referenceImage
+        });
+      } catch (error) {
+        console.error('Runware generation failed:', error);
+        throw error;
       }
       
       res.json({
         success: true,
         season: season || 'summer',
-        imageUrl: imageResult.imageData || imageResult.imageUrl || null,
-        prompt: prompt,
-        message: imageResult.imageData || imageResult.imageUrl ? 'Seasonal image generated successfully' : 'Image generation in progress'
+        imageUrl: imageUrl || null,
+        prompt: 'Generated using Runware Stable Diffusion for precise positioning',
+        message: imageUrl ? 'Seasonal image generated successfully' : 'Image generation in progress'
       });
     } catch (error) {
       console.error("Error generating seasonal images:", error);
