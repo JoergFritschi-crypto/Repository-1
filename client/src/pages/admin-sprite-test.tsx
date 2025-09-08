@@ -224,35 +224,35 @@ export default function AdminSpriteTest() {
             </Card>
           )}
           
-          {generatedSprite && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Test Compositing</CardTitle>
-                <CardDescription>
-                  Test placing the Japanese Maple sprite at grid position (30, 5)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={handleTestComposite}
-                  disabled={isCompositing}
-                  className="w-full"
-                >
-                  {isCompositing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating Composite...
-                    </>
-                  ) : (
-                    <>
-                      <Leaf className="w-4 h-4 mr-2" />
-                      Test Composite at Position (30, 5)
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Test Compositing</CardTitle>
+              <CardDescription>
+                Test placing the Japanese Maple sprite at grid position (30, 5)
+                <br />
+                <span className="text-xs text-muted-foreground">Using existing sprite from earlier generation</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleTestComposite}
+                disabled={isCompositing}
+                className="w-full"
+              >
+                {isCompositing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating Composite...
+                  </>
+                ) : (
+                  <>
+                    <Leaf className="w-4 h-4 mr-2" />
+                    Test Composite at Position (30, 5)
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
           
           {compositeImage && (
             <Card>
