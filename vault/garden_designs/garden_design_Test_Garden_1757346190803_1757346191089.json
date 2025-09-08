@@ -1,0 +1,33 @@
+{
+  "id": "1a6c8b46-954b-49e8-b68f-1ffea6442c98",
+  "userId": "47166530",
+  "name": "Test Garden 1757346190803",
+  "location": "Test Location",
+  "units": "metric",
+  "shape": "rectangle",
+  "dimensions": {
+    "width": 4,
+    "length": 3
+  },
+  "slopePercentage": null,
+  "slopeDirection": null,
+  "sunExposure": "full_sun",
+  "soilType": "loam",
+  "soilPh": null,
+  "hasSoilAnalysis": false,
+  "soilAnalysis": null,
+  "hardiness_zone": null,
+  "usdaZone": null,
+  "rhsZone": null,
+  "hardinessCategory": null,
+  "climate_data": null,
+  "preferences": {},
+  "design_approach": "manual",
+  "layout_data": null,
+  "ai_generated": false,
+  "status": "draft",
+  "createdAt": "2025-09-08T15:43:10.997Z",
+  "updatedAt": "2025-09-08T15:43:10.997Z",
+  "created": "2025-09-08T15:43:11.030Z",
+  "version": "1.0"
+}

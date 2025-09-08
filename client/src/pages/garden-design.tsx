@@ -248,6 +248,7 @@ export default function GardenDesign() {
                 dimensions={garden.dimensions}
                 units={garden.units}
                 gardenId={garden.id}
+                gardenName={garden.name}
                 aiDesign={garden.layout_data}
                 gardenPlants={gardenPlants}
                 inventoryPlants={inventoryPlants}

@@ -19,6 +19,7 @@ interface GardenLayoutCanvasProps {
   dimensions: Record<string, number>;
   units: 'metric' | 'imperial';
   gardenId?: string;
+  gardenName?: string;
   aiDesign?: any;
   gardenPlants?: any[];
   inventoryPlants?: any[];
@@ -43,6 +44,7 @@ export default function GardenLayoutCanvas({
   dimensions,
   units,
   gardenId,
+  gardenName,
   aiDesign,
   gardenPlants,
   inventoryPlants,
@@ -991,6 +993,61 @@ export default function GardenLayoutCanvas({
           <CardTitle className="text-sm font-medium">
             Plants Inventory ({unplacedPlants.length} unplaced)
           </CardTitle>
+          {/* Quick Test Plants Button for Test Gardens */}
+          {gardenName?.includes("Test Garden") && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2 w-full"
+              onClick={async () => {
+                const testPlants = [
+                  { id: "japanese-maple-17569010727932", name: "Japanese Maple", scientificName: "Acer palmatum", plantType: "tree" },
+                  { id: "hosta-17569010727931", name: "Hosta", scientificName: "Hosta sieboldiana", plantType: "perennial" },
+                  { id: "rose-red-17569010727934", name: "Red Rose", scientificName: "Rosa", plantType: "shrub" },
+                  { id: "lavender-1756901072793", name: "English Lavender", scientificName: "Lavandula angustifolia", plantType: "perennial" }
+                ];
+                
+                try {
+                  // Add plants to database
+                  const response = await apiRequest("POST", `/api/gardens/${gardenId}/plants`, {
+                    plants: testPlants.map(p => ({
+                      plantId: p.id,
+                      quantity: 1
+                    }))
+                  });
+                  await response.json();
+                  
+                  // Add them to the canvas at specific positions
+                  const newPlacedPlants: PlacedPlant[] = testPlants.map((plant, index) => ({
+                    id: `${plant.id}-${Date.now()}-${index}`,
+                    plantId: plant.id,
+                    plantName: plant.name,
+                    scientificName: plant.scientificName,
+                    x: 20 + (index % 2) * 40, // Positions: 20%, 60%, 20%, 60%
+                    y: 20 + Math.floor(index / 2) * 40, // Positions: 20%, 20%, 60%, 60%
+                    quantity: 1,
+                    plantType: plant.plantType
+                  }));
+                  
+                  setPlacedPlants(prev => [...prev, ...newPlacedPlants]);
+                  
+                  toast({
+                    title: "Test Plants Added",
+                    description: "Added 4 test plants to the canvas"
+                  });
+                } catch (error) {
+                  console.error("Error adding test plants:", error);
+                  toast({
+                    title: "Error",
+                    description: "Failed to add test plants",
+                    variant: "destructive"
+                  });
+                }
+              }}
+            >
+              Add Test Plants (Maple, Hosta, Rose, Lavender)
+            </Button>
+          )}
         </CardHeader>
         <CardContent 
           className={`py-3 px-4 relative transition-colors ${isDraggingOverInventory ? 'bg-destructive/10 border-2 border-destructive border-dashed' : ''}`}
