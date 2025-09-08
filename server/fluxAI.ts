@@ -1,5 +1,7 @@
 // Flux AI for precise garden visualization
 import fetch from "node-fetch";
+import fs from "fs/promises";
+import path from "path";
 
 interface GardenVisualizationRequest {
   plantPositions: Array<{
@@ -18,12 +20,14 @@ interface GardenVisualizationRequest {
 
 export class FluxAI {
   private apiKey: string;
+  private imagesDir: string;
   
   constructor() {
     if (!process.env.HUGGINGFACE_API_KEY) {
       throw new Error("HUGGINGFACE_API_KEY is required for Flux");
     }
     this.apiKey = process.env.HUGGINGFACE_API_KEY;
+    this.imagesDir = path.join(process.cwd(), "client", "public", "generated-images");
   }
   
   async generateGardenVisualization(request: GardenVisualizationRequest): Promise<string> {
@@ -67,11 +71,19 @@ export class FluxAI {
       
       if (response.ok) {
         const buffer = await response.arrayBuffer();
-        const base64 = Buffer.from(buffer).toString('base64');
-        const dataUrl = `data:image/png;base64,${base64}`;
+        
+        // Save image to disk instead of using data URL (to avoid size limits)
+        await fs.mkdir(this.imagesDir, { recursive: true });
+        const timestamp = Date.now();
+        const filename = `flux-garden-${request.season}-${timestamp}.png`;
+        const filepath = path.join(this.imagesDir, filename);
+        
+        await fs.writeFile(filepath, Buffer.from(buffer));
+        
+        const publicUrl = `/generated-images/${filename}`;
         console.log("Flux: Successfully generated garden image");
-        console.log("Flux: Data URL length:", dataUrl.length, "characters");
-        return dataUrl;
+        console.log("Flux: Saved to:", publicUrl);
+        return publicUrl;
       } else if (response.status === 503) {
         // Model is loading, wait and retry
         const text = await response.text();
@@ -105,10 +117,19 @@ export class FluxAI {
           
           if (retry.ok) {
             const buffer = await retry.arrayBuffer();
-            const base64 = Buffer.from(buffer).toString('base64');
-            const dataUrl = `data:image/png;base64,${base64}`;
+            
+            // Save image to disk instead of using data URL
+            await fs.mkdir(this.imagesDir, { recursive: true });
+            const timestamp = Date.now();
+            const filename = `flux-garden-${request.season}-${timestamp}.png`;
+            const filepath = path.join(this.imagesDir, filename);
+            
+            await fs.writeFile(filepath, Buffer.from(buffer));
+            
+            const publicUrl = `/generated-images/${filename}`;
             console.log("Flux: Successfully generated garden image (after retry)");
-            return dataUrl;
+            console.log("Flux: Saved to:", publicUrl);
+            return publicUrl;
           }
         }
         throw new Error(`Flux model failed to load: ${response.status}`);
