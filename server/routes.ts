@@ -1488,7 +1488,7 @@ Rules:
       const { canvasDesign, season, specificTime } = req.body;
       
       // Get current iteration count for this garden
-      const visualizationData = await storage.getGardenVisualizationData(req.params.id);
+      const visualizationData = await storage.getVisualizationData(parseInt(req.params.id));
       const iterationNumber = (visualizationData?.iterationCount || 0) + 1;
       
       if (!canvasDesign || !canvasDesign.plants) {
