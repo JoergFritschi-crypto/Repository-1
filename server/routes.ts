@@ -1645,6 +1645,11 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
             return null;
           }).filter(Boolean).join(' | ')
         ).filter(row => row.length > 0).join('\n');
+        
+        // Log what we're sending to debug positioning
+        console.log('Grid coordinates being sent to Gemini:');
+        console.log(gridSpec);
+        console.log(`Total plants: ${canvasDesign.plants.length}`);
 
         // FORCEFUL GRID-BASED POSITIONING PROMPT
         prompt = `Generate a 1920x1080 pixel image.
@@ -1677,15 +1682,23 @@ The grid IS the ground surface itself - an invisible coordinate system on the ho
 Plot size: ${gridWidth} × ${gridLength} invisible grid cells on the GROUND (each cell = 10×10cm)
 Total plants to place ON this ground: EXACTLY ${canvasDesign.plants.length}
 
-PLANT PLACEMENT - Like placing chess pieces on specific squares:
+PLANT PLACEMENT - EXACT POSITIONS (DO NOT CHANGE):
 ${gridSpec}
 
-HOW TO INTERPRET COORDINATES:
-- Grid[72,50] = Position 72 cells from left, 50 cells from front ON THE GROUND
-- Plants grow UP from these ground positions (like flags on a map)
-- The grid is INVISIBLE - just a positioning system
-- NO GRID LINES, NO NUMBERS, NO LABELS in the image
-- Think: "Plant this specimen at ground position X=72, Y=50"
+EXAMPLE OF WHAT THIS MEANS:
+If you see:
+- Grid[10,20]: Japanese Maple
+- Grid[11,21]: Japanese Maple  
+- Grid[70,20]: Peony
+This means TWO maples clustered in the LEFT corner, one peony alone on the RIGHT.
+DO NOT "fix" this by moving one maple to the right for balance!
+
+HOW TO INTERPRET:
+- Grid[X,Y] = X cells from left edge, Y cells from front edge
+- Lower X values = LEFT side of plot
+- Higher X values = RIGHT side of plot
+- Lower Y values = FRONT of plot
+- Higher Y values = BACK of plot
 
 SPECIMEN COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
