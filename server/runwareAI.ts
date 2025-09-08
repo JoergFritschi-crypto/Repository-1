@@ -29,12 +29,21 @@ class RunwareService {
     if (!process.env.RUNWARE_API_KEY) {
       throw new Error('RUNWARE_API_KEY is not set');
     }
+    // Initialize Runware with API key
     this.runware = new Runware({ 
       apiKey: process.env.RUNWARE_API_KEY 
     });
   }
+  
+  async connect() {
+    // Some Runware SDK versions require connection
+    if (this.runware.connect) {
+      await this.runware.connect();
+    }
+  }
 
   async generateSeasonalImage(options: SeasonalImageOptions): Promise<string> {
+    console.log('Runware: Starting image generation');
     const { season, specificTime, canvasDesign, gardenDimensions } = options;
     
     // Calculate grid positions for precise placement
@@ -62,41 +71,45 @@ class RunwareService {
     // SD models follow instructions more literally than Gemini
     const prompt = this.buildPrompt(plantPositions, season, specificTime, canvasDesign.plants.length);
     const negativePrompt = this.buildNegativePrompt(canvasDesign.plants.length);
+    
+    console.log('Runware: Generated prompt:', prompt.substring(0, 200) + '...');
 
     try {
       let images;
       
       if (options.useReferenceMode && options.referenceImage) {
         // Use image-to-image for consistency across seasons
-        images = await this.runware.requestImages({
+        // Connect if needed
+        await this.connect();
+        
+        images = await this.runware.imageInference({
+          taskUUID: `garden-${Date.now()}`,
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
-          model: "civitai:101055@128078", // Realistic Vision V5.1 - excellent for outdoor scenes
-          width: 1920,
+          model: "runware:100@1", // Use standard model first
           height: 1080,
+          width: 1920,
           numberResults: 1,
-          outputType: "URL",
-          outputFormat: "PNG",
-          seedImage: options.referenceImage, // Use reference for consistency
+          inputImage: options.referenceImage, // Use reference for consistency
           strength: 0.65, // Keep composition but change season
-          steps: 30,
-          CFGScale: 7.5,
-          scheduler: "DPMSolverMultistep"
+          steps: 25,
+          CFGScale: 7.5
         });
       } else {
         // Initial generation
-        images = await this.runware.requestImages({
+        // Connect if needed
+        await this.connect();
+        
+        images = await this.runware.imageInference({
+          taskUUID: `garden-${Date.now()}`,
           positivePrompt: prompt,
           negativePrompt: negativePrompt,
-          model: "civitai:101055@128078", // Realistic Vision V5.1
-          width: 1920,
+          model: "runware:100@1", // Use standard model
           height: 1080,
+          width: 1920,
           numberResults: 1,
-          outputType: "URL",
-          outputFormat: "PNG",
-          steps: 30,
+          steps: 25,
           CFGScale: 7.5,
-          scheduler: "DPMSolverMultistep",
           seed: 42 // Fixed seed for more consistent layouts
         });
       }
