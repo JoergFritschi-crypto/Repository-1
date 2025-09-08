@@ -1487,6 +1487,10 @@ Rules:
 
       const { canvasDesign, season, specificTime } = req.body;
       
+      // Get current iteration count for this garden
+      const visualizationData = await storage.getGardenVisualizationData(req.params.id);
+      const iterationNumber = (visualizationData?.iterationCount || 0) + 1;
+      
       if (!canvasDesign || !canvasDesign.plants) {
         return res.status(400).json({ message: "Canvas design with plants is required" });
       }
@@ -1521,7 +1525,8 @@ Rules:
       const specificMonth = specificTime || monthMapping[season || 'summer'] || 'mid July';
 
       // Enhanced prompt using Gemini 2.5 Flash Image best practices
-      const prompt = `IMPORTANT: This is image ${season} in a SERIES of 4-6 seasonal images of the EXACT SAME garden bed. You must maintain absolute consistency across the entire series - identical camera angle, identical garden bed shape and edging, identical background, identical lighting direction, identical composition. The ONLY change should be the seasonal appearance of the plants themselves.
+      const prompt = `GARDEN PROJECT ID: ${req.params.id} | ITERATION: ${iterationNumber}
+IMPORTANT: This is image ${season} in iteration #${iterationNumber} of seasonal documentation for Garden #${req.params.id}. This garden may have multiple image series generated over time (this is iteration ${iterationNumber}). ALL images for Garden #${req.params.id} must maintain absolute consistency across all iterations - treating this as an ongoing photographic documentation project of this specific garden bed. Think of Garden #${req.params.id} as a specific location you're returning to photograph across different seasons and years.
 
 Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
 
@@ -1536,8 +1541,8 @@ Critical requirements for maintaining identical layout:
 - Use consistent eye-level viewing angle from the front of the bed
 - Show this exact same garden bed configuration in every image
 
-CRITICAL SERIES CONSISTENCY REQUIREMENTS:
-As this is part of a cohesive image series showing the same garden through seasons, maintain ABSOLUTE consistency in:
+CRITICAL SERIES CONSISTENCY REQUIREMENTS FOR GARDEN #${req.params.id}:
+This garden (ID: ${req.params.id}) is being documented across multiple sessions. Whether this is the first series or the tenth series for Garden #${req.params.id}, maintain ABSOLUTE consistency in:
 - Camera position: EXACT same viewing angle and distance in every image
 - Garden bed: IDENTICAL rectangular shape, size, and stone/brick edging style
 - Background: IDENTICAL simple grass lawn extending to horizon (no variations in grass pattern)
