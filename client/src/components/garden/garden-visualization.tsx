@@ -470,7 +470,7 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
                 <img
                   src={generatedImages[currentImageIndex].url}
                   alt={generatedImages[currentImageIndex].period}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded">
                   {generatedImages[currentImageIndex].period}
