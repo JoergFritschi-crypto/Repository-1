@@ -1524,14 +1524,40 @@ Rules:
       };
       const specificMonth = specificTime || monthMapping[season || 'summer'] || 'mid July';
 
-      // Calculate dynamic camera position based on garden dimensions
+      // Calculate precise camera position using geometric reference system
       const gardenDiagonal = Math.sqrt(gardenWidth * gardenWidth + gardenLength * gardenLength);
       const cameraDistance = Math.max(5, gardenDiagonal * 1.3); // Minimum 5m, scales with garden size
       const cameraHeight = 1.6; // Eye level constant
       const focalLength = gardenWidth > 4 ? 24 : 35; // Wide angle for larger gardens
+      
+      // Create geometric reference system - camera as fixed hub point
+      const gardenCenterX = gardenWidth / 2;
+      const gardenCenterY = gardenLength / 2;
+      
+      // Camera position in 3D coordinates (origin at garden front-left corner)
+      const cameraX = gardenCenterX; // Centered on width
+      const cameraY = -cameraDistance; // Negative Y = in front of garden
+      const cameraZ = cameraHeight; // Z = height
+      
+      // Target/look-at point (center of garden at ground level)
+      const targetX = gardenCenterX;
+      const targetY = gardenCenterY;
+      const targetZ = 0; // Ground level
 
       // Concise photography-based prompt for Gemini 2.5 Flash
-      const prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a locked tripod at exactly ${cameraDistance.toFixed(1)} meters from the garden's front edge, exactly ${cameraHeight}m height (standing eye-level). Horizon line at 65% up the frame. The camera uses a ${focalLength}mm lens with 15-degree downward tilt, perpendicular to the ${gardenWidth}m × ${gardenLength}m garden bed.
+      const prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). 
+
+FIXED CAMERA GEOMETRY:
+Camera position: X=${cameraX.toFixed(1)}m, Y=${cameraY.toFixed(1)}m, Z=${cameraZ.toFixed(1)}m
+Target point: X=${targetX.toFixed(1)}m, Y=${targetY.toFixed(1)}m, Z=${targetZ}m
+View vector: Camera looks from (${cameraX.toFixed(1)}, ${cameraY.toFixed(1)}, ${cameraZ.toFixed(1)}) to (${targetX.toFixed(1)}, ${targetY.toFixed(1)}, 0)
+Camera faces: 0° azimuth (directly north, parallel to garden's long edge)
+Field of view: ${focalLength}mm lens on full-frame sensor
+
+CRITICAL: Camera is positioned DIRECTLY IN FRONT of the garden, NOT at a corner. The view is STRAIGHT ON, showing the full front edge parallel to the bottom of the frame. This is NOT a 45-degree angle view.
+
+Garden dimensions: ${gardenWidth}m wide × ${gardenLength}m deep rectangular bed
+Frame composition: Garden occupies center 40% of frame height, all four edges visible with grass margins
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
