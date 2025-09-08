@@ -28,27 +28,40 @@ export class SpriteCompositor {
   }
   
   async createGardenBase(): Promise<Buffer> {
-    // Create a simple garden bed background
-    // For now, using a gradient green lawn with subtle texture
+    // Create a realistic garden bed with earth/soil texture
     const svg = `
       <svg width="${this.baseWidth}" height="${this.baseHeight}" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="lawn" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:#7cb342;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#689f38;stop-opacity:1" />
+          <linearGradient id="soil" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#8d6e63;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#6d4c41;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#5d4037;stop-opacity:1" />
           </linearGradient>
-          <pattern id="grass" patternUnits="userSpaceOnUse" width="4" height="4">
-            <rect width="4" height="4" fill="url(#lawn)"/>
-            <circle cx="1" cy="1" r="0.5" fill="#5e8e3a" opacity="0.3"/>
-            <circle cx="3" cy="3" r="0.5" fill="#8bc34a" opacity="0.2"/>
+          <pattern id="earth" patternUnits="userSpaceOnUse" width="8" height="8">
+            <rect width="8" height="8" fill="url(#soil)"/>
+            <circle cx="2" cy="2" r="1" fill="#5d4037" opacity="0.4"/>
+            <circle cx="6" cy="6" r="0.8" fill="#3e2723" opacity="0.3"/>
+            <circle cx="4" cy="5" r="0.6" fill="#4e342e" opacity="0.5"/>
+          </pattern>
+          <!-- Add mulch texture -->
+          <pattern id="mulch" patternUnits="userSpaceOnUse" width="12" height="12">
+            <rect width="12" height="12" fill="#6d4c41"/>
+            <rect x="1" y="2" width="3" height="1" fill="#5d4037" opacity="0.7"/>
+            <rect x="5" y="4" width="2" height="1" fill="#795548" opacity="0.6"/>
+            <rect x="7" y="8" width="3" height="1" fill="#4e342e" opacity="0.8"/>
+            <rect x="2" y="9" width="2" height="1" fill="#5d4037" opacity="0.5"/>
           </pattern>
         </defs>
-        <rect width="${this.baseWidth}" height="${this.baseHeight}" fill="url(#grass)"/>
+        <!-- Base soil layer -->
+        <rect width="${this.baseWidth}" height="${this.baseHeight}" fill="url(#earth)"/>
+        <!-- Add some mulch areas for variation -->
+        <rect x="0" y="${this.baseHeight * 0.7}" width="${this.baseWidth}" height="${this.baseHeight * 0.3}" 
+              fill="url(#mulch)" opacity="0.6"/>
         <!-- Add subtle depth with darker edges -->
-        <rect x="0" y="0" width="${this.baseWidth}" height="50" 
+        <rect x="0" y="0" width="${this.baseWidth}" height="80" 
+              fill="black" opacity="0.15"/>
+        <rect x="0" y="${this.baseHeight - 100}" width="${this.baseWidth}" height="100" 
               fill="black" opacity="0.1"/>
-        <rect x="0" y="${this.baseHeight - 50}" width="${this.baseWidth}" height="50" 
-              fill="black" opacity="0.05"/>
       </svg>
     `;
     
