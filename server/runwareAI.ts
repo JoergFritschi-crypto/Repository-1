@@ -152,15 +152,27 @@ class RunwareService {
     
     const seasonDesc = this.getSeasonDescription(season, specificTime);
     
-    // Build spatial description
-    let spatialDesc = `EXACT PLANT PLACEMENT (${plantCount} plants total):\n`;
+    // Build spatial description with explicit plant identification
+    let spatialDesc = `THESE EXACT ${plantCount} PLANTS ONLY:\n`;
     
     plantPositions.forEach((plant, index) => {
       const horizontalPos = plant.gridX < 20 ? "far left" : 
                            plant.gridX > 70 ? "far right" : "center";
       const depthPos = plant.depth;
       
-      spatialDesc += `${index + 1}. ${plant.name} positioned ${horizontalPos} in the ${depthPos}`;
+      // Be very explicit about plant identity
+      let plantDescription = plant.name;
+      if (plant.name.includes('Japanese Maple')) {
+        plantDescription = 'Japanese Maple tree (Acer palmatum) with distinctive palmate leaves';
+      } else if (plant.name.includes('Hosta')) {
+        plantDescription = 'Hosta plant with large broad green leaves';
+      } else if (plant.name.includes('Rose')) {
+        plantDescription = 'Red rose bush with red blooms';
+      } else if (plant.name.includes('Lavender')) {
+        plantDescription = 'English Lavender (Lavandula) with purple flower spikes';
+      }
+      
+      spatialDesc += `${index + 1}. ${plantDescription} positioned ${horizontalPos} in the ${depthPos}`;
       if (index < plantPositions.length - 1) spatialDesc += ", ";
     });
 
@@ -181,7 +193,9 @@ class RunwareService {
       duplicate plants, crowded, overlapping plants, clustered plants,
       plants in wrong positions, aerial view, top-down view, bird's eye view,
       garden bed, mulch bed, raised bed, flower bed, border garden,
-      close-up view, zoomed in, macro photography, narrow view`;
+      close-up view, zoomed in, macro photography, narrow view,
+      lupine, gerbera, daisy, tulip, daffodil, sunflower, peony, iris,
+      wrong plants, different plants, substitute plants`;
   }
 
   private getSeasonDescription(season: string, specificTime: string): string {
