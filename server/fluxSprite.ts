@@ -149,7 +149,9 @@ export class FluxSpriteGenerator {
     }
     
     prompt += "isolated on pure white background, ";
-    prompt += "NO ground, NO soil, NO pot, NO other elements, ";
+    prompt += "ABSOLUTELY NO POT, NO CONTAINER, NO PLANTER, NO VASE, ";
+    prompt += "NO ground, NO soil visible at base, NO other elements, ";
+    prompt += "plant appears to float/suspend in air, ";
     prompt += "single COMPLETE plant floating/isolated in center of frame, ";
     prompt += "show FULL HEIGHT from bottom of trunk/stem to top of foliage, ";
     prompt += "45 degree elevated viewing angle, ";
