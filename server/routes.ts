@@ -1533,7 +1533,7 @@ Rules:
       // Concise photography-based prompt for Gemini 2.5 Flash
       const prompt = `A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a fixed tripod position ${cameraDistance.toFixed(1)} meters from the garden's front edge at exactly ${cameraHeight}m height. Camera angle: 15 degrees downward tilt from horizontal. The camera uses a ${focalLength}mm lens positioned perpendicular to and centered on the ${gardenWidth}m × ${gardenLength}m garden bed.
 
-The entire garden bed is visible in frame, with the stone-edged front border positioned in the lower 15% of the image showing grass margin below. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
+The entire garden bed is visible in frame showing all four stone-edged borders: front border in lower 15% of image with grass margin below, left and right borders fully visible with grass margins on sides, back border clearly visible. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
 Garden layout with exact plant positions:
 ${plantPositions.join('\n')}
@@ -1546,7 +1546,7 @@ Critical requirements for maintaining identical layout:
 - Show this exact same garden bed configuration in every image
 
 Time-lapse photography consistency for Garden #${req.params.id}:
-Maintain identical camera position: ${cameraDistance.toFixed(1)}m distance, exactly ${cameraHeight}m height, 15-degree downward tilt, ${focalLength}mm lens, perpendicular angle, centered on ${gardenWidth}m width. Frame shows complete garden with front border in lower 15% of image. Camera locked at: distance=${cameraDistance.toFixed(1)}m, height=${cameraHeight}m, tilt=15°.
+Maintain identical camera position: ${cameraDistance.toFixed(1)}m distance, exactly ${cameraHeight}m height, 15-degree downward tilt, ${focalLength}mm lens, perpendicular angle, centered on ${gardenWidth}m width. Frame shows complete garden with all four borders visible: front border in lower 15% of image, left and right borders with grass margins, back border clear. Camera locked at: distance=${cameraDistance.toFixed(1)}m, height=${cameraHeight}m, tilt=15°.
 
 Background environment: Continuous grass lawn extending to horizon. Absolutely no wooden decking, paths, patios, structures, buildings, walls, fences, or trees anywhere in the image.
 - Lighting direction: Same sun angle/shadow direction (adjusted only for time of year)
