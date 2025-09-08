@@ -1626,10 +1626,7 @@ GARDEN FRAME (Stone-edged rectangle):
 - Left edge: x=(960 - ${gardenWidth * 120})px
 - Right edge: x=(960 + ${gardenWidth * 120})px
 
-STRUCTURED COORDINATE TABLE (as per CAD/technical drawing standards):
-┌────────┬──────────────────────┬────────────┬────────────┬──────────────┐
-│ Plant# │ Species              │ Canvas(cm) │ Image(px)  │ Grid Cell    │
-├────────┼──────────────────────┼────────────┼────────────┼──────────────┤
+INTERNAL POSITIONING DATA (for placement only - DO NOT render numbers/labels):
 ${canvasDesign.plants.map((p: any, i: number) => {
   const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
   const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
@@ -1642,9 +1639,14 @@ ${canvasDesign.plants.map((p: any, i: number) => {
   const plantName = (p.plantName || p.commonName || '').substring(0, 20);
   const gridCell = `${String.fromCharCode(65 + Math.floor(xCentimeters / 10))}${Math.floor(yCentimeters / 10) + 1}`;
   
-  return `│ ${String(i + 1).padEnd(6)} │ ${plantName.padEnd(20)} │ ${String(xCentimeters).padStart(3)},${String(yCentimeters).padStart(3)}   │ ${String(Math.round(xPixel)).padStart(4)},${String(Math.round(yPixel)).padStart(4)} │ ${gridCell.padEnd(12)} │`;
+  return `${plantName} at pixel coordinates (${Math.round(xPixel)}, ${Math.round(yPixel)}) - Grid ${gridCell}`;
 }).join('\n')}
-└────────┴──────────────────────┴────────────┴────────────┴──────────────┘
+
+CRITICAL: DO NOT RENDER ANY NUMBERS, LABELS, OR TEXT IN THE IMAGE
+- The coordinate data above is for POSITIONING ONLY
+- Do NOT add plant numbers or labels to the image
+- Do NOT show grid references visually
+- This should look like a natural garden photograph, not a diagram
 
 COORDINATE MAPPING FORMULA:
 - Canvas (0,0) = Garden front-left corner
