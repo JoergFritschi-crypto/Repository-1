@@ -70,6 +70,7 @@ export class FluxAI {
         const base64 = Buffer.from(buffer).toString('base64');
         const dataUrl = `data:image/png;base64,${base64}`;
         console.log("Flux: Successfully generated garden image");
+        console.log("Flux: Data URL length:", dataUrl.length, "characters");
         return dataUrl;
       } else if (response.status === 503) {
         // Model is loading, wait and retry
