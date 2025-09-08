@@ -1652,18 +1652,18 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         console.log(`Total plants: ${canvasDesign.plants.length}`);
 
         // FORCEFUL GRID-BASED POSITIONING PROMPT
-        prompt = `Generate a 1920x1080 pixel image showing a rectangular garden bed with prepared soil surrounded by grass.
+        prompt = `Generate a 1920x1080 pixel image showing a grass lawn.
 
 OBJECTS TO PLACE (COUNT: ${canvasDesign.plants.length}):
 ${gridSpec}
 
 CRITICAL RULES:
-1. Place EXACTLY ${canvasDesign.plants.length} objects - NO MORE, NO LESS
-2. Each object at its EXACT grid coordinate
+1. Place EXACTLY ${canvasDesign.plants.length} plants - NO MORE, NO LESS
+2. Each plant at its EXACT grid coordinate as a SEPARATE planted spot
 3. Grid[X,Y] means X units from left, Y units from bottom
-4. DO NOT add extra objects
-5. DO NOT move objects from specified positions
-6. DO NOT create symmetry or balance
+4. DO NOT cluster plants together - each has its OWN position
+5. DO NOT duplicate any plant (1 Lavender means ONLY 1, not 2)
+6. DO NOT create garden beds - plants are individually placed on lawn
 
 VIEWING ANGLE:
 Camera positioned at Y=0 (bottom edge) looking toward Y=${gridLength} (top edge).
