@@ -1531,9 +1531,9 @@ Rules:
       const focalLength = gardenWidth > 4 ? 24 : 35; // Wide angle for larger gardens
 
       // Concise photography-based prompt for Gemini 2.5 Flash
-      const prompt = `A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a fixed tripod position ${cameraDistance.toFixed(1)} meters from the garden's front edge at exactly ${cameraHeight}m height. Camera angle: 15 degrees downward tilt from horizontal. The camera uses a ${focalLength}mm lens positioned perpendicular to and centered on the ${gardenWidth}m × ${gardenLength}m garden bed.
+      const prompt = `A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a locked tripod at exactly ${cameraDistance.toFixed(1)} meters from the garden's front edge, exactly ${cameraHeight}m height (standing eye-level). Horizon line at 65% up the frame. The camera uses a ${focalLength}mm lens with 15-degree downward tilt, perpendicular to the ${gardenWidth}m × ${gardenLength}m garden bed.
 
-The entire garden bed is visible in frame showing all four stone-edged borders: front border in lower 15% of image with grass margin below, left and right borders fully visible with grass margins on sides, back border clearly visible. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
+The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
 Garden layout with exact plant positions:
 ${plantPositions.join('\n')}
@@ -1546,7 +1546,7 @@ Critical requirements for maintaining identical layout:
 - Show this exact same garden bed configuration in every image
 
 Time-lapse photography consistency for Garden #${req.params.id}:
-Maintain identical camera position: ${cameraDistance.toFixed(1)}m distance, exactly ${cameraHeight}m height, 15-degree downward tilt, ${focalLength}mm lens, perpendicular angle, centered on ${gardenWidth}m width. Frame shows complete garden with all four borders visible: front border in lower 15% of image, left and right borders with grass margins, back border clear. Camera locked at: distance=${cameraDistance.toFixed(1)}m, height=${cameraHeight}m, tilt=15°.
+Camera permanently locked at: ${cameraDistance.toFixed(1)}m distance, exactly ${cameraHeight}m height (standing eye-level, NOT drone view), 15-degree downward tilt, ${focalLength}mm lens. Exact frame proportions: horizon at 65% height, garden occupies 40% of frame height, front border at 15% from bottom, back border at 55% from bottom. The garden appears the same size in every frame - no variation in camera height or angle.
 
 Background environment: Continuous grass lawn extending to horizon. Absolutely no wooden decking, paths, patios, structures, buildings, walls, fences, or trees anywhere in the image.
 - Lighting direction: Same sun angle/shadow direction (adjusted only for time of year)
