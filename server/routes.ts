@@ -1543,8 +1543,17 @@ MATHEMATICALLY CALCULATED CAMERA POSITION (based on ${gardenWidth}m × ${gardenL
 - Focal Length: ${focalLength}mm equivalent (wide angle to capture entire garden)
 - Field of View: Must capture the ENTIRE garden including all four corners with margin
 
-CRITICAL FRAMING REQUIREMENT:
-The FRONT BORDER (nearest edge to camera) MUST be clearly visible in the bottom portion of the image with a small margin of grass below it. The stone/brick edging of the front border should be approximately 10-15% up from the bottom of the frame. This is NON-NEGOTIABLE - if the front border is cut off or not visible, the image is incorrect.
+🚨 CRITICAL FRAMING REQUIREMENT - READ THIS THREE TIMES 🚨:
+THE FRONT BORDER OF THE GARDEN (the edge closest to the camera) MUST BE VISIBLE!
+I repeat: THE FRONT BORDER MUST BE VISIBLE IN THE IMAGE!
+One more time: SHOW THE FRONT BORDER - THE NEAR EDGE OF THE GARDEN BED!
+
+Specifically:
+- The stone/brick edging of the FRONT BORDER should be clearly visible
+- Position it approximately 10-15% up from the bottom of the frame
+- Include a small strip of grass BELOW the front border
+- If you cannot see the front border in the image, YOU HAVE FAILED
+- Think of it like photographing a swimming pool - you MUST see the near edge!
 
 This is a FIXED TRIPOD POSITION calculated mathematically from the garden dimensions. Like professional time-lapse photography, this camera position NEVER changes between shots - only the plants and seasons change.
 
