@@ -1596,42 +1596,40 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         const targetY = gardenCenterY;
         const targetZ = 0; // Ground level
 
-        // Concise photography-based prompt for Gemini 2.5 Flash
+        // Detailed prompt for accurate first image
         prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). 
 
-TIME-LAPSE SERIES: Image ${season} of 4 for Garden #${req.params.id} (Iteration ${iterationNumber})
-This is a fixed-camera time-lapse where ONLY plants change seasonally. The garden bed shape, camera position, and framing remain IDENTICAL across all 4 images.
+CRITICAL: This is the FIRST image that will define all subsequent seasonal images. Plant positions must be EXACTLY as specified below.
 
-GARDEN SHAPE - CRITICAL:
-The garden is a perfect RECTANGLE with 4 straight edges and 4 right-angle corners.
-- Shape: RECTANGULAR ornamental garden bed (NOT octagon, NOT hexagon, NOT oval)
-- Dimensions: ${gardenWidth}m wide × ${gardenLength}m deep
-- Edges: Stone or brick edging forming a perfect rectangle
-- All 4 corners are 90-degree angles
-- The rectangle is aligned with the camera (not rotated)
+VIEWING ANGLE - MANDATORY:
+You are standing DIRECTLY IN FRONT of a rectangular garden bed, looking straight at it.
+- Camera position: Standing at ground level, ${cameraDistance.toFixed(2)}m from the front edge
+- View direction: Looking straight ahead (perpendicular to the front edge)
+- This is NOT a bird's eye view, NOT a corner view, NOT a 45-degree diagonal view
+- The front edge of the garden runs HORIZONTALLY across the bottom third of your view
+- Similar to looking at a stage from the audience - straight on
 
-LOCKED CAMERA (NEVER CHANGES):
-Camera positioned DIRECTLY IN FRONT of the garden's center point
-NOT at a corner, NOT at 45 degrees, NOT diagonal
-Camera is aligned with the garden's front edge (parallel to it)
-Distance: ${cameraDistance.toFixed(2)}m straight back from front edge center
-Height: ${cameraHeight}m (eye level)
+GARDEN SPECIFICATIONS:
+- Shape: Perfect rectangle ${gardenWidth}m wide × ${gardenLength}m deep
+- Edges: Visible stone/brick border on all 4 sides
+- The rectangle appears as a trapezoid due to perspective (NOT a diamond)
+- Front edge: Horizontal line at 15% from bottom of image
+- Back edge: Horizontal line at 55% from bottom of image
+- Side edges: Diagonal lines converging toward horizon
 
-VIEWING DIRECTION - ABSOLUTELY CRITICAL:
-The camera looks STRAIGHT at the garden from the FRONT (not corner):
-- You are standing directly in front of the garden bed
-- The front edge runs horizontally across your view
-- You see the garden straight-on like viewing a painting in a gallery
-- Both left and right edges recede equally toward the horizon
-- This is the SAME VIEW as page 2 of the garden design canvas
+EXACT PLANT PLACEMENT - CRITICAL:
+You MUST place plants at these EXACT positions (measured from front-left corner):
+${plantPositions.join('\n')}
 
-EXACT RECTANGULAR GARDEN IN FRAME:
-- Front edge: HORIZONTAL line (parallel to frame bottom) at 15% height
-- Back edge: HORIZONTAL line (parallel to frame bottom) at 55% height
-- Left edge: Diagonal line receding from left
-- Right edge: Diagonal line receding from right  
-- The rectangle appears as a symmetrical trapezoid
-- NOT a diamond shape (that would be 45-degree view)
+PLANT POSITIONING RULES:
+- Each plant MUST be at its specified grid position
+- Think of the garden as a grid where each square is 10cm × 10cm
+- Place each plant at the EXACT grid coordinates given (e.g., Grid B3 = 20cm from left, 30cm from front)
+- Plants near the front (low Y values) appear larger
+- Plants near the back (high Y values) appear smaller due to perspective
+- Maintain correct spacing between plants as specified
+- The distance relationships between plants are CRITICAL
+- Do NOT improvise or artistic interpret positions - use EXACT coordinates
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
