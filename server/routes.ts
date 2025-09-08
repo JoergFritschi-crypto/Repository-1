@@ -1531,9 +1531,9 @@ Rules:
       const focalLength = gardenWidth > 4 ? 24 : 35; // Wide angle for larger gardens
 
       // Concise photography-based prompt for Gemini 2.5 Flash
-      const prompt = `A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a fixed tripod position ${cameraDistance.toFixed(1)} meters from the garden's front edge at ${cameraHeight}m height. The camera uses a ${focalLength}mm lens positioned perpendicular to and centered on the ${gardenWidth}m × ${gardenLength}m garden bed.
+      const prompt = `A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a fixed tripod position ${cameraDistance.toFixed(1)} meters from the garden's front edge at exactly ${cameraHeight}m height. Camera angle: 15 degrees downward tilt from horizontal. The camera uses a ${focalLength}mm lens positioned perpendicular to and centered on the ${gardenWidth}m × ${gardenLength}m garden bed.
 
-The entire garden bed is visible in frame, with the stone-edged front border positioned in the lower 15% of the image showing grass margin below. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
+The entire garden bed is visible in frame, with the stone-edged front border positioned in the lower 15% of the image showing grass margin below. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
 Garden layout with exact plant positions:
 ${plantPositions.join('\n')}
@@ -1546,9 +1546,9 @@ Critical requirements for maintaining identical layout:
 - Show this exact same garden bed configuration in every image
 
 Time-lapse photography consistency for Garden #${req.params.id}:
-Maintain the same fixed camera position: ${cameraDistance.toFixed(1)}m distance, ${cameraHeight}m height, ${focalLength}mm lens, perpendicular angle, centered on ${gardenWidth}m width. Frame shows complete garden with front border in lower 15% of image. Camera distance formula: ${gardenDiagonal.toFixed(1)}m diagonal × 1.3 = ${cameraDistance.toFixed(1)}m.
+Maintain identical camera position: ${cameraDistance.toFixed(1)}m distance, exactly ${cameraHeight}m height, 15-degree downward tilt, ${focalLength}mm lens, perpendicular angle, centered on ${gardenWidth}m width. Frame shows complete garden with front border in lower 15% of image. Camera locked at: distance=${cameraDistance.toFixed(1)}m, height=${cameraHeight}m, tilt=15°.
 
-Background: Simple grass lawn only. No buildings, walls, trees, or structures.
+Background environment: Continuous grass lawn extending to horizon. Absolutely no wooden decking, paths, patios, structures, buildings, walls, fences, or trees anywhere in the image.
 - Lighting direction: Same sun angle/shadow direction (adjusted only for time of year)
 - Composition: Garden bed positioned identically in frame across all images
 - Ground texture: Same mulch/soil appearance (just seasonally appropriate color)
