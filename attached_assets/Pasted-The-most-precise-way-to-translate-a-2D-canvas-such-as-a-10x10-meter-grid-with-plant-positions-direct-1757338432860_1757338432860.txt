@@ -1,0 +1,35 @@
+The most precise way to translate a 2D canvas—such as a 10x10 meter grid with plant positions—directly into the first generated image is to use an explicit mapping from canvas coordinates to image locations before the image generation step, rather than relying solely on spatial consistency among consecutive images. This usually involves giving the image generation system access to structured data (such as XY coordinates or a layout matrix), which is then interpreted to position objects exactly, maintaining both scale and placement.
+
+Approach Recommendations
+2D Grid to Image Mapping
+Input your canvas plant positions as an array of XY coordinates (in centimeters or meters) to the image generation pipeline; this positional data should be mapped in advance to corresponding pixel locations on the image canvas, respecting the overall image size and resolution.
+
+Some design software and AI plugins (like CAD tools, certain garden design apps, or custom scripts in platforms such as Photoshop or Indesign) support direct translation from coordinate data to visual object placement via frameworks, CSV imports, or scriptable batch processes.
+
+Ensuring Scale and Placement
+Use a reference grid overlay (invisible or faint in the final output) during layout composition to ensure that plants align precisely as defined by their 2D coordinates. Batch alignment tools or "auto-fit" features help maintain this, as do object styles in design tools that fix anchor points and scales.
+
+Positioning routines in CAD or AI-based landscape design systems may need manual refinement for the initial image, using the platform's spatial anchoring features for pixel-perfect accuracy.
+
+Automation and Scripting
+If working with large numbers of objects/plants, consider using automated module imports: some garden layout solutions and object generation tools allow importing positions from CSV/excel, creating each plant at its exact X/Y coordinates.
+
+For generative models (such as Stable Diffusion or GANs), pre-compute an annotated mask or sketch with the plant positions marked on the grid, then use it as a "seed" image or conditioning input.
+
+Best Practice Summary
+First: Prepare a grid of plant coordinates matching the 10x10 meter layout, scaled to your image's dimensions.
+
+Second: Use batch import, mask guidance, or CAD/AI platform features to place all objects/plants using these coordinates.
+
+Third: If necessary, overlay a grid reference for manual adjustment or quality control in the first image.
+
+Fourth: Once the base image is perfectly aligned, use this output as the reference for subsequent images—consistency will then be maintained.
+
+This hybrid approach—combining algorithmic positioning with visual guides and manual refinement as needed—offers the highest precision for initial placement and spatial fidelity across your design process.
+
+Related
+Do you have a precise coordinate list for the 37 plants on the 10×10 m canvas
+Should the translation preserve scale, rotation, and lens distortion from the first image
+Can you supply the camera intrinsics and extrinsics used for that first image
+Would a 2D→3D reconstruction (voxel/point‑cloud) be acceptable to improve placement
+Do you need automated batch alignment or manual verification per plant
