@@ -152,7 +152,7 @@ class RunwareService {
     
     const seasonDesc = this.getSeasonDescription(season, specificTime);
     
-    // Build concise spatial description
+    // Build concise spatial description with visual hints
     let spatialDesc = `Plants: `;
     
     plantPositions.forEach((plant, index) => {
@@ -161,18 +161,23 @@ class RunwareService {
       const depth = plant.depth === "foreground" ? "front" :
                     plant.depth === "background" ? "back" : "mid";
       
-      // Shorter plant names
-      let plantName = plant.name;
-      if (plant.name.includes('Japanese Maple')) plantName = 'Japanese Maple';
-      else if (plant.name.includes('Hosta')) plantName = 'Hosta';
-      else if (plant.name.includes('Rose')) plantName = 'Red Rose';
-      else if (plant.name.includes('Lavender')) plantName = 'Lavender';
+      // Add visual descriptors to help model distinguish plants
+      let plantDesc = plant.name;
+      if (plant.name.includes('Japanese Maple')) {
+        plantDesc = 'red maple tree';
+      } else if (plant.name.includes('Hosta')) {
+        plantDesc = 'large-leaf hosta';
+      } else if (plant.name.includes('Rose')) {
+        plantDesc = 'red rose bush';
+      } else if (plant.name.includes('Lavender')) {
+        plantDesc = 'purple lavender';
+      }
       
-      spatialDesc += `${plantName} ${pos}-${depth}`;
+      spatialDesc += `${plantDesc} ${pos}-${depth}`;
       if (index < plantPositions.length - 1) spatialDesc += ", ";
     });
 
-    return `RAW photo, ${plantCount} DIFFERENT plant species on grass lawn. ${spatialDesc}. ${seasonDesc}, photorealistic, wide view, natural light, each plant clearly visible and separate`;
+    return `RAW photo of garden with EXACTLY: ${spatialDesc}. ${seasonDesc}, photorealistic, wide view, show variety not repetition`;
   }
 
   private buildNegativePrompt(plantCount: number): string {
