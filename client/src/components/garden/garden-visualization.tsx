@@ -147,8 +147,10 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
         throw new Error('Please add plants to your garden design before generating visualizations');
       }
       
-      // Generate images one by one to show progress
+      // Generate images using PERPLEXITY'S REFERENCE APPROACH
       const images = [];
+      let referenceImage: string | null = null;
+      
       for (let i = 0; i < periods.length; i++) {
         const periodIndex = periods[i];
         const details = getPeriodDetails(periodIndex);
@@ -156,18 +158,35 @@ export function GardenVisualization({ gardenId, onReturn }: GardenVisualizationP
         // Update progress
         setGenerationProgress((i / periods.length) * 100);
         
-        const response = await apiRequest('POST', `/api/gardens/${gardenId}/generate-seasonal-images`, {
+        // For the first image, generate normally
+        // For subsequent images, use the first as reference
+        const requestBody: any = {
           season: details.season,
           specificTime: details.fullPeriod,
           canvasDesign: canvasDesign
-        });
+        };
+        
+        if (i > 0 && referenceImage) {
+          // Use Perplexity's approach: pass reference image for consistency
+          requestBody.useReferenceMode = true;
+          requestBody.referenceImage = referenceImage;
+        }
+        
+        const response = await apiRequest('POST', `/api/gardens/${gardenId}/generate-seasonal-images`, requestBody);
         
         const image = await response.json();
+        const imageUrl = image.imageUrl || image.imageData;
+        
         images.push({
-          url: image.imageUrl || image.imageData,
+          url: imageUrl,
           period: details.fullPeriod,
           season: details.season
         });
+        
+        // Store first image as reference for all subsequent generations
+        if (i === 0 && imageUrl) {
+          referenceImage = imageUrl;
+        }
         
         // Update progress after each image
         setGenerationProgress(((i + 1) / periods.length) * 100);
