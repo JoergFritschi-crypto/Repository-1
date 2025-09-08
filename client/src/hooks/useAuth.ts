@@ -1,28 +1,44 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { User } from "@shared/schema";
+import { handleUnauthorizedError, shouldAutoRedirect } from "@/lib/authUtils";
 
 export function useAuth() {
-  const { data: user, isLoading } = useQuery<User>({
+  const { data: user, isLoading, error } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     retry: false,
   });
+
+  // Auto-redirect on auth errors
+  useEffect(() => {
+    if (error && error.message.includes('401') && shouldAutoRedirect()) {
+      handleUnauthorizedError(false);
+    }
+  }, [error]);
 
   return {
     user,
     isLoading,
     isAuthenticated: !!user,
+    error,
   };
 }
 
 // Separate hook for tier testing to avoid conditional hook calls
 export function useAuthWithTesting() {
-  const { data: user, isLoading } = useQuery<User>({
+  const { data: user, isLoading, error } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     retry: false,
   });
   
   const [testingTier, setTestingTier] = useState<string | null>(null);
+  
+  // Auto-redirect on auth errors
+  useEffect(() => {
+    if (error && error.message.includes('401') && shouldAutoRedirect()) {
+      handleUnauthorizedError(false);
+    }
+  }, [error]);
   
   // Check for tier testing mode
   useEffect(() => {

@@ -1,8 +1,15 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { handleUnauthorizedError, shouldAutoRedirect } from "./authUtils";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    
+    // Auto-redirect on 401 if appropriate
+    if (res.status === 401 && shouldAutoRedirect()) {
+      handleUnauthorizedError(false);
+    }
+    
     throw new Error(`${res.status}: ${text}`);
   }
 }
