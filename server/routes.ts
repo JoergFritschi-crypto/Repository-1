@@ -1521,7 +1521,9 @@ Rules:
       const specificMonth = specificTime || monthMapping[season || 'summer'] || 'mid July';
 
       // Enhanced prompt using Gemini 2.5 Flash Image best practices
-      const prompt = `Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
+      const prompt = `IMPORTANT: This is image ${season} in a SERIES of 4-6 seasonal images of the EXACT SAME garden bed. You must maintain absolute consistency across the entire series - identical camera angle, identical garden bed shape and edging, identical background, identical lighting direction, identical composition. The ONLY change should be the seasonal appearance of the plants themselves.
+
+Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed viewed from a standing position at the front edge, photographed in ${specificMonth} in the United Kingdom.
 
 This exact garden layout measures ${gardenWidth} meters wide by ${gardenLength} meters deep with the following precise plant positions maintained identically:
 
@@ -1534,14 +1536,22 @@ Critical requirements for maintaining identical layout:
 - Use consistent eye-level viewing angle from the front of the bed
 - Show this exact same garden bed configuration in every image
 
-CRITICAL BACKGROUND REQUIREMENTS FOR CONSISTENCY:
-- The surroundings must be IDENTICAL in every image: simple, well-maintained grass lawn extending to the horizon
-- NO buildings, houses, walls, fences, or structures of any kind in the background
-- NO background trees, shrubs, or plants outside the garden bed itself
-- NO paths, patios, or hardscaping except the simple garden bed edging
-- Just peaceful, uniform green grass surrounding the garden bed on all sides
-- Consistent simple sky appropriate for the season (blue for summer/spring, grey for winter, warm for autumn)
-- The ONLY variation between images should be the seasonal appearance of the plants IN the garden bed
+CRITICAL SERIES CONSISTENCY REQUIREMENTS:
+As this is part of a cohesive image series showing the same garden through seasons, maintain ABSOLUTE consistency in:
+- Camera position: EXACT same viewing angle and distance in every image
+- Garden bed: IDENTICAL rectangular shape, size, and stone/brick edging style
+- Background: IDENTICAL simple grass lawn extending to horizon (no variations in grass pattern)
+- NO buildings, houses, walls, fences, or structures - maintain this across ALL images
+- NO background trees, shrubs, or plants outside the garden bed
+- NO paths, patios, or hardscaping variations between images
+- Lighting direction: Same sun angle/shadow direction (adjusted only for time of year)
+- Composition: Garden bed positioned identically in frame across all images
+- Ground texture: Same mulch/soil appearance (just seasonally appropriate color)
+
+Think of this like photographing the same person's face across seasons - everything stays identical except seasonal changes. The ONLY variations should be:
+- Plant foliage colors and bloom states appropriate for ${specificMonth}
+- Sky color subtle seasonal variation (but same weather - clear day)
+- Grass color seasonal variation (green in summer, slightly brown in winter)
 
 Seasonal appearance for ${specificMonth}:
 ${season === 'spring' ? 
