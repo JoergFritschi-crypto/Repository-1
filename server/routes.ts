@@ -1512,7 +1512,28 @@ Rules:
         const gridCol = String.fromCharCode(65 + Math.floor(xCentimeters / 10)); // A-Z for 10cm grid columns
         const gridRow = Math.floor(yCentimeters / 10) + 1; // 1-N for 10cm grid rows
         
-        return `Plant ${index + 1}: ${p.plantName || p.commonName} (${p.scientificName}) at precise coordinates X=${xMeters}m, Y=${yMeters}m (Grid ${gridCol}${gridRow}, exact position ${xCentimeters}cm from left, ${yCentimeters}cm from front)`;
+        // Calculate relationships to other plants for triangulation
+        let relationships = [];
+        if (index > 0) {
+          const prevPlant = gardenPlants[index - 1];
+          const distance = Math.sqrt(
+            Math.pow((p.x - prevPlant.x) / 100 * gardenWidth, 2) + 
+            Math.pow((p.y - prevPlant.y) / 100 * gardenLength, 2)
+          ).toFixed(2);
+          relationships.push(`${distance}m from Plant ${index}`);
+        }
+        if (index > 1) {
+          const firstPlant = gardenPlants[0];
+          const distToFirst = Math.sqrt(
+            Math.pow((p.x - firstPlant.x) / 100 * gardenWidth, 2) + 
+            Math.pow((p.y - firstPlant.y) / 100 * gardenLength, 2)
+          ).toFixed(2);
+          relationships.push(`${distToFirst}m from Plant 1`);
+        }
+        
+        return `Plant ${index + 1}: ${p.plantName || p.commonName} (${p.scientificName})
+  Grid: ${gridCol}${gridRow} (${xCentimeters}cm from left, ${yCentimeters}cm from front)
+  Exact: X=${xMeters}m, Y=${yMeters}m${relationships.length > 0 ? '\n  Spacing: ' + relationships.join(', ') : ''}`;
       });
 
       // Map season to specific months for more precision
@@ -1550,24 +1571,38 @@ Rules:
 TIME-LAPSE SERIES: Image ${season} of 4 for Garden #${req.params.id} (Iteration ${iterationNumber})
 This is a fixed-camera time-lapse where ONLY plants change seasonally. The garden bed, camera position, and framing remain IDENTICAL across all 4 images.
 
-LOCKED CAMERA COORDINATES (NEVER CHANGES):
-Camera position: X=${cameraX.toFixed(2)}m, Y=${cameraY.toFixed(2)}m, Z=${cameraZ}m (exactly)
-Target point: X=${targetX.toFixed(2)}m, Y=${targetY.toFixed(2)}m, Z=${targetZ}m
-Distance from garden: Exactly ${cameraDistance.toFixed(2)}m
-Height: Exactly ${cameraHeight}m (standing eye level)
-Angle: 0° azimuth (perpendicular to front edge), 15° downward tilt
+LOCKED CAMERA POSITION (ABSOLUTELY FIXED):
+Camera location: X=${cameraX.toFixed(2)}m, Y=${cameraY.toFixed(2)}m, Z=${cameraZ}m
+Looking at: X=${targetX.toFixed(2)}m, Y=${targetY.toFixed(2)}m, Z=${targetZ}m
+Distance: Exactly ${cameraDistance.toFixed(2)}m DIRECTLY SOUTH of garden
+Height: Exactly ${cameraHeight}m (standing person's eye level)
+Direction: Camera faces TRUE NORTH (0° compass bearing)
+Tilt: 15° downward from horizontal
 Lens: ${focalLength}mm on full-frame sensor
 
-EXACT FRAMING (MUST BE IDENTICAL IN ALL 4 IMAGES):
-- Garden bed: ${gardenWidth}m wide × ${gardenLength}m deep
-- Front border position: 15% from bottom of frame (ALWAYS visible, NEVER cut off)
-- Back border position: 55% from bottom of frame
-- Left border: 20% from left edge of frame
-- Right border: 80% from left edge of frame  
-- Garden height in frame: Exactly 40% of total image height
-- All 4 borders MUST be fully visible with grass margins
+VIEWING ANGLE - CRITICAL REQUIREMENT:
+The camera is positioned DIRECTLY SOUTH of the garden, looking STRAIGHT NORTH.
+The front edge of the garden runs EAST-WEST and appears HORIZONTAL in the frame.
+This creates a PERPENDICULAR view where:
+- The front edge is PARALLEL to the bottom of the image
+- Both side edges converge equally toward the horizon
+- This is ABSOLUTELY NOT a diagonal/corner/45-degree view
+- The garden appears SYMMETRICAL left-to-right
 
-CRITICAL: This is NOT a drone view, NOT a corner view, NOT a 45-degree angle. Camera is positioned DIRECTLY IN FRONT, centered on garden width, looking straight at the garden.
+EXACT FRAMING (LOCKED FOR ALL 4 IMAGES):
+- Garden bed: ${gardenWidth}m wide × ${gardenLength}m deep
+- Front border: Horizontal line at 15% from bottom (NEVER cut off)
+- Back border: Horizontal line at 55% from bottom
+- Left border: Diagonal line from 20% to 35% horizontally
+- Right border: Diagonal line from 80% to 65% horizontally
+- Garden occupies: Exactly 40% of frame height, 60% of frame width
+
+ABSOLUTELY FORBIDDEN VIEWS:
+✗ NO corner views (camera at 45° to garden)
+✗ NO diagonal compositions
+✗ NO drone/aerial views
+✗ NO side angles
+✓ ONLY straight-on view from directly in front
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
