@@ -136,28 +136,25 @@ export class FluxSpriteGenerator {
   private buildSpritePrompt(request: SpriteGenerationRequest): string {
     const { plantName, season = 'summer' } = request;
     
-    // Build a prompt specifically for isolated sprite generation
-    let prompt = `COMPLETE FULL ${plantName} `;
+    // Try a completely different approach - focus on what we WANT
+    let prompt = `${plantName} plant cutout, `;
+    prompt += "transparent PNG background, ";
+    prompt += "digital botanical illustration, ";
+    prompt += "plant only with roots exposed, ";
+    prompt += "as if lifted from soil, ";
+    prompt += "scientific specimen style, ";
+    prompt += "45 degree viewing angle, ";
     
-    // Specify if it's a tree, shrub, or smaller plant
-    if (plantName.toLowerCase().includes('maple') || plantName.toLowerCase().includes('tree')) {
-      prompt += "TREE showing ENTIRE trunk and full canopy, ";
-    } else if (plantName.toLowerCase().includes('rose') || plantName.toLowerCase().includes('bush')) {
-      prompt += "BUSH showing complete plant from base to top, ";
-    } else {
-      prompt += "PLANT showing complete specimen from base to top, ";
+    // Plant-specific details
+    if (plantName.toLowerCase().includes('hosta')) {
+      prompt += "showing characteristic broad ribbed leaves in clump formation, ";
+    } else if (plantName.toLowerCase().includes('maple') || plantName.toLowerCase().includes('tree')) {
+      prompt += "complete tree with trunk and full canopy, ";
+    } else if (plantName.toLowerCase().includes('rose')) {
+      prompt += "rose bush with multiple stems and flowers, ";
     }
     
-    prompt += "isolated on pure white background, ";
-    prompt += "ABSOLUTELY NO POT, NO CONTAINER, NO PLANTER, NO VASE, ";
-    prompt += "NO ground, NO soil visible at base, NO other elements, ";
-    prompt += "plant appears to float/suspend in air, ";
-    prompt += "single COMPLETE plant floating/isolated in center of frame, ";
-    prompt += "show FULL HEIGHT from bottom of trunk/stem to top of foliage, ";
-    prompt += "45 degree elevated viewing angle, ";
-    prompt += "soft shadow beneath plant for depth, ";
-    prompt += "botanical specimen photography style, ";
-    prompt += "ultra detailed, sharp focus, ";
+    prompt += "botanical accuracy, detailed foliage, ";
     
     // Add seasonal descriptors
     if (season === 'spring') {
