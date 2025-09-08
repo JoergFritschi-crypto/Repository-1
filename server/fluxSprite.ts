@@ -137,9 +137,21 @@ export class FluxSpriteGenerator {
     const { plantName, season = 'summer' } = request;
     
     // Build a prompt specifically for isolated sprite generation
-    let prompt = `ISOLATED ${plantName} plant specimen on pure white background, `;
+    let prompt = `COMPLETE FULL ${plantName} `;
+    
+    // Specify if it's a tree, shrub, or smaller plant
+    if (plantName.toLowerCase().includes('maple') || plantName.toLowerCase().includes('tree')) {
+      prompt += "TREE showing ENTIRE trunk and full canopy, ";
+    } else if (plantName.toLowerCase().includes('rose') || plantName.toLowerCase().includes('bush')) {
+      prompt += "BUSH showing complete plant from base to top, ";
+    } else {
+      prompt += "PLANT showing complete specimen from base to top, ";
+    }
+    
+    prompt += "isolated on pure white background, ";
     prompt += "NO ground, NO soil, NO pot, NO other elements, ";
-    prompt += "single plant floating/isolated in center of frame, ";
+    prompt += "single COMPLETE plant floating/isolated in center of frame, ";
+    prompt += "show FULL HEIGHT from bottom of trunk/stem to top of foliage, ";
     prompt += "45 degree elevated viewing angle, ";
     prompt += "soft shadow beneath plant for depth, ";
     prompt += "botanical specimen photography style, ";
