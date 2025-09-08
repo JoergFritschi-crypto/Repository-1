@@ -1515,7 +1515,7 @@ Rules:
         // Calculate relationships to other plants for triangulation
         let relationships = [];
         if (index > 0) {
-          const prevPlant = gardenPlants[index - 1];
+          const prevPlant = canvasDesign.plants[index - 1];
           const distance = Math.sqrt(
             Math.pow((p.x - prevPlant.x) / 100 * gardenWidth, 2) + 
             Math.pow((p.y - prevPlant.y) / 100 * gardenLength, 2)
@@ -1523,7 +1523,7 @@ Rules:
           relationships.push(`${distance}m from Plant ${index}`);
         }
         if (index > 1) {
-          const firstPlant = gardenPlants[0];
+          const firstPlant = canvasDesign.plants[0];
           const distToFirst = Math.sqrt(
             Math.pow((p.x - firstPlant.x) / 100 * gardenWidth, 2) + 
             Math.pow((p.y - firstPlant.y) / 100 * gardenLength, 2)

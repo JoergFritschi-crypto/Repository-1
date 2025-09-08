@@ -1,0 +1,42 @@
+To achieve six images of exactly the same garden—identical geometry, plant positions, and camera parameters—across different seasons with Gemini 2.5 Flash, the prompt structure and workflow are crucial for consistency. The key is to combine a highly detailed descriptive prompt with careful use of reference images and/or "editing" style prompts to build up a time-lapse sequence where only seasonal changes are introduced, not overall scene structure or viewpoint.
+
+Prompt Strategy for Consistent Series
+Use an initial base image, generated or sketched, representing the desired plant layout, grid geometry, and camera setup.
+
+For each subsequent image (e.g., new season), instruct Gemini specifically: "Using the provided image of the garden grid, change only the seasonal aspect—foliage color, bloom state, ground texture—to match [season]. Keep all plant positions, camera angle, distance, lens effect, and composition untouched".
+
+Describe every parameter: garden grid size (e.g., "A 10 by 10 cm grid..."), plant types and their positions, camera distance, angle (e.g., "2 meters at 35 degrees"), lens type ("wide-angle 28mm"), lighting conditions, and artistic/photographic style ("photorealistic").
+
+Example Prompt Template
+text
+A photorealistic wide shot of an ornamental garden on a 10 by 10 cm grid canvas. Each plant is positioned precisely according to the grid coordinates: [list out plant species and their grid positions]. The camera is placed [exact meters] from the garden, [exact angle], using a [lens type], simulating a time-lapse installation. Create six images: identical in layout, perspective, and lighting, with only seasonal changes (spring: fresh green shoots, summer: abundant flowering, autumn: foliage color, winter: dormant state, etc.). Maintain the same camera and grid parameters throughout each image.
+For editing, after the first image, use:
+
+text
+Using the provided garden image, change only the seasonal foliage and terrain to [season] conditions. Keep all plant placements, garden geometry, camera setup, and scene composition unchanged.
+.
+
+Best Practices for Gemini 2.5 Flash
+Use "edit" or "preserve composition" language rather than generating from scratch for each image.
+
+Upload the previous image as a reference where possible and instruct the model to only alter seasonal elements.
+
+Be explicit about what cannot change (plant positions, grid, camera, lens, lighting if needed).
+
+Avoid vague language—Gemini performs best when the prompt is detailed, narrative, and leaves no ambiguity.
+
+Additional Tips
+Consider numerically listing grid coordinates and mapping each plant per prompt for maximum clarity.
+
+Test results iteratively: after generating one image, correct any drift in plant or viewpoint before proceeding to the next season's variant.
+
+If minor shifts occur, use the "edit only" paradigm for correction, always re-uploading the last "correct" reference.
+
+Gemini’s multimodal capabilities combined with very descriptive control in both initial photo and directed edits ("change only X, leave Y fixed") will help preserve scene consistency and allow for photorealistic time-lapse garden sequences.
+
+Related
+How can I enforce exact plant placement across six generated images
+Which input image and mask strategy yields the most consistent edits
+What prompt format best encodes camera, lens, distance, and angle
+How do I instruct Gemini to preserve lighting while changing seasons
+What post-processing steps keep geometry identical across outputs
