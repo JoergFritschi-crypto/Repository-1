@@ -1652,7 +1652,7 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         console.log(`Total plants: ${canvasDesign.plants.length}`);
 
         // FORCEFUL GRID-BASED POSITIONING PROMPT
-        prompt = `Generate a 1920x1080 pixel image showing a grass field.
+        prompt = `Generate a 1920x1080 pixel image showing a rectangular garden bed with prepared soil surrounded by grass.
 
 OBJECTS TO PLACE (COUNT: ${canvasDesign.plants.length}):
 ${gridSpec}
@@ -1666,9 +1666,11 @@ CRITICAL RULES:
 6. DO NOT create symmetry or balance
 
 VIEWING ANGLE:
-Camera at bottom edge looking up into the field.
-Objects with small Y values = foreground (close)
-Objects with large Y values = background (far)
+Camera positioned at Y=0 (bottom edge) looking toward Y=${gridLength} (top edge).
+Y-axis interpretation:
+- Y close to 0 = NEAR the camera (foreground)
+- Y close to ${gridLength} = FAR from camera (background)
+View direction: From SOUTH (bottom) looking NORTH (top)
 
 VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `${plant}: EXACTLY ${count}`).join('\n')}
