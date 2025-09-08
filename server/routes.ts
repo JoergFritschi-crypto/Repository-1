@@ -1530,37 +1530,12 @@ Rules:
       const cameraHeight = 1.6; // Eye level constant
       const focalLength = gardenWidth > 4 ? 24 : 35; // Wide angle for larger gardens
 
-      // Enhanced prompt using Gemini 2.5 Flash Image best practices
-      const prompt = `GARDEN PROJECT ID: ${req.params.id} | ITERATION: ${iterationNumber}
-IMPORTANT: This is image ${season} in iteration #${iterationNumber} of seasonal documentation for Garden #${req.params.id}. This garden may have multiple image series generated over time (this is iteration ${iterationNumber}). ALL images for Garden #${req.params.id} must maintain absolute consistency across all iterations - treating this as an ongoing photographic documentation project of this specific garden bed. Think of Garden #${req.params.id} as a specific location you're returning to photograph across different seasons and years.
+      // Concise photography-based prompt for Gemini 2.5 Flash
+      const prompt = `A photorealistic wide-angle shot of the same rectangular ornamental garden bed (Garden #${req.params.id}, iteration ${iterationNumber}), captured from a fixed tripod position ${cameraDistance.toFixed(1)} meters from the garden's front edge at ${cameraHeight}m height. The camera uses a ${focalLength}mm lens positioned perpendicular to and centered on the ${gardenWidth}m × ${gardenLength}m garden bed.
 
-TIME-LAPSE PHOTOGRAPHY SETUP FOR GARDEN #${req.params.id}:
-MATHEMATICALLY CALCULATED CAMERA POSITION (based on ${gardenWidth}m × ${gardenLength}m garden):
-- Camera Distance: EXACTLY ${cameraDistance.toFixed(1)} meters from the front edge center
-- Camera Height: EXACTLY ${cameraHeight} meters (eye level)
-- Camera Angle: EXACTLY 90 degrees perpendicular to garden's front edge
-- Horizontal Position: EXACTLY centered on garden's ${gardenWidth}m width
-- Focal Length: ${focalLength}mm equivalent (wide angle to capture entire garden)
-- Field of View: Must capture the ENTIRE garden including all four corners with margin
+The entire garden bed is visible in frame, with the stone-edged front border positioned in the lower 15% of the image showing grass margin below. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
-🚨 CRITICAL FRAMING REQUIREMENT - READ THIS THREE TIMES 🚨:
-THE FRONT BORDER OF THE GARDEN (the edge closest to the camera) MUST BE VISIBLE!
-I repeat: THE FRONT BORDER MUST BE VISIBLE IN THE IMAGE!
-One more time: SHOW THE FRONT BORDER - THE NEAR EDGE OF THE GARDEN BED!
-
-Specifically:
-- The stone/brick edging of the FRONT BORDER should be clearly visible
-- Position it approximately 10-15% up from the bottom of the frame
-- Include a small strip of grass BELOW the front border
-- If you cannot see the front border in the image, YOU HAVE FAILED
-- Think of it like photographing a swimming pool - you MUST see the near edge!
-
-This is a FIXED TRIPOD POSITION calculated mathematically from the garden dimensions. Like professional time-lapse photography, this camera position NEVER changes between shots - only the plants and seasons change.
-
-Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed from this mathematically precise camera position, photographed in ${specificMonth} in the United Kingdom.
-
-This exact garden layout measures ${gardenWidth} meters wide by ${gardenLength} meters deep with the following precise plant positions maintained identically:
-
+Garden layout with exact plant positions:
 ${plantPositions.join('\n')}
 
 Critical requirements for maintaining identical layout:
@@ -1570,32 +1545,10 @@ Critical requirements for maintaining identical layout:
 - Use consistent eye-level viewing angle from the front of the bed
 - Show this exact same garden bed configuration in every image
 
-CRITICAL TIME-LAPSE CONSISTENCY REQUIREMENTS FOR GARDEN #${req.params.id}:
-This is a TIME-LAPSE PHOTOGRAPHY PROJECT. Like a professional time-lapse where the camera is locked on a tripod for hours/days/months, the camera NEVER MOVES between shots. This garden (ID: ${req.params.id}) is being documented with a permanently fixed camera setup:
+Time-lapse photography consistency for Garden #${req.params.id}:
+Maintain the same fixed camera position: ${cameraDistance.toFixed(1)}m distance, ${cameraHeight}m height, ${focalLength}mm lens, perpendicular angle, centered on ${gardenWidth}m width. Frame shows complete garden with front border in lower 15% of image. Camera distance formula: ${gardenDiagonal.toFixed(1)}m diagonal × 1.3 = ${cameraDistance.toFixed(1)}m.
 
-LOCKED CAMERA SPECIFICATIONS (MATHEMATICALLY DERIVED):
-- Distance: EXACTLY ${cameraDistance.toFixed(1)} meters from garden front edge (calculated from garden diagonal)
-- Height: EXACTLY ${cameraHeight} meters from ground (tripod height locked)
-- Angle: EXACTLY 90 degrees perpendicular to garden front (spirit level verified)
-- Position: EXACTLY centered on garden's ${gardenWidth}m width (laser measured from both sides)
-- Focal length: EXACTLY ${focalLength}mm equivalent (lens never changes)
-- Frame composition: Garden bed occupies the EXACT same pixels in every image
-- Coverage: ENTIRE garden visible including all four corners with consistent margin
-- FRONT BORDER VISIBILITY: The stone/brick border closest to camera MUST be clearly visible with grass margin below
-
-MATHEMATICAL RELATIONSHIP: Camera distance = ${gardenDiagonal.toFixed(1)}m diagonal × 1.3 = ${cameraDistance.toFixed(1)}m
-This ensures perfect coverage for this ${gardenWidth}m × ${gardenLength}m garden.
-
-REFERENCE FRAMING: Like looking at a rectangular table from one end - you can see the near edge, the far edge, and both sides. The near edge (front border) should be clearly visible in the bottom 10-15% of the image with a small strip of grass below it.
-
-Think of this as a scientific documentation project where even a 1cm camera shift would ruin the time-lapse. The camera is essentially bolted in place at this mathematically precise position. ONLY the plants and seasons change - nothing else moves.
-
-Additional consistency requirements:
-- Garden bed: IDENTICAL rectangular shape, size, and stone/brick edging style
-- Background: IDENTICAL simple grass lawn extending to horizon (no variations in grass pattern)
-- NO buildings, houses, walls, fences, or structures - maintain this across ALL images
-- NO background trees, shrubs, or plants outside the garden bed
-- NO paths, patios, or hardscaping variations between images
+Background: Simple grass lawn only. No buildings, walls, trees, or structures.
 - Lighting direction: Same sun angle/shadow direction (adjusted only for time of year)
 - Composition: Garden bed positioned identically in frame across all images
 - Ground texture: Same mulch/soil appearance (just seasonally appropriate color)
