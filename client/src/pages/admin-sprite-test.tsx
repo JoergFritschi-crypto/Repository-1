@@ -15,6 +15,8 @@ export default function AdminSpriteTest() {
   const [season, setSeason] = useState("summer");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedSprite, setGeneratedSprite] = useState<string | null>(null);
+  const [isCompositing, setIsCompositing] = useState(false);
+  const [compositeImage, setCompositeImage] = useState<string | null>(null);
   
   const handleGenerateSprite = async () => {
     if (!plantName) {
@@ -62,6 +64,33 @@ export default function AdminSpriteTest() {
       link.href = generatedSprite;
       link.download = `sprite-${plantName.toLowerCase().replace(/\s+/g, '-')}-${season}.png`;
       link.click();
+    }
+  };
+  
+  const handleTestComposite = async () => {
+    setIsCompositing(true);
+    try {
+      const response = await apiRequest("POST", "/api/test/composite-garden", {});
+      const data = await response.json();
+      
+      if (data.success && data.compositeUrl) {
+        setCompositeImage(data.compositeUrl);
+        toast({
+          title: "Success",
+          description: "Composite garden created!"
+        });
+      } else {
+        throw new Error(data.message || "Failed to create composite");
+      }
+    } catch (error) {
+      console.error("Composite error:", error);
+      toast({
+        title: "Composite Failed",
+        description: (error as Error).message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsCompositing(false);
     }
   };
   
@@ -190,6 +219,100 @@ export default function AdminSpriteTest() {
                       <li>✓ Clear plant details?</li>
                     </ul>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {generatedSprite && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Test Compositing</CardTitle>
+                <CardDescription>
+                  Test placing the Japanese Maple sprite at grid position (30, 5)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={handleTestComposite}
+                  disabled={isCompositing}
+                  className="w-full"
+                >
+                  {isCompositing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating Composite...
+                    </>
+                  ) : (
+                    <>
+                      <Leaf className="w-4 h-4 mr-2" />
+                      Test Composite at Position (30, 5)
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+          
+          {compositeImage && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Composite Garden Result</CardTitle>
+                <CardDescription>
+                  Japanese Maple placed at exact grid coordinates (30, 5)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="relative rounded-lg overflow-hidden border">
+                    <img
+                      src={compositeImage}
+                      alt="Composite garden"
+                      className="w-full h-auto"
+                    />
+                    {/* Grid overlay to show positioning */}
+                    <div className="absolute inset-0 pointer-events-none opacity-20">
+                      <div className="grid grid-cols-[repeat(40,1fr)] grid-rows-[repeat(30,1fr)] h-full w-full">
+                        {[...Array(40 * 30)].map((_, i) => (
+                          <div key={i} className="border border-gray-500 border-opacity-20" />
+                        ))}
+                      </div>
+                    </div>
+                    {/* Position marker */}
+                    <div 
+                      className="absolute w-2 h-2 bg-red-500 rounded-full"
+                      style={{ 
+                        left: `${(30/40) * 100}%`, 
+                        top: `${(5/30) * 100}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-semibold mb-2">Positioning Test:</h4>
+                    <ul className="space-y-1 text-sm">
+                      <li>✓ Grid coordinates: (30, 5)</li>
+                      <li>✓ Pixel coordinates: ~(1440px, 240px)</li>
+                      <li>✓ Plant: Japanese Maple</li>
+                      <li>✓ Scale: 0.3 (tree sized for garden)</li>
+                      <li>✓ Depth scaling applied (background = smaller)</li>
+                    </ul>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = compositeImage;
+                      link.download = 'composite-garden.png';
+                      link.click();
+                    }}
+                    className="w-full"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Composite
+                  </Button>
                 </div>
               </CardContent>
             </Card>

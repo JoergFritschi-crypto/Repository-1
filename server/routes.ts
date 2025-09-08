@@ -1891,6 +1891,36 @@ Photography style: Professional garden photography captured in natural ${season 
       });
     }
   });
+  
+  // Test composite garden endpoint
+  app.post('/api/test/composite-garden', isAuthenticated, async (req: any, res) => {
+    try {
+      const { plants } = req.body;
+      const { spriteCompositor } = await import('./spriteCompositor');
+      
+      let compositeUrl;
+      
+      if (plants && plants.length > 0) {
+        // Use provided plants
+        compositeUrl = await spriteCompositor.compositeGarden(plants);
+      } else {
+        // Use test configuration
+        compositeUrl = await spriteCompositor.testComposite();
+      }
+      
+      res.json({
+        success: true,
+        compositeUrl,
+        message: 'Composite garden created successfully'
+      });
+    } catch (error) {
+      console.error("Error creating composite:", error);
+      res.status(500).json({ 
+        message: "Failed to create composite", 
+        error: (error as Error).message 
+      });
+    }
+  });
 
   // Gemini AI endpoints for additional features
   app.post('/api/gardens/:id/companion-plants', isAuthenticated, async (req: any, res) => {
