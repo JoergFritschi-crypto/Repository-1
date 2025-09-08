@@ -1543,6 +1543,9 @@ MATHEMATICALLY CALCULATED CAMERA POSITION (based on ${gardenWidth}m × ${gardenL
 - Focal Length: ${focalLength}mm equivalent (wide angle to capture entire garden)
 - Field of View: Must capture the ENTIRE garden including all four corners with margin
 
+CRITICAL FRAMING REQUIREMENT:
+The FRONT BORDER (nearest edge to camera) MUST be clearly visible in the bottom portion of the image with a small margin of grass below it. The stone/brick edging of the front border should be approximately 10-15% up from the bottom of the frame. This is NON-NEGOTIABLE - if the front border is cut off or not visible, the image is incorrect.
+
 This is a FIXED TRIPOD POSITION calculated mathematically from the garden dimensions. Like professional time-lapse photography, this camera position NEVER changes between shots - only the plants and seasons change.
 
 Create a photorealistic image with EXACT dimensions of 1920x1080 pixels (16:9 aspect ratio) showing this exact rectangular garden bed from this mathematically precise camera position, photographed in ${specificMonth} in the United Kingdom.
@@ -1569,9 +1572,12 @@ LOCKED CAMERA SPECIFICATIONS (MATHEMATICALLY DERIVED):
 - Focal length: EXACTLY ${focalLength}mm equivalent (lens never changes)
 - Frame composition: Garden bed occupies the EXACT same pixels in every image
 - Coverage: ENTIRE garden visible including all four corners with consistent margin
+- FRONT BORDER VISIBILITY: The stone/brick border closest to camera MUST be clearly visible with grass margin below
 
 MATHEMATICAL RELATIONSHIP: Camera distance = ${gardenDiagonal.toFixed(1)}m diagonal × 1.3 = ${cameraDistance.toFixed(1)}m
 This ensures perfect coverage for this ${gardenWidth}m × ${gardenLength}m garden.
+
+REFERENCE FRAMING: Like looking at a rectangular table from one end - you can see the near edge, the far edge, and both sides. The near edge (front border) should be clearly visible in the bottom 10-15% of the image with a small strip of grass below it.
 
 Think of this as a scientific documentation project where even a 1cm camera shift would ruin the time-lapse. The camera is essentially bolted in place at this mathematically precise position. ONLY the plants and seasons change - nothing else moves.
 
