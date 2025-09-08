@@ -1895,7 +1895,7 @@ Photography style: Professional garden photography captured in natural ${season 
   // Test composite garden endpoint
   app.post('/api/test/composite-garden', isAuthenticated, async (req: any, res) => {
     try {
-      const { plants } = req.body;
+      const { plants, twoPlants } = req.body;
       const { spriteCompositor } = await import('./spriteCompositor');
       
       let compositeUrl;
@@ -1903,8 +1903,11 @@ Photography style: Professional garden photography captured in natural ${season 
       if (plants && plants.length > 0) {
         // Use provided plants
         compositeUrl = await spriteCompositor.compositeGarden(plants);
+      } else if (twoPlants) {
+        // Use two-plant test configuration
+        compositeUrl = await spriteCompositor.testTwoPlantComposite();
       } else {
-        // Use test configuration
+        // Use single plant test configuration
         compositeUrl = await spriteCompositor.testComposite();
       }
       
@@ -1917,6 +1920,71 @@ Photography style: Professional garden photography captured in natural ${season 
       console.error("Error creating composite:", error);
       res.status(500).json({ 
         message: "Failed to create composite", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Test Gemini enhancement of composite
+  app.post('/api/test/gemini-enhance-composite', isAuthenticated, async (req: any, res) => {
+    try {
+      const { compositeUrl } = req.body;
+      
+      if (!compositeUrl) {
+        // First create a two-plant composite
+        const { spriteCompositor } = await import('./spriteCompositor');
+        const templateUrl = await spriteCompositor.testTwoPlantComposite();
+        
+        // Now enhance with Gemini
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const templatePath = path.join(process.cwd(), "client", "public", templateUrl);
+        const templateBuffer = await fs.readFile(templatePath);
+        const templateBase64 = templateBuffer.toString('base64');
+        
+        if (!geminiAI) {
+          return res.status(503).json({ message: "Gemini AI not configured" });
+        }
+        
+        const prompt = `You are a professional garden photographer. 
+Transform this template image into a photorealistic garden photograph.
+
+CRITICAL REQUIREMENTS:
+1. MAINTAIN EXACT PLANT POSITIONS - The Japanese Maple MUST stay in the far right background, the Hosta MUST stay in the right foreground
+2. Keep the same viewing angle and perspective
+3. Transform the simple brown background into realistic garden soil with texture
+4. Add natural lighting, shadows, and depth
+5. Make the plants look photorealistic with proper colors and textures
+6. Blend the plants naturally into the scene (remove white boxes/backgrounds)
+7. The final image should look like a professional garden photograph
+
+DO NOT:
+- Move plants to different positions
+- Add plants that aren't in the template
+- Change the overall composition
+
+The goal is photorealistic enhancement while preserving exact spatial positioning.`;
+        
+        const enhancedUrl = await geminiAI.generateImageFromImage(
+          templateBase64,
+          prompt,
+          'enhance-composite'
+        );
+        
+        res.json({
+          success: true,
+          templateUrl,
+          enhancedUrl,
+          message: 'Composite enhanced with Gemini'
+        });
+      } else {
+        // Use provided composite URL
+        return res.status(400).json({ message: "Direct composite URL enhancement not yet implemented" });
+      }
+    } catch (error) {
+      console.error("Error enhancing composite:", error);
+      res.status(500).json({ 
+        message: "Failed to enhance composite", 
         error: (error as Error).message 
       });
     }

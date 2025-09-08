@@ -17,6 +17,8 @@ export default function AdminSpriteTest() {
   const [generatedSprite, setGeneratedSprite] = useState<string | null>(null);
   const [isCompositing, setIsCompositing] = useState(false);
   const [compositeImage, setCompositeImage] = useState<string | null>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
   
   const handleGenerateSprite = async () => {
     if (!plantName) {
@@ -91,6 +93,35 @@ export default function AdminSpriteTest() {
       });
     } finally {
       setIsCompositing(false);
+    }
+  };
+  
+  const handleTestGeminiEnhance = async () => {
+    setIsEnhancing(true);
+    setEnhancedImage(null);
+    try {
+      const response = await apiRequest("POST", "/api/test/gemini-enhance-composite", {});
+      const data = await response.json();
+      
+      if (data.success && data.enhancedUrl) {
+        setCompositeImage(data.templateUrl);
+        setEnhancedImage(data.enhancedUrl);
+        toast({
+          title: "Success",
+          description: "Gemini enhanced the composite!"
+        });
+      } else {
+        throw new Error(data.message || "Failed to enhance composite");
+      }
+    } catch (error) {
+      console.error("Enhancement error:", error);
+      toast({
+        title: "Enhancement Failed",
+        description: (error as Error).message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsEnhancing(false);
     }
   };
   
@@ -226,28 +257,28 @@ export default function AdminSpriteTest() {
           
           <Card>
             <CardHeader>
-              <CardTitle>Test Compositing</CardTitle>
+              <CardTitle>Test the "Miracle Step"</CardTitle>
               <CardDescription>
-                Test placing the Japanese Maple sprite at grid position (30, 5)
+                Create composite with 2 plants, then have Gemini beautify it
                 <br />
-                <span className="text-xs text-muted-foreground">Using existing sprite from earlier generation</span>
+                <span className="text-xs text-muted-foreground">Japanese Maple at (30,5) + Hosta at (34,21)</span>
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={handleTestComposite}
-                disabled={isCompositing}
+                onClick={handleTestGeminiEnhance}
+                disabled={isEnhancing}
                 className="w-full"
               >
-                {isCompositing ? (
+                {isEnhancing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating Composite...
+                    Creating & Enhancing...
                   </>
                 ) : (
                   <>
                     <Leaf className="w-4 h-4 mr-2" />
-                    Test Composite at Position (30, 5)
+                    Test Composite → Gemini Enhancement
                   </>
                 )}
               </Button>
@@ -312,6 +343,67 @@ export default function AdminSpriteTest() {
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download Composite
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {enhancedImage && (
+            <Card>
+              <CardHeader>
+                <CardTitle>The "Miracle Step" Result</CardTitle>
+                <CardDescription>
+                  Gemini's enhancement of the composite template
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">Template (Input)</h4>
+                      <div className="rounded-lg overflow-hidden border">
+                        <img
+                          src={compositeImage || ''}
+                          alt="Template composite"
+                          className="w-full h-auto"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">Gemini Enhanced (Output)</h4>
+                      <div className="rounded-lg overflow-hidden border">
+                        <img
+                          src={enhancedImage}
+                          alt="Enhanced garden"
+                          className="w-full h-auto"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-semibold mb-2">Did Gemini Respect Positions?</h4>
+                    <ul className="space-y-1 text-sm">
+                      <li>❓ Japanese Maple still at (30, 5) - far right background?</li>
+                      <li>❓ Hosta still at (34, 21) - right foreground?</li>
+                      <li>❓ No plants moved or added?</li>
+                      <li>❓ Photorealistic quality achieved?</li>
+                    </ul>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = enhancedImage;
+                      link.download = 'gemini-enhanced-garden.png';
+                      link.click();
+                    }}
+                    className="w-full"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Enhanced Image
                   </Button>
                 </div>
               </CardContent>

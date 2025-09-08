@@ -146,8 +146,30 @@ export class SpriteCompositor {
         spriteUrl: "/plant-sprites/sprite-japanese-maple-summer-1757358029844.png",
         x: 30,  // Far right
         y: 5,   // Background
-        scale: 0.3,  // Smaller since it's a tree
+        scale: 0.5,  // Increase scale a bit
         name: "Japanese Maple"
+      }
+    ];
+    
+    return this.compositeGarden(testPlants);
+  }
+  
+  // Test with two plants for Gemini enhancement
+  async testTwoPlantComposite(): Promise<string> {
+    const testPlants: PlantPosition[] = [
+      {
+        spriteUrl: "/plant-sprites/sprite-japanese-maple-summer-1757358029844.png",
+        x: 30,  // Far right background
+        y: 5,   // Background position
+        scale: 0.6,  // Tree size
+        name: "Japanese Maple"
+      },
+      {
+        spriteUrl: "/plant-sprites/sprite-hosta-sieboldiana-summer-1757359540170.png", 
+        x: 34,  // Right foreground
+        y: 21,  // Foreground position
+        scale: 0.8,  // Smaller plant
+        name: "Hosta"
       }
     ];
     
