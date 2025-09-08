@@ -172,7 +172,7 @@ class RunwareService {
       if (index < plantPositions.length - 1) spatialDesc += ", ";
     });
 
-    return `RAW photo, ${plantCount} plants on grass lawn, wide view. ${spatialDesc}. ${seasonDesc}, photorealistic, natural light, documentary style, NOT artistic`;
+    return `RAW photo, ${plantCount} DIFFERENT plant species on grass lawn. ${spatialDesc}. ${seasonDesc}, photorealistic, wide view, natural light, each plant clearly visible and separate`;
   }
 
   private buildNegativePrompt(plantCount: number): string {
