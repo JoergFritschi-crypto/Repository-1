@@ -1860,6 +1860,38 @@ Photography style: Professional garden photography captured in natural ${season 
     }
   });
 
+  // Test sprite generation endpoint
+  app.post('/api/test/generate-sprite', isAuthenticated, async (req: any, res) => {
+    try {
+      const { plantName, season } = req.body;
+      
+      if (!plantName) {
+        return res.status(400).json({ message: "Plant name is required" });
+      }
+      
+      const { fluxSpriteGenerator } = await import('./fluxSprite');
+      
+      const spriteUrl = await fluxSpriteGenerator.generatePlantSprite({
+        plantName: plantName,
+        season: season || 'summer'
+      });
+      
+      res.json({
+        success: true,
+        spriteUrl,
+        plantName,
+        season: season || 'summer',
+        message: 'Sprite generated successfully'
+      });
+    } catch (error) {
+      console.error("Error generating sprite:", error);
+      res.status(500).json({ 
+        message: "Failed to generate sprite", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   // Gemini AI endpoints for additional features
   app.post('/api/gardens/:id/companion-plants', isAuthenticated, async (req: any, res) => {
     try {

@@ -591,6 +591,21 @@ export default function Admin() {
                             <span className="font-medium text-sm">Test Visualization</span>
                             <span className="text-xs text-muted-foreground mt-1">Seasonal images</span>
                           </Button>
+                          
+                          <Button
+                            variant="outline"
+                            className="h-auto flex flex-col items-center py-4 hover:bg-blue-50 hover:border-blue-300"
+                            onClick={() => {
+                              window.location.href = "/admin/sprite-test";
+                            }}
+                            data-testid="button-sprite-test"
+                          >
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                              <Leaf className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <span className="font-medium text-sm">Sprite Test</span>
+                            <span className="text-xs text-muted-foreground mt-1">Plant sprites</span>
+                          </Button>
                         </div>
                       </div>
                     </div>
