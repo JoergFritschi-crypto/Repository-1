@@ -1607,69 +1607,75 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         const targetY = gardenCenterY;
         const targetZ = 0; // Ground level
 
-        // Detailed prompt for accurate first image
-        prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio). 
+        // TECHNICAL BLUEPRINT PROMPT for precise first image
+        prompt = `Generate a 1920x1080 pixel image (16:9 widescreen aspect ratio).
 
-CRITICAL: This is the FIRST image that will define all subsequent seasonal images. Plant positions must be EXACTLY as specified below.
+TECHNICAL SPECIFICATION - PLANT PLACEMENT BLUEPRINT
+This is a TECHNICAL RENDERING, not artistic interpretation. Follow these coordinates EXACTLY.
 
-VIEWING ANGLE - MANDATORY:
-You are standing DIRECTLY IN FRONT of a rectangular garden bed, looking straight at it.
-- Camera position: Standing at ground level, ${cameraDistance.toFixed(2)}m from the front edge
-- View direction: Looking straight ahead (perpendicular to the front edge)
-- This is NOT a bird's eye view, NOT a corner view, NOT a 45-degree diagonal view
-- The front edge of the garden runs HORIZONTALLY across the bottom third of your view
-- Similar to looking at a stage from the audience - straight on
+CAMERA SPECIFICATIONS:
+- Position: ${cameraDistance.toFixed(2)}m directly in front of garden center
+- Height: 1.6m (eye level)
+- Angle: 0° (perpendicular to front edge, NO diagonal view)
+- FOV: Standard perspective (not wide angle distortion)
 
-GARDEN SPECIFICATIONS:
-- Shape: Perfect rectangle ${gardenWidth}m wide × ${gardenLength}m deep
-- Edges: Visible stone/brick border on all 4 sides
-- The rectangle appears as a trapezoid due to perspective (NOT a diamond)
-- Front edge: Horizontal line at 15% from bottom of image
-- Back edge: Horizontal line at 55% from bottom of image
-- Side edges: Diagonal lines converging toward horizon
+GARDEN FRAME (Stone-edged rectangle):
+- Dimensions: ${gardenWidth}m × ${gardenLength}m
+- Front edge: y=288px (15% from bottom)
+- Back edge: y=594px (55% from bottom)
+- Left edge: x=(960 - ${gardenWidth * 120})px
+- Right edge: x=(960 + ${gardenWidth * 120})px
 
-NARRATIVE GARDEN DESCRIPTION:
-Standing directly in front of this rectangular garden bed and looking straight ahead, you see ${canvasDesign.plants.length} plants arranged as follows:
+PLANT PLACEMENT AS PIXEL COORDINATES:
 ${canvasDesign.plants.map((p: any, i: number) => {
+  // Convert canvas percentages to actual pixel positions in the 1920x1080 image
   const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
   const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
   
-  // Describe position narratively
-  let location = "";
-  if (xCentimeters < gardenWidth * 100 * 0.33) location = "left";
-  else if (xCentimeters > gardenWidth * 100 * 0.67) location = "right";
-  else location = "center";
+  // Map garden coordinates to image pixels
+  // Garden occupies middle 40% of image height (y=288 to y=594)
+  // Width scales proportionally
+  const gardenPixelWidth = gardenWidth * 240; // Approximate pixels per meter
+  const gardenPixelHeight = 306; // 594 - 288
   
-  if (yCentimeters < gardenLength * 100 * 0.33) location += " front";
-  else if (yCentimeters > gardenLength * 100 * 0.67) location += " back";
-  else location += " middle";
+  const xPixel = 960 + ((xCentimeters / 100 - gardenWidth / 2) * 240);
+  const yPixel = 288 + (yCentimeters / (gardenLength * 100) * gardenPixelHeight);
   
-  return `- ${p.plantName || p.commonName} positioned in the ${location} section`;
+  return `Plant ${i + 1}: ${p.plantName || p.commonName}
+  - Canvas grid: ${Math.round(xCentimeters / 10)}×${Math.round(yCentimeters / 10)}
+  - Image pixels: x=${Math.round(xPixel)}px, y=${Math.round(yPixel)}px
+  - Bounding box center: [${Math.round(xPixel)}, ${Math.round(yPixel)}]`;
 }).join('\n')}
 
-EXACT PLANT LIST (${canvasDesign.plants.length} plants total):
+TECHNICAL PLANT LIST:
 ${plantPositions.join('\n')}
 
 PLANT COUNT VERIFICATION:
 ${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} instance${count > 1 ? 's' : ''}`).join('\n')}
 
-BOUNDING BOX APPROACH FOR PRECISION:
-1. Mentally create a bounding box for each plant at its grid position
-2. Plant #1's bounding box should be at its exact coordinates, not shifted
-3. Each subsequent plant gets its own bounding box at its specified location
-4. Do NOT let bounding boxes merge or overlap incorrectly
-5. Empty areas between bounding boxes remain empty (no filler plants)
+RENDERING MODE: TECHNICAL CAD BLUEPRINT
+- This is a TECHNICAL DIAGRAM, not artistic gardening
+- Place plants at EXACT pixel coordinates like placing markers on a map
+- Think of this as plotting points on a graph, not creating a garden
+- Each plant is a PIN dropped at specific X,Y coordinates
+- If coordinates say x=500, y=400, the plant CENTER must be at exactly those pixels
+- Empty spaces between plants are INTENTIONAL - do not fill them
+
+BOUNDING BOX PRECISION:
+- Each plant occupies a specific bounding box at its pixel coordinates
+- Do NOT shift plants for "better composition"
+- Do NOT merge nearby plants into groups
+- Maintain exact spacing even if it looks sparse
 
 CRITICAL ACCURACY RULES:
-- Show EXACTLY ${canvasDesign.plants.length} plants - no more, no less
-- Do NOT add any hostas unless listed above
-- Do NOT add any extra maples beyond the count specified
-- Do NOT add filler plants for "visual balance"
-- If a plant appears twice in the list (e.g., 2 maples), show BOTH
-- Empty spaces should remain empty (just mulch/soil)
-- This is documentary photography, not artistic interpretation
-- Plants MUST be at their exact grid positions specified above
-- Think of each plant as having a fixed bounding box that cannot move
+- Show EXACTLY ${canvasDesign.plants.length} plants - count them!
+- NO hostas unless specifically listed
+- NO extra maples beyond the count specified
+- NO filler plants for "visual balance"
+- If 2 maples are listed, show BOTH at their specified positions
+- Empty areas remain empty (just mulch)
+- This is TECHNICAL DOCUMENTATION, not art
+- Treat coordinates as ABSOLUTE, not suggestions
 
 The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
 
