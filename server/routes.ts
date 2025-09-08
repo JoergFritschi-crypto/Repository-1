@@ -1607,126 +1607,106 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         const targetY = gardenCenterY;
         const targetZ = 0; // Ground level
 
-        // CAD-STYLE DATA VISUALIZATION PROMPT
+        // Create 10x10cm grid mapping for precise positioning
+        const gridSize = 10; // 10cm grid cells
+        const gridWidth = Math.ceil(gardenWidth * 100 / gridSize);
+        const gridLength = Math.ceil(gardenLength * 100 / gridSize);
+        
+        // Initialize empty grid
+        const grid: string[][] = Array(gridLength).fill(null).map(() => 
+          Array(gridWidth).fill('EMPTY')
+        );
+        
+        // Place plants in grid
+        canvasDesign.plants.forEach((p: any) => {
+          const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
+          const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
+          
+          const gridX = Math.floor(xCentimeters / gridSize);
+          const gridY = Math.floor(yCentimeters / gridSize);
+          
+          if (gridX >= 0 && gridX < gridWidth && gridY >= 0 && gridY < gridLength) {
+            const plantName = (p.plantName || p.commonName || '').substring(0, 15);
+            grid[gridY][gridX] = plantName;
+          }
+        });
+        
+        // Create grid specification string - only list occupied cells
+        const gridSpec = grid.map((row, y) => 
+          row.map((cell, x) => {
+            if (cell !== 'EMPTY') {
+              return `Grid[${x},${y}]: ${cell}`;
+            }
+            return null;
+          }).filter(Boolean).join(' | ')
+        ).filter(row => row.length > 0).join('\n');
+
+        // SCIENTIFIC DOCUMENTATION PROMPT - NO GARDEN/DESIGN LANGUAGE
         prompt = `Generate a 1920x1080 pixel image.
 
-TASK: Visualize a dataset on a coordinate grid. Render as scatter plot based on exact input XY.
-MODE: Engineering rendering / Object placement by coordinate
-STYLE: CAD positional layout - NO artistic rendering, only faithful representation of data
+SCIENTIFIC BOTANICAL SPECIMEN DOCUMENTATION - AERIAL SURVEY PHOTOGRAPH
 
-CAMERA SPECIFICATIONS:
-- Position: ${cameraDistance.toFixed(2)}m directly in front of garden center
-- Height: 1.6m (eye level)
-- Angle: 0° (perpendicular to front edge, NO diagonal view)
-- FOV: Standard perspective (not wide angle distortion)
+OBJECTIVE: Create a photorealistic aerial documentation photograph of plant specimens in their exact measured positions.
+This is a scientific positional survey for research documentation, NOT landscaping or aesthetics
 
-GARDEN FRAME (Stone-edged rectangle):
-- Dimensions: ${gardenWidth}m × ${gardenLength}m
-- Front edge: y=288px (15% from bottom)
-- Back edge: y=594px (55% from bottom)
-- Left edge: x=(960 - ${gardenWidth * 120})px
-- Right edge: x=(960 + ${gardenWidth * 120})px
+SURVEY AREA SPECIFICATIONS:
+- Plot dimensions: ${gardenWidth}m × ${gardenLength}m rectangular research plot
+- Terrain type: ${gardenTerrain}
+- Climate zone: ${climateType}
+- Documentation season: ${season}
+- Photography conditions: Clear daylight, documentary style
 
-PLANT POSITIONS (USE FOR PLACEMENT ONLY - NO VISIBLE NUMBERS/TEXT):
-${canvasDesign.plants.map((p: any, i: number) => {
-  const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
-  const yCentimeters = Math.round(p.y / 100 * gardenLength * 100);
-  
-  const plantName = (p.plantName || p.commonName || '').substring(0, 20);
-  
-  // Describe position more naturally to avoid number rendering
-  let position = "";
-  if (xCentimeters < gardenWidth * 33) position = "far left";
-  else if (xCentimeters < gardenWidth * 66) position = "left-center";
-  else if (xCentimeters < gardenWidth * 100) position = "center";
-  else if (xCentimeters < gardenWidth * 133) position = "right-center";
-  else position = "far right";
-  
-  if (yCentimeters < gardenLength * 50) position += ", front";
-  else if (yCentimeters < gardenLength * 150) position += ", middle";
-  else position += ", back";
-  
-  return `${plantName}: ${position} area (${xCentimeters}cm from left, ${yCentimeters}cm from front)`;
-}).join('\n')}
+SPECIMEN POSITION DATA (10cm GRID SYSTEM):
+Total specimens to document: ${canvasDesign.plants.length}
 
-ABSOLUTE RULES:
-1. NO NUMBERS OR TEXT visible in the final image - this is a photograph, not a diagram
-2. NO STRAIGHT ROWS - plants are scattered organically as shown in coordinates
-3. COUNT: Exactly ${canvasDesign.plants.length} plants total (verify this!)
-4. If coordinates show clustering (multiple plants near each other), KEEP THEM CLUSTERED
-5. Empty areas are INTENTIONAL - do not fill gaps
+GRID OCCUPIED CELLS (All coordinates are grid indices, each cell = 10×10cm):
+${gridSpec}
 
-CRITICAL POSITIONING RULES:
-- DO NOT RENDER ANY NUMBERS, LABELS, OR TEXT IN THE IMAGE
-- The coordinate data above is for POSITIONING ONLY
-- ASYMMETRIC ARRANGEMENTS ARE INTENTIONAL - Do not "balance" the composition
-- If two plants of the same type are close together, KEEP THEM CLOSE
-- If one corner is empty and another has multiple plants, KEEP IT THAT WAY
-- Do NOT spread plants out for "better composition"
-- Example: If both maples are in the left corner, do NOT move one to the right
-- This is documenting an ACTUAL garden design, not creating an idealized one
+CRITICAL: All other grid cells (not listed above) are EMPTY control areas with bare ${gardenTerrain}
 
-COORDINATE MAPPING FORMULA:
-- Canvas (0,0) = Garden front-left corner
-- Canvas (${Math.round(gardenWidth * 100)},${Math.round(gardenLength * 100)}) = Garden back-right corner
-- Image garden bounds: x=[${960 - gardenWidth * 120}, ${960 + gardenWidth * 120}], y=[288, 594]
-- Each 10cm on canvas = 1 grid square
-- Perspective scaling applied to Y-axis
+SPECIMEN COUNT VERIFICATION:
+${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} specimen${count > 1 ? 's' : ''}`).join('\n')}
+TOTAL: Must show EXACTLY ${canvasDesign.plants.length} specimens
 
-TECHNICAL PLANT LIST:
-${plantPositions.join('\n')}
-
-PLANT COUNT VERIFICATION:
-${Object.entries(plantCounts).map(([plant, count]) => `- ${plant}: ${count} instance${count > 1 ? 's' : ''}`).join('\n')}
-
-INSTRUCTION: STRICT COORDINATE-BASED RENDERING
-Output should mimic a CAD positional layout with objects at exact [x,y] values in pixels.
-No auto-alignment or beautification. Draw items exactly at coordinates provided.
-
-CRITICAL FOR DUPLICATE OBJECTS:
-When two objects have similar coordinates (e.g., two maples at x≈720):
-- Place BOTH at their specified locations
-- Do NOT distribute them for symmetry
-- Do NOT apply compositional rules
-- Clustering is CORRECT if coordinates are close
+DOCUMENTATION REQUIREMENTS:
+1. EXACT POSITIONING: Each specimen MUST appear at its specified grid coordinate
+2. EMPTY SPACES: Unoccupied grid cells MUST remain empty - these are research control areas
+3. NO ADDITIONS: Document ONLY the ${canvasDesign.plants.length} specimens listed
+4. NO REARRANGEMENT: Asymmetric distributions are scientifically significant data points
+5. NO TEXT/LABELS: Pure photographic documentation only, no annotations
+6. CLUSTERING: If multiple specimens share nearby grid cells, they must remain clustered
 
 PROHIBITED ACTIONS:
-- No artistic interpretation
-- No symmetrical arrangement  
-- No compositional decisions
-- No style choices
-- No beautification
+- DO NOT apply aesthetic principles or compositional balance
+- DO NOT fill empty areas with additional specimens
+- DO NOT create symmetrical arrangements
+- DO NOT redistribute specimens for visual appeal
+- DO NOT add any text, numbers, or grid lines to the image
 
-BOUNDING BOX PRECISION:
-- Each plant occupies a specific bounding box at its pixel coordinates
-- Do NOT shift plants for "better composition"
-- Do NOT merge nearby plants into groups
-- Maintain exact spacing even if it looks sparse
+PHOTOGRAPHIC PARAMETERS:
+- Viewpoint: Ground-level documentary photograph (eye height ~1.6m)
+- Angle: Perpendicular view of research plot
+- Distance: ${cameraDistance.toFixed(1)}m from plot
+- Frame: Full plot visible with natural perspective
+- Style: Scientific accuracy over aesthetic composition
+- Background: Simple ${season} sky, no distractions
 
-FINAL VERIFICATION:
-Dataset contains exactly ${canvasDesign.plants.length} objects to plot.
-Each object has absolute [x,y] coordinates that must be rendered exactly as specified.
-This is data visualization, not garden design.
-Render as you would a scatter plot: exact positions, no interpretation.
+OUTPUT: High-resolution photographic documentation showing specimens at their exact grid positions.
 
-The garden occupies exactly 40% of frame height. All four stone-edged borders visible: front border at 15% from bottom, back border at 55% from bottom. Left and right borders fully visible with grass margins. Background: continuous grass lawn only - no wooden decking, no paths, no structures, no trees. This is frame ${season} of a time-lapse series photographed in ${specificMonth} in the United Kingdom.
+RESEARCH PLOT VISIBILITY:
+- Plot occupies 40% of frame height
+- Front edge at 15% from bottom of frame
+- Back edge at 55% from bottom of frame
+- All edges visible with surrounding ${gardenTerrain}
 
-Garden layout with exact plant positions:
-${plantPositions.join('\n')}
+SEASONAL DOCUMENTATION NOTE:
+This is ${season} documentation (${specificMonth}) showing specimens in their ${season} state.
+Maintain scientific accuracy for plant appearance in this season.
 
-Critical requirements for maintaining identical layout:
-- Preserve the exact spatial positions of every plant as specified above
-- Maintain identical plant groupings and spacing throughout
-- Keep the same rectangular garden bed shape with visible edging
-- Use consistent eye-level viewing angle from the front of the bed
-- Show this exact same garden bed configuration in every image
-
-Time-lapse photography consistency for Garden #${req.params.id}:
-Camera permanently locked at: ${cameraDistance.toFixed(1)}m distance, exactly ${cameraHeight}m height (standing eye-level, NOT drone view), 15-degree downward tilt, ${focalLength}mm lens. Exact frame proportions: horizon at 65% height, garden occupies 40% of frame height, front border at 15% from bottom, back border at 55% from bottom. The garden appears the same size in every frame - no variation in camera height or angle.
-
-Background environment: Continuous grass lawn extending to horizon. Absolutely no wooden decking, paths, patios, structures, buildings, walls, fences, or trees anywhere in the image.
-- Lighting direction: Same sun angle/shadow direction (adjusted only for time of year)
-- Composition: Garden bed positioned identically in frame across all images
+BACKGROUND ENVIRONMENT:
+- Simple continuous ${gardenTerrain} extending to horizon
+- No structures, paths, or non-specimen vegetation
+- Documentary photography style - no artistic elements
 - Ground texture: Same mulch/soil appearance (just seasonally appropriate color)
 
 Think of this like photographing the same person's face across seasons - everything stays identical except seasonal changes. The ONLY variations should be:
