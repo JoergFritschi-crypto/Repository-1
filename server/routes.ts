@@ -1654,16 +1654,22 @@ Output: 1920x1080 pixel image (16:9 widescreen aspect ratio).`;
         // FORCEFUL GRID-BASED POSITIONING PROMPT
         prompt = `Generate a 1920x1080 pixel image showing a grass lawn.
 
-OBJECTS TO PLACE (COUNT: ${canvasDesign.plants.length}):
+PLANT POSITIONS (MUST BE SPATIALLY SEPARATED):
 ${gridSpec}
 
-CRITICAL RULES:
-1. Place EXACTLY ${canvasDesign.plants.length} plants - NO MORE, NO LESS
-2. Each plant at its EXACT grid coordinate as a SEPARATE planted spot
-3. Grid[X,Y] means X units from left, Y units from bottom
-4. DO NOT cluster plants together - each has its OWN position
-5. DO NOT duplicate any plant (1 Lavender means ONLY 1, not 2)
-6. DO NOT create garden beds - plants are individually placed on lawn
+SPATIAL INTERPRETATION:
+- Grid[7,24]: FAR LEFT, NEAR FRONT (bottom-left corner area)
+- Grid[17,13]: CENTER-LEFT, MIDDLE DEPTH
+- Grid[30,5]: CENTER-RIGHT, FAR BACK (background)
+- Grid[34,21]: FAR RIGHT, NEAR FRONT (bottom-right area)
+
+CRITICAL SPACING RULES:
+1. Show EXACTLY ${canvasDesign.plants.length} plants total
+2. Plants MUST be WIDELY SEPARATED across the lawn
+3. NO clustering - each plant in its OWN SEPARATE SPOT
+4. Lavender (Grid[7,24]) must be FAR AWAY from Hosta (Grid[34,21])
+5. Japanese Maple (Grid[30,5]) must be in BACKGROUND, others in foreground/middle
+6. DO NOT group plants together in one bed
 
 VIEWING ANGLE:
 Camera positioned at Y=0 (bottom edge) looking toward Y=${gridLength} (top edge).
