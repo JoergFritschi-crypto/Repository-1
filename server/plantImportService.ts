@@ -56,17 +56,8 @@ export class PlantImportService {
     }
     
     try {
-      // Try searching without any filters first to get ALL plants if it's a genus search
-      const isGenusSearch = query.toLowerCase().match(/^[a-z]+$/); // Single word, likely a genus
-      let searchUrl = `https://perenual.com/api/species-list?key=${this.perenualApiKey}`;
-      
-      if (isGenusSearch) {
-        // For genus searches, get a larger dataset and filter client-side
-        searchUrl += `&per_page=100`; // Max per page
-      } else {
-        // For other searches, use the query parameter
-        searchUrl += `&q=${encodeURIComponent(query)}&per_page=100`;
-      }
+      // Always use the query parameter but with max results per page
+      const searchUrl = `https://perenual.com/api/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}&per_page=100`;
       
       console.log(`Searching Perenual with URL: ${searchUrl.replace(this.perenualApiKey, 'API_KEY')}`);
       
@@ -78,15 +69,20 @@ export class PlantImportService {
       }
       
       const initialData = await initialResponse.json() as any;
-      const totalPages = Math.min(initialData.last_page || 1, isGenusSearch ? 10 : 5); // More pages for genus searches
+      const totalPages = initialData.last_page || 1;
+      const totalResults = initialData.total || 0;
+      
+      console.log(`Perenual API reports ${totalResults} total results across ${totalPages} pages for "${query}"`);
       
       let allPlants = initialData.data || [];
       
-      // Fetch additional pages if there are more
+      // Fetch ALL available pages (up to a reasonable limit)
       if (totalPages > 1) {
+        const maxPages = Math.min(totalPages, 20); // Fetch up to 20 pages (2000 results max)
         const pagePromises = [];
-        for (let page = 2; page <= totalPages; page++) {
-          const pageUrl = searchUrl + `&page=${page}`;
+        
+        for (let page = 2; page <= maxPages; page++) {
+          const pageUrl = `${searchUrl}&page=${page}`;
           pagePromises.push(
             fetch(pageUrl, { method: 'GET' })
               .then(res => res.json())
@@ -102,25 +98,11 @@ export class PlantImportService {
         additionalPages.forEach(plants => {
           allPlants = allPlants.concat(plants);
         });
+        
+        console.log(`Actually fetched ${maxPages} pages with ${allPlants.length} total results`);
       }
       
-      // If it's a genus search, filter the results client-side
-      if (isGenusSearch) {
-        const searchLower = query.toLowerCase();
-        allPlants = allPlants.filter((plant: any) => {
-          const genus = (plant.genus || '').toLowerCase();
-          const scientificName = (plant.scientific_name?.[0] || plant.scientific_name || '').toLowerCase();
-          const commonName = (plant.common_name || '').toLowerCase();
-          
-          return genus === searchLower || 
-                 genus.includes(searchLower) ||
-                 scientificName.startsWith(searchLower) ||
-                 commonName.includes(searchLower);
-        });
-        console.log(`Filtered ${allPlants.length} ${query} plants from broader search`);
-      }
-      
-      console.log(`Perenual search for "${query}" returned ${allPlants.length} results across ${totalPages} pages`);
+      console.log(`Perenual search for "${query}" returned ${allPlants.length} results`);
       
       // Transform to our format
       return allPlants.map((plant: any) => ({
