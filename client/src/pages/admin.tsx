@@ -130,8 +130,15 @@ export default function Admin() {
         title: "Plant Verified",
         description: "Plant has been verified successfully!",
       });
+      // Invalidate all related queries to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ["/api/admin/plants/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/plants/search"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return typeof key === 'string' && key.startsWith('/api/plants/search');
+        }
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/plants"] });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -174,8 +181,15 @@ export default function Admin() {
         title: "Plant Deleted",
         description: "Plant has been removed from the database.",
       });
+      // Invalidate all related queries to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ["/api/admin/plants/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/plants/search"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return typeof key === 'string' && key.startsWith('/api/plants/search');
+        }
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/plants"] });
     },
     onError: () => {
       toast({
