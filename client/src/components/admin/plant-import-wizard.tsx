@@ -581,9 +581,6 @@ export function PlantImportWizard() {
                 </p>
                 <div className="flex gap-1 mt-1">
                   {getSourceBadges(plant)}
-                  {plant.family && (
-                    <Badge variant="outline">{plant.family}</Badge>
-                  )}
                 </div>
               </div>
             </div>
