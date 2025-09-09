@@ -53,6 +53,7 @@ export class PlantImportService {
     'helianthus lemon queen': 'pauciflorus',
     'helianthus monarch': 'atrorubens',
     'helianthus happy days': 'annuus',
+    'helianthus sunshine daydream': 'annuus',  // Another annual cultivar
     // Note: Sunfinity Series cultivars should not have species per ICNCP
     // They will be formatted as: Helianthus Sunfinity Series 'cultivar name'
     
@@ -160,11 +161,16 @@ export class PlantImportService {
     // Check if this is a hybrid (contains ×)
     const isHybrid = scientificName.includes('×') || scientificName.toLowerCase().includes(' x ');
     
-    // Fix ALL CAPS issue first
-    if (scientificName && scientificName === scientificName.toUpperCase()) {
-      console.log('Detected ALL CAPS:', scientificName);
+    // Fix ALL CAPS or improper capitalization (e.g., "SUNFINITY" or every word capitalized)
+    let words = scientificName.split(/\s+/);
+    const hasImproperCaps = words.length > 0 && words.some(word => 
+      word.length > 3 && word === word.toUpperCase() && /[A-Z]/.test(word)
+    );
+    
+    if (scientificName && (scientificName === scientificName.toUpperCase() || hasImproperCaps)) {
+      console.log('Detected improper capitalization:', scientificName);
       // Convert to proper case: first word capitalized (genus), rest lowercase except cultivar names
-      const words = scientificName.split(/\s+/);
+      words = scientificName.split(/\s+/);
       if (words.length > 0) {
         // First word is genus - capitalize it
         words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
