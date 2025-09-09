@@ -286,7 +286,7 @@ export class ImageGenerationService {
         return gardenContext;
       
       case "detail":
-        return `Macro botanical photography of ${botanicalId}, ${characteristics}, close-up showing ${plant.flowerColor ? `${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} flowers and` : ""} leaf detail with accurate venation pattern, botanical accuracy, sharp focus on diagnostic features, true to species morphology`;
+        return `Extreme close-up macro photograph of ONLY the flower head or leaf of ${botanicalId}, ${characteristics}, filling entire frame with single ${plant.flowerColor ? `${Array.isArray(plant.flowerColor) ? plant.flowerColor.join(" and ") : plant.flowerColor} flower` : "flower or leaf"}, NO full plant visible, zoomed in detail showing texture and patterns, macro lens photography, botanical detail study, sharp focus on petals or leaf venation, true to species morphology`;
       
       default:
         return `${botanicalId} in natural setting, ${characteristics}, botanically accurate, photorealistic`;
