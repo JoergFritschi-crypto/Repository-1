@@ -1,8 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
 
 const app = express();
+
+// Serve static files from public directory
+app.use('/generated', express.static(path.join(process.cwd(), 'public', 'generated')));
+app.use('/generated-images', express.static(path.join(process.cwd(), 'public', 'generated-images')));
 
 app.use((req, res, next) => {
   const start = Date.now();
