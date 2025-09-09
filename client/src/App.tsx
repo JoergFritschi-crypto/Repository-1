@@ -16,6 +16,7 @@ import PremiumDashboard from "@/pages/premium-dashboard";
 import Admin from "@/pages/admin";
 import AdminTestVisualization from "@/pages/admin-test-visualization";
 import AdminSpriteTest from "@/pages/admin-sprite-test";
+import InpaintingComparison from "@/pages/inpainting-comparison";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/admin" component={Admin} />
           <Route path="/admin/test-visualization" component={AdminTestVisualization} />
           <Route path="/admin/sprite-test" component={AdminSpriteTest} />
+          <Route path="/admin/inpainting-comparison" component={InpaintingComparison} />
         </>
       )}
       <Route component={NotFound} />
