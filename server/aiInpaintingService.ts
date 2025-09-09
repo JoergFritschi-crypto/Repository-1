@@ -206,11 +206,10 @@ export class AIInpaintingService {
         numberResults: 1,
         height: imageMeta.height || 1440,
         width: imageMeta.width || 1920,
-        inputImage: `data:image/png;base64,${imageBase64}`,
-        maskImage: `data:image/png;base64,${maskBase64}`,
+        seedImage: `data:image/png;base64,${imageBase64}`,
+        mask: `data:image/png;base64,${maskBase64}`,
         strength: 0.9,  // High strength for significant changes
-        guidanceScale: 12,
-        scheduler: "FlowMatchEulerDiscreteScheduler",
+        CFGScale: 12,
         steps: 40,
         seed: Math.floor(Math.random() * 1000000)
       });
@@ -220,8 +219,12 @@ export class AIInpaintingService {
       }
       
       // Download and return the inpainted image
-      const inpaintedUrl = result[0].imageURL;
-      const response = await fetch(inpaintedUrl);
+      const imageUrl = result[0].imageURL || result[0].imageUrl || result[0].url;
+      if (!imageUrl) {
+        console.error('No image URL in result:', result[0]);
+        throw new Error('No image URL found in result');
+      }
+      const response = await fetch(imageUrl);
       const arrayBuffer = await response.arrayBuffer();
       return Buffer.from(arrayBuffer);
       
@@ -285,11 +288,10 @@ export class AIInpaintingService {
         numberResults: 1,
         height: imageMeta.height || 1440,
         width: imageMeta.width || 1920,
-        inputImage: `data:image/png;base64,${imageBase64}`,
-        maskImage: `data:image/png;base64,${maskBase64}`,
+        seedImage: `data:image/png;base64,${imageBase64}`,
+        mask: `data:image/png;base64,${maskBase64}`,
         strength: 0.85,  // Slightly lower strength for batch to preserve more context
-        guidanceScale: 10,
-        scheduler: "FlowMatchEulerDiscreteScheduler",
+        CFGScale: 10,
         steps: 35,
         seed: Math.floor(Math.random() * 1000000)
       });
@@ -299,8 +301,12 @@ export class AIInpaintingService {
       }
       
       // Download and return the inpainted image
-      const inpaintedUrl = result[0].imageURL;
-      const response = await fetch(inpaintedUrl);
+      const imageUrl = result[0].imageURL || result[0].imageUrl || result[0].url;
+      if (!imageUrl) {
+        console.error('No image URL in batch result:', result[0]);
+        throw new Error('No image URL found in batch result');
+      }
+      const response = await fetch(imageUrl);
       const arrayBuffer = await response.arrayBuffer();
       return Buffer.from(arrayBuffer);
       
@@ -470,20 +476,23 @@ export class AIInpaintingService {
         numberResults: 1,
         height: 1440,
         width: 1920,
-        inputImage: `data:image/png;base64,${sequentialBuffer.toString('base64')}`,
+        seedImage: `data:image/png;base64,${sequentialBuffer.toString('base64')}`,
         strength: 0.3,  // Lower strength to preserve plant positions
-        guidanceScale: 7,
+        CFGScale: 7,
         steps: 25
       });
       
       if (enhancedSequential && enhancedSequential.length > 0) {
-        const response = await fetch(enhancedSequential[0].imageURL);
-        const arrayBuffer = await response.arrayBuffer();
-        const enhancedFilename = `enhanced-sequential-${timestamp}.png`;
-        const enhancedPath = path.join(this.outputDir, enhancedFilename);
-        await fs.writeFile(enhancedPath, Buffer.from(arrayBuffer));
-        sequentialUrl = `/inpainted-gardens/${enhancedFilename}`;
-        console.log("✅ Enhanced sequential result saved");
+        const imageUrl = enhancedSequential[0].imageURL || enhancedSequential[0].imageUrl || enhancedSequential[0].url;
+        if (imageUrl) {
+          const response = await fetch(imageUrl);
+          const arrayBuffer = await response.arrayBuffer();
+          const enhancedFilename = `enhanced-sequential-${timestamp}.png`;
+          const enhancedPath = path.join(this.outputDir, enhancedFilename);
+          await fs.writeFile(enhancedPath, Buffer.from(arrayBuffer));
+          sequentialUrl = `/inpainted-gardens/${enhancedFilename}`;
+          console.log("✅ Enhanced sequential result saved");
+        }
       }
     } catch (error) {
       console.error("Failed to enhance sequential result:", error);
@@ -512,20 +521,23 @@ export class AIInpaintingService {
         numberResults: 1,
         height: 1440,
         width: 1920,
-        inputImage: `data:image/png;base64,${batchBuffer.toString('base64')}`,
+        seedImage: `data:image/png;base64,${batchBuffer.toString('base64')}`,
         strength: 0.3,  // Lower strength to preserve plant positions
-        guidanceScale: 7,
+        CFGScale: 7,
         steps: 25
       });
       
       if (enhancedBatch && enhancedBatch.length > 0) {
-        const response = await fetch(enhancedBatch[0].imageURL);
-        const arrayBuffer = await response.arrayBuffer();
-        const enhancedFilename = `enhanced-batch-${timestamp}.png`;
-        const enhancedPath = path.join(this.outputDir, enhancedFilename);
-        await fs.writeFile(enhancedPath, Buffer.from(arrayBuffer));
-        batchUrl = `/inpainted-gardens/${enhancedFilename}`;
-        console.log("✅ Enhanced batch result saved");
+        const imageUrl = enhancedBatch[0].imageURL || enhancedBatch[0].imageUrl || enhancedBatch[0].url;
+        if (imageUrl) {
+          const response = await fetch(imageUrl);
+          const arrayBuffer = await response.arrayBuffer();
+          const enhancedFilename = `enhanced-batch-${timestamp}.png`;
+          const enhancedPath = path.join(this.outputDir, enhancedFilename);
+          await fs.writeFile(enhancedPath, Buffer.from(arrayBuffer));
+          batchUrl = `/inpainted-gardens/${enhancedFilename}`;
+          console.log("✅ Enhanced batch result saved");
+        }
       }
     } catch (error) {
       console.error("Failed to enhance batch result:", error);

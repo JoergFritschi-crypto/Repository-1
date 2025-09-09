@@ -22,7 +22,7 @@ interface SeasonalImageOptions {
   referenceImage?: string;
 }
 
-class RunwareService {
+export class RunwareService {
   private runware: any;
   
   constructor() {
@@ -206,7 +206,19 @@ class RunwareService {
 }
 
 export const runwareService = new RunwareService();
-export const runwareAI = runwareService.runware;
+
+// Export wrapper for direct Runware API access
+export const runwareAI = {
+  async imageInference(params: any) {
+    await runwareService.connect();
+    return runwareService.runware.requestImages({
+      ...params,
+      outputType: "URL",
+      outputFormat: "PNG"
+    });
+  }
+};
+
 export const runwareModels = {
   civitai_74407: "civitai:74407@95489"  // Photorealistic Vision model
 };
