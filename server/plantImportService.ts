@@ -118,7 +118,17 @@ export class PlantImportService {
       console.log(`Perenual search for "${query}" returned ${allPlants.length} results`);
       
       // Transform to our format and fix common nomenclature issues
-      return allPlants.map((plant: any) => {
+      return allPlants.map((plant: any, index: number) => {
+        // Log the raw data for first few plants to debug
+        if (index < 3) {
+          console.log(`Raw Perenual plant ${index}:`, {
+            scientific_name: plant.scientific_name,
+            common_name: plant.common_name,
+            genus: plant.genus,
+            species: plant.species
+          });
+        }
+        
         // Start with basic transformation
         let result = {
           scientific_name: plant.scientific_name?.[0] || plant.scientific_name || '',
@@ -133,8 +143,18 @@ export class PlantImportService {
           source: 'perenual'
         };
         
+        // Log before correction
+        if (result.scientific_name.toLowerCase().includes('capenoch')) {
+          console.log('Before correction:', result);
+        }
+        
         // Fix common nomenclature issues
         result = this.fixBotanicalNomenclature(result);
+        
+        // Log after correction
+        if (result.scientific_name.toLowerCase().includes('capenoch')) {
+          console.log('After correction:', result);
+        }
         
         return result;
       });
