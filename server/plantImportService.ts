@@ -760,36 +760,95 @@ export class PlantImportService {
       
       // Merge validated data with existing plant data
       const enrichedPlant = { ...plant };
+      let fieldsUpdated = 0;
       
+      // Update all possible fields from the validation response
       if (validatedData.common_name && !plant.common_name) {
         enrichedPlant.common_name = validatedData.common_name;
+        fieldsUpdated++;
       }
       if (validatedData.family && !plant.family) {
         enrichedPlant.family = validatedData.family;
+        fieldsUpdated++;
+      }
+      if (validatedData.type && !plant.type) {
+        enrichedPlant.type = validatedData.type;
+        fieldsUpdated++;
       }
       if (validatedData.description && !plant.description) {
         enrichedPlant.description = validatedData.description;
+        fieldsUpdated++;
       }
       if (validatedData.watering && !plant.watering) {
         enrichedPlant.watering = validatedData.watering;
+        fieldsUpdated++;
       }
       if (validatedData.sunlight && (!plant.sunlight || plant.sunlight.length === 0)) {
         enrichedPlant.sunlight = validatedData.sunlight;
+        fieldsUpdated++;
+      }
+      if (validatedData.hardiness && !plant.hardiness) {
+        enrichedPlant.hardiness = validatedData.hardiness;
+        fieldsUpdated++;
       }
       if (validatedData.care_level && !plant.care_level) {
         enrichedPlant.care_level = validatedData.care_level;
+        fieldsUpdated++;
       }
       if (validatedData.native_region && !plant.native_region) {
         enrichedPlant.native_region = validatedData.native_region;
+        fieldsUpdated++;
       }
       if (validatedData.growth_rate && !plant.growth_rate) {
         enrichedPlant.growth_rate = validatedData.growth_rate;
+        fieldsUpdated++;
       }
       if (validatedData.soil && (!plant.soil || plant.soil.length === 0)) {
         enrichedPlant.soil = validatedData.soil;
+        fieldsUpdated++;
+      }
+      if (validatedData.dimension && !plant.dimension) {
+        enrichedPlant.dimension = validatedData.dimension;
+        fieldsUpdated++;
+      }
+      if (validatedData.flowering_season && !plant.flowering_season) {
+        enrichedPlant.flowering_season = validatedData.flowering_season;
+        fieldsUpdated++;
+      }
+      if (validatedData.flower_color && (!plant.flower_color || plant.flower_color.length === 0)) {
+        enrichedPlant.flower_color = validatedData.flower_color;
+        fieldsUpdated++;
+      }
+      if (validatedData.maintenance && !plant.maintenance) {
+        enrichedPlant.maintenance = validatedData.maintenance;
+        fieldsUpdated++;
+      }
+      if (validatedData.propagation && (!plant.propagation || plant.propagation.length === 0)) {
+        enrichedPlant.propagation = validatedData.propagation;
+        fieldsUpdated++;
+      }
+      if (validatedData.drought_tolerant !== null && validatedData.drought_tolerant !== undefined && plant.drought_tolerant === null) {
+        enrichedPlant.drought_tolerant = validatedData.drought_tolerant;
+        fieldsUpdated++;
+      }
+      if (validatedData.salt_tolerant !== null && validatedData.salt_tolerant !== undefined && plant.salt_tolerant === null) {
+        enrichedPlant.salt_tolerant = validatedData.salt_tolerant;
+        fieldsUpdated++;
+      }
+      if (validatedData.poisonous_to_pets !== null && validatedData.poisonous_to_pets !== undefined && plant.poisonous_to_pets === null) {
+        enrichedPlant.poisonous_to_pets = validatedData.poisonous_to_pets;
+        fieldsUpdated++;
+      }
+      if (validatedData.medicinal !== null && validatedData.medicinal !== undefined && plant.medicinal === null) {
+        enrichedPlant.medicinal = validatedData.medicinal;
+        fieldsUpdated++;
+      }
+      if (validatedData.cuisine !== null && validatedData.cuisine !== undefined && plant.cuisine === null) {
+        enrichedPlant.cuisine = validatedData.cuisine;
+        fieldsUpdated++;
       }
       
-      console.log(`Validated ${plant.scientific_name} with Perplexity, filled ${emptyFields.length} fields`);
+      console.log(`Validated ${plant.scientific_name} with Perplexity, filled ${fieldsUpdated} fields`);
       
       return enrichedPlant;
       
