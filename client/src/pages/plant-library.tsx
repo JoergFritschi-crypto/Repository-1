@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import PlantSearch from "@/components/plant/plant-search";
-import { Sprout, Search, Heart, ChevronLeft, ChevronRight, ArrowUpDown, Filter } from "lucide-react";
+import PlantAdvancedSearch from "@/components/plant/plant-advanced-search";
+import { Sprout, Search, Heart, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import type { Plant, PlantSearchFilters } from "@/types/plant";
 
 export default function PlantLibrary() {
@@ -113,125 +114,19 @@ export default function PlantLibrary() {
 
           {/* Browse Plants Tab */}
           <TabsContent value="browse" className="mt-6">
-            <div className="grid lg:grid-cols-4 gap-6">
-              {/* Filters Sidebar */}
-              <div className="lg:col-span-1">
-                <Card className="border-2 border-[#004025]">
-                  <CardHeader className="py-5 flower-band-sunset rounded-t-lg">
-                    <CardTitle className="flex items-center justify-between text-lg">
-                      <span className="flex items-center gap-2">
-                        <Filter className="w-4 h-4" />
-                        Filters
-                      </span>
-                      <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 px-2 text-xs" data-testid="button-clear-filters">
-                        Clear
-                      </Button>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-4">
-                    {/* Search */}
-                    <div>
-                      <label className="text-xs font-medium mb-1.5 block">Search Plants</label>
-                      <div className="relative">
-                        <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#004025]/50" />
-                        <Input
-                          placeholder="Search by name..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10"
-                          data-testid="input-plant-search"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Plant Type Filter */}
-                    <div>
-                      <label className="text-xs font-medium mb-1.5 block">Plant Type</label>
-                      <Select onValueChange={(value) => handleFilterChange({ type: value === 'all' ? undefined : value })}>
-                        <SelectTrigger data-testid="select-plant-type">
-                          <SelectValue placeholder="All Types" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="perennial">Perennials</SelectItem>
-                          <SelectItem value="annual">Annuals</SelectItem>
-                          <SelectItem value="shrub">Shrubs</SelectItem>
-                          <SelectItem value="tree">Trees</SelectItem>
-                          <SelectItem value="bulb">Bulbs</SelectItem>
-                          <SelectItem value="grass">Ornamental Grasses</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Sun Requirements Filter */}
-                    <div>
-                      <label className="text-xs font-medium mb-1.5 block">Sun Requirements</label>
-                      <Select onValueChange={(value) => handleFilterChange({ sun_requirements: value === 'any' ? undefined : value })}>
-                        <SelectTrigger data-testid="select-sun-requirements">
-                          <SelectValue placeholder="Any Sun Exposure" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="any">Any Sun Exposure</SelectItem>
-                          <SelectItem value="full_sun">Full Sun</SelectItem>
-                          <SelectItem value="partial_sun">Partial Sun</SelectItem>
-                          <SelectItem value="partial_shade">Partial Shade</SelectItem>
-                          <SelectItem value="full_shade">Full Shade</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Special Features */}
-                    <div>
-                      <label className="text-xs font-medium mb-2 block">Special Features</label>
-                      <div className="space-y-2">
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={filters.pet_safe || false}
-                            onChange={(e) => handleFilterChange({ pet_safe: e.target.checked || undefined })}
-                            className="rounded border-gray-300"
-                            data-testid="checkbox-pet-safe"
-                          />
-                          <span className="text-xs">Pet Safe</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={filters.drought_tolerant || false}
-                            onChange={(e) => handleFilterChange({ drought_tolerant: e.target.checked || undefined })}
-                            className="rounded border-gray-300"
-                            data-testid="checkbox-drought-tolerant"
-                          />
-                          <span className="text-xs">Drought Tolerant</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={filters.fragrant || false}
-                            onChange={(e) => handleFilterChange({ fragrant: e.target.checked || undefined })}
-                            className="rounded border-gray-300"
-                            data-testid="checkbox-fragrant"
-                          />
-                          <span className="text-xs">Fragrant</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={filters.attracts_pollinators || false}
-                            onChange={(e) => handleFilterChange({ attracts_pollinators: e.target.checked || undefined })}
-                            className="rounded border-gray-300"
-                            data-testid="checkbox-attracts-pollinators"
-                          />
-                          <span className="text-xs">Attracts Pollinators</span>
-                        </label>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+            <div className="space-y-6">
+              {/* Advanced Search - The GOOD one from admin with colorful options */}
+              <PlantAdvancedSearch 
+                onSearch={(filters) => {
+                  console.log('Searching with filters:', filters);
+                  setFilters(filters);
+                  setCurrentPage(1);
+                }}
+                totalResults={sortedPlants?.length || 0}
+              />
 
               {/* Plants Grid */}
-              <div className="lg:col-span-3">
+              <div>
                 {/* Results Bar with Sorting */}
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center space-x-4">
