@@ -23,14 +23,14 @@ function Router() {
 
   return (
     <Switch>
-      {/* Landing page always accessible at /welcome */}
+      {/* Landing page is the default for everyone */}
+      <Route path="/" component={Landing} />
       <Route path="/welcome" component={Landing} />
       
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
+      {/* Authenticated routes */}
+      {isAuthenticated && (
         <>
-          <Route path="/" component={Home} />
+          <Route path="/home" component={Home} />
           <Route path="/garden-properties" component={GardenProperties} />
           <Route path="/garden-design/:id?" component={GardenDesign} />
           <Route path="/garden/:id/design" component={GardenDesign} />

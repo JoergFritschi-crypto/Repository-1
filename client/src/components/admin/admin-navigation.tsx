@@ -31,7 +31,7 @@ export function AdminNavigation({ currentPage, gardenId }: AdminNavigationProps)
           {/* Left side - Breadcrumb and Back Navigation */}
           <div className="flex items-center gap-3">
             {/* Back to Main App Button */}
-            <Link href="/">
+            <Link href="/home">
               <Button variant="outline" size="sm" className="gap-2">
                 <Home className="w-4 h-4" />
                 Main App

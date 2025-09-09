@@ -32,7 +32,7 @@ export default function Landing() {
                 </>
               ) : (
                 <>
-                  <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                     Dashboard
                   </Link>
                   <Button asChild data-testid="button-go-to-dashboard">
@@ -164,7 +164,7 @@ export default function Landing() {
                   {!isAuthenticated ? (
                     <a href="/api/login">Get Started</a>
                   ) : (
-                    <Link href="/">Go to Dashboard</Link>
+                    <Link href="/home">Go to Dashboard</Link>
                   )}
                 </Button>
               </CardContent>

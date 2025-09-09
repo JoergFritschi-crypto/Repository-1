@@ -29,7 +29,7 @@ export default function Navigation() {
 
   const navigationItems = [
     { href: "/welcome", label: "Welcome" },
-    { href: "/", label: "Dashboard" },
+    { href: "/home", label: "Dashboard" },
     { href: "/plant-library", label: "Plant Library" },
     { href: "/plant-doctor", label: "Plant Doctor" },
     { href: "/premium", label: "Premium" },
@@ -64,7 +64,7 @@ export default function Navigation() {
               </DropdownMenu>
             )}
             
-            <Link href="/" className="flex items-center space-x-2" data-testid="link-home">
+            <Link href={user ? "/home" : "/"} className="flex items-center space-x-2" data-testid="link-home">
               <GardenScapeIcon className="w-7 h-7" />
               <span className="text-lg font-serif font-semibold text-[#004025]">GardenScape Pro</span>
             </Link>
