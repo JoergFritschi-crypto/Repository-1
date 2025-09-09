@@ -1007,6 +1007,108 @@ Rules:
     }
   });
 
+  // Validate plant data with Perplexity
+  app.post('/api/admin/plants/:id/validate', isAuthenticated, async (req: any, res) => {
+    try {
+      const plantId = req.params.id;
+      const plant = await storage.getPlant(plantId);
+      
+      if (!plant) {
+        return res.status(404).json({ error: 'Plant not found' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      
+      // Convert plant to import format for validation
+      const plantData = {
+        scientific_name: plant.scientificName,
+        common_name: plant.commonName,
+        family: plant.family,
+        type: plant.type,
+        cycle: plant.cycle,
+        watering: plant.watering,
+        sunlight: plant.sunlight,
+        hardiness: plant.hardiness,
+        soil: plant.soil,
+        growth_rate: plant.growthRate,
+        care_level: plant.careLevel,
+        description: plant.description,
+        native_region: plant.nativeRegion,
+        drought_tolerant: plant.droughtTolerant,
+        salt_tolerant: plant.saltTolerant,
+        poisonous_to_pets: plant.poisonousToPets === 1,
+        poisonous_to_humans: plant.poisonousToHumans === 1,
+        medicinal: plant.medicinal,
+        cuisine: plant.cuisine,
+        flower_color: plant.flowerColor,
+        leaf_color: plant.leafColor,
+        flowering_season: plant.floweringSeason,
+        propagation: plant.propagation,
+        pruning_month: plant.pruningMonth,
+        maintenance: plant.maintenance,
+      };
+      
+      // Validate with Perplexity to fill missing fields
+      const validatedData = await plantImportService.validateWithPerplexity(plantData);
+      
+      // Count how many fields were updated
+      let updatedFields = 0;
+      const updates: any = {};
+      
+      // Check what fields were added/updated
+      if (validatedData.common_name && !plant.commonName) {
+        updates.commonName = validatedData.common_name;
+        updatedFields++;
+      }
+      if (validatedData.family && !plant.family) {
+        updates.family = validatedData.family;
+        updatedFields++;
+      }
+      if (validatedData.description && !plant.description) {
+        updates.description = validatedData.description;
+        updatedFields++;
+      }
+      if (validatedData.watering && !plant.watering) {
+        updates.watering = validatedData.watering;
+        updatedFields++;
+      }
+      if (validatedData.sunlight && (!plant.sunlight || plant.sunlight.length === 0)) {
+        updates.sunlight = validatedData.sunlight;
+        updatedFields++;
+      }
+      if (validatedData.care_level && !plant.careLevel) {
+        updates.careLevel = validatedData.care_level;
+        updatedFields++;
+      }
+      if (validatedData.native_region && !plant.nativeRegion) {
+        updates.nativeRegion = validatedData.native_region;
+        updatedFields++;
+      }
+      if (validatedData.growth_rate && !plant.growthRate) {
+        updates.growthRate = validatedData.growth_rate;
+        updatedFields++;
+      }
+      if (validatedData.soil && (!plant.soil || plant.soil.length === 0)) {
+        updates.soil = validatedData.soil;
+        updatedFields++;
+      }
+      
+      // Update the plant in the database if there are changes
+      if (updatedFields > 0) {
+        await storage.updatePlant(plantId, updates);
+      }
+      
+      res.json({ 
+        success: true, 
+        updatedFields,
+        updates 
+      });
+    } catch (error) {
+      console.error('Plant validation error:', error);
+      res.status(500).json({ error: 'Validation failed' });
+    }
+  });
+
   // Image generation endpoints
   app.post('/api/admin/plants/:id/generate-images', isAuthenticated, async (req: any, res) => {
     try {
