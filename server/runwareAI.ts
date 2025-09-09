@@ -220,5 +220,5 @@ export const runwareAI = {
 };
 
 export const runwareModels = {
-  civitai_74407: "civitai:74407@95489"  // Photorealistic Vision model
+  civitai_74407: "civitai:4201@130072"  // Realistic Vision V6.0 - photorealistic model (same as used in generateSeasonalImage)
 };
