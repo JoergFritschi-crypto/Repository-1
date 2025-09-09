@@ -43,6 +43,20 @@ export default function GardenDesign() {
   // Check if we're admin or came from admin
   const isFromAdmin = sessionStorage.getItem('navigationSource') === 'admin';
   const isAdmin = user?.isAdmin === true;
+  
+  // Check if this is a page refresh (no navigation intent)
+  useEffect(() => {
+    const hasNavigationIntent = sessionStorage.getItem('navigationSource') || 
+                               sessionStorage.getItem('intentionalNavigation');
+    
+    // If this is a refresh (no navigation intent), redirect to landing
+    if (!hasNavigationIntent) {
+      setLocation('/');
+    } else {
+      // Clear the navigation intent after checking
+      sessionStorage.removeItem('intentionalNavigation');
+    }
+  }, []);
 
   const { data: garden, isLoading: gardenLoading } = useQuery({
     queryKey: ["/api/gardens", id],

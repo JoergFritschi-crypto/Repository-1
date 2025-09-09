@@ -206,6 +206,7 @@ export default function Admin() {
     onSuccess: (data) => {
       // Mark that we're navigating from admin
       sessionStorage.setItem('navigationSource', 'admin');
+      sessionStorage.setItem('intentionalNavigation', 'true');
       window.location.href = `/garden-design/${data.id}`;
     },
     onError: (error) => {
@@ -525,6 +526,8 @@ export default function Admin() {
                             variant="outline"
                             className="h-auto flex flex-col items-center py-4 hover:bg-blue-50 hover:border-blue-300"
                             onClick={() => {
+                              // Mark intentional navigation
+                              sessionStorage.setItem('intentionalNavigation', 'true');
                               // Navigate to Test Garden 1
                               window.location.href = '/garden-design/1';
                             }}

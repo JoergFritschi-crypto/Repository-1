@@ -163,8 +163,16 @@ export default function Home() {
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm" asChild data-testid={`button-edit-${garden.id}`}>
-                            <Link href={`/garden-design/${garden.id}`}>Edit</Link>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            data-testid={`button-edit-${garden.id}`}
+                            onClick={() => {
+                              sessionStorage.setItem('intentionalNavigation', 'true');
+                              window.location.href = `/garden-design/${garden.id}`;
+                            }}
+                          >
+                            Edit
                           </Button>
                           <Button variant="outline" size="sm" data-testid={`button-view-${garden.id}`}>
                             View 3D
