@@ -226,6 +226,33 @@ class GeminiAI {
     }
   }
 
+  async enhanceGardenToPhotorealistic(options: {
+    imageBase64: string;
+    plants: Array<{ plantName: string; x: number; y: number; size: string }>;
+    gardenSize: string;
+    season: string;
+    style: string;
+  }): Promise<string | null> {
+    try {
+      const plantList = options.plants.map(p => 
+        `${p.plantName} (${p.size === 'small' ? '30cm tall' : p.size === 'large' ? '3-4m tall' : '1m tall'})`
+      ).join(', ');
+      
+      const prompt = `Transform this garden layout into a photorealistic image. 
+        This is a ${options.gardenSize} garden containing: ${plantList}.
+        Season: ${options.season}. 
+        Style: Natural photorealistic garden photography.
+        Maintain the exact plant positions from the reference image but make them look real, with natural lighting, shadows, and environmental integration.
+        The plants should look like they're actually growing in the garden, not overlaid sprites.`;
+      
+      const result = await this.generateImageWithReference(prompt, options.imageBase64);
+      return result.imageData || result.imageUrl || null;
+    } catch (error) {
+      console.error('Error enhancing garden:', error);
+      return null;
+    }
+  }
+
   async generateImageWithReference(prompt: string, referenceImageBase64: string): Promise<{ imageUrl?: string; imageData?: string }> {
     try {
       // Use the special image generation model with reference image

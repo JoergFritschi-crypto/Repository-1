@@ -108,11 +108,12 @@ export class AIInpaintingService {
     y: number, 
     size: 'small' | 'medium' | 'large'
   ): Promise<Buffer> {
-    // Size mapping for mask radius - adjusted for realistic proportions
+    // Size mapping for mask radius - calibrated for 10x10m garden at 800px
+    // 10m = 800px, so 1m = 80px
     const sizeMap = {
-      small: 0.02,   // 2% of image width (herbs, small flowers)
-      medium: 0.05,  // 5% of image width (shrubs, perennials)
-      large: 0.15    // 15% of image width (trees)
+      small: 0.025,   // ~20px = ~0.25m diameter (herbs, small flowers)
+      medium: 0.075,  // ~60px = ~0.75m diameter (shrubs, perennials) 
+      large: 0.25     // ~200px = ~2.5m diameter (mature trees)
     };
     
     const radius = imageWidth * sizeMap[size];
@@ -197,16 +198,19 @@ export class AIInpaintingService {
     const depthDesc = plant.y < 30 ? "in the background" : 
                       plant.y > 70 ? "in the foreground" : "in the middle ground";
     
-    // Add size descriptors to the prompt
-    const sizeDesc = plant.size === 'small' ? 'small, low-growing' :
-                      plant.size === 'large' ? 'large, mature tree' :
+    // Add size descriptors calibrated for 10x10m garden
+    const sizeDesc = plant.size === 'small' ? 'small, compact' :
+                      plant.size === 'large' ? 'large, mature' :
                       'medium-sized';
     
-    const prompt = `A ${sizeDesc} ${plant.plantName} ${depthDesc} of a garden, ${seasonDesc}, 
-                    natural lighting, photorealistic, maintaining proper scale and perspective,
-                    ${plant.size === 'small' ? 'herb-sized plant about 1-2 feet tall' :
-                      plant.size === 'large' ? 'full-grown tree 10-15 feet tall' :
-                      'shrub or perennial 2-4 feet tall'}`;
+    // Reference garden size in prompt for scale (10x10 meters)
+    const scaleRef = plant.size === 'small' ? '30cm tall herb' :
+                      plant.size === 'large' ? '3-4 meter tall tree' :
+                      '1 meter tall shrub';
+    
+    const prompt = `In a 10x10 meter garden, add ONE ${sizeDesc} ${plant.plantName} (${scaleRef}) ${depthDesc}, 
+                    ${seasonDesc}, natural lighting, photorealistic, proper scale to garden size,
+                    single plant only, no duplicates, maintain correct proportions`;
     
     try {
       // Use Runware for inpainting-like generation
@@ -251,17 +255,17 @@ export class AIInpaintingService {
       const position = plant.x < 33 ? "left" : plant.x > 66 ? "right" : "center";
       const depth = plant.y < 33 ? "background" : plant.y > 66 ? "foreground" : "midground";
       
-      // Add size descriptors
-      const sizeDesc = plant.size === 'small' ? 'small herb-sized' :
-                       plant.size === 'large' ? 'large tree' :
+      // Add size descriptors calibrated for 10x10m garden
+      const sizeDesc = plant.size === 'small' ? 'small' :
+                       plant.size === 'large' ? 'large mature' :
                        'medium-sized';
       
-      // Add specific height guidance
-      const heightDesc = plant.size === 'small' ? '(1-2 feet tall)' :
-                        plant.size === 'large' ? '(10-15 feet tall)' :
-                        '(3-5 feet tall)';
+      // Add specific height guidance for 10x10 meter garden scale
+      const heightDesc = plant.size === 'small' ? '(30cm tall)' :
+                        plant.size === 'large' ? '(3-4 meters tall)' :
+                        '(1 meter tall)';
       
-      return `${sizeDesc} ${plant.plantName} ${heightDesc} in the ${position} ${depth}`;
+      return `ONE ${sizeDesc} ${plant.plantName} ${heightDesc} in the ${position} ${depth}`;
     }).join(", ");
     
     const seasonDesc = this.getSeasonDescription(options.season);
@@ -269,8 +273,9 @@ export class AIInpaintingService {
                       options.style === 'artistic' ? "artistic illustration" :
                       "photorealistic";
     
-    const prompt = `Garden scene with ${plantDescriptions}, ${seasonDesc}, ${styleDesc}, 
-                    maintaining proper perspective and scale, natural lighting and shadows`;
+    const prompt = `A 10x10 meter garden with EXACTLY ${options.plants.length} plants: ${plantDescriptions}. 
+                    ${seasonDesc}, ${styleDesc}, proper scale to garden size, natural lighting and shadows, 
+                    no duplicate plants, only the specified plants`;
     
     try {
       // Try Gemini first if available
@@ -385,7 +390,7 @@ export class AIInpaintingService {
     const { spriteCompositor } = await import('./spriteCompositor.js');
     const compositeUrl = await spriteCompositor.testTwoPlantComposite();
     
-    // 1b. ENHANCE the composite with AI to make it photorealistic (the missing step!)
+    // 1b. ENHANCE the composite with AI to make it photorealistic
     let enhancedCompositeUrl = compositeUrl;
     try {
       // Read the composite image
@@ -393,19 +398,14 @@ export class AIInpaintingService {
       const compositeBuffer = await fs.readFile(compositePath);
       const compositeBase64 = compositeBuffer.toString('base64');
       
-      // Use Runware to enhance it to photorealistic
-      const enhancedResult = await runwareService.generateSeasonalImage({
+      // Use Gemini to enhance the composite to photorealistic
+      const { geminiService } = await import('./geminiAI.js');
+      const enhancedResult = await geminiService.enhanceGardenToPhotorealistic({
+        imageBase64: compositeBase64,
+        plants: testPlants,
+        gardenSize: '10x10 meters',
         season: 'summer',
-        specificTime: 'summer in full bloom',
-        canvasDesign: {
-          plants: testPlants.map((p, idx) => ({
-            plant: { id: idx.toString(), name: p.plantName },
-            position: { x: p.x, y: p.y }
-          }))
-        },
-        gardenDimensions: { width: 10, length: 10 },
-        useReferenceMode: true,
-        referenceImage: `data:image/png;base64,${compositeBase64}`
+        style: 'photorealistic'
       });
       
       // Save enhanced composite
@@ -421,12 +421,15 @@ export class AIInpaintingService {
           const response = await fetch(enhancedResult);
           const buffer = Buffer.from(await response.arrayBuffer());
           await fs.writeFile(enhancedPath, buffer);
+        } else {
+          // If Gemini returns base64 without prefix
+          await fs.writeFile(enhancedPath, Buffer.from(enhancedResult, 'base64'));
         }
         
         enhancedCompositeUrl = `/inpainted-gardens/${enhancedFilename}`;
       }
     } catch (error) {
-      console.error("Failed to enhance composite:", error);
+      console.error("Failed to enhance composite with Gemini:", error);
     }
     
     // 2. Sequential inpainting (one plant at a time)
