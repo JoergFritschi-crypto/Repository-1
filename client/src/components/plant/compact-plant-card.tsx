@@ -24,6 +24,7 @@ import {
   Droplets,
   MapPin,
   Shield,
+  AlertTriangle,
   RefreshCw,
   Sparkles
 } from "lucide-react";
@@ -298,21 +299,38 @@ export function CompactPlantCard({
                 </div>
               )}
               
-              {/* Pet safe - only if safe */}
-              {plant.poisonousToPets === 0 && (
-                <div className="flex items-center gap-0.5">
-                  <Shield className="w-3 h-3 text-green-500" />
-                  <span className="text-[10px] text-green-600">Safe</span>
-                </div>
-              )}
+              {/* Toxicity - ALWAYS show with RHS categories */}
+              <div className="flex items-center gap-0.5">
+                {plant.poisonousToPets === 0 ? (
+                  <>
+                    <Shield className="w-3 h-3 text-green-500" />
+                    <span className="text-[10px] text-green-600 font-medium">C</span>
+                  </>
+                ) : plant.poisonousToPets === 1 ? (
+                  <>
+                    <AlertTriangle className="w-3 h-3 text-yellow-500" />
+                    <span className="text-[10px] text-yellow-600 font-medium">B</span>
+                  </>
+                ) : plant.poisonousToPets === 2 ? (
+                  <>
+                    <AlertTriangle className="w-3 h-3 text-red-500" />
+                    <span className="text-[10px] text-red-600 font-medium">A</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-3 h-3 text-gray-300" />
+                    <span className="text-[10px] text-red-400">?</span>
+                  </>
+                )}
+              </div>
               
-              {/* Type - if present */}
+              {/* Type - plain text display */}
               {plant.type ? (
-                <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded capitalize">
+                <span className="text-[10px] text-muted-foreground">
                   {plant.type}
                 </span>
               ) : (
-                <span className="text-[10px] px-1 py-0.5 rounded bg-gray-100 text-red-400">
+                <span className="text-[10px] text-red-400">
                   Type ?
                 </span>
               )}
