@@ -151,10 +151,22 @@ export class PlantImportService {
     const commonName = (plant.common_name || '').toLowerCase();
     const genus = plant.genus || '';
     
-    // Check if we have a cultivar in quotes or apostrophes
-    const cultivarMatch = scientificName.match(/['"]([^'"]+)['"]/);
-    const hasCultivar = cultivarMatch !== null;
-    const cultivarName = cultivarMatch ? cultivarMatch[1] : '';
+    // Check if we have a cultivar in quotes, apostrophes, or just plain text after genus
+    let cultivarMatch = scientificName.match(/['"]([^'"]+)['"]/);
+    let hasCultivar = cultivarMatch !== null;
+    let cultivarName = cultivarMatch ? cultivarMatch[1] : '';
+    
+    // If no quotes, check for pattern like "Helianthus Capenoch Star" (genus followed by capitalized words)
+    if (!hasCultivar && genus) {
+      const pattern = new RegExp(`^${genus}\\s+([A-Z][\\w\\s]+)$`, 'i');
+      const match = scientificName.match(pattern);
+      if (match) {
+        hasCultivar = true;
+        cultivarName = match[1].trim();
+        // Log what we found
+        console.log(`Detected cultivar without quotes: ${scientificName} -> cultivar: ${cultivarName}`);
+      }
+    }
     
     // Case 1: Missing species for known cultivars
     if (genus && hasCultivar && !plant.species) {
