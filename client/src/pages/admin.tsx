@@ -270,15 +270,19 @@ export default function Admin() {
                       <div className="flex flex-wrap gap-8 items-center">
                         <div>
                           <p className="text-sm text-muted-foreground">Total Plants</p>
-                          <p className="text-2xl font-bold" data-testid="text-total-plants">0</p>
+                          <p className="text-2xl font-bold" data-testid="text-total-plants">{(plants as any)?.length || 0}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Verified</p>
-                          <p className="text-xl font-semibold text-accent" data-testid="text-verified-plants">0</p>
+                          <p className="text-xl font-semibold text-accent" data-testid="text-verified-plants">
+                            {(plants as any)?.filter((p: any) => p.verification_status === 'verified').length || 0}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Pending</p>
-                          <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">{(pendingPlants as any)?.length || 0}</p>
+                          <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">
+                            {(plants as any)?.filter((p: any) => p.verification_status === 'pending').length || 0}
+                          </p>
                         </div>
                         {(plants as any)?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') && (
                           <div>
@@ -348,7 +352,7 @@ export default function Admin() {
                     <CardContent>
 
                         {/* Plants Display */}
-                        {(!(plants as any) || (plants as any).length === 0) && (!(pendingPlants as any) || (pendingPlants as any).length === 0) ? (
+                        {(!(plants as any) || (plants as any).length === 0) ? (
                           <div className="text-center py-12">
                             <Leaf className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                             <h3 className="text-xl font-semibold mb-2">No Plants Yet</h3>
@@ -362,47 +366,14 @@ export default function Admin() {
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {/* Render pending plants as cards */}
-                            {(pendingPlants as any) && (pendingPlants as any).map((plant: any) => (
-                              <CompactPlantCard
-                                key={plant.id}
-                                plant={plant}
-                                isAdmin={true}
-                                onVerify={() => verifyPlantMutation.mutate(plant.id)}
-                                onReject={() => deletePlantMutation.mutate(plant.id)}
-                                onEdit={() => {
-                                  toast({
-                                    title: "Edit Feature",
-                                    description: "Plant editing feature coming soon.",
-                                  });
-                                }}
-                                onDelete={() => deletePlantMutation.mutate(plant.id)}
-                                onGenerateImages={async () => {
-                                  try {
-                                    const response = await apiRequest('POST', `/api/admin/plants/${plant.id}/generate-images`);
-                                    const data = await response.json();
-                                    toast({
-                                      title: "Image Generation Started",
-                                      description: "Images are being generated. This may take a few minutes.",
-                                    });
-                                    queryClient.invalidateQueries({ queryKey: [`/api/plants/search?q=${searchQuery || ''}`] });
-                                  } catch (error) {
-                                    toast({
-                                      title: "Error",
-                                      description: "Failed to start image generation",
-                                      variant: "destructive",
-                                    });
-                                  }
-                                }}
-                              />
-                            ))}
-                            
-                            {/* Render verified plants as cards */}
+                            {/* Render all plants once with their verification status shown on the card */}
                             {(plants as any) && (plants as any).map((plant: any) => (
                               <CompactPlantCard
                                 key={plant.id}
                                 plant={plant}
                                 isAdmin={true}
+                                onVerify={plant.verification_status === 'pending' ? () => verifyPlantMutation.mutate(plant.id) : undefined}
+                                onReject={plant.verification_status === 'pending' ? () => deletePlantMutation.mutate(plant.id) : undefined}
                                 onEdit={() => {
                                   toast({
                                     title: "Edit Feature",
