@@ -106,12 +106,12 @@ export class AIInpaintingService {
     y: number, 
     size: 'small' | 'medium' | 'large'
   ): Promise<Buffer> {
-    // Size mapping for mask radius - calibrated for 10x10m garden at 800px
-    // 10m = 800px, so 1m = 80px
+    // Size mapping for mask radius - much larger for proper inpainting
+    // These need to be big enough for the AI to understand where to place plants
     const sizeMap = {
-      small: 0.015,   // ~12px = ~0.15m diameter (small herbs like lavender, hostas)
-      medium: 0.08,   // ~64px = ~0.8m diameter (medium shrubs) 
-      large: 0.2      // ~160px = ~2m diameter (mature trees)
+      small: 0.08,    // ~150px radius for small plants (was 0.015)
+      medium: 0.12,   // ~230px radius for medium plants (was 0.08)
+      large: 0.18     // ~345px radius for large plants/trees (was 0.2)
     };
     
     const radius = imageWidth * sizeMap[size];
@@ -205,9 +205,9 @@ export class AIInpaintingService {
                       plant.size === 'large' ? '3-4 meter tall tree' :
                       '80cm-1 meter tall shrub';
     
-    const prompt = `Add exactly ONE ${plant.plantName} plant to the marked area. ${scaleRef}, ${depthDesc}. 
-                    Keep existing garden bed unchanged, only add this specific plant in the white mask area.
-                    Photorealistic ${plant.plantName}, ${seasonDesc}, proper scale, no other changes`;
+    const prompt = `Inpaint a single ${plant.plantName} in the masked white circle area only. ${scaleRef}.
+                    Preserve ALL surrounding garden areas exactly as they are. Only modify the masked region.
+                    ${plant.plantName} with ${seasonDesc}, natural integration, blend edges seamlessly`;
     
     try {
       console.log(`  Sequential: Adding ${plant.plantName} at (${plant.x}, ${plant.y})`);
@@ -215,14 +215,14 @@ export class AIInpaintingService {
       // Use Runware's inpainting with mask for true sequential addition
       const result = await runwareAI.imageInference({
         positivePrompt: prompt,
-        negativePrompt: "cartoon, anime, illustration, multiple plants, duplicates, oversized, tiny, unrealistic scale",
+        negativePrompt: "cartoon, anime, illustration, multiple plants, duplicates, changing background, modifying unmasked areas, full scene generation",
         model: runwareModels.civitai_74407, // Photorealistic Vision model
         numberResults: 1,
         height: validDims.height,
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.7,  // Moderate strength to add plant while preserving bed
+        strength: 0.4,  // Low strength to preserve existing garden structure
         CFGScale: 12,
         steps: 40,
         seed: Math.floor(Math.random() * 1000000)
@@ -288,9 +288,9 @@ export class AIInpaintingService {
                       options.style === 'artistic' ? "artistic illustration" :
                       "photorealistic";
     
-    const prompt = `Add EXACTLY these ${options.plants.length} plants to marked areas: ${plantDescriptions}. 
-                    Keep the existing stone-framed garden bed, only add plants in white mask areas.
-                    ${seasonDesc}, ${styleDesc}, maintain original garden structure, no duplicates`;
+    const prompt = `Inpaint ONLY in the white masked areas: ${plantDescriptions}.
+                    DO NOT change any unmasked areas. Preserve the stone-framed garden bed exactly.
+                    ${seasonDesc}, ${styleDesc}, seamless integration, natural shadows and lighting`;
     
     try {
       console.log(`  Batch: Adding ${options.plants.length} plants at once`);
@@ -298,14 +298,14 @@ export class AIInpaintingService {
       // Use Runware's inpainting with combined mask for batch addition
       const result = await runwareAI.imageInference({
         positivePrompt: prompt,
-        negativePrompt: "cartoon, anime, illustration, duplicates, oversized plants, tiny plants, unrealistic scale, missing stone border",
+        negativePrompt: "cartoon, anime, illustration, duplicates, full scene generation, changing background, modifying unmasked areas, replacing entire image",
         model: runwareModels.civitai_74407, // Photorealistic Vision model
         numberResults: 1,
         height: validDims.height,
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.6,  // Lower strength to preserve garden bed while adding plants
+        strength: 0.35,  // Very low strength to preserve garden bed structure
         CFGScale: 10,
         steps: 35,
         seed: Math.floor(Math.random() * 1000000)
