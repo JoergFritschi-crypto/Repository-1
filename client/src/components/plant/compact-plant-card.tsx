@@ -23,7 +23,9 @@ import {
   Cloud,
   Droplets,
   MapPin,
-  Shield
+  Shield,
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
 import type { Plant } from "@/types/plant";
 
@@ -103,6 +105,8 @@ export function CompactPlantCard({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [notes, setNotes] = useState("");
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const { toast } = useToast();
 
   const primaryImage = plant.fullImage || plant.thumbnailImage;
@@ -135,6 +139,58 @@ export function CompactPlantCard({
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
     }
   });
+
+  const validatePlantData = async () => {
+    setIsValidating(true);
+    try {
+      const response = await apiRequest("POST", `/api/admin/plants/${plant.id}/validate`);
+      const result = await response.json();
+      
+      toast({
+        title: "✓ Validation Complete",
+        description: `Updated ${result.updatedFields} fields for ${plant.commonName}`,
+      });
+      
+      // Refresh plant data
+      queryClient.invalidateQueries({ queryKey: ["/api/plants"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/plants/search"] });
+      setShowAdminDialog(false);
+    } catch (error) {
+      toast({
+        title: "Validation Failed",
+        description: "Could not validate plant data",
+        variant: "destructive"
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const generatePlantImages = async () => {
+    setIsGeneratingImages(true);
+    try {
+      const response = await apiRequest("POST", `/api/admin/plants/${plant.id}/generate-images`);
+      const result = await response.json();
+      
+      toast({
+        title: "✓ Images Generated",
+        description: `Generated new images for ${plant.commonName}`,
+      });
+      
+      // Refresh plant data to show new images
+      queryClient.invalidateQueries({ queryKey: ["/api/plants"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/plants/search"] });
+      setShowAdminDialog(false);
+    } catch (error) {
+      toast({
+        title: "Image Generation Failed",
+        description: "Could not generate images",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingImages(false);
+    }
+  };
 
   const getSunIcon = () => {
     // Handle both string and array formats from database
@@ -308,20 +364,38 @@ export function CompactPlantCard({
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
                     </Button>
-                    <Button 
-                      onClick={onGenerateImages}
-                      variant="outline"
-                      disabled={plant.imageGenerationStatus === "generating"}
-                      className="w-full"
-                    >
-                      {plant.imageGenerationStatus === "generating" ? (
-                        <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating</>
-                      ) : (
-                        <><ImageIcon className="w-4 h-4 mr-1" /> Generate</>
-                      )}
-                    </Button>
                   </>
                 )}
+              </div>
+              
+              {/* Data Validation and Image Generation - Available for all plants */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  onClick={validatePlantData}
+                  variant="outline"
+                  disabled={isValidating}
+                  className="w-full"
+                  title="Revalidate all plant data fields using AI"
+                >
+                  {isValidating ? (
+                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Validating</>
+                  ) : (
+                    <><RefreshCw className="w-4 h-4 mr-1" /> Validate Data</>
+                  )}
+                </Button>
+                <Button 
+                  onClick={generatePlantImages}
+                  variant="outline"
+                  disabled={isGeneratingImages}
+                  className="w-full"
+                  title="Generate or replace plant images"
+                >
+                  {isGeneratingImages ? (
+                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 mr-1" /> Generate Images</>
+                  )}
+                </Button>
               </div>
               
               <Button onClick={onDelete} variant="destructive" className="w-full">
