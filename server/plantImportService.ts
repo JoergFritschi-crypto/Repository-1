@@ -152,11 +152,17 @@ export class PlantImportService {
     let scientificName = plant.scientific_name || '';
     const commonName = (plant.common_name || '').toLowerCase();
     
+    // Debug Sunfinity
+    if (scientificName.toLowerCase().includes('sunfin')) {
+      console.log('Processing Sunfinity - input:', scientificName);
+    }
+    
     // Check if this is a hybrid (contains ×)
     const isHybrid = scientificName.includes('×') || scientificName.toLowerCase().includes(' x ');
     
     // Fix ALL CAPS issue first
     if (scientificName && scientificName === scientificName.toUpperCase()) {
+      console.log('Detected ALL CAPS:', scientificName);
       // Convert to proper case: first word capitalized (genus), rest lowercase except cultivar names
       const words = scientificName.split(/\s+/);
       if (words.length > 0) {
@@ -191,12 +197,20 @@ export class PlantImportService {
         }
       }
       plant.scientific_name = scientificName;
+      if (scientificName.toLowerCase().includes('sunfin')) {
+        console.log('After ALL CAPS fix:', scientificName);
+      }
     }
     
     // Normalize hybrid notation (replace ' x ' with ' × ')
     if (scientificName.toLowerCase().includes(' x ')) {
       scientificName = scientificName.replace(/ x /gi, ' × ');
       plant.scientific_name = scientificName;
+    }
+    
+    // Debug after hybrid check
+    if (scientificName.toLowerCase().includes('sunfin')) {
+      console.log('After hybrid normalization:', scientificName);
     }
     
     // First, extract genus from scientific name if not provided by Perenual
@@ -234,6 +248,7 @@ export class PlantImportService {
           const seriesName = firstWord;
           const cultivarPart = words.slice(1).join(' ');
           plant.scientific_name = `${genus} ${seriesName} Series '${cultivarPart}'`;
+          console.log(`Formatted as series cultivar: ${plant.scientific_name}`);
           // Don't mark as needing species - series cultivars don't require species
           hasCultivar = false; // Prevent species lookup
         } else {
