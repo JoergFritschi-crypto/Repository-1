@@ -392,8 +392,8 @@ export default function Admin() {
                                 key={plant.id}
                                 plant={plant}
                                 isAdmin={true}
-                                onVerify={plant.verification_status === 'pending' ? () => verifyPlantMutation.mutate(plant.id) : undefined}
-                                onReject={plant.verification_status === 'pending' ? () => deletePlantMutation.mutate(plant.id) : undefined}
+                                onVerify={(plant.status === 'pending' || plant.verification_status === 'pending') ? () => verifyPlantMutation.mutate(plant.id) : undefined}
+                                onReject={(plant.status === 'pending' || plant.verification_status === 'pending') ? () => deletePlantMutation.mutate(plant.id) : undefined}
                                 onEdit={() => {
                                   toast({
                                     title: "Edit Feature",

@@ -363,7 +363,11 @@ export class DatabaseStorage implements IStorage {
   async verifyPlant(id: string): Promise<Plant> {
     const [verifiedPlant] = await db
       .update(plants)
-      .set({ verificationStatus: "verified", updatedAt: new Date() })
+      .set({ 
+        verificationStatus: "verified", 
+        status: "approved",
+        updatedAt: new Date() 
+      })
       .where(eq(plants.id, id))
       .returning();
     return verifiedPlant;
