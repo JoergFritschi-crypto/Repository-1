@@ -45,6 +45,19 @@ interface PerenualPlant {
 export class PlantImportService {
   private perenualApiKey: string | undefined;
   
+  // Known species corrections for cultivars missing species names
+  private knownSpeciesCorrections: { [key: string]: string } = {
+    // Helianthus cultivars
+    'helianthus capenoch star': 'decapetalus',
+    'helianthus capenor star': 'decapetalus',
+    'helianthus lemon queen': 'pauciflorus',
+    'helianthus monarch': 'atrorubens',
+    'helianthus happy days': 'annuus',
+    
+    // Add more corrections as we discover them
+    // Format: 'genus cultivar' : 'species'
+  };
+  
   constructor() {
     this.perenualApiKey = process.env.PERENUAL_API_KEY;
   }
@@ -104,23 +117,110 @@ export class PlantImportService {
       
       console.log(`Perenual search for "${query}" returned ${allPlants.length} results`);
       
-      // Transform to our format
-      return allPlants.map((plant: any) => ({
-        scientific_name: plant.scientific_name?.[0] || plant.scientific_name || '',
-        common_name: plant.common_name || '',
-        family: plant.family,
-        genus: plant.genus,
-        species: plant.species,
-        cycle: plant.cycle,
-        watering: plant.watering,
-        sunlight: plant.sunlight,
-        external_id: `perenual-${plant.id}`,
-        source: 'perenual'
-      }));
+      // Transform to our format and fix common nomenclature issues
+      return allPlants.map((plant: any) => {
+        // Start with basic transformation
+        let result = {
+          scientific_name: plant.scientific_name?.[0] || plant.scientific_name || '',
+          common_name: plant.common_name || '',
+          family: plant.family,
+          genus: plant.genus,
+          species: plant.species,
+          cycle: plant.cycle,
+          watering: plant.watering,
+          sunlight: plant.sunlight,
+          external_id: `perenual-${plant.id}`,
+          source: 'perenual'
+        };
+        
+        // Fix common nomenclature issues
+        result = this.fixBotanicalNomenclature(result);
+        
+        return result;
+      });
     } catch (error) {
       console.error('Perenual search error:', error);
       return [];
     }
+  }
+  
+  // Fix common botanical nomenclature issues
+  private fixBotanicalNomenclature(plant: any): any {
+    // Parse the scientific name to extract components
+    const scientificName = plant.scientific_name || '';
+    const commonName = (plant.common_name || '').toLowerCase();
+    const genus = plant.genus || '';
+    
+    // Check if we have a cultivar in quotes or apostrophes
+    const cultivarMatch = scientificName.match(/['"]([^'"]+)['"]/);
+    const hasCultivar = cultivarMatch !== null;
+    const cultivarName = cultivarMatch ? cultivarMatch[1] : '';
+    
+    // Case 1: Missing species for known cultivars
+    if (genus && hasCultivar && !plant.species) {
+      const lookupKey = `${genus.toLowerCase()} ${cultivarName.toLowerCase()}`;
+      const lookupKeyAlt = `${genus.toLowerCase()} ${commonName}`;
+      
+      // Check our known corrections database
+      const species = this.knownSpeciesCorrections[lookupKey] || 
+                      this.knownSpeciesCorrections[lookupKeyAlt];
+      
+      if (species) {
+        plant.species = species;
+        // Rebuild the scientific name with the species
+        plant.scientific_name = `${genus} ${species} '${cultivarName}'`;
+        console.log(`Fixed nomenclature: ${scientificName} → ${plant.scientific_name}`);
+      }
+    }
+    
+    // Case 2: Scientific name has cultivar but genus/species fields are incomplete
+    if (scientificName && hasCultivar) {
+      const parts = scientificName.split(/\s+/);
+      if (parts.length >= 3) {
+        // Extract genus and species from scientific name
+        const possibleGenus = parts[0];
+        const possibleSpecies = parts[1];
+        
+        // Only update if currently missing
+        if (!plant.genus && possibleGenus && possibleGenus[0] === possibleGenus[0].toUpperCase()) {
+          plant.genus = possibleGenus;
+        }
+        if (!plant.species && possibleSpecies && possibleSpecies[0] === possibleSpecies[0].toLowerCase()) {
+          plant.species = possibleSpecies;
+        }
+      }
+    }
+    
+    // Case 3: Fix common typos in cultivar names
+    if (cultivarName) {
+      const corrections: { [key: string]: string } = {
+        'capenor star': 'Capenoch Star',
+        'capenoch star': 'Capenoch Star',
+        // Add more typo corrections as needed
+      };
+      
+      const corrected = corrections[cultivarName.toLowerCase()];
+      if (corrected) {
+        plant.scientific_name = plant.scientific_name.replace(cultivarMatch![0], `'${corrected}'`);
+      }
+    }
+    
+    // Case 4: Ensure proper formatting of scientific names
+    if (plant.genus && plant.species) {
+      // Ensure genus is capitalized and species is lowercase
+      plant.genus = plant.genus.charAt(0).toUpperCase() + plant.genus.slice(1).toLowerCase();
+      plant.species = plant.species.toLowerCase();
+      
+      // Rebuild scientific name if needed
+      if (!plant.scientific_name || plant.scientific_name === '') {
+        plant.scientific_name = `${plant.genus} ${plant.species}`;
+        if (cultivarName) {
+          plant.scientific_name += ` '${cultivarName}'`;
+        }
+      }
+    }
+    
+    return plant;
   }
   
   // Get detailed plant info from Perenual
