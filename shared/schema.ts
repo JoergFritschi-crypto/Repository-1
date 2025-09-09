@@ -135,6 +135,7 @@ export const plants = pgTable("plants", {
   
   // Growing conditions - detailed for gardener advice
   hardiness: varchar("hardiness"), // Hardiness zones
+  hardinessLocation: jsonb("hardiness_location"), // v2 API - Location-specific hardiness info
   sunlight: jsonb("sunlight"), // Their 4-tiered system as array
   soil: jsonb("soil"), // Soil requirements
   soilPH: varchar("soil_ph"), // Preferred soil pH: acidic, neutral, alkaline
@@ -150,6 +151,8 @@ export const plants = pgTable("plants", {
   saltTolerant: boolean("salt_tolerant").default(false),
   thorny: boolean("thorny").default(false),
   tropical: boolean("tropical").default(false),
+  invasive: boolean("invasive").default(false), // v2 API field
+  indoor: boolean("indoor").default(false), // v2 API field - suitable for indoor growing
   careLevel: varchar("care_level"), // Easy, moderate, hard
   maintenance: varchar("maintenance"), // Low, moderate, high
   
@@ -164,8 +167,10 @@ export const plants = pgTable("plants", {
   // Appearance
   leaf: jsonb("leaf"), // Leaf information
   leafColor: jsonb("leaf_color"), // Array of colors
-  flowerColor: jsonb("flower_color"), // Array of colors
+  flowerColor: jsonb("flower_color"), // Array of colors - v2 provides actual colors
   floweringSeason: varchar("flowering_season"), // When it blooms
+  fruitColor: jsonb("fruit_color"), // v2 API - Array of fruit colors
+  harvestSeason: varchar("harvest_season"), // v2 API - When to harvest fruit
   bloomStartMonth: integer("bloom_start_month"), // 1-12 (January-December)
   bloomEndMonth: integer("bloom_end_month"), // 1-12 (January-December)
   
@@ -176,6 +181,8 @@ export const plants = pgTable("plants", {
   toxicityNotes: text("toxicity_notes"), // Specific toxicity information
   childSafe: boolean("child_safe").default(true), // Quick reference for families
   petSafe: boolean("pet_safe").default(true), // Quick reference for pet owners
+  edibleFruit: boolean("edible_fruit").default(false), // v2 API - Has edible fruit
+  edibleLeaf: boolean("edible_leaf").default(false), // v2 API - Has edible leaves
   cuisine: boolean("cuisine").default(false), // Culinary uses
   medicinal: boolean("medicinal").default(false), // Medicinal uses
   // Legacy toxicity fields - kept for backward compatibility but deprecated
@@ -185,6 +192,8 @@ export const plants = pgTable("plants", {
   // Garden information
   attracts: jsonb("attracts"), // What it attracts (butterflies, birds, etc.)
   propagation: jsonb("propagation"), // How to propagate
+  resistance: jsonb("resistance"), // v2 API - Disease/pest resistance
+  problem: jsonb("problem"), // v2 API - Common problems
   pruningMonth: jsonb("pruning_month"), // Array of months
   pruningCount: jsonb("pruning_count"), // Frequency info
   seeds: integer("seeds"), // Seed count/info
