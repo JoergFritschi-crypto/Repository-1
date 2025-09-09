@@ -106,7 +106,12 @@ export default function PlantSearchModal({
           {searchResults.length > 0 && (
             <div className="mt-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">Select Plants to Add</h3>
+                <h3 className="font-medium">
+                  Select Plants to Add 
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    ({searchResults.length} found)
+                  </span>
+                </h3>
                 <Badge variant="outline">{selectedPlants.size} selected</Badge>
               </div>
               <ScrollArea className="h-48 border rounded-lg p-3">

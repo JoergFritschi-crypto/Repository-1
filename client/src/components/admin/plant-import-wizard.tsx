@@ -235,8 +235,12 @@ export function PlantImportWizard() {
                 </div>
                 
                 {searchResults.length > 0 && (
-                  <ScrollArea className="h-[400px] border rounded-lg p-4">
-                    <div className="space-y-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                    </p>
+                    <ScrollArea className="h-[400px] border rounded-lg p-4">
+                      <div className="space-y-2">
                       {searchResults.map((plant, idx) => (
                         <div 
                           key={idx} 
@@ -270,8 +274,9 @@ export function PlantImportWizard() {
                           />
                         </div>
                       ))}
-                    </div>
-                  </ScrollArea>
+                      </div>
+                    </ScrollArea>
+                  </div>
                 )}
               </TabsContent>
               

@@ -302,7 +302,14 @@ export default function GardenDesign() {
                 {/* Search Results */}
                 <Card className="border-2 border-gray-200">
                   <CardHeader>
-                    <CardTitle>Search Results</CardTitle>
+                    <CardTitle>
+                      Search Results 
+                      {searchResults.length > 0 && (
+                        <span className="text-sm font-normal text-muted-foreground ml-2">
+                          ({searchResults.length} result{searchResults.length !== 1 ? 's' : ''})
+                        </span>
+                      )}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {isSearching ? (
