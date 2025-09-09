@@ -210,9 +210,9 @@ export class AIInpaintingService {
                       plant.size === 'large' ? '3-4 meter tall tree' :
                       '80cm-1 meter tall shrub';
     
-    const prompt = `Inpaint a single ${plant.plantName} in the masked white circle area only. ${scaleRef}.
-                    Preserve ALL surrounding garden areas exactly as they are. Only modify the masked region.
-                    ${plant.plantName} with ${seasonDesc}, natural integration, blend edges seamlessly`;
+    const prompt = `Add a realistic ${plant.plantName} plant in the white masked area. ${scaleRef}.
+                    Plant should be ${depthDesc} with natural shadows and lighting.
+                    ${seasonDesc}, photorealistic ${plant.plantName}, integrate naturally into garden soil`;
     
     try {
       console.log(`  Sequential: Adding ${plant.plantName} at (${plant.x}, ${plant.y})`);
@@ -227,7 +227,7 @@ export class AIInpaintingService {
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.4,  // Low strength to preserve existing garden structure
+        strength: 0.75,  // Higher strength to actually add visible plants
         CFGScale: 12,
         steps: 40,
         seed: Math.floor(Math.random() * 1000000)
@@ -298,9 +298,9 @@ export class AIInpaintingService {
                       options.style === 'artistic' ? "artistic illustration" :
                       "photorealistic";
     
-    const prompt = `Inpaint ONLY in the white masked areas: ${plantDescriptions}.
-                    DO NOT change any unmasked areas. Preserve the stone-framed garden bed exactly.
-                    ${seasonDesc}, ${styleDesc}, seamless integration, natural shadows and lighting`;
+    const prompt = `Add these exact plants in the white masked areas: ${plantDescriptions}.
+                    Each plant in its designated white circle. Stone-framed garden bed with soil.
+                    ${seasonDesc}, ${styleDesc}, realistic plants with natural shadows and depth`;
     
     try {
       console.log(`  Batch: Adding ${options.plants.length} plants at once`);
@@ -315,7 +315,7 @@ export class AIInpaintingService {
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.35,  // Very low strength to preserve garden bed structure
+        strength: 0.65,  // Moderate strength for batch processing
         CFGScale: 10,
         steps: 35,
         seed: Math.floor(Math.random() * 1000000)
@@ -478,7 +478,7 @@ export class AIInpaintingService {
         height: 1472,  // Must be multiple of 64
         width: 1920,
         seedImage: `data:image/png;base64,${sequentialBuffer.toString('base64')}`,
-        strength: 0.15,  // Very low strength to only enhance details, not change composition
+        strength: 0.2,  // Low strength to enhance while preserving composition
         CFGScale: 7,
         steps: 25
       });
@@ -523,7 +523,7 @@ export class AIInpaintingService {
         height: 1472,  // Must be multiple of 64
         width: 1920,
         seedImage: `data:image/png;base64,${batchBuffer.toString('base64')}`,
-        strength: 0.15,  // Very low strength to only enhance details, not change composition
+        strength: 0.2,  // Low strength to enhance while preserving composition
         CFGScale: 7,
         steps: 25
       });
