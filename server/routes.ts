@@ -830,7 +830,6 @@ Rules:
           growthRate: 'moderate',
           pruningNeeds: 'light',
           propagationMethods: ['cuttings', 'division'],
-          nativeRegion: 'Mediterranean',
           uses: ['ornamental', 'fragrance', 'pollinator', 'medicinal', 'culinary'],
           companionPlants: ['roses', 'sage', 'thyme'],
           problemsSolutions: 'Root rot in heavy soils; ensure good drainage',
@@ -877,7 +876,6 @@ Rules:
           growthRate: 'moderate',
           pruningNeeds: 'minimal',
           propagationMethods: ['division'],
-          nativeRegion: 'Asia',
           uses: ['ornamental', 'shade garden', 'ground cover'],
           companionPlants: ['ferns', 'astilbe', 'bleeding heart'],
           problemsSolutions: 'Slugs and snails; use organic slug control',
@@ -924,7 +922,6 @@ Rules:
           growthRate: 'slow',
           pruningNeeds: 'light',
           propagationMethods: ['cuttings', 'grafting'],
-          nativeRegion: 'Japan, Korea, China',
           uses: ['ornamental', 'specimen', 'container'],
           companionPlants: ['azaleas', 'rhododendrons', 'ferns'],
           problemsSolutions: 'Leaf scorch in hot sun; provide afternoon shade',
@@ -1033,7 +1030,6 @@ Rules:
         growth_rate: plant.growthRate,
         care_level: plant.careLevel,
         description: plant.description,
-        native_region: plant.nativeRegion,
         drought_tolerant: plant.droughtTolerant,
         salt_tolerant: plant.saltTolerant,
         poisonous_to_pets: plant.poisonousToPets === 1,
@@ -1086,10 +1082,6 @@ Rules:
       }
       if (validatedData.care_level && !plant.careLevel) {
         updates.careLevel = validatedData.care_level;
-        updatedFields++;
-      }
-      if (validatedData.native_region && !plant.nativeRegion) {
-        updates.nativeRegion = validatedData.native_region;
         updatedFields++;
       }
       if (validatedData.growth_rate && !plant.growthRate) {
