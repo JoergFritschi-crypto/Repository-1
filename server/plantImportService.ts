@@ -53,6 +53,8 @@ export class PlantImportService {
     'helianthus lemon queen': 'pauciflorus',
     'helianthus monarch': 'atrorubens',
     'helianthus happy days': 'annuus',
+    'helianthus sunfiniti yellow dark center': '× multiflorus',  // hybrid cultivar
+    'helianthus sunfiniti': '× multiflorus',  // hybrid series
     
     // Add more corrections as we discover them
     // Format: 'genus cultivar' : 'species'
@@ -133,8 +135,18 @@ export class PlantImportService {
           source: 'perenual'
         };
         
+        // Debug Sunfiniti entry
+        if (result.scientific_name.toLowerCase().includes('sunfiniti')) {
+          console.log('Found Sunfiniti entry - before correction:', result);
+        }
+        
         // Fix common nomenclature issues
         result = this.fixBotanicalNomenclature(result);
+        
+        // Debug after correction
+        if (result.scientific_name.toLowerCase().includes('sunfiniti')) {
+          console.log('Sunfiniti entry - after correction:', result);
+        }
         
         return result;
       });
@@ -147,8 +159,37 @@ export class PlantImportService {
   // Fix common botanical nomenclature issues
   private fixBotanicalNomenclature(plant: any): any {
     // Parse the scientific name to extract components
-    const scientificName = plant.scientific_name || '';
+    let scientificName = plant.scientific_name || '';
     const commonName = (plant.common_name || '').toLowerCase();
+    
+    // Fix ALL CAPS issue first
+    if (scientificName && scientificName === scientificName.toUpperCase()) {
+      // Convert to proper case: first word capitalized (genus), rest lowercase except cultivar names
+      const words = scientificName.split(/\s+/);
+      if (words.length > 0) {
+        // First word is genus - capitalize it
+        words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+        
+        // For remaining words, check if they look like cultivar names (multiple capitalized words)
+        if (words.length > 1) {
+          // If we have 3+ words after genus and no quotes, it's likely a cultivar
+          const remainingWords = words.slice(1);
+          if (remainingWords.length >= 2 && !scientificName.includes("'")) {
+            // Format as cultivar
+            const cultivarName = remainingWords.map(w => 
+              w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+            ).join(' ');
+            scientificName = `${words[0]} '${cultivarName}'`;
+          } else {
+            // Just fix the case
+            scientificName = words.map((w, i) => 
+              i === 0 ? w : w.toLowerCase()
+            ).join(' ');
+          }
+        }
+      }
+      plant.scientific_name = scientificName;
+    }
     
     // First, extract genus from scientific name if not provided by Perenual
     if (!plant.genus && scientificName) {
@@ -161,9 +202,23 @@ export class PlantImportService {
     const genus = plant.genus || '';
     
     // Check if we have a cultivar in quotes or apostrophes
-    const cultivarMatch = scientificName.match(/['"]([^'"]+)['"]/);
-    const hasCultivar = cultivarMatch !== null;
-    const cultivarName = cultivarMatch ? cultivarMatch[1] : '';
+    let cultivarMatch = scientificName.match(/['"]([^'"]+)['"]/);
+    let hasCultivar = cultivarMatch !== null;
+    let cultivarName = cultivarMatch ? cultivarMatch[1] : '';
+    
+    // Also check for unquoted cultivar patterns (genus followed by multiple capitalized words)
+    if (!hasCultivar && genus) {
+      // Pattern: "Helianthus Sunfiniti Yellow Dark Center" -> detect as cultivar
+      const pattern = new RegExp(`^${genus}\\s+([A-Z][a-z]*(?:\\s+[A-Z][a-z]*)*)$`);
+      const match = scientificName.match(pattern);
+      if (match && match[1].split(/\s+/).length >= 2) {
+        // Multiple capitalized words after genus = likely a cultivar
+        hasCultivar = true;
+        cultivarName = match[1];
+        // Reformat with quotes
+        plant.scientific_name = `${genus} '${cultivarName}'`;
+      }
+    }
     
     // Case 1: We have a cultivar but missing species (like "Helianthus 'Capenoch Star'")
     if (genus && hasCultivar && !plant.species) {
