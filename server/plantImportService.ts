@@ -439,8 +439,8 @@ export class PlantImportService {
     try {
       console.log(`Searching GBIF for "${query}"`);
       
-      // Use GBIF's species search endpoint
-      const searchUrl = `https://api.gbif.org/v1/species/search?q=${encodeURIComponent(query)}&rank=SPECIES&rank=SUBSPECIES&rank=VARIETY&status=ACCEPTED&limit=100`;
+      // Use GBIF's species search endpoint - ONLY search Kingdom Plantae!
+      const searchUrl = `https://api.gbif.org/v1/species/search?q=${encodeURIComponent(query)}&kingdom=Plantae&rank=SPECIES&rank=SUBSPECIES&rank=VARIETY&status=ACCEPTED&limit=100`;
       
       const response = await fetch(searchUrl, { method: 'GET' });
       
@@ -453,8 +453,14 @@ export class PlantImportService {
       
       console.log(`GBIF search for "${query}" returned ${results.length} results`);
       
-      // Filter out vague entries
+      // Filter out vague entries AND double-check Kingdom Plantae
       const filteredResults = results.filter((species: any) => {
+        // STRICT: Only allow Kingdom Plantae
+        if (species.kingdom !== 'Plantae') {
+          console.log(`  GBIF filtering out non-plant: ${species.scientificName} (Kingdom: ${species.kingdom || 'unknown'})`);
+          return false;
+        }
+        
         const name = species.scientificName || species.canonicalName || '';
         // Skip entries ending with "sp." (species not determined) or "spp." (multiple species)
         // Skip entries with "agg." (aggregate species) or "complex" (species complex)
