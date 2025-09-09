@@ -571,7 +571,7 @@ export class PlantImportService {
       
       console.log(`iNaturalist search for "${query}" returned ${results.length} results`);
       
-      // Filter and format results
+      // Filter and format results - bind this context properly
       const filteredResults = results
         .filter((taxon: any) => {
           // Filter out non-plant kingdoms
@@ -590,8 +590,8 @@ export class PlantImportService {
           return true;
         })
         .map((taxon: any) => {
-          // Use arrow function to preserve 'this' context
-          const scientificName = this.correctBotanicalNomenclature(taxon.name || '');
+          // Call the method directly as a member function
+          const scientificName = plantImportService.correctBotanicalNomenclature(taxon.name || '');
           
           return {
             scientific_name: scientificName,
