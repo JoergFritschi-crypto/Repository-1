@@ -53,8 +53,8 @@ export class PlantImportService {
     'helianthus lemon queen': 'pauciflorus',
     'helianthus monarch': 'atrorubens',
     'helianthus happy days': 'annuus',
-    'helianthus sunfiniti yellow dark center': 'annuus',  // Sunfiniti™ series cultivar
-    'helianthus sunfiniti': 'annuus',  // Sunfiniti™ series
+    // Note: Sunfinity Series cultivars should not have species per ICNCP
+    // They will be formatted as: Helianthus Sunfinity Series 'cultivar name'
     
     // Add more corrections as we discover them
     // Format: 'genus cultivar' : 'species'
@@ -135,18 +135,8 @@ export class PlantImportService {
           source: 'perenual'
         };
         
-        // Debug Sunfiniti entry
-        if (result.scientific_name.toLowerCase().includes('sunfiniti')) {
-          console.log('Found Sunfiniti entry - before correction:', result);
-        }
-        
         // Fix common nomenclature issues
         result = this.fixBotanicalNomenclature(result);
-        
-        // Debug after correction
-        if (result.scientific_name.toLowerCase().includes('sunfiniti')) {
-          console.log('Sunfiniti entry - after correction:', result);
-        }
         
         return result;
       });
@@ -226,15 +216,32 @@ export class PlantImportService {
     
     // Also check for unquoted cultivar patterns (genus followed by multiple capitalized words)
     if (!hasCultivar && genus) {
-      // Pattern: "Helianthus Sunfiniti Yellow Dark Center" -> detect as cultivar
+      // Pattern: "Helianthus Sunfiniti Yellow Dark Center" -> detect as series cultivar
       const pattern = new RegExp(`^${genus}\\s+([A-Z][a-z]*(?:\\s+[A-Z][a-z]*)*)$`);
       const match = scientificName.match(pattern);
       if (match && match[1].split(/\s+/).length >= 2) {
-        // Multiple capitalized words after genus = likely a cultivar
-        hasCultivar = true;
-        cultivarName = match[1];
-        // Reformat with quotes
-        plant.scientific_name = `${genus} '${cultivarName}'`;
+        const words = match[1].split(/\s+/);
+        
+        // Check if this looks like a series (first word is a brand/series name)
+        const knownSeries = ['Sunfinity', 'Sunfiniti', 'SunBelievable', 'ProCut'];
+        const firstWord = words[0];
+        const isSeriesCultivar = knownSeries.some(series => 
+          firstWord.toLowerCase() === series.toLowerCase()
+        );
+        
+        if (isSeriesCultivar) {
+          // Format as Series cultivar per ICNCP: Genus Series 'cultivar'
+          const seriesName = firstWord;
+          const cultivarPart = words.slice(1).join(' ');
+          plant.scientific_name = `${genus} ${seriesName} Series '${cultivarPart}'`;
+          // Don't mark as needing species - series cultivars don't require species
+          hasCultivar = false; // Prevent species lookup
+        } else {
+          // Regular cultivar
+          hasCultivar = true;
+          cultivarName = match[1];
+          plant.scientific_name = `${genus} '${cultivarName}'`;
+        }
       }
     }
     
