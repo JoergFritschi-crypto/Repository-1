@@ -1200,6 +1200,42 @@ Rules:
     }
   });
   
+  // Search iNaturalist for plants
+  app.get('/api/admin/import/search-inaturalist', isAuthenticated, async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: 'Search query required' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      const results = await plantImportService.searchINaturalist(q);
+      
+      res.json({ plants: results, total: results.length });
+    } catch (error) {
+      console.error('iNaturalist search error:', error);
+      res.status(500).json({ error: 'iNaturalist search failed' });
+    }
+  });
+  
+  // Validate plant data with Perplexity AI
+  app.post('/api/admin/import/validate-perplexity', isAuthenticated, async (req, res) => {
+    try {
+      const { plant } = req.body;
+      if (!plant || !plant.scientific_name) {
+        return res.status(400).json({ error: 'Plant data with scientific name required' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      const validated = await plantImportService.validateWithPerplexity(plant);
+      
+      res.json(validated);
+    } catch (error) {
+      console.error('Perplexity validation error:', error);
+      res.status(500).json({ error: 'Validation failed' });
+    }
+  });
+  
   app.post('/api/admin/import/plants', isAuthenticated, async (req, res) => {
     try {
       const { plants } = req.body;

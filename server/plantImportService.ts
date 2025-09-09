@@ -545,6 +545,197 @@ export class PlantImportService {
     }
   }
   
+  // Search iNaturalist for plants
+  async searchINaturalist(query: string): Promise<any[]> {
+    try {
+      const searchUrl = `https://api.inaturalist.org/v1/taxa/autocomplete?q=${encodeURIComponent(query)}&rank=species,subspecies,variety,cultivar&is_active=true&per_page=100`;
+      
+      console.log(`Searching iNaturalist for: ${query}`);
+      
+      const response = await fetch(searchUrl, { method: 'GET' });
+      
+      if (!response.ok) {
+        throw new Error(`iNaturalist API error: ${response.status}`);
+      }
+      
+      const data = await response.json() as any;
+      const results = data.results || [];
+      
+      console.log(`iNaturalist search for "${query}" returned ${results.length} results`);
+      
+      // Filter and format results
+      const filteredResults = results
+        .filter((taxon: any) => {
+          // Filter out non-plant kingdoms
+          if (taxon.iconic_taxon_name && 
+              !['Plantae', 'Fungi'].includes(taxon.iconic_taxon_name)) {
+            return false;
+          }
+          
+          // Filter out vague entries
+          const name = taxon.name || '';
+          const vagueSuffixes = ['sp.', 'spp.', 'cvs.', 'agg.', 'complex'];
+          if (vagueSuffixes.some(suffix => name.endsWith(suffix))) {
+            return false;
+          }
+          
+          return true;
+        })
+        .map((taxon: any) => {
+          const scientificName = this.correctBotanicalNomenclature(taxon.name || '');
+          
+          return {
+            scientific_name: scientificName,
+            common_name: taxon.preferred_common_name || taxon.english_common_name || '',
+            family: taxon.family?.name || '',
+            genus: taxon.genus?.name || '',
+            species: taxon.species?.name || '',
+            rank: taxon.rank || '',
+            conservation_status: taxon.conservation_status?.status || '',
+            inaturalist_id: taxon.id?.toString() || '',
+            observations_count: taxon.observations_count || 0,
+            photo_url: taxon.default_photo?.square_url || ''
+          };
+        })
+        .sort((a: any, b: any) => b.observations_count - a.observations_count); // Sort by popularity
+      
+      console.log(`After filtering: ${filteredResults.length} plants`);
+      
+      return filteredResults;
+      
+    } catch (error) {
+      console.error('iNaturalist search error:', error);
+      return [];
+    }
+  }
+  
+  // Validate plant data with Perplexity AI
+  async validateWithPerplexity(plant: any): Promise<any> {
+    const perplexityApiKey = process.env.PERPLEXITY_API_KEY;
+    
+    if (!perplexityApiKey) {
+      console.warn('Perplexity API key not configured, skipping validation');
+      return plant;
+    }
+    
+    try {
+      // Build a list of empty fields that need validation
+      const emptyFields = [];
+      if (!plant.common_name) emptyFields.push('common name');
+      if (!plant.family) emptyFields.push('family');
+      if (!plant.description) emptyFields.push('description');
+      if (!plant.watering) emptyFields.push('watering needs');
+      if (!plant.sunlight || plant.sunlight?.length === 0) emptyFields.push('sunlight requirements');
+      if (!plant.care_level) emptyFields.push('care level');
+      if (!plant.native_region) emptyFields.push('native region');
+      if (!plant.growth_rate) emptyFields.push('growth rate');
+      if (!plant.soil || plant.soil?.length === 0) emptyFields.push('soil requirements');
+      
+      if (emptyFields.length === 0) {
+        return plant; // No validation needed
+      }
+      
+      const prompt = `For the plant "${plant.scientific_name}", provide the following missing information in JSON format: ${emptyFields.join(', ')}. 
+      
+      Return ONLY a JSON object with these exact keys (use null if truly unknown):
+      {
+        "common_name": "string or null",
+        "family": "string or null",
+        "description": "string (1-2 sentences) or null",
+        "watering": "low/moderate/high or null",
+        "sunlight": ["full sun", "part shade"] or null,
+        "care_level": "low/moderate/high or null",
+        "native_region": "string or null",
+        "growth_rate": "slow/moderate/fast or null",
+        "soil": ["well-drained", "moist"] or null
+      }`;
+      
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${perplexityApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a botanical expert. Provide accurate plant information in JSON format only.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.2,
+          max_tokens: 500
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+      
+      const data = await response.json() as any;
+      const content = data.choices?.[0]?.message?.content || '{}';
+      
+      // Parse the JSON response
+      let validatedData;
+      try {
+        validatedData = JSON.parse(content);
+      } catch (e) {
+        // Try to extract JSON from the response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          validatedData = JSON.parse(jsonMatch[0]);
+        } else {
+          console.warn('Could not parse Perplexity response as JSON');
+          return plant;
+        }
+      }
+      
+      // Merge validated data with existing plant data
+      const enrichedPlant = { ...plant };
+      
+      if (validatedData.common_name && !plant.common_name) {
+        enrichedPlant.common_name = validatedData.common_name;
+      }
+      if (validatedData.family && !plant.family) {
+        enrichedPlant.family = validatedData.family;
+      }
+      if (validatedData.description && !plant.description) {
+        enrichedPlant.description = validatedData.description;
+      }
+      if (validatedData.watering && !plant.watering) {
+        enrichedPlant.watering = validatedData.watering;
+      }
+      if (validatedData.sunlight && (!plant.sunlight || plant.sunlight.length === 0)) {
+        enrichedPlant.sunlight = validatedData.sunlight;
+      }
+      if (validatedData.care_level && !plant.care_level) {
+        enrichedPlant.care_level = validatedData.care_level;
+      }
+      if (validatedData.native_region && !plant.native_region) {
+        enrichedPlant.native_region = validatedData.native_region;
+      }
+      if (validatedData.growth_rate && !plant.growth_rate) {
+        enrichedPlant.growth_rate = validatedData.growth_rate;
+      }
+      if (validatedData.soil && (!plant.soil || plant.soil.length === 0)) {
+        enrichedPlant.soil = validatedData.soil;
+      }
+      
+      console.log(`Validated ${plant.scientific_name} with Perplexity, filled ${emptyFields.length} fields`);
+      
+      return enrichedPlant;
+      
+    } catch (error) {
+      console.error('Perplexity validation error:', error);
+      return plant; // Return original plant on error
+    }
+  }
+  
   // Import plants to database
   async importPlants(plantsData: any[]): Promise<{ imported: number; failed: number }> {
     let imported = 0;
