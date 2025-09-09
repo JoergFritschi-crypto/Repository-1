@@ -364,8 +364,7 @@ export class DatabaseStorage implements IStorage {
     const [verifiedPlant] = await db
       .update(plants)
       .set({ 
-        verificationStatus: "verified", 
-        status: "approved",
+        verificationStatus: "verified",
         updatedAt: new Date() 
       })
       .where(eq(plants.id, id))

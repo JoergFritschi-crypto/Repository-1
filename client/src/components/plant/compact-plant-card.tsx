@@ -334,9 +334,9 @@ export function CompactPlantCard({
   return (
     <>
       <Card className={`group overflow-hidden hover:shadow-lg transition-all relative h-[460px] flex flex-col border-2 ${
-        isAdmin && plant.status === 'approved' 
+        isAdmin && plant.verificationStatus === 'verified' 
           ? 'border-green-500 shadow-green-100' 
-          : isAdmin && plant.status === 'pending'
+          : isAdmin && plant.verificationStatus === 'pending'
           ? 'border-yellow-500 shadow-yellow-100'
           : 'border-[#004025]'
       } hover:border-[#004025]/80`}>
@@ -368,7 +368,7 @@ export function CompactPlantCard({
               </Button>
               
               {/* Verified indicator - only visible for admin */}
-              {plant.status === 'approved' && (
+              {plant.verificationStatus === 'verified' && (
                 <div className="absolute top-2 right-12 bg-green-500 text-white px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
                   <Check className="w-3 h-3" />
                   <span className="text-xs font-medium">Verified</span>
@@ -376,7 +376,7 @@ export function CompactPlantCard({
               )}
               
               {/* Pending indicator for unapproved plants */}
-              {plant.status === 'pending' && (
+              {plant.verificationStatus === 'pending' && (
                 <div className="absolute top-2 right-12 bg-yellow-500 text-white px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
                   <span className="text-xs font-medium">Pending</span>
