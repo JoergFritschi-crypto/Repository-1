@@ -123,6 +123,46 @@ export function PlantImportWizard() {
     two_sources: 0
   });
   const { toast } = useToast();
+  
+  // Normalize scientific names for deduplication
+  // Handles variations like extra spaces, case differences, quotes
+  const normalizeScientificName = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+      .replace(/['']/g, "'") // Normalize quotes
+      .replace(/×/g, 'x');   // Normalize multiplication sign for hybrids
+  };
+  
+  // Check if two scientific names are the same plant
+  // Returns true only if we're certain they're the same
+  const isSamePlant = (name1: string, name2: string): boolean => {
+    const normalized1 = normalizeScientificName(name1);
+    const normalized2 = normalizeScientificName(name2);
+    
+    // Exact match after normalization
+    if (normalized1 === normalized2) return true;
+    
+    // Check if one is a cultivar of the other (e.g., "Helianthus annuus" vs "Helianthus annuus 'Sunspot'")
+    // Only match if the base species is exactly the same
+    const base1 = normalized1.split("'")[0].trim();
+    const base2 = normalized2.split("'")[0].trim();
+    
+    // If they have different base names, they're different plants
+    if (base1 !== base2) return false;
+    
+    // If both have cultivar names but they're different, they're different plants
+    const cultivar1 = normalized1.includes("'");
+    const cultivar2 = normalized2.includes("'");
+    if (cultivar1 && cultivar2 && normalized1 !== normalized2) return false;
+    
+    // If one has cultivar and other doesn't, they're different
+    // (species vs specific cultivar should be kept separate)
+    if (cultivar1 !== cultivar2) return false;
+    
+    return true;
+  };
 
   // Calculate counts whenever selectedPlants changes
   useEffect(() => {
@@ -241,18 +281,23 @@ export function PlantImportWizard() {
       let enrichedCount = 0;
       
       gbifPlants.forEach((gbifPlant: any) => {
+        // Find existing plant using intelligent deduplication
         const existing = mergedPlants.find(p => 
-          p.scientific_name === gbifPlant.scientific_name
+          isSamePlant(p.scientific_name || '', gbifPlant.scientific_name || '')
         );
         
         if (existing) {
-          // Enrich existing plant
+          // Enrich existing plant - merge data from GBIF
           existing.sources.gbif = true;
           if (gbifPlant.gbif_id) existing.gbif_id = gbifPlant.gbif_id;
           if (gbifPlant.gbif_key) existing.gbif_key = gbifPlant.gbif_key;
           if (gbifPlant.family && !existing.family) existing.family = gbifPlant.family;
-          if (gbifPlant.native_region) existing.native_region = gbifPlant.native_region;
-          if (gbifPlant.conservation_status) existing.conservation_status = gbifPlant.conservation_status;
+          if (gbifPlant.native_region && !existing.native_region) existing.native_region = gbifPlant.native_region;
+          if (gbifPlant.conservation_status && !existing.conservation_status) existing.conservation_status = gbifPlant.conservation_status;
+          if (gbifPlant.taxonomic_status && !existing.taxonomic_status) existing.taxonomic_status = gbifPlant.taxonomic_status;
+          // Merge arrays if they exist
+          if (gbifPlant.soil && (!existing.soil || existing.soil.length === 0)) existing.soil = gbifPlant.soil;
+          if (gbifPlant.sunlight && (!existing.sunlight || existing.sunlight.length === 0)) existing.sunlight = gbifPlant.sunlight;
           enrichedCount++;
         } else {
           // Add new plant from GBIF
@@ -309,16 +354,24 @@ export function PlantImportWizard() {
       let enrichedCount = 0;
       
       inatPlants.forEach((inatPlant: any) => {
+        // Find existing plant using intelligent deduplication
         const existing = mergedPlants.find(p => 
-          p.scientific_name === inatPlant.scientific_name
+          isSamePlant(p.scientific_name || '', inatPlant.scientific_name || '')
         );
         
         if (existing) {
-          // Enrich existing plant
+          // Enrich existing plant - merge data from iNaturalist
           existing.sources.inaturalist = true;
           if (inatPlant.inaturalist_id) existing.inaturalist_id = inatPlant.inaturalist_id;
           if (inatPlant.common_name && !existing.common_name) {
             existing.common_name = inatPlant.common_name;
+          }
+          if (inatPlant.conservation_status && !existing.conservation_status) {
+            existing.conservation_status = inatPlant.conservation_status;
+          }
+          if (inatPlant.family && !existing.family) existing.family = inatPlant.family;
+          if (inatPlant.observations_count) {
+            existing.observations_count = inatPlant.observations_count;
           }
           enrichedCount++;
         } else {

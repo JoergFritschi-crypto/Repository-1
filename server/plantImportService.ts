@@ -45,6 +45,14 @@ interface PerenualPlant {
 export class PlantImportService {
   private perenualApiKey: string | undefined;
   
+  // NOMENCLATURE STANDARDS:
+  // All three data sources (Perenual, GBIF, iNaturalist) use the same rigorous rules:
+  // 1. Botanical nomenclature correction (ALL CAPS → Proper Case, cultivar formatting)
+  // 2. Filtering of vague entries (sp., spp., cvs., agg., complex)
+  // 3. Intelligent deduplication based on normalized scientific names
+  // 4. ICNCP-compliant cultivar formatting ('Single quotes' for cultivars)
+  // 5. Species inference for known cultivars missing species epithets
+  
   // Known species corrections for cultivars missing species names
   private knownSpeciesCorrections: { [key: string]: string } = {
     // Helianthus cultivars
