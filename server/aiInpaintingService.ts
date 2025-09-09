@@ -60,11 +60,25 @@ export class AIInpaintingService {
           </pattern>
         </defs>
         
-        <!-- Full garden bed - just soil, no sky or borders -->
-        <rect width="${width}" height="${height}" fill="url(#soil)"/>
+        <!-- Full garden bed with stone frame -->
+        <rect width="${width}" height="${height}" fill="#8B7D6B"/>
         
-        <!-- Add soil texture overlay -->
-        <rect width="${width}" height="${height}" fill="url(#soilTexture)" opacity="0.4"/>
+        <!-- Inner garden bed (10x10m) with stone border -->
+        <rect x="${width * 0.1}" y="${height * 0.1}" 
+              width="${width * 0.8}" height="${height * 0.8}" 
+              fill="url(#soil)" 
+              stroke="#696969" stroke-width="20"/>
+        
+        <!-- Add soil texture overlay to inner bed -->
+        <rect x="${width * 0.1}" y="${height * 0.1}" 
+              width="${width * 0.8}" height="${height * 0.8}" 
+              fill="url(#soilTexture)" opacity="0.4"/>
+        
+        <!-- Stone border highlights -->
+        <rect x="${width * 0.1}" y="${height * 0.1}" 
+              width="${width * 0.8}" height="${height * 0.8}" 
+              fill="none" 
+              stroke="#A9A9A9" stroke-width="15" opacity="0.5"/>
       </svg>
     `;
     
@@ -82,9 +96,9 @@ export class AIInpaintingService {
     // Size mapping for mask radius - calibrated for 10x10m garden at 800px
     // 10m = 800px, so 1m = 80px
     const sizeMap = {
-      small: 0.025,   // ~20px = ~0.25m diameter (herbs, small flowers)
-      medium: 0.075,  // ~60px = ~0.75m diameter (shrubs, perennials) 
-      large: 0.25     // ~200px = ~2.5m diameter (mature trees)
+      small: 0.015,   // ~12px = ~0.15m diameter (small herbs like lavender, hostas)
+      medium: 0.08,   // ~64px = ~0.8m diameter (medium shrubs) 
+      large: 0.2      // ~160px = ~2m diameter (mature trees)
     };
     
     const radius = imageWidth * sizeMap[size];
@@ -175,13 +189,13 @@ export class AIInpaintingService {
                       'medium-sized';
     
     // Reference garden size in prompt for scale (10x10 meters)
-    const scaleRef = plant.size === 'small' ? '30cm tall herb' :
+    const scaleRef = plant.size === 'small' ? '20-30cm tall small plant' :
                       plant.size === 'large' ? '3-4 meter tall tree' :
-                      '1 meter tall shrub';
+                      '80cm-1 meter tall shrub';
     
-    const prompt = `In a 10x10 meter garden, add ONE ${sizeDesc} ${plant.plantName} (${scaleRef}) ${depthDesc}, 
-                    ${seasonDesc}, natural lighting, photorealistic, proper scale to garden size,
-                    single plant only, no duplicates, maintain correct proportions`;
+    const prompt = `In a clearly defined 10x10 meter square garden bed with stone border framing, add ONE ${sizeDesc} ${plant.plantName} (${scaleRef}) ${depthDesc}, 
+                    ${seasonDesc}, natural lighting, photorealistic, proper scale to stone-framed 10x10m bed,
+                    single plant only, no duplicates, maintain correct proportions, show stone edge of bed`;
     
     try {
       // Call the batch inpainting which actually works!
@@ -220,9 +234,9 @@ export class AIInpaintingService {
                        'medium-sized';
       
       // Add specific height guidance for 10x10 meter garden scale
-      const heightDesc = plant.size === 'small' ? '(30cm tall)' :
-                        plant.size === 'large' ? '(3-4 meters tall)' :
-                        '(1 meter tall)';
+      const heightDesc = plant.size === 'small' ? '(20-30cm tall, very small)' :
+                        plant.size === 'large' ? '(3-4 meters tall tree)' :
+                        '(80cm tall)';
       
       return `ONE ${sizeDesc} ${plant.plantName} ${heightDesc} in the ${position} ${depth}`;
     }).join(", ");
@@ -232,9 +246,9 @@ export class AIInpaintingService {
                       options.style === 'artistic' ? "artistic illustration" :
                       "photorealistic";
     
-    const prompt = `A 10x10 meter garden bed (no fence, no borders, just soil and plants) with EXACTLY ${options.plants.length} plants: ${plantDescriptions}. 
-                    ${seasonDesc}, ${styleDesc}, proper scale to garden size, natural lighting and shadows, 
-                    no duplicate plants, only the specified plants, garden bed view from ground level, no wooden fence, no structures`;
+    const prompt = `A clearly defined 10x10 meter square garden bed with stone border framing, containing EXACTLY ${options.plants.length} plants: ${plantDescriptions}. 
+                    ${seasonDesc}, ${styleDesc}, proper scale showing full 10x10m bed with stone edge, natural lighting and shadows, 
+                    no duplicate plants, only the specified plants, ground level view showing entire bed with stone frame, photorealistic garden bed`;
     
     try {
       // Try Gemini first if available
