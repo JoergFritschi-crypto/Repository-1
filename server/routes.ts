@@ -14,6 +14,7 @@ import { fileVaultService } from "./fileVault";
 import { apiMonitoring } from "./apiMonitoring";
 import { imageGenerationService } from "./imageGenerationService";
 import { runwareImageGenerator } from "./runwareImageGenerator";
+import { aiInpaintingService } from "./aiInpaintingService";
 import path from "path";
 
 // Initialize Stripe if API key is available
@@ -1857,6 +1858,92 @@ Photography style: Professional garden photography captured in natural ${season 
     } catch (error) {
       console.error("Error generating seasonal images:", error);
       res.status(500).json({ message: "Failed to generate seasonal images", error: (error as Error).message });
+    }
+  });
+
+  // AI Inpainting comparison endpoint - compare composite vs inpainting approaches
+  app.get('/api/test/inpainting-comparison', isAuthenticated, async (req: any, res) => {
+    try {
+      console.log("🔬 Running inpainting comparison test...");
+      
+      const comparisonResults = await aiInpaintingService.compareApproaches();
+      
+      res.json({
+        success: true,
+        message: "Comparison test completed. Check the generated images.",
+        results: comparisonResults,
+        description: {
+          composite: "Mechanical sprite compositing (yesterday's approach)",
+          inpaintSequential: "AI inpainting - adding plants one by one",
+          inpaintBatch: "AI inpainting - all plants at once",
+          emptyBase: "Empty garden base for reference"
+        }
+      });
+    } catch (error) {
+      console.error("Error in inpainting comparison:", error);
+      res.status(500).json({ 
+        message: "Failed to run comparison", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
+  // AI Inpainting for garden visualization
+  app.post('/api/gardens/:id/inpaint-visualization', isAuthenticated, async (req: any, res) => {
+    try {
+      const garden = await storage.getGarden(req.params.id);
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const { canvasDesign, season = 'summer', approach = 'batch', style = 'photorealistic' } = req.body;
+      
+      if (!canvasDesign || !canvasDesign.plants) {
+        return res.status(400).json({ message: "Canvas design with plants is required" });
+      }
+
+      // Create empty garden base
+      const baseImage = await aiInpaintingService.createEmptyGardenBase(
+        garden.shape,
+        garden.dimensions
+      );
+
+      // Convert canvas plants to inpainting format
+      const inpaintPlants = canvasDesign.plants.map((p: any) => ({
+        plantName: p.plantName || p.commonName || 'Unknown Plant',
+        x: p.x || 50,
+        y: p.y || 50,
+        size: p.y < 33 ? 'large' : p.y > 66 ? 'small' : 'medium', // Size based on depth
+        season
+      }));
+
+      // Perform inpainting
+      const inpaintedUrl = await aiInpaintingService.inpaintGarden({
+        baseImage,
+        plants: inpaintPlants,
+        season,
+        style,
+        approach
+      });
+
+      res.json({
+        success: true,
+        imageUrl: inpaintedUrl,
+        message: `Garden visualization created using AI inpainting (${approach} approach)`,
+        approach,
+        plantCount: inpaintPlants.length
+      });
+    } catch (error) {
+      console.error("Error in garden inpainting:", error);
+      res.status(500).json({ 
+        message: "Failed to create inpainted visualization", 
+        error: (error as Error).message 
+      });
     }
   });
 
