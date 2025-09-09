@@ -252,35 +252,70 @@ export function CompactPlantCard({
               {plant.commonName || 'Unknown Plant'}
             </p>
             
-            {/* Quick info - centered - ALWAYS show all fields */}
+            {/* Quick info - centered - Show key fields with missing indicators */}
             <div className="flex flex-wrap items-center justify-center gap-1.5 flex-1">
-              {/* Sun - always show */}
-              <div className="flex items-center gap-0.5">
-                {getSunIcon() || <Sun className="w-3 h-3 text-gray-300" />}
-                {!plant.sunlight && <span className="text-[10px] text-red-400">Missing</span>}
-              </div>
+              {/* Sun */}
+              {plant.sunlight ? (
+                getSunIcon()
+              ) : (
+                <div className="flex items-center gap-0.5">
+                  <Sun className="w-3 h-3 text-gray-300" />
+                  <span className="text-[10px] text-red-400">?</span>
+                </div>
+              )}
               
-              {/* Water - always show */}
-              <div className="flex items-center gap-0.5">
-                <Droplets className={`w-3 h-3 ${plant.watering ? 'text-blue-500' : 'text-gray-300'}`} />
-                <span className="text-[10px] text-muted-foreground">{plant.watering || 'Missing'}</span>
-              </div>
+              {/* Water */}
+              {plant.watering ? (
+                <div className="flex items-center gap-0.5">
+                  <Droplets className="w-3 h-3 text-blue-500" />
+                  <span className="text-[10px] text-muted-foreground">{plant.watering}</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-0.5">
+                  <Droplets className="w-3 h-3 text-gray-300" />
+                  <span className="text-[10px] text-red-400">?</span>
+                </div>
+              )}
               
-              {/* Hardiness - always show */}
+              {/* Hardiness */}
               {plant.hardiness ? (
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getHardinessBadgeColor(getHardinessCategory(plant.hardiness))}`}>
                   {getHardinessCategory(plant.hardiness)}
                 </span>
               ) : (
                 <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-gray-100 text-red-400">
-                  Zone: Missing
+                  Zone ?
                 </span>
               )}
               
-              {/* Type - always show */}
-              <span className={`text-[10px] px-1 py-0.5 rounded capitalize ${plant.type ? 'text-muted-foreground bg-muted' : 'bg-gray-100 text-red-400'}`}>
-                {plant.type || 'Type: Missing'}
-              </span>
+              {/* Flower color - only if present */}
+              {plant.flowerColor && Array.isArray(plant.flowerColor) && plant.flowerColor.length > 0 && (
+                <div className="flex items-center gap-0.5">
+                  <div className={`w-3 h-3 rounded-full border border-gray-300 ${getFlowerColorClass(plant.flowerColor[0])}`} />
+                  <span className="text-[10px] text-muted-foreground capitalize">
+                    {plant.flowerColor[0]}
+                  </span>
+                </div>
+              )}
+              
+              {/* Pet safe - only if safe */}
+              {plant.poisonousToPets === 0 && (
+                <div className="flex items-center gap-0.5">
+                  <Shield className="w-3 h-3 text-green-500" />
+                  <span className="text-[10px] text-green-600">Safe</span>
+                </div>
+              )}
+              
+              {/* Type - if present */}
+              {plant.type ? (
+                <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded capitalize">
+                  {plant.type}
+                </span>
+              ) : (
+                <span className="text-[10px] px-1 py-0.5 rounded bg-gray-100 text-red-400">
+                  Type ?
+                </span>
+              )}
             </div>
           </div>
           
