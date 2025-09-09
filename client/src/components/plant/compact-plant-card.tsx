@@ -252,39 +252,35 @@ export function CompactPlantCard({
               {plant.commonName || 'Unknown Plant'}
             </p>
             
-            {/* Quick info - centered */}
+            {/* Quick info - centered - ALWAYS show all fields */}
             <div className="flex flex-wrap items-center justify-center gap-1.5 flex-1">
-              {getSunIcon()}
-              {plant.watering && (
-                <div className="flex items-center gap-0.5">
-                  <Droplets className="w-3 h-3 text-blue-500" />
-                  <span className="text-[10px] text-muted-foreground">{plant.watering}</span>
-                </div>
-              )}
-              {plant.hardiness && (
+              {/* Sun - always show */}
+              <div className="flex items-center gap-0.5">
+                {getSunIcon() || <Sun className="w-3 h-3 text-gray-300" />}
+                {!plant.sunlight && <span className="text-[10px] text-red-400">Missing</span>}
+              </div>
+              
+              {/* Water - always show */}
+              <div className="flex items-center gap-0.5">
+                <Droplets className={`w-3 h-3 ${plant.watering ? 'text-blue-500' : 'text-gray-300'}`} />
+                <span className="text-[10px] text-muted-foreground">{plant.watering || 'Missing'}</span>
+              </div>
+              
+              {/* Hardiness - always show */}
+              {plant.hardiness ? (
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getHardinessBadgeColor(getHardinessCategory(plant.hardiness))}`}>
                   {getHardinessCategory(plant.hardiness)}
                 </span>
-              )}
-              {plant.flowerColor && Array.isArray(plant.flowerColor) && plant.flowerColor.length > 0 && (
-                <div className="flex items-center gap-0.5">
-                  <div className={`w-3 h-3 rounded-full border border-gray-300 ${getFlowerColorClass(plant.flowerColor[0])}`} />
-                  <span className="text-[10px] text-muted-foreground capitalize">
-                    {plant.flowerColor[0]}
-                  </span>
-                </div>
-              )}
-              {plant.poisonousToPets === 0 && (
-                <div className="flex items-center gap-0.5">
-                  <Shield className="w-3 h-3 text-green-500" />
-                  <span className="text-[10px] text-green-600">Safe</span>
-                </div>
-              )}
-              {plant.type && (
-                <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded capitalize">
-                  {plant.type}
+              ) : (
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-gray-100 text-red-400">
+                  Zone: Missing
                 </span>
               )}
+              
+              {/* Type - always show */}
+              <span className={`text-[10px] px-1 py-0.5 rounded capitalize ${plant.type ? 'text-muted-foreground bg-muted' : 'bg-gray-100 text-red-400'}`}>
+                {plant.type || 'Type: Missing'}
+              </span>
             </div>
           </div>
           
@@ -445,61 +441,73 @@ export function CompactPlantCard({
               </div>
             )}
             
-            {/* Plant Details Grid */}
+            {/* Plant Details Grid - ALWAYS show all fields */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              {plant.family && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Family:</span>
-                  <span className="text-gray-900">{plant.family}</span>
-                </div>
-              )}
-              {plant.type && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Type:</span>
-                  <span className="text-gray-900">{plant.type}</span>
-                </div>
-              )}
-              {plant.sunlight && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Sun:</span>
-                  <span className="text-gray-900">{Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight}</span>
-                </div>
-              )}
-              {plant.watering && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Water:</span>
-                  <span className="text-gray-900">{plant.watering}</span>
-                </div>
-              )}
-              {plant.hardiness && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Hardiness:</span>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Family:</span>
+                <span className={plant.family ? "text-gray-900" : "text-red-400"}>{plant.family || 'Missing'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Type:</span>
+                <span className={plant.type ? "text-gray-900" : "text-red-400"}>{plant.type || 'Missing'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Sun:</span>
+                <span className={plant.sunlight ? "text-gray-900" : "text-red-400"}>
+                  {plant.sunlight ? (Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight) : 'Missing'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Water:</span>
+                <span className={plant.watering ? "text-gray-900" : "text-red-400"}>{plant.watering || 'Missing'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Hardiness:</span>
+                {plant.hardiness ? (
                   <span>
                     <span className="font-medium text-gray-900">{getHardinessCategory(plant.hardiness)}</span>
                     <span className="text-xs text-gray-500 ml-1">(Zone {plant.hardiness})</span>
                   </span>
-                </div>
-              )}
-              {plant.dimension && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Size:</span>
-                  <span className="text-gray-900">{typeof plant.dimension === 'object' ? 
+                ) : (
+                  <span className="text-red-400">Missing</span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Size:</span>
+                <span className={plant.dimension ? "text-gray-900" : "text-red-400"}>
+                  {plant.dimension ? (typeof plant.dimension === 'object' ? 
                     `${plant.dimension.height || ''} ${plant.dimension.spread ? `× ${plant.dimension.spread}` : ''}`.trim() : 
-                    plant.dimension}</span>
-                </div>
-              )}
-              {plant.floweringSeason && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Bloom:</span>
-                  <span className="text-gray-900">{plant.floweringSeason}</span>
-                </div>
-              )}
-              {plant.flowerColor && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Flowers:</span>
-                  <span className="text-gray-900">{Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor}</span>
-                </div>
-              )}
+                    plant.dimension) : 'Missing'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Growth Rate:</span>
+                <span className={plant.growthRate ? "text-gray-900" : "text-red-400"}>{plant.growthRate || 'Missing'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Maintenance:</span>
+                <span className={plant.maintenance ? "text-gray-900" : "text-red-400"}>{plant.maintenance || 'Missing'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Bloom:</span>
+                <span className={plant.floweringSeason ? "text-gray-900" : "text-red-400"}>{plant.floweringSeason || 'Missing'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Flowers:</span>
+                <span className={plant.flowerColor ? "text-gray-900" : "text-red-400"}>
+                  {plant.flowerColor ? (Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor) : 'Missing'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Native:</span>
+                <span className={plant.nativeRegion ? "text-gray-900" : "text-red-400"}>{plant.nativeRegion || 'Missing'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Soil:</span>
+                <span className={plant.soil ? "text-gray-900" : "text-red-400"}>
+                  {plant.soil ? (Array.isArray(plant.soil) ? plant.soil.join(', ') : plant.soil) : 'Missing'}
+                </span>
+              </div>
             </div>
             
             {/* Features */}

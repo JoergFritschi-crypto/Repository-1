@@ -658,35 +658,59 @@ export class PlantImportService {
     }
     
     try {
-      // Build a list of empty fields that need validation
+      // Build a list of ALL empty fields that need validation
       const emptyFields = [];
       if (!plant.common_name) emptyFields.push('common name');
-      if (!plant.family) emptyFields.push('family');
+      if (!plant.family) emptyFields.push('plant family');
+      if (!plant.type) emptyFields.push('plant type (perennial/annual/shrub)');
       if (!plant.description) emptyFields.push('description');
       if (!plant.watering) emptyFields.push('watering needs');
       if (!plant.sunlight || plant.sunlight?.length === 0) emptyFields.push('sunlight requirements');
+      if (!plant.hardiness) emptyFields.push('hardiness zones');
       if (!plant.care_level) emptyFields.push('care level');
       if (!plant.native_region) emptyFields.push('native region');
       if (!plant.growth_rate) emptyFields.push('growth rate');
       if (!plant.soil || plant.soil?.length === 0) emptyFields.push('soil requirements');
+      if (!plant.dimension) emptyFields.push('mature size dimensions');
+      if (!plant.flowering_season) emptyFields.push('flowering season');
+      if (!plant.flower_color || plant.flower_color?.length === 0) emptyFields.push('flower colors');
+      if (!plant.maintenance) emptyFields.push('maintenance level');
+      if (!plant.propagation || plant.propagation?.length === 0) emptyFields.push('propagation methods');
+      if (plant.drought_tolerant === undefined) emptyFields.push('drought tolerance');
+      if (plant.salt_tolerant === undefined) emptyFields.push('salt tolerance');
+      if (plant.poisonous_to_pets === undefined) emptyFields.push('pet toxicity');
+      if (plant.medicinal === undefined) emptyFields.push('medicinal uses');
+      if (plant.cuisine === undefined) emptyFields.push('culinary uses');
       
       if (emptyFields.length === 0) {
         return plant; // No validation needed
       }
       
-      const prompt = `For the plant "${plant.scientific_name}", provide the following missing information in JSON format: ${emptyFields.join(', ')}. 
+      const prompt = `For the plant "${plant.scientific_name}" (${plant.common_name || 'common name unknown'}), provide ALL the following missing information in JSON format: ${emptyFields.join(', ')}. 
       
-      Return ONLY a JSON object with these exact keys (use null if truly unknown):
+      Research thoroughly and return ONLY a JSON object with ALL these exact keys (use appropriate values or null if truly unknown):
       {
         "common_name": "string or null",
-        "family": "string or null",
-        "description": "string (1-2 sentences) or null",
+        "family": "string (botanical family name) or null",
+        "type": "perennial/annual/biennial/shrub/tree/bulb/succulent or null",
+        "description": "string (2-3 sentences about appearance and characteristics) or null",
         "watering": "low/moderate/high or null",
-        "sunlight": ["full sun", "part shade"] or null,
+        "sunlight": ["full sun", "part shade", "shade"] or similar array or null,
+        "hardiness": "zone range like 3-9 or null",
         "care_level": "low/moderate/high or null",
-        "native_region": "string or null",
+        "native_region": "string (geographic origin) or null",
         "growth_rate": "slow/moderate/fast or null",
-        "soil": ["well-drained", "moist"] or null
+        "soil": ["well-drained", "moist", "sandy"] or similar array or null,
+        "dimension": {"height": "1-3 feet", "spread": "2-3 feet"} or null,
+        "flowering_season": "spring/summer/fall/winter or months or null",
+        "flower_color": ["yellow", "orange"] or similar array or null,
+        "maintenance": "low/moderate/high or null",
+        "propagation": ["seed", "division", "cuttings"] or similar array or null,
+        "drought_tolerant": true/false or null,
+        "salt_tolerant": true/false or null,
+        "poisonous_to_pets": true/false or null,
+        "medicinal": true/false or null,
+        "cuisine": true/false or null
       }`;
       
       const response = await fetch('https://api.perplexity.ai/chat/completions', {

@@ -1055,13 +1055,17 @@ Rules:
       let updatedFields = 0;
       const updates: any = {};
       
-      // Check what fields were added/updated
+      // Check what fields were added/updated - ALL fields
       if (validatedData.common_name && !plant.commonName) {
         updates.commonName = validatedData.common_name;
         updatedFields++;
       }
       if (validatedData.family && !plant.family) {
         updates.family = validatedData.family;
+        updatedFields++;
+      }
+      if (validatedData.type && !plant.type) {
+        updates.type = validatedData.type;
         updatedFields++;
       }
       if (validatedData.description && !plant.description) {
@@ -1074,6 +1078,10 @@ Rules:
       }
       if (validatedData.sunlight && (!plant.sunlight || plant.sunlight.length === 0)) {
         updates.sunlight = validatedData.sunlight;
+        updatedFields++;
+      }
+      if (validatedData.hardiness && !plant.hardiness) {
+        updates.hardiness = validatedData.hardiness;
         updatedFields++;
       }
       if (validatedData.care_level && !plant.careLevel) {
@@ -1090,6 +1098,46 @@ Rules:
       }
       if (validatedData.soil && (!plant.soil || plant.soil.length === 0)) {
         updates.soil = validatedData.soil;
+        updatedFields++;
+      }
+      if (validatedData.dimension && !plant.dimension) {
+        updates.dimension = validatedData.dimension;
+        updatedFields++;
+      }
+      if (validatedData.flowering_season && !plant.floweringSeason) {
+        updates.floweringSeason = validatedData.flowering_season;
+        updatedFields++;
+      }
+      if (validatedData.flower_color && (!plant.flowerColor || plant.flowerColor.length === 0)) {
+        updates.flowerColor = validatedData.flower_color;
+        updatedFields++;
+      }
+      if (validatedData.maintenance && !plant.maintenance) {
+        updates.maintenance = validatedData.maintenance;
+        updatedFields++;
+      }
+      if (validatedData.propagation && (!plant.propagation || plant.propagation.length === 0)) {
+        updates.propagation = validatedData.propagation;
+        updatedFields++;
+      }
+      if (validatedData.drought_tolerant !== null && plant.droughtTolerant === null) {
+        updates.droughtTolerant = validatedData.drought_tolerant;
+        updatedFields++;
+      }
+      if (validatedData.salt_tolerant !== null && plant.saltTolerant === null) {
+        updates.saltTolerant = validatedData.salt_tolerant;
+        updatedFields++;
+      }
+      if (validatedData.poisonous_to_pets !== null && plant.poisonousToPets === null) {
+        updates.poisonousToPets = validatedData.poisonous_to_pets ? 1 : 0;
+        updatedFields++;
+      }
+      if (validatedData.medicinal !== null && plant.medicinal === null) {
+        updates.medicinal = validatedData.medicinal;
+        updatedFields++;
+      }
+      if (validatedData.cuisine !== null && plant.cuisine === null) {
+        updates.cuisine = validatedData.cuisine;
         updatedFields++;
       }
       
