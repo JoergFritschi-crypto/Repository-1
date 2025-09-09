@@ -210,9 +210,9 @@ export class AIInpaintingService {
                       plant.size === 'large' ? '3-4 meter tall tree' :
                       '80cm-1 meter tall shrub';
     
-    const prompt = `Add a realistic ${plant.plantName} plant in the white masked area. ${scaleRef}.
-                    Plant should be ${depthDesc} with natural shadows and lighting.
-                    ${seasonDesc}, photorealistic ${plant.plantName}, integrate naturally into garden soil`;
+    const prompt = `Photorealistic ${plant.plantName} plant growing in garden soil. ${scaleRef}.
+                    MUST show complete ${plant.plantName} with roots, stem, leaves ${depthDesc}.
+                    ${seasonDesc}, highly detailed ${plant.plantName}, visible plant in masked area, natural garden setting`;
     
     try {
       console.log(`  Sequential: Adding ${plant.plantName} at (${plant.x}, ${plant.y})`);
@@ -220,14 +220,14 @@ export class AIInpaintingService {
       // Use Runware's inpainting with mask for true sequential addition
       const result = await runwareAI.imageInference({
         positivePrompt: prompt,
-        negativePrompt: "cartoon, anime, illustration, multiple plants, duplicates, changing background, modifying unmasked areas, full scene generation",
+        negativePrompt: "cartoon, anime, illustration, empty garden, no plants, bare soil only, missing plants",
         model: runwareModels.civitai_74407, // Photorealistic Vision model
         numberResults: 1,
         height: validDims.height,
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.75,  // Higher strength to actually add visible plants
+        strength: 0.85,  // Very high strength to ensure plants appear
         CFGScale: 12,
         steps: 40,
         seed: Math.floor(Math.random() * 1000000)
@@ -298,9 +298,9 @@ export class AIInpaintingService {
                       options.style === 'artistic' ? "artistic illustration" :
                       "photorealistic";
     
-    const prompt = `Add these exact plants in the white masked areas: ${plantDescriptions}.
-                    Each plant in its designated white circle. Stone-framed garden bed with soil.
-                    ${seasonDesc}, ${styleDesc}, realistic plants with natural shadows and depth`;
+    const prompt = `Garden bed with THREE visible plants: ${plantDescriptions}.
+                    MUST show all three plants clearly in their positions. Real plants growing in soil.
+                    ${seasonDesc}, ${styleDesc}, photorealistic garden with Japanese Maple, Hosta, and Lavender plants visible`;
     
     try {
       console.log(`  Batch: Adding ${options.plants.length} plants at once`);
@@ -308,14 +308,14 @@ export class AIInpaintingService {
       // Use Runware's inpainting with combined mask for batch addition
       const result = await runwareAI.imageInference({
         positivePrompt: prompt,
-        negativePrompt: "cartoon, anime, illustration, duplicates, full scene generation, changing background, modifying unmasked areas, replacing entire image",
+        negativePrompt: "cartoon, anime, illustration, empty garden, no plants visible, bare soil, missing plants",
         model: runwareModels.civitai_74407, // Photorealistic Vision model
         numberResults: 1,
         height: validDims.height,
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.65,  // Moderate strength for batch processing
+        strength: 0.8,  // High strength to ensure all plants appear
         CFGScale: 10,
         steps: 35,
         seed: Math.floor(Math.random() * 1000000)
