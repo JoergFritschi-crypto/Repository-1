@@ -708,11 +708,20 @@ export function CompactPlantCard({
                 )}
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Size: </span>
+                <span className="text-gray-500">Height: </span>
                 <span className={plant.dimension ? "text-gray-900" : "text-red-400"}>
-                  {plant.dimension ? (typeof plant.dimension === 'object' ? 
-                    `${convertFeetToMeters(plant.dimension.height) || ''} ${plant.dimension.spread ? `× ${convertFeetToMeters(plant.dimension.spread)}` : ''}`.trim() : 
+                  {plant.dimension ? (typeof plant.dimension === 'object' && plant.dimension.height ? 
+                    convertFeetToMeters(plant.dimension.height) : 
                     convertFeetToMeters(plant.dimension)) : 'Missing'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Spread: </span>
+                <span className={plant.dimension ? "text-gray-900" : "text-red-400"}>
+                  {plant.dimension && typeof plant.dimension === 'object' && plant.dimension.spread ? 
+                    (typeof plant.dimension.spread === 'object' && plant.dimension.spread.min && plant.dimension.spread.max ? 
+                      `${convertFeetToMeters(plant.dimension.spread.min)} - ${convertFeetToMeters(plant.dimension.spread.max)}` :
+                      convertFeetToMeters(plant.dimension.spread)) : 'Missing'}
                 </span>
               </div>
               <div className="flex justify-between">
