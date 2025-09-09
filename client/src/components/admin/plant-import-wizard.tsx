@@ -112,6 +112,7 @@ export function PlantImportWizard() {
   const [selectedPlants, setSelectedPlants] = useState<PlantImportData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchProgress, setSearchProgress] = useState('');
+  const [sourceFilter, setSourceFilter] = useState<'all' | '1' | '2' | '3'>('all');
   const [counts, setCounts] = useState<DatabaseCounts>({
     perenual: 0,
     gbif: 0,
@@ -546,11 +547,38 @@ export function PlantImportWizard() {
     return badges;
   };
 
+  // Filter plants based on source count
+  const getFilteredPlants = (plants: PlantImportData[]): PlantImportData[] => {
+    if (sourceFilter === 'all') return plants;
+    
+    return plants.filter(plant => {
+      const sources = plant.sources || {};
+      const sourceCount = Object.values(sources).filter(Boolean).length;
+      
+      if (sourceFilter === '1') {
+        return sourceCount === 1;
+      } else if (sourceFilter === '2') {
+        return sourceCount === 2;
+      } else if (sourceFilter === '3') {
+        return sourceCount === 3;
+      }
+      return true;
+    });
+  };
+
   // Plant list component
-  const PlantList = ({ plants, showCheckboxes = true }: { plants: PlantImportData[], showCheckboxes?: boolean }) => (
-    <ScrollArea className="h-[400px] border rounded-lg p-4">
+  const PlantList = ({ plants, showCheckboxes = true }: { plants: PlantImportData[], showCheckboxes?: boolean }) => {
+    const filteredPlants = getFilteredPlants(plants);
+    
+    return (
+      <ScrollArea className="h-[400px] border rounded-lg p-4">
+      {sourceFilter !== 'all' && filteredPlants.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          No plants found with {sourceFilter} source{sourceFilter !== '1' ? 's' : ''}
+        </div>
+      )}
       <div className="space-y-2">
-        {plants.map((plant, idx) => (
+        {filteredPlants.map((plant, idx) => (
           <div 
             key={`${plant.scientific_name}-${idx}`}
             className="flex items-center justify-between p-3 border rounded hover:bg-accent"
@@ -600,7 +628,8 @@ export function PlantImportWizard() {
         ))}
       </div>
     </ScrollArea>
-  );
+    );
+  };
 
   return (
     <Card className="w-full max-w-6xl mx-auto">
@@ -711,20 +740,37 @@ export function PlantImportWizard() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">GBIF Enrichment</h3>
               <div className="flex gap-2 text-sm">
-                <Badge className="font-semibold">
+                <Badge 
+                  className="font-semibold cursor-pointer hover:opacity-80"
+                  onClick={() => setSourceFilter('all')}
+                >
                   Total: {selectedPlants.length} plants
                 </Badge>
-                <Badge variant="outline">
-                  Perenual: {counts.perenual} plants
+                <Badge 
+                  variant="outline"
+                  className="cursor-pointer hover:bg-accent"
+                  onClick={() => setSourceFilter(sourceFilter === '1' ? 'all' : '1')}
+                >
+                  Perenual only: {counts.perenual_only} plants
                 </Badge>
-                <Badge variant="outline">
-                  New from GBIF: {counts.gbif_only} plants
-                </Badge>
-                <Badge variant="outline">
-                  Enriched: {counts.perenual - counts.perenual_only} plants
+                <Badge 
+                  variant="outline"
+                  className="cursor-pointer hover:bg-accent"
+                  onClick={() => setSourceFilter(sourceFilter === '2' ? 'all' : '2')}
+                >
+                  Both sources: {counts.perenual - counts.perenual_only} plants
                 </Badge>
               </div>
             </div>
+            
+            {sourceFilter !== 'all' && (
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                <AlertCircle className="w-4 h-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 dark:text-blue-200">
+                  Filtering: Showing plants with {sourceFilter} source{sourceFilter !== '1' ? 's' : ''} only
+                </AlertDescription>
+              </Alert>
+            )}
             
             {searchProgress && (
               <Alert>
@@ -765,17 +811,44 @@ export function PlantImportWizard() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">iNaturalist Enrichment</h3>
               <div className="flex gap-2 text-sm">
-                <Badge className="font-semibold">
+                <Badge 
+                  className="font-semibold cursor-pointer hover:opacity-80"
+                  onClick={() => setSourceFilter('all')}
+                >
                   Total: {selectedPlants.length} plants
                 </Badge>
-                <Badge variant="outline">
+                <Badge 
+                  variant="outline"
+                  className="cursor-pointer hover:bg-accent"
+                  onClick={() => setSourceFilter(sourceFilter === '3' ? 'all' : '3')}
+                >
                   From 3 sources: {counts.all_three} plants
                 </Badge>
-                <Badge variant="outline">
+                <Badge 
+                  variant="outline"
+                  className="cursor-pointer hover:bg-accent"
+                  onClick={() => setSourceFilter(sourceFilter === '2' ? 'all' : '2')}
+                >
                   From 2 sources: {counts.two_sources} plants
+                </Badge>
+                <Badge 
+                  variant="outline"
+                  className="cursor-pointer hover:bg-accent"
+                  onClick={() => setSourceFilter(sourceFilter === '1' ? 'all' : '1')}
+                >
+                  From 1 source: {counts.perenual_only + counts.gbif_only + counts.inaturalist_only} plants
                 </Badge>
               </div>
             </div>
+            
+            {sourceFilter !== 'all' && (
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                <AlertCircle className="w-4 h-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 dark:text-blue-200">
+                  Filtering: Showing plants with {sourceFilter} source{sourceFilter !== '1' ? 's' : ''} only
+                </AlertDescription>
+              </Alert>
+            )}
             
             {searchProgress && (
               <Alert>
@@ -814,20 +887,42 @@ export function PlantImportWizard() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Review & Validate</h3>
               <div className="flex gap-2">
-                <Badge className="font-semibold text-lg">
+                <Badge 
+                  className="font-semibold text-lg cursor-pointer hover:opacity-80"
+                  onClick={() => setSourceFilter('all')}
+                >
                   Total: {selectedPlants.length}
                 </Badge>
-                <Badge className="bg-green-500 text-white">
+                <Badge 
+                  className="bg-green-500 text-white cursor-pointer hover:bg-green-600"
+                  onClick={() => setSourceFilter(sourceFilter === '1' ? 'all' : '1')}
+                >
                   1 source: {counts.perenual_only + counts.gbif_only + counts.inaturalist_only}
                 </Badge>
-                <Badge className="bg-orange-500 text-white">
+                <Badge 
+                  className="bg-orange-500 text-white cursor-pointer hover:bg-orange-600"
+                  onClick={() => setSourceFilter(sourceFilter === '2' ? 'all' : '2')}
+                >
                   2 sources: {counts.two_sources}
                 </Badge>
-                <Badge className="bg-purple-500 text-white">
+                <Badge 
+                  className="bg-purple-500 text-white cursor-pointer hover:bg-purple-600"
+                  onClick={() => setSourceFilter(sourceFilter === '3' ? 'all' : '3')}
+                >
                   3 sources: {counts.all_three}
                 </Badge>
               </div>
             </div>
+            
+            {sourceFilter !== 'all' && (
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                <AlertCircle className="w-4 h-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 dark:text-blue-200">
+                  Showing plants with {sourceFilter} source{sourceFilter !== '1' ? 's' : ''} only. 
+                  Click the Total badge or click the active filter again to show all plants.
+                </AlertDescription>
+              </Alert>
+            )}
             
             <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-900/20">
               <Shield className="w-4 h-4 text-amber-600" />
