@@ -102,7 +102,7 @@ export class PlantImportService {
     
     try {
       // Always use the query parameter but with max results per page
-      const searchUrl = `https://perenual.com/api/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}&per_page=100`;
+      const searchUrl = `https://perenual.com/api/v2/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}&per_page=100`;
       
       console.log(`Searching Perenual with URL: ${searchUrl.replace(this.perenualApiKey, 'API_KEY')}`);
       
@@ -170,6 +170,9 @@ export class PlantImportService {
           cycle: plant.cycle,
           watering: plant.watering,
           sunlight: plant.sunlight,
+          flower_color: plant.flower_color,  // v2 API includes this
+          flowering_season: plant.flowering_season,  // v2 API includes this
+          dimension: plant.dimension,  // v2 API might include this
           external_id: `perenual-${plant.id}`,
           source: 'perenual'
         };
@@ -379,7 +382,7 @@ export class PlantImportService {
     
     try {
       const response = await fetch(
-        `https://perenual.com/api/species/details/${plantId}?key=${this.perenualApiKey}`,
+        `https://perenual.com/api/v2/species/details/${plantId}?key=${this.perenualApiKey}`,
         { method: 'GET' }
       );
       
@@ -923,8 +926,8 @@ export class PlantImportService {
           
           // Appearance
           leafColor: plantData.leaf_color || ['green'],
-          flowerColor: plantData.flower_color || ['varies'],
-          floweringSeason: plantData.flowering_season || plantData.bloom_time || 'summer',
+          flowerColor: plantData.flower_color || null,  // Don't default to 'varies'
+          floweringSeason: plantData.flowering_season || plantData.bloom_time || null,
           
           // Features
           poisonousToPets: plantData.poisonous_to_pets === true ? 1 : 0,
