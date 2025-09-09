@@ -120,8 +120,17 @@ export class PlantImportService {
       
       console.log(`Perenual search for "${query}" returned ${allPlants.length} results`);
       
+      // Filter out vague entries like "cvs." (cultivars without specific names)
+      const filteredPlants = allPlants.filter((plant: any) => {
+        const name = plant.scientific_name?.[0] || plant.scientific_name || '';
+        // Skip entries ending with "cvs." or "cultivars" as they're too vague
+        return !name.match(/\bcvs?\.\s*$/i) && !name.match(/\bcultivars?\s*$/i);
+      });
+      
+      console.log(`After filtering vague entries: ${filteredPlants.length} plants`);
+      
       // Transform to our format and fix common nomenclature issues
-      return allPlants.map((plant: any) => {
+      return filteredPlants.map((plant: any) => {
         // Start with basic transformation
         let result = {
           scientific_name: plant.scientific_name?.[0] || plant.scientific_name || '',
@@ -189,11 +198,28 @@ export class PlantImportService {
               return w.toLowerCase();  // Species names lowercase
             }).join(' ');
           } else if (remainingWords.length >= 2 && !scientificName.includes("'")) {
-            // Multiple words without hybrid marker = likely a cultivar
-            const cultivarName = remainingWords.map(w => 
-              w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
-            ).join(' ');
-            scientificName = `${words[0]} '${cultivarName}'`;
+            // Check if this is a series cultivar
+            const knownSeries = ['Sunfinity', 'Sunfiniti', 'SunBelievable', 'ProCut'];
+            const firstRemainingWord = remainingWords[0];
+            const isSeriesCultivar = knownSeries.some(series => 
+              firstRemainingWord.toLowerCase() === series.toLowerCase()
+            );
+            
+            if (isSeriesCultivar) {
+              // Format as Series cultivar
+              const seriesName = firstRemainingWord.charAt(0).toUpperCase() + 
+                                firstRemainingWord.slice(1).toLowerCase();
+              const cultivarPart = remainingWords.slice(1).map(w => 
+                w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+              ).join(' ');
+              scientificName = `${words[0]} ${seriesName} Series '${cultivarPart}'`;
+            } else {
+              // Regular cultivar
+              const cultivarName = remainingWords.map(w => 
+                w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+              ).join(' ');
+              scientificName = `${words[0]} '${cultivarName}'`;
+            }
           } else {
             // Just fix the case
             scientificName = words.map((w, i) => 
