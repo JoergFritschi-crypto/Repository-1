@@ -1148,6 +1148,24 @@ Rules:
     }
   });
   
+  // Plant Import Wizard - Search GBIF with same rigorous standards
+  app.get('/api/admin/import/search-gbif', isAuthenticated, async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: 'Search query required' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      const results = await plantImportService.searchGBIF(q);
+      
+      res.json({ plants: results, total: results.length });
+    } catch (error) {
+      console.error('GBIF search error:', error);
+      res.status(500).json({ error: 'GBIF search failed' });
+    }
+  });
+  
   app.post('/api/admin/import/enrich-gbif', isAuthenticated, async (req, res) => {
     try {
       const { scientific_name } = req.body;

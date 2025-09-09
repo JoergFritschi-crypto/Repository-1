@@ -162,10 +162,6 @@ export class PlantImportService {
     let scientificName = plant.scientific_name || '';
     const commonName = (plant.common_name || '').toLowerCase();
     
-    // Debug Sunfinity
-    if (scientificName.toLowerCase().includes('sunfin')) {
-      console.log('Processing Sunfinity - input:', scientificName);
-    }
     
     // Check if this is a hybrid (contains ×)
     const isHybrid = scientificName.includes('×') || scientificName.toLowerCase().includes(' x ');
@@ -177,7 +173,6 @@ export class PlantImportService {
     );
     
     if (scientificName && (scientificName === scientificName.toUpperCase() || hasImproperCaps)) {
-      console.log('Detected improper capitalization:', scientificName);
       // Convert to proper case: first word capitalized (genus), rest lowercase except cultivar names
       words = scientificName.split(/\s+/);
       if (words.length > 0) {
@@ -229,9 +224,6 @@ export class PlantImportService {
         }
       }
       plant.scientific_name = scientificName;
-      if (scientificName.toLowerCase().includes('sunfin')) {
-        console.log('After ALL CAPS fix:', scientificName);
-      }
     }
     
     // Normalize hybrid notation (replace ' x ' with ' × ')
@@ -240,10 +232,6 @@ export class PlantImportService {
       plant.scientific_name = scientificName;
     }
     
-    // Debug after hybrid check
-    if (scientificName.toLowerCase().includes('sunfin')) {
-      console.log('After hybrid normalization:', scientificName);
-    }
     
     // First, extract genus from scientific name if not provided by Perenual
     if (!plant.genus && scientificName) {
@@ -280,7 +268,6 @@ export class PlantImportService {
           const seriesName = firstWord;
           const cultivarPart = words.slice(1).join(' ');
           plant.scientific_name = `${genus} ${seriesName} Series '${cultivarPart}'`;
-          console.log(`Formatted as series cultivar: ${plant.scientific_name}`);
           // Don't mark as needing species - series cultivars don't require species
           hasCultivar = false; // Prevent species lookup
         } else {
@@ -415,6 +402,69 @@ export class PlantImportService {
     } catch (error) {
       console.error('Perenual details error:', error);
       return null;
+    }
+  }
+  
+  // Search GBIF with same rigorous standards as Perenual
+  async searchGBIF(query: string): Promise<any[]> {
+    try {
+      console.log(`Searching GBIF for "${query}"`);
+      
+      // Use GBIF's species search endpoint
+      const searchUrl = `https://api.gbif.org/v1/species/search?q=${encodeURIComponent(query)}&rank=SPECIES&rank=SUBSPECIES&rank=VARIETY&status=ACCEPTED&limit=100`;
+      
+      const response = await fetch(searchUrl, { method: 'GET' });
+      
+      if (!response.ok) {
+        throw new Error(`GBIF API error: ${response.status}`);
+      }
+      
+      const data = await response.json() as any;
+      const results = data.results || [];
+      
+      console.log(`GBIF search for "${query}" returned ${results.length} results`);
+      
+      // Filter out vague entries
+      const filteredResults = results.filter((species: any) => {
+        const name = species.scientificName || species.canonicalName || '';
+        // Skip entries ending with "sp." (species not determined) or "spp." (multiple species)
+        // Skip entries with "agg." (aggregate species) or "complex" (species complex)
+        return !name.match(/\b(sp|spp|agg|complex)\.\s*$/i) && 
+               !name.match(/\bcultivars?\s*$/i) &&
+               !name.match(/\bcvs?\.\s*$/i);
+      });
+      
+      console.log(`After filtering vague entries: ${filteredResults.length} plants`);
+      
+      // Transform to our format and apply corrections
+      return filteredResults.map((species: any) => {
+        // Start with basic transformation
+        let result = {
+          scientific_name: species.scientificName || species.canonicalName || '',
+          common_name: species.vernacularName || '',
+          family: species.family,
+          genus: species.genus,
+          species: species.specificEpithet,
+          kingdom: species.kingdom,
+          phylum: species.phylum,
+          class: species.class,
+          order: species.order,
+          rank: species.rank,
+          taxonomic_status: species.taxonomicStatus,
+          accepted_name: species.accepted,
+          gbif_key: species.key,
+          external_id: `gbif-${species.key}`,
+          source: 'gbif'
+        };
+        
+        // Apply same nomenclature corrections as Perenual
+        result = this.fixBotanicalNomenclature(result);
+        
+        return result;
+      });
+    } catch (error) {
+      console.error('GBIF search error:', error);
+      return [];
     }
   }
   

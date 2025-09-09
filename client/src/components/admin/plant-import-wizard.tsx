@@ -66,9 +66,16 @@ interface PlantImportData {
   
   // Additional enrichment fields
   gbif_id?: string;
+  gbif_key?: number;
   inaturalist_id?: string;
   native_region?: string;
   conservation_status?: string;
+  taxonomic_status?: string;
+  kingdom?: string;
+  phylum?: string;
+  class?: string;
+  order?: string;
+  rank?: string;
   
   // Import metadata
   source?: 'perenual' | 'gbif' | 'inaturalist' | 'manual' | 'csv';
@@ -80,12 +87,56 @@ export function PlantImportWizard() {
   const [step, setStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlants, setSelectedPlants] = useState<PlantImportData[]>([]);
-  const [importMode, setImportMode] = useState<'search' | 'csv'>('search');
+  const [importMode, setImportMode] = useState<'search' | 'gbif' | 'csv'>('search');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PlantImportData[]>([]);
   const [searchProgress, setSearchProgress] = useState('');
   const { toast } = useToast();
 
+  // Search GBIF Database with same rigorous standards
+  const searchGBIF = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    setSearchProgress('Searching GBIF biodiversity database...');
+    
+    try {
+      const response = await fetch(
+        `/api/admin/import/search-gbif?q=${encodeURIComponent(searchQuery)}`,
+        {
+          method: 'GET',
+          credentials: 'include'
+        }
+      );
+      
+      if (!response.ok) throw new Error('GBIF search failed');
+      
+      const data = await response.json();
+      setSearchResults(data.plants || []);
+      
+      // Pre-select all GBIF results by default
+      const plantsToAdd = data.plants.filter((plant: PlantImportData) => 
+        !selectedPlants.some(p => p.scientific_name === plant.scientific_name)
+      );
+      setSelectedPlants([...selectedPlants, ...plantsToAdd]);
+      
+      toast({
+        title: "GBIF search complete",
+        description: `Found ${data.total || 0} plants with rigorous filtering applied`
+      });
+    } catch (error) {
+      console.error('GBIF search error:', error);
+      toast({
+        title: "Search failed",
+        description: "Failed to search GBIF database",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSearching(false);
+      setSearchProgress('');
+    }
+  };
+  
   // Step 1: Search Perenual API
   const searchPerenual = async () => {
     if (!searchQuery.trim()) return;
@@ -232,12 +283,13 @@ export function PlantImportWizard() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Leaf className="w-5 h-5 text-green-600" />
-              <h3 className="text-lg font-semibold">Step 1: Search Perenual Database</h3>
+              <h3 className="text-lg font-semibold">Step 1: Search Plant Databases</h3>
             </div>
             
-            <Tabs value={importMode} onValueChange={(v) => setImportMode(v as 'search' | 'csv')}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="search">Search Plants</TabsTrigger>
+            <Tabs value={importMode} onValueChange={(v) => setImportMode(v as 'search' | 'gbif' | 'csv')}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="search">Perenual API</TabsTrigger>
+                <TabsTrigger value="gbif">GBIF Database</TabsTrigger>
                 <TabsTrigger value="csv">Upload CSV</TabsTrigger>
               </TabsList>
               
@@ -318,6 +370,102 @@ export function PlantImportWizard() {
                                 ));
                               }}
                               data-testid={`button-delete-plant-${idx}`}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="gbif" className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Search GBIF by common or scientific name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && searchGBIF()}
+                    data-testid="input-gbif-search"
+                  />
+                  <Button 
+                    onClick={searchGBIF} 
+                    disabled={isSearching}
+                    data-testid="button-search-gbif"
+                  >
+                    {isSearching ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+                
+                {isSearching && searchProgress && (
+                  <p className="text-sm text-muted-foreground animate-pulse">
+                    {searchProgress}
+                  </p>
+                )}
+                
+                {searchResults.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} (filtered for quality)
+                    </p>
+                    <ScrollArea className="h-[400px] border rounded-lg p-4">
+                      <div className="space-y-2">
+                      {searchResults.map((plant, idx) => (
+                        <div 
+                          key={idx} 
+                          className="flex items-center justify-between p-3 border rounded hover:bg-accent"
+                        >
+                          <div>
+                            <p className="font-medium italic">{plant.scientific_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {plant.common_name || 'No common name'}
+                            </p>
+                            <div className="flex gap-1 mt-1">
+                              {plant.family && (
+                                <Badge variant="outline">
+                                  {plant.family}
+                                </Badge>
+                              )}
+                              {plant.taxonomic_status && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {plant.taxonomic_status}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={selectedPlants.some(p => 
+                                p.scientific_name === plant.scientific_name
+                              )}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedPlants([...selectedPlants, plant]);
+                                } else {
+                                  setSelectedPlants(selectedPlants.filter(p => 
+                                    p.scientific_name !== plant.scientific_name
+                                  ));
+                                }
+                              }}
+                              data-testid={`checkbox-gbif-${idx}`}
+                            />
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-8 w-8 p-0"
+                              onClick={() => {
+                                setSelectedPlants(selectedPlants.filter(p => 
+                                  p.scientific_name !== plant.scientific_name
+                                ));
+                              }}
+                              data-testid={`button-delete-gbif-${idx}`}
                             >
                               <X className="w-4 h-4" />
                             </Button>
