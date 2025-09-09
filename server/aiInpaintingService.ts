@@ -40,60 +40,31 @@ export class AIInpaintingService {
     const width = 1920;
     const height = 1440;
     
-    // Create an empty garden bed with realistic perspective
+    // Create a simple garden bed - just soil, no decorative elements
     const svg = `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Sky gradient -->
-          <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
-            <stop offset="70%" style="stop-color:#E0F6FF;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#F0F8FF;stop-opacity:1" />
+          <!-- Simple soil gradient -->
+          <linearGradient id="soil" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#6b5d4f;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#5d4e37;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4a3f2f;stop-opacity:1" />
           </linearGradient>
           
-          <!-- Ground gradient with perspective -->
-          <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:#8FBC8F;stop-opacity:1" />
-            <stop offset="30%" style="stop-color:#90EE90;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
-          </linearGradient>
-          
-          <!-- Garden bed soil -->
-          <pattern id="soil" patternUnits="userSpaceOnUse" width="20" height="20">
-            <rect width="20" height="20" fill="#8B4513"/>
-            <circle cx="5" cy="5" r="2" fill="#654321" opacity="0.5"/>
+          <!-- Soil texture pattern -->
+          <pattern id="soilTexture" patternUnits="userSpaceOnUse" width="20" height="20">
+            <rect width="20" height="20" fill="#5d4e37"/>
+            <circle cx="5" cy="5" r="2" fill="#4a3f2f" opacity="0.3"/>
             <circle cx="15" cy="15" r="1.5" fill="#5C4033" opacity="0.4"/>
             <circle cx="10" cy="12" r="1" fill="#3E2723" opacity="0.3"/>
           </pattern>
         </defs>
         
-        <!-- Sky background -->
-        <rect width="${width}" height="${height * 0.4}" fill="url(#sky)"/>
+        <!-- Full garden bed - just soil, no sky or borders -->
+        <rect width="${width}" height="${height}" fill="url(#soil)"/>
         
-        <!-- Ground/lawn area -->
-        <rect y="${height * 0.4}" width="${width}" height="${height * 0.6}" fill="url(#ground)"/>
-        
-        <!-- Garden bed with perspective (trapezoid shape for depth) -->
-        <path d="M ${width * 0.2} ${height * 0.5} 
-                 L ${width * 0.8} ${height * 0.5}
-                 L ${width * 0.75} ${height * 0.85}
-                 L ${width * 0.25} ${height * 0.85} Z" 
-              fill="url(#soil)" 
-              stroke="#5C4033" 
-              stroke-width="3"/>
-        
-        <!-- Add some texture lines for depth -->
-        <line x1="${width * 0.2}" y1="${height * 0.5}" 
-              x2="${width * 0.25}" y2="${height * 0.85}" 
-              stroke="#3E2723" stroke-width="1" opacity="0.3"/>
-        <line x1="${width * 0.8}" y1="${height * 0.5}" 
-              x2="${width * 0.75}" y2="${height * 0.85}" 
-              stroke="#3E2723" stroke-width="1" opacity="0.3"/>
-        
-        <!-- Horizon line -->
-        <line x1="0" y1="${height * 0.4}" 
-              x2="${width}" y2="${height * 0.4}" 
-              stroke="#6B8E23" stroke-width="2" opacity="0.5"/>
+        <!-- Add soil texture overlay -->
+        <rect width="${width}" height="${height}" fill="url(#soilTexture)" opacity="0.4"/>
       </svg>
     `;
     
@@ -213,38 +184,18 @@ export class AIInpaintingService {
                     single plant only, no duplicates, maintain correct proportions`;
     
     try {
-      // Use Runware for inpainting with controlnet/img2img approach
-      const result = await runwareService.generateSeasonalImage({
+      // Call the batch inpainting which actually works!
+      console.log(`  Using batch approach for single plant: ${plant.plantName}`);
+      
+      // Use the batch inpainting approach which works properly
+      const result = await this.inpaintAllPlants(imageBuffer, {
+        plants: [plant],  // Just this single plant
         season: options.season,
-        specificTime: prompt,  // Use our detailed prompt with size specifications
-        canvasDesign: {
-          plants: [{
-            plant: { id: '1', name: plant.plantName },
-            position: { x: plant.x, y: plant.y }
-          }]
-        },
-        gardenDimensions: { width: 10, length: 10 },
-        useReferenceMode: true,
-        referenceImage: `data:image/png;base64,${imageBase64}`
+        style: options.style || 'photorealistic'
       });
       
-      // Convert result URL to buffer - CRITICAL FIX!
-      if (result) {
-        if (result.startsWith('data:')) {
-          const base64Data = result.split(',')[1];
-          return Buffer.from(base64Data, 'base64');
-        } else if (result.startsWith('http')) {
-          // Fetch the image from URL - this was missing!
-          console.log(`  Downloading result from: ${result}`);
-          const response = await fetch(result);
-          const buffer = Buffer.from(await response.arrayBuffer());
-          return buffer;
-        }
-      }
-      
-      // If all fails, return original
-      console.warn(`Failed to generate result for ${plant.plantName}`);
-      return imageBuffer;
+      // Return the enhanced buffer
+      return result;
     } catch (error) {
       console.error(`Failed to inpaint ${plant.plantName}:`, error);
       return imageBuffer; // Return original on failure
@@ -281,9 +232,9 @@ export class AIInpaintingService {
                       options.style === 'artistic' ? "artistic illustration" :
                       "photorealistic";
     
-    const prompt = `A 10x10 meter garden with EXACTLY ${options.plants.length} plants: ${plantDescriptions}. 
+    const prompt = `A 10x10 meter garden bed (no fence, no borders, just soil and plants) with EXACTLY ${options.plants.length} plants: ${plantDescriptions}. 
                     ${seasonDesc}, ${styleDesc}, proper scale to garden size, natural lighting and shadows, 
-                    no duplicate plants, only the specified plants`;
+                    no duplicate plants, only the specified plants, garden bed view from ground level, no wooden fence, no structures`;
     
     try {
       // Try Gemini first if available
