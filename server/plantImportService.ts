@@ -56,18 +56,29 @@ export class PlantImportService {
     }
     
     try {
+      // Try searching without any filters first to get ALL plants if it's a genus search
+      const isGenusSearch = query.toLowerCase().match(/^[a-z]+$/); // Single word, likely a genus
+      let searchUrl = `https://perenual.com/api/species-list?key=${this.perenualApiKey}`;
+      
+      if (isGenusSearch) {
+        // For genus searches, get a larger dataset and filter client-side
+        searchUrl += `&per_page=100`; // Max per page
+      } else {
+        // For other searches, use the query parameter
+        searchUrl += `&q=${encodeURIComponent(query)}&per_page=100`;
+      }
+      
+      console.log(`Searching Perenual with URL: ${searchUrl.replace(this.perenualApiKey, 'API_KEY')}`);
+      
       // First, get initial page to determine total pages
-      const initialResponse = await fetch(
-        `https://perenual.com/api/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}&per_page=30`,
-        { method: 'GET' }
-      );
+      const initialResponse = await fetch(searchUrl, { method: 'GET' });
       
       if (!initialResponse.ok) {
         throw new Error(`Perenual API error: ${initialResponse.status}`);
       }
       
       const initialData = await initialResponse.json() as any;
-      const totalPages = Math.min(initialData.last_page || 1, 5); // Limit to 5 pages (150 results) to avoid rate limits
+      const totalPages = Math.min(initialData.last_page || 1, isGenusSearch ? 10 : 5); // More pages for genus searches
       
       let allPlants = initialData.data || [];
       
@@ -75,11 +86,15 @@ export class PlantImportService {
       if (totalPages > 1) {
         const pagePromises = [];
         for (let page = 2; page <= totalPages; page++) {
+          const pageUrl = searchUrl + `&page=${page}`;
           pagePromises.push(
-            fetch(
-              `https://perenual.com/api/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}&per_page=30&page=${page}`,
-              { method: 'GET' }
-            ).then(res => res.json()).then(data => data.data || [])
+            fetch(pageUrl, { method: 'GET' })
+              .then(res => res.json())
+              .then(data => data.data || [])
+              .catch(err => {
+                console.error(`Error fetching page ${page}:`, err);
+                return [];
+              })
           );
         }
         
@@ -87,6 +102,22 @@ export class PlantImportService {
         additionalPages.forEach(plants => {
           allPlants = allPlants.concat(plants);
         });
+      }
+      
+      // If it's a genus search, filter the results client-side
+      if (isGenusSearch) {
+        const searchLower = query.toLowerCase();
+        allPlants = allPlants.filter((plant: any) => {
+          const genus = (plant.genus || '').toLowerCase();
+          const scientificName = (plant.scientific_name?.[0] || plant.scientific_name || '').toLowerCase();
+          const commonName = (plant.common_name || '').toLowerCase();
+          
+          return genus === searchLower || 
+                 genus.includes(searchLower) ||
+                 scientificName.startsWith(searchLower) ||
+                 commonName.includes(searchLower);
+        });
+        console.log(`Filtered ${allPlants.length} ${query} plants from broader search`);
       }
       
       console.log(`Perenual search for "${query}" returned ${allPlants.length} results across ${totalPages} pages`);
