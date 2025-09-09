@@ -15,7 +15,7 @@ class GeminiImageGenerator {
   private ai: GoogleGenAI | null = null;
 
   constructor() {
-    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {
       this.ai = new GoogleGenAI({ apiKey });
     }

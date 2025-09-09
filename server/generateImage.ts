@@ -32,7 +32,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
   console.log(`Type: ${imageType}`);
   
   // Try Gemini first - newest and best quality
-  if (process.env.GOOGLE_GEMINI_API_KEY) {
+  if (process.env.GEMINI_API_KEY) {
     try {
       const imagePath = await geminiImageGenerator.generateImage({
         prompt: prompt || plantName,
