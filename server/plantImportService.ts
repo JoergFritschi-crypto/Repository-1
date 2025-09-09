@@ -169,26 +169,23 @@ export class PlantImportService {
     // Parse the scientific name to extract components
     const scientificName = plant.scientific_name || '';
     const commonName = (plant.common_name || '').toLowerCase();
-    const genus = plant.genus || '';
     
-    // Check if we have a cultivar in quotes, apostrophes, or just plain text after genus
-    let cultivarMatch = scientificName.match(/['"]([^'"]+)['"]/);
-    let hasCultivar = cultivarMatch !== null;
-    let cultivarName = cultivarMatch ? cultivarMatch[1] : '';
-    
-    // If no quotes, check for pattern like "Helianthus Capenoch Star" (genus followed by capitalized words)
-    if (!hasCultivar && genus) {
-      const pattern = new RegExp(`^${genus}\\s+([A-Z][\\w\\s]+)$`, 'i');
-      const match = scientificName.match(pattern);
-      if (match) {
-        hasCultivar = true;
-        cultivarName = match[1].trim();
-        // Log what we found
-        console.log(`Detected cultivar without quotes: ${scientificName} -> cultivar: ${cultivarName}`);
+    // First, extract genus from scientific name if not provided by Perenual
+    if (!plant.genus && scientificName) {
+      const firstWord = scientificName.split(/\s+/)[0];
+      if (firstWord && firstWord[0] === firstWord[0].toUpperCase()) {
+        plant.genus = firstWord;
       }
     }
     
-    // Case 1: Missing species for known cultivars
+    const genus = plant.genus || '';
+    
+    // Check if we have a cultivar in quotes or apostrophes
+    const cultivarMatch = scientificName.match(/['"]([^'"]+)['"]/);
+    const hasCultivar = cultivarMatch !== null;
+    const cultivarName = cultivarMatch ? cultivarMatch[1] : '';
+    
+    // Case 1: We have a cultivar but missing species (like "Helianthus 'Capenoch Star'")
     if (genus && hasCultivar && !plant.species) {
       const lookupKey = `${genus.toLowerCase()} ${cultivarName.toLowerCase()}`;
       const lookupKeyAlt = `${genus.toLowerCase()} ${commonName}`;
@@ -205,19 +202,16 @@ export class PlantImportService {
       }
     }
     
-    // Case 2: Scientific name has cultivar but genus/species fields are incomplete
-    if (scientificName && hasCultivar) {
+    // Case 2: Extract species from scientific name if we have it in the format "Genus species 'Cultivar'"
+    if (scientificName && !plant.species) {
       const parts = scientificName.split(/\s+/);
-      if (parts.length >= 3) {
-        // Extract genus and species from scientific name
-        const possibleGenus = parts[0];
+      if (parts.length >= 2) {
         const possibleSpecies = parts[1];
-        
-        // Only update if currently missing
-        if (!plant.genus && possibleGenus && possibleGenus[0] === possibleGenus[0].toUpperCase()) {
-          plant.genus = possibleGenus;
-        }
-        if (!plant.species && possibleSpecies && possibleSpecies[0] === possibleSpecies[0].toLowerCase()) {
+        // Check if it's a species (lowercase) and not a cultivar name or quote
+        if (possibleSpecies && 
+            possibleSpecies[0] === possibleSpecies[0].toLowerCase() && 
+            !possibleSpecies.includes("'") && 
+            !possibleSpecies.includes('"')) {
           plant.species = possibleSpecies;
         }
       }
@@ -232,8 +226,8 @@ export class PlantImportService {
       };
       
       const corrected = corrections[cultivarName.toLowerCase()];
-      if (corrected) {
-        plant.scientific_name = plant.scientific_name.replace(cultivarMatch![0], `'${corrected}'`);
+      if (corrected && cultivarMatch) {
+        plant.scientific_name = plant.scientific_name.replace(cultivarMatch[0], `'${corrected}'`);
       }
     }
     
