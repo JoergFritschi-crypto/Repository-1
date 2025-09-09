@@ -46,15 +46,16 @@ export default function GardenDesign() {
   
   // Check if this is a page refresh (no navigation intent)
   useEffect(() => {
-    const hasNavigationIntent = sessionStorage.getItem('navigationSource') || 
-                               sessionStorage.getItem('intentionalNavigation');
+    const navigationSource = sessionStorage.getItem('navigationSource');
+    const intentionalNav = sessionStorage.getItem('intentionalNavigation');
     
-    // If this is a refresh (no navigation intent), redirect to landing
-    if (!hasNavigationIntent) {
-      setLocation('/');
-    } else {
-      // Clear the navigation intent after checking
-      sessionStorage.removeItem('intentionalNavigation');
+    // Clear the flags immediately to prevent them persisting
+    sessionStorage.removeItem('intentionalNavigation');
+    
+    // If neither flag is set, this is a refresh - redirect to landing
+    if (!navigationSource && !intentionalNav) {
+      // Use replace to prevent back button issues
+      window.location.replace('/');
     }
   }, []);
 
