@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Filter, X } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Search, Filter, X, Flower, Ruler } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface PlantAdvancedSearchProps {
@@ -12,8 +13,36 @@ interface PlantAdvancedSearchProps {
   totalResults?: number;
 }
 
+// Define color palette
+const colorPalette = [
+  { name: "White", value: "white", color: "#FFFFFF", border: true },
+  { name: "Cream", value: "cream", color: "#FFFDD0" },
+  { name: "Yellow", value: "yellow", color: "#FFD700" },
+  { name: "Orange", value: "orange", color: "#FFA500" },
+  { name: "Peach", value: "peach", color: "#FFDAB9" },
+  { name: "Red", value: "red", color: "#DC143C" },
+  { name: "Pink", value: "pink", color: "#FFB6C1" },
+  { name: "Hot Pink", value: "hot-pink", color: "#FF69B4" },
+  { name: "Magenta", value: "magenta", color: "#FF00FF" },
+  { name: "Purple", value: "purple", color: "#9370DB" },
+  { name: "Lavender", value: "lavender", color: "#E6E6FA" },
+  { name: "Blue", value: "blue", color: "#4169E1" },
+  { name: "Light Blue", value: "light-blue", color: "#87CEEB" },
+  { name: "Turquoise", value: "turquoise", color: "#40E0D0" },
+  { name: "Green", value: "green", color: "#228B22" },
+  { name: "Lime", value: "lime", color: "#32CD32" },
+  { name: "Brown", value: "brown", color: "#8B4513" },
+  { name: "Black", value: "black", color: "#000000" },
+];
+
 export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSearchProps) {
-  const [filters, setFilters] = useState<any>({});
+  const [filters, setFilters] = useState<any>({
+    heightMin: 0,
+    heightMax: 500,
+    spreadMin: 0,
+    spreadMax: 300,
+    selectedColors: []
+  });
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleFilterChange = (key: string, value: any) => {
@@ -27,12 +56,32 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     onSearch(newFilters);
   };
 
+  const handleColorToggle = (color: string) => {
+    const newColors = filters.selectedColors.includes(color) 
+      ? filters.selectedColors.filter((c: string) => c !== color)
+      : [...filters.selectedColors, color];
+    handleFilterChange("selectedColors", newColors);
+  };
+
   const clearFilters = () => {
-    setFilters({});
+    setFilters({
+      heightMin: 0,
+      heightMax: 500,
+      spreadMin: 0,
+      spreadMax: 300,
+      selectedColors: []
+    });
     onSearch({});
   };
 
-  const activeFilterCount = Object.keys(filters).filter(key => filters[key] !== undefined).length;
+  const activeFilterCount = Object.keys(filters).filter(key => {
+    if (key === 'heightMin' && filters[key] === 0) return false;
+    if (key === 'heightMax' && filters[key] === 500) return false;
+    if (key === 'spreadMin' && filters[key] === 0) return false;
+    if (key === 'spreadMax' && filters[key] === 300) return false;
+    if (key === 'selectedColors' && filters[key].length === 0) return false;
+    return filters[key] !== undefined;
+  }).length;
 
   return (
     <Card>
@@ -127,7 +176,120 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
 
         {/* Advanced Filters */}
         {showAdvanced && (
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-6 pt-4 border-t">
+            {/* Height Range Slider */}
+            <Card className="border-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Ruler className="w-4 h-4" />
+                  Height Range
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Min Height: {filters.heightMin} cm</span>
+                    <span>Max Height: {filters.heightMax} cm</span>
+                  </div>
+                  <Slider
+                    min={0}
+                    max={500}
+                    step={10}
+                    value={[filters.heightMin, filters.heightMax]}
+                    onValueChange={(value) => {
+                      handleFilterChange("heightMin", value[0]);
+                      handleFilterChange("heightMax", value[1]);
+                    }}
+                    className="w-full"
+                    data-testid="slider-height-range"
+                  />
+                  <div className="text-xs text-center text-muted-foreground italic">
+                    From tiny ground covers to towering trees
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Spread/Width Range Slider */}
+            <Card className="border-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Ruler className="w-4 h-4 rotate-90" />
+                  Spread/Width Range
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Min Spread: {filters.spreadMin} cm</span>
+                    <span>Max Spread: {filters.spreadMax} cm</span>
+                  </div>
+                  <Slider
+                    min={0}
+                    max={300}
+                    step={10}
+                    value={[filters.spreadMin, filters.spreadMax]}
+                    onValueChange={(value) => {
+                      handleFilterChange("spreadMin", value[0]);
+                      handleFilterChange("spreadMax", value[1]);
+                    }}
+                    className="w-full"
+                    data-testid="slider-spread-range"
+                  />
+                  <div className="text-xs text-center text-muted-foreground italic">
+                    Plant width for proper spacing
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Visual Color Palette */}
+            <Card className="border-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Flower className="w-4 h-4" />
+                  Colors (Select All That Apply)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-6 md:grid-cols-9 gap-2">
+                  {colorPalette.map((color) => (
+                    <button
+                      key={color.value}
+                      onClick={() => handleColorToggle(color.value)}
+                      className={`
+                        relative w-12 h-12 rounded-lg transition-all transform hover:scale-110
+                        ${filters.selectedColors.includes(color.value) 
+                          ? 'ring-2 ring-primary ring-offset-2 scale-105' 
+                          : 'hover:ring-2 hover:ring-gray-300'}
+                        ${color.border ? 'border-2 border-gray-300' : ''}
+                      `}
+                      style={{ backgroundColor: color.color }}
+                      title={color.name}
+                      data-testid={`color-${color.value}`}
+                    >
+                      {filters.selectedColors.includes(color.value) && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center">
+                            <span className="text-xs">✓</span>
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {filters.selectedColors.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {filters.selectedColors.map((color: string) => (
+                      <Badge key={color} variant="secondary" className="text-xs">
+                        {colorPalette.find(c => c.value === color)?.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Row 1: Growing Conditions */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Select
@@ -190,26 +352,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </Select>
             </div>
 
-            {/* Row 2: Flower & Color */}
+            {/* Row 2: Additional Filters */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Select
-                value={filters.flower_color || "all"}
-                onValueChange={(value) => handleFilterChange("flower_color", value)}
-              >
-                <SelectTrigger data-testid="select-flower-color">
-                  <SelectValue placeholder="Flower Color" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any Color</SelectItem>
-                  <SelectItem value="white">White</SelectItem>
-                  <SelectItem value="yellow">Yellow</SelectItem>
-                  <SelectItem value="orange">Orange</SelectItem>
-                  <SelectItem value="red">Red</SelectItem>
-                  <SelectItem value="pink">Pink</SelectItem>
-                  <SelectItem value="purple">Purple</SelectItem>
-                  <SelectItem value="blue">Blue</SelectItem>
-                </SelectContent>
-              </Select>
               <Select
                 value={filters.flowering_season || "all"}
                 onValueChange={(value) => handleFilterChange("flowering_season", value)}
@@ -253,6 +397,21 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   <SelectItem value="Lamiaceae">Lamiaceae (Mint)</SelectItem>
                   <SelectItem value="Fabaceae">Fabaceae (Legume)</SelectItem>
                   <SelectItem value="Solanaceae">Solanaceae (Nightshade)</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.soil_type || "all"}
+                onValueChange={(value) => handleFilterChange("soil_type", value)}
+              >
+                <SelectTrigger data-testid="select-soil-type">
+                  <SelectValue placeholder="Soil Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Soil</SelectItem>
+                  <SelectItem value="clay">Clay</SelectItem>
+                  <SelectItem value="loam">Loam</SelectItem>
+                  <SelectItem value="sand">Sand</SelectItem>
+                  <SelectItem value="chalk">Chalk</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -322,6 +481,38 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   data-testid="checkbox-attracts-pollinators"
                 />
                 <span className="text-sm">Attracts Pollinators</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <Checkbox
+                  checked={filters.fragrant || false}
+                  onCheckedChange={(checked) => handleFilterChange("fragrant", checked)}
+                  data-testid="checkbox-fragrant"
+                />
+                <span className="text-sm">Fragrant</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <Checkbox
+                  checked={filters.native || false}
+                  onCheckedChange={(checked) => handleFilterChange("native", checked)}
+                  data-testid="checkbox-native"
+                />
+                <span className="text-sm">Native</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <Checkbox
+                  checked={filters.deer_resistant || false}
+                  onCheckedChange={(checked) => handleFilterChange("deer_resistant", checked)}
+                  data-testid="checkbox-deer-resistant"
+                />
+                <span className="text-sm">Deer Resistant</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <Checkbox
+                  checked={filters.rabbit_resistant || false}
+                  onCheckedChange={(checked) => handleFilterChange("rabbit_resistant", checked)}
+                  data-testid="checkbox-rabbit-resistant"
+                />
+                <span className="text-sm">Rabbit Resistant</span>
               </label>
             </div>
           </div>
