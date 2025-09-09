@@ -1,6 +1,9 @@
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenAI, Modality } from '@google/genai';
 import fs from 'fs/promises';
 import path from 'path';
+
+// Gemini 2.5 Flash Image Preview (Nano Banana) - latest image generation model
+const IMAGE_GENERATION_MODEL = "gemini-2.5-flash-image-preview";
 
 interface GeminiImageOptions {
   prompt: string;
@@ -9,12 +12,12 @@ interface GeminiImageOptions {
 }
 
 class GeminiImageGenerator {
-  private genAI: GoogleGenerativeAI | null = null;
+  private ai: GoogleGenAI | null = null;
 
   constructor() {
     const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
     if (apiKey) {
-      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.ai = new GoogleGenAI({ apiKey });
     }
   }
 
@@ -54,7 +57,7 @@ class GeminiImageGenerator {
   }
 
   async generateImage(options: GeminiImageOptions): Promise<string> {
-    if (!this.genAI) {
+    if (!this.ai) {
       throw new Error('Gemini API key not configured');
     }
 
@@ -62,43 +65,45 @@ class GeminiImageGenerator {
     const prompt = this.createBotanicalPrompt(options);
     
     try {
-      // Use the new Gemini 2.5 Flash Image Preview model (Nano Banana)
-      const model = this.genAI.getGenerativeModel({ 
-        model: "gemini-2.0-flash-preview-image-generation"  // Using the stable version first
-      });
-
-      console.log(`Generating ${imageType} image for ${plantName} with Gemini...`);
+      console.log(`Generating ${imageType} image for ${plantName} with Gemini (Nano Banana)...`);
       
-      // Generate image with text prompt
-      const result = await model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [{
-            text: prompt
-          }]
+      // Generate image using the image generation model
+      const response = await this.ai.models.generateContent({
+        model: IMAGE_GENERATION_MODEL,
+        contents: [{ 
+          role: "user", 
+          parts: [{ text: prompt }] 
         }],
-        generationConfig: {
-          responseMimeType: 'image/png',
-          temperature: 0.7,  // Balanced between creativity and accuracy
-        }
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
       });
 
-      const response = await result.response;
-      
-      // Extract image data from response
-      if (!response.candidates?.[0]?.content?.parts?.[0]) {
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
         throw new Error('No image generated in response');
       }
 
-      const imagePart = response.candidates[0].content.parts[0];
-      
-      // Check if we have inline data (base64)
-      if (!imagePart.inlineData?.data) {
+      const content = candidates[0].content;
+      if (!content || !content.parts) {
+        throw new Error('No content in response');
+      }
+
+      // Find the image part
+      let imageData: string | null = null;
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          imageData = part.inlineData.data;
+          break;
+        }
+      }
+
+      if (!imageData) {
         throw new Error('No image data in response');
       }
 
       // Convert base64 to buffer
-      const imageBuffer = Buffer.from(imagePart.inlineData.data, 'base64');
+      const imageBuffer = Buffer.from(imageData, 'base64');
       
       // Save to file system
       const timestamp = Date.now();
@@ -112,7 +117,7 @@ class GeminiImageGenerator {
       // Write file
       await fs.writeFile(filePath, imageBuffer);
       
-      console.log(`✅ Gemini generated ${imageType} image saved to ${filePath}`);
+      console.log(`✅ Gemini (Nano Banana) generated ${imageType} image saved to ${filePath}`);
       
       // Return the path that can be served by the web server
       return `/generated/${fileName}`;
