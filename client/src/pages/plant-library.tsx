@@ -274,41 +274,98 @@ export default function PlantLibrary() {
 
           {/* My Collection Tab */}
           <TabsContent value="collection" className="mt-8">
-            <Card>
-              <CardHeader className="py-7 flower-band-green rounded-t-lg">
-                <CardTitle>My Plant Collection</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {collectionLoading ? (
-                  <div className="text-center py-8" data-testid="loading-collection">
-                    <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading your collection...</p>
+            <div className="space-y-6">
+              {/* Database Overview Bar */}
+              <Card>
+                <CardContent className="py-4">
+                  <div className="flex flex-wrap gap-8 items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total in Collection</p>
+                      <p className="text-2xl font-bold" data-testid="text-total-collection">{myCollection?.length || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Perennials</p>
+                      <p className="text-xl font-semibold text-accent" data-testid="text-perennials-collection">
+                        {myCollection?.filter((item: any) => item.plant?.type === 'perennial').length || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Annuals</p>
+                      <p className="text-xl font-semibold text-green-600" data-testid="text-annuals-collection">
+                        {myCollection?.filter((item: any) => item.plant?.type === 'annual').length || 0}
+                      </p>
+                    </div>
+                    <div className="ml-auto flex gap-2">
+                      {/* Collection Actions */}
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setActiveTab("browse")}
+                        data-testid="button-add-to-collection"
+                      >
+                        <Heart className="w-4 h-4 mr-1" />
+                        Add Plants
+                      </Button>
+                    </div>
                   </div>
-                ) : myCollection && Array.isArray(myCollection) && myCollection.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {myCollection.map((item: any) => (
-                      <CompactPlantCard
-                        key={item.id}
-                        plant={item.plant}
-                        isAdmin={false}
-                        isInCollection={true}
-                      />
-                    ))}
+                </CardContent>
+              </Card>
+
+              {/* Advanced Search for Collection */}
+              <PlantAdvancedSearch 
+                onSearch={(filters) => {
+                  console.log('Searching collection with filters:', filters);
+                  // Filter collection based on search
+                }}
+                totalResults={myCollection?.length || 0}
+              />
+
+              {/* Collection Grid */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>My Plant Collection</CardTitle>
                   </div>
-                ) : (
-                  <div className="text-center py-12" data-testid="empty-collection-state">
-                    <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Your collection is empty</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Start building your personal plant collection by browsing our database
-                    </p>
-                    <Button onClick={() => setActiveTab("browse")} data-testid="button-browse-to-add">
-                      Browse Plants
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  {collectionLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[...Array(6)].map((_, i) => (
+                        <Card key={i} className="animate-pulse" data-testid={`skeleton-collection-${i}`}>
+                          <div className="h-48 bg-muted"></div>
+                          <CardContent className="pt-4">
+                            <div className="h-4 bg-muted rounded mb-2"></div>
+                            <div className="h-3 bg-muted rounded w-2/3"></div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : myCollection && Array.isArray(myCollection) && myCollection.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {myCollection.map((item: any) => (
+                        <CompactPlantCard
+                          key={item.id}
+                          plant={item.plant}
+                          isAdmin={false}
+                          isInCollection={true}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12" data-testid="empty-collection-state">
+                      <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">Your collection is empty</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Start building your personal plant collection by browsing our database
+                      </p>
+                      <Button onClick={() => setActiveTab("browse")} data-testid="button-browse-to-add">
+                        Browse Plants
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Advanced Search Tab */}
