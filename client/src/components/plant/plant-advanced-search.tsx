@@ -53,24 +53,39 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       newFilters[key] = value;
     }
     setFilters(newFilters);
-    onSearch(newFilters);
+    // For non-slider filters, search immediately
+    if (key !== "heightMin" && key !== "heightMax" && key !== "spreadMin" && key !== "spreadMax") {
+      onSearch(newFilters);
+    }
+  };
+
+  const handleSliderChange = (key: string, value: any) => {
+    // Update local state without triggering search
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const applyFilters = () => {
+    onSearch(filters);
   };
 
   const handleColorToggle = (color: string) => {
     const newColors = filters.selectedColors.includes(color) 
       ? filters.selectedColors.filter((c: string) => c !== color)
       : [...filters.selectedColors, color];
-    handleFilterChange("selectedColors", newColors);
+    const newFilters = { ...filters, selectedColors: newColors };
+    setFilters(newFilters);
+    // Don't search immediately for color changes
   };
 
   const clearFilters = () => {
-    setFilters({
+    const clearedFilters = {
       heightMin: 0,
       heightMax: 500,
       spreadMin: 0,
       spreadMax: 300,
       selectedColors: []
-    });
+    };
+    setFilters(clearedFilters);
     onSearch({});
   };
 
@@ -111,6 +126,17 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               <Filter className="w-4 h-4 mr-1" />
               {showAdvanced ? 'Hide' : 'Show'} Filters
             </Button>
+            {showAdvanced && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={applyFilters}
+                data-testid="button-apply-filters"
+              >
+                <Search className="w-4 h-4 mr-1" />
+                Apply
+              </Button>
+            )}
             {activeFilterCount > 0 && (
               <Button
                 variant="ghost"
@@ -197,8 +223,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                     step={10}
                     value={[filters.heightMin, filters.heightMax]}
                     onValueChange={(value) => {
-                      handleFilterChange("heightMin", value[0]);
-                      handleFilterChange("heightMax", value[1]);
+                      handleSliderChange("heightMin", value[0]);
+                      handleSliderChange("heightMax", value[1]);
                     }}
                     className="w-full"
                     data-testid="slider-height-range"
@@ -230,8 +256,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                     step={10}
                     value={[filters.spreadMin, filters.spreadMax]}
                     onValueChange={(value) => {
-                      handleFilterChange("spreadMin", value[0]);
-                      handleFilterChange("spreadMax", value[1]);
+                      handleSliderChange("spreadMin", value[0]);
+                      handleSliderChange("spreadMax", value[1]);
                     }}
                     className="w-full"
                     data-testid="slider-spread-range"
