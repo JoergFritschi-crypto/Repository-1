@@ -1,6 +1,7 @@
 // AI Image Generation with Multiple Fallback Options
 import { huggingfaceOptimized } from './huggingfaceOptimized';
 import { runwareImageGenerator } from './runwareImageGenerator';
+import { geminiImageGenerator } from './geminiImageGenerator';
 
 interface GenerateImageOptions {
   prompt: string;
@@ -30,7 +31,22 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
   console.log(`Plant: ${plantName}`);
   console.log(`Type: ${imageType}`);
   
-  // Try Runware first since user has added credits
+  // Try Gemini first - newest and best quality
+  if (process.env.GOOGLE_GEMINI_API_KEY) {
+    try {
+      const imagePath = await geminiImageGenerator.generateImage({
+        prompt: prompt || plantName,
+        plantName,
+        imageType
+      });
+      console.log(`✅ Success with Gemini (Nano Banana)`);
+      return imagePath;
+    } catch (error: any) {
+      console.log(`Gemini failed: ${error.message}, trying fallback...`);
+    }
+  }
+  
+  // Try Runware as second option
   if (process.env.RUNWARE_API_KEY) {
     try {
       const imagePath = await runwareImageGenerator.generateImage({
@@ -46,7 +62,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     }
   }
   
-  // Fallback to HuggingFace if Runware fails
+  // Fallback to HuggingFace if others fail
   if (process.env.HUGGINGFACE_API_KEY) {
     try {
       const imagePath = await huggingfaceOptimized.generateImage({
@@ -61,5 +77,5 @@ export async function generateImage(options: GenerateImageOptions): Promise<stri
     }
   }
   
-  throw new Error("No image generation service available or all services failed. Please ensure HuggingFace API key is set or add credits to Runware.");
+  throw new Error("No image generation service available or all services failed. Please ensure API keys are configured.");
 }
