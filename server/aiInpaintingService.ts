@@ -399,8 +399,9 @@ export class AIInpaintingService {
       const compositeBase64 = compositeBuffer.toString('base64');
       
       // Use Gemini to enhance the composite to photorealistic
-      const { geminiService } = await import('./geminiAI.js');
-      const enhancedResult = await geminiService.enhanceGardenToPhotorealistic({
+      const GeminiAI = (await import('./geminiAI.js')).default;
+      const geminiAI = new GeminiAI(process.env.GEMINI_API_KEY || '');
+      const enhancedResult = await geminiAI.enhanceGardenToPhotorealistic({
         imageBase64: compositeBase64,
         plants: testPlants,
         gardenSize: '10x10 meters',
