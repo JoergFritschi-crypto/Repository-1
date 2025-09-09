@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/layout/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import PlantSearch from "@/components/plant/plant-search";
-import { Sprout, Search, Filter, Heart, Grid, List } from "lucide-react";
+import PlantAdvancedSearch from "@/components/plant/plant-advanced-search";
+import { Sprout, Search, Filter, Heart, Grid, List, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import type { Plant, PlantSearchFilters } from "@/types/plant";
 
 export default function PlantLibrary() {
@@ -17,6 +18,9 @@ export default function PlantLibrary() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<PlantSearchFilters>({});
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"name-asc" | "name-desc" | "newest" | "oldest">("name-asc");
+  const plantsPerPage = 24; // 3x8 grid
 
   const { data: plants, isLoading: plantsLoading } = useQuery({
     queryKey: ["/api/plants/search", { q: searchQuery, ...filters }],
@@ -38,12 +42,42 @@ export default function PlantLibrary() {
 
   const handleFilterChange = (newFilters: Partial<PlantSearchFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const clearFilters = () => {
     setFilters({});
     setSearchQuery("");
+    setCurrentPage(1);
   };
+
+  // Sort plants based on selected option
+  const sortedPlants = useMemo(() => {
+    if (!plants || !Array.isArray(plants)) return [];
+    
+    const sorted = [...plants];
+    switch (sortBy) {
+      case "name-asc":
+        return sorted.sort((a, b) => a.commonName.localeCompare(b.commonName));
+      case "name-desc":
+        return sorted.sort((a, b) => b.commonName.localeCompare(a.commonName));
+      case "newest":
+        return sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      case "oldest":
+        return sorted.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+      default:
+        return sorted;
+    }
+  }, [plants, sortBy]);
+
+  // Paginate plants
+  const paginatedPlants = useMemo(() => {
+    const startIndex = (currentPage - 1) * plantsPerPage;
+    const endIndex = startIndex + plantsPerPage;
+    return sortedPlants.slice(startIndex, endIndex);
+  }, [sortedPlants, currentPage, plantsPerPage]);
+
+  const totalPages = Math.ceil((sortedPlants?.length || 0) / plantsPerPage);
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,8 +115,67 @@ export default function PlantLibrary() {
 
           {/* Browse Plants Tab */}
           <TabsContent value="browse" className="mt-6">
-            <div className="grid lg:grid-cols-4 gap-6">
-              {/* Filters Sidebar */}
+            {/* Advanced Search at the top */}
+            <div className="mb-6">
+              <PlantAdvancedSearch 
+                onSearch={(searchFilters) => {
+                  setFilters(searchFilters);
+                  setCurrentPage(1);
+                }}
+                totalResults={sortedPlants?.length || 0}
+              />
+            </div>
+
+            {/* Sorting and View Options */}
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-muted-foreground" data-testid="text-results-count">
+                  {plantsLoading ? "Loading..." : `${sortedPlants?.length || 0} plants found`}
+                </p>
+                {currentPage > 1 || totalPages > 1 ? (
+                  <Badge variant="outline" data-testid="badge-page-info">
+                    Page {currentPage} of {totalPages}
+                  </Badge>
+                ) : null}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {/* Sorting Dropdown */}
+                <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                  <SelectTrigger className="w-[180px]" data-testid="select-sort">
+                    <ArrowUpDown className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                    <SelectItem value="newest">Newly Added</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* View Mode Buttons */}
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  data-testid="button-grid-view"
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  data-testid="button-list-view"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Old Filters Sidebar - now hidden since we have advanced search 
               <div className="lg:col-span-1">
                 <Card className="border-2 border-[#004025]">
                   <CardHeader className="py-5 flower-band-sunset rounded-t-lg">
