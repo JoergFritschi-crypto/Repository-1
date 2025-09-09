@@ -818,16 +818,13 @@ export function PlantImportWizard() {
                   Total: {selectedPlants.length}
                 </Badge>
                 <Badge className="bg-green-500 text-white">
-                  Perenual only: {counts.perenual_only}
+                  1 source: {counts.perenual_only + counts.gbif_only + counts.inaturalist_only}
                 </Badge>
-                <Badge className="bg-blue-500 text-white">
-                  GBIF only: {counts.gbif_only}
-                </Badge>
-                <Badge className="bg-red-500 text-white">
-                  iNaturalist only: {counts.inaturalist_only}
+                <Badge className="bg-orange-500 text-white">
+                  2 sources: {counts.two_sources}
                 </Badge>
                 <Badge className="bg-purple-500 text-white">
-                  All 3 sources: {counts.all_three}
+                  3 sources: {counts.all_three}
                 </Badge>
               </div>
             </div>
