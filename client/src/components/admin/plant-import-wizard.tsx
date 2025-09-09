@@ -711,6 +711,9 @@ export function PlantImportWizard() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">GBIF Enrichment</h3>
               <div className="flex gap-2 text-sm">
+                <Badge className="font-semibold">
+                  Total: {selectedPlants.length} plants
+                </Badge>
                 <Badge variant="outline">
                   Perenual: {counts.perenual} plants
                 </Badge>
@@ -762,7 +765,7 @@ export function PlantImportWizard() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">iNaturalist Enrichment</h3>
               <div className="flex gap-2 text-sm">
-                <Badge variant="outline">
+                <Badge className="font-semibold">
                   Total: {selectedPlants.length} plants
                 </Badge>
                 <Badge variant="outline">
@@ -811,6 +814,9 @@ export function PlantImportWizard() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Review & Validate</h3>
               <div className="flex gap-2">
+                <Badge className="font-semibold text-lg">
+                  Total: {selectedPlants.length}
+                </Badge>
                 <Badge className="bg-green-500 text-white">
                   Perenual only: {counts.perenual_only}
                 </Badge>
@@ -872,7 +878,7 @@ export function PlantImportWizard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Final Import</h3>
-              <Badge variant="outline">
+              <Badge className="font-semibold text-lg">
                 Ready to import: {selectedPlants.length} plants
               </Badge>
             </div>
