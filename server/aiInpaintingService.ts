@@ -190,6 +190,11 @@ export class AIInpaintingService {
     );
     const maskBase64 = maskBuffer.toString('base64');
     
+    // Debug: Save mask to see what we're sending
+    const debugMaskPath = path.join(this.outputDir, `debug-mask-single-${plant.plantName}-${Date.now()}.png`);
+    await fs.writeFile(debugMaskPath, maskBuffer);
+    console.log(`  Debug: Saved single mask to ${debugMaskPath}`);
+    
     // Build inpainting prompt
     const seasonDesc = this.getSeasonDescription(plant.season || options.season);
     const depthDesc = plant.y < 30 ? "in the background" : 
@@ -264,6 +269,11 @@ export class AIInpaintingService {
       options.plants
     );
     const maskBase64 = maskBuffer.toString('base64');
+    
+    // Debug: Save mask to see what we're sending
+    const debugMaskPath = path.join(this.outputDir, `debug-mask-combined-${Date.now()}.png`);
+    await fs.writeFile(debugMaskPath, maskBuffer);
+    console.log(`  Debug: Saved combined mask to ${debugMaskPath}`);
     
     // Build comprehensive prompt for all plants with proper sizing
     const plantDescriptions = options.plants.map(plant => {
@@ -350,11 +360,12 @@ export class AIInpaintingService {
     imageHeight: number, 
     plants: PlantInpaintRequest[]
   ): Promise<Buffer> {
-    // Size mapping for mask radius - calibrated for 10x10m garden at 800px
+    // Size mapping for mask radius - much larger for proper inpainting
+    // Must match the single plant mask sizes!
     const sizeMap = {
-      small: 0.015,   // ~12px = ~0.15m diameter (small herbs like lavender, hostas)
-      medium: 0.08,   // ~64px = ~0.8m diameter (medium shrubs) 
-      large: 0.2      // ~160px = ~2m diameter (mature trees)
+      small: 0.08,    // ~150px radius for small plants
+      medium: 0.12,   // ~230px radius for medium plants
+      large: 0.18     // ~345px radius for large plants/trees
     };
     
     const svg = `
