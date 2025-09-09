@@ -536,17 +536,17 @@ export function CompactPlantCard({
                 <p className="text-sm text-muted-foreground">{plant.commonName}</p>
               </div>
               
-              {(plant.status || plant.verificationStatus) && (
+              {plant.verificationStatus && (
                 <Badge variant={
-                  (plant.status === 'approved' || plant.verificationStatus === 'verified') ? 'default' : 
-                  (plant.status === 'pending' || plant.verificationStatus === 'pending') ? 'outline' : 'destructive'
+                  plant.verificationStatus === 'verified' ? 'default' : 
+                  plant.verificationStatus === 'pending' ? 'outline' : 'destructive'
                 }>
-                  Status: {plant.status || plant.verificationStatus}
+                  Status: {plant.verificationStatus}
                 </Badge>
               )}
 
               <div className="grid grid-cols-2 gap-2">
-                {(plant.status === 'pending' || plant.verificationStatus === 'pending') && (
+                {plant.verificationStatus === 'pending' && (
                   <>
                     <Button onClick={onVerify} className="w-full">
                       <Check className="w-4 h-4 mr-1" />
@@ -558,7 +558,7 @@ export function CompactPlantCard({
                     </Button>
                   </>
                 )}
-                {(plant.status === 'approved' || plant.verificationStatus === 'verified') && (
+                {plant.verificationStatus === 'verified' && (
                   <>
                     <Button onClick={onEdit} variant="outline" className="w-full">
                       <Edit className="w-4 h-4 mr-1" />
