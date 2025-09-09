@@ -113,9 +113,48 @@ export default function PlantLibrary() {
           </TabsList>
 
           {/* Browse Plants Tab */}
-          <TabsContent value="browse" className="mt-6">
+          <TabsContent value="browse" className="mt-8">
             <div className="space-y-6">
-              {/* Advanced Search - The GOOD one from admin with colorful options */}
+              {/* Database Overview Bar */}
+              <Card>
+                <CardContent className="py-4">
+                  <div className="flex flex-wrap gap-8 items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Plants</p>
+                      <p className="text-2xl font-bold" data-testid="text-total-plants">{sortedPlants?.length || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Verified</p>
+                      <p className="text-xl font-semibold text-accent" data-testid="text-verified-plants">
+                        {sortedPlants?.filter((p: any) => p.verificationStatus === 'verified').length || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Available</p>
+                      <p className="text-xl font-semibold text-green-600" data-testid="text-available-plants">
+                        {sortedPlants?.length || 0}
+                      </p>
+                    </div>
+                    <div className="ml-auto flex gap-2">
+                      {/* Sorting Dropdown */}
+                      <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                        <SelectTrigger className="w-[180px]" data-testid="select-sort">
+                          <ArrowUpDown className="w-4 h-4 mr-2" />
+                          <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                          <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                          <SelectItem value="newest">Newly Added</SelectItem>
+                          <SelectItem value="oldest">Oldest First</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Advanced Search */}
               <PlantAdvancedSearch 
                 onSearch={(filters) => {
                   console.log('Searching with filters:', filters);
@@ -125,44 +164,17 @@ export default function PlantLibrary() {
                 totalResults={sortedPlants?.length || 0}
               />
 
-              {/* Plants Grid */}
-              <div>
-                {/* Results Bar with Sorting */}
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center space-x-4">
-                    <p className="text-sm text-muted-foreground" data-testid="text-results-count">
-                      {plantsLoading ? "Loading..." : `${sortedPlants?.length || 0} plants found`}
-                    </p>
-                    {Object.keys(filters).length > 0 && (
-                      <Badge variant="secondary" data-testid="badge-filters-applied">
-                        {Object.keys(filters).length} filter(s) applied
-                      </Badge>
-                    )}
-                    {totalPages > 1 && (
-                      <Badge variant="outline" data-testid="badge-page-info">
-                        Page {currentPage} of {totalPages}
-                      </Badge>
-                    )}
+              {/* Plant Cards Grid */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Plant Database</CardTitle>
                   </div>
-                  
-                  {/* Sorting Dropdown */}
-                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                    <SelectTrigger className="w-[180px]" data-testid="select-sort">
-                      <ArrowUpDown className="w-4 h-4 mr-2" />
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                      <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                      <SelectItem value="newest">Newly Added</SelectItem>
-                      <SelectItem value="oldest">Oldest First</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Plants Display */}
-                {plantsLoading ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </CardHeader>
+                <CardContent>
+                  {/* Plants Display */}
+                  {plantsLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[...Array(6)].map((_, i) => (
                       <Card key={i} className="animate-pulse" data-testid={`skeleton-plant-${i}`}>
                         <div className="h-48 bg-muted"></div>
@@ -173,9 +185,8 @@ export default function PlantLibrary() {
                       </Card>
                     ))}
                   </div>
-                ) : paginatedPlants && paginatedPlants.length > 0 ? (
-                  <>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  ) : paginatedPlants && paginatedPlants.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {paginatedPlants.map((plant: Plant) => (
                         <CompactPlantCard
                           key={plant.id}
@@ -184,9 +195,23 @@ export default function PlantLibrary() {
                         />
                       ))}
                     </div>
+                  ) : (
+                    <div className="text-center py-12" data-testid="empty-plants-state">
+                      <Sprout className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No plants found</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Try adjusting your search criteria or clearing filters
+                      </p>
+                      <Button onClick={clearFilters} data-testid="button-clear-search">
+                        Clear Search & Filters
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
                       <div className="flex justify-center items-center gap-2 mt-8">
                         <Button
                           variant="outline"
@@ -242,22 +267,8 @@ export default function PlantLibrary() {
                           Next
                           <ChevronRight className="w-4 h-4" />
                         </Button>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-12" data-testid="empty-plants-state">
-                    <Sprout className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">No plants found</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Try adjusting your search criteria or clearing filters
-                    </p>
-                    <Button onClick={clearFilters} data-testid="button-clear-search">
-                      Clear Search & Filters
-                    </Button>
                   </div>
                 )}
-              </div>
             </div>
           </TabsContent>
 
