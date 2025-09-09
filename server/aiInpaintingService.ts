@@ -162,9 +162,7 @@ export class AIInpaintingService {
     plant: PlantInpaintRequest,
     options: InpaintingOptions
   ): Promise<Buffer> {
-    // For proof of concept, we'll use Runware's img2img with masking
-    // In production, you'd use a dedicated inpainting model
-    
+    // True sequential inpainting using Runware's inpainting with mask
     const imageBase64 = imageBuffer.toString('base64');
     const imageMeta = await sharp(imageBuffer).metadata();
     
@@ -198,18 +196,35 @@ export class AIInpaintingService {
                     single plant only, no duplicates, maintain correct proportions, show stone edge of bed`;
     
     try {
-      // Call the batch inpainting which actually works!
-      console.log(`  Using batch approach for single plant: ${plant.plantName}`);
+      console.log(`  Sequential: Adding ${plant.plantName} at (${plant.x}, ${plant.y})`);
       
-      // Use the batch inpainting approach which works properly
-      const result = await this.inpaintAllPlants(imageBuffer, {
-        plants: [plant],  // Just this single plant
-        season: options.season,
-        style: options.style || 'photorealistic'
+      // Use Runware's inpainting with mask for true sequential addition
+      const result = await runwareAI.imageInference({
+        positivePrompt: prompt,
+        negativePrompt: "cartoon, anime, illustration, multiple plants, duplicates, oversized, tiny, unrealistic scale",
+        model: runwareModels.civitai_74407, // Photorealistic Vision model
+        numberResults: 1,
+        height: imageMeta.height || 1440,
+        width: imageMeta.width || 1920,
+        inputImage: `data:image/png;base64,${imageBase64}`,
+        maskImage: `data:image/png;base64,${maskBase64}`,
+        strength: 0.9,  // High strength for significant changes
+        guidanceScale: 12,
+        scheduler: "FlowMatchEulerDiscreteScheduler",
+        steps: 40,
+        seed: Math.floor(Math.random() * 1000000)
       });
       
-      // Return the enhanced buffer
-      return result;
+      if (!result || result.length === 0) {
+        throw new Error('No inpainting result generated');
+      }
+      
+      // Download and return the inpainted image
+      const inpaintedUrl = result[0].imageURL;
+      const response = await fetch(inpaintedUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+      
     } catch (error) {
       console.error(`Failed to inpaint ${plant.plantName}:`, error);
       return imageBuffer; // Return original on failure
@@ -222,6 +237,15 @@ export class AIInpaintingService {
     options: InpaintingOptions
   ): Promise<Buffer> {
     const imageBase64 = imageBuffer.toString('base64');
+    const imageMeta = await sharp(imageBuffer).metadata();
+    
+    // Generate a combined mask for all plant positions
+    const maskBuffer = await this.generateCombinedMask(
+      imageMeta.width || 1920,
+      imageMeta.height || 1440,
+      options.plants
+    );
+    const maskBase64 = maskBuffer.toString('base64');
     
     // Build comprehensive prompt for all plants with proper sizing
     const plantDescriptions = options.plants.map(plant => {
@@ -251,36 +275,35 @@ export class AIInpaintingService {
                     no duplicate plants, only the specified plants, ground level view showing entire bed with stone frame, photorealistic garden bed`;
     
     try {
-      // Try Gemini first if available
-      if (this.geminiAI) {
-        const result = await this.geminiAI.generateImageWithReference(prompt, imageBase64);
-        if (result.imageData) {
-          const base64Data = result.imageData.split(',')[1];
-          return Buffer.from(base64Data, 'base64');
-        }
-      }
+      console.log(`  Batch: Adding ${options.plants.length} plants at once`);
       
-      // Fallback to Runware
-      const result = await runwareService.generateSeasonalImage({
-        season: options.season,
-        specificTime: seasonDesc,
-        canvasDesign: {
-          plants: options.plants.map((plant, idx) => ({
-            plant: { id: idx.toString(), name: plant.plantName },
-            position: { x: plant.x, y: plant.y }
-          }))
-        },
-        gardenDimensions: { width: 10, length: 10 },
-        useReferenceMode: true,
-        referenceImage: `data:image/png;base64,${imageBase64}`
+      // Use Runware's inpainting with combined mask for batch addition
+      const result = await runwareAI.imageInference({
+        positivePrompt: prompt,
+        negativePrompt: "cartoon, anime, illustration, duplicates, oversized plants, tiny plants, unrealistic scale, missing stone border",
+        model: runwareModels.civitai_74407, // Photorealistic Vision model
+        numberResults: 1,
+        height: imageMeta.height || 1440,
+        width: imageMeta.width || 1920,
+        inputImage: `data:image/png;base64,${imageBase64}`,
+        maskImage: `data:image/png;base64,${maskBase64}`,
+        strength: 0.85,  // Slightly lower strength for batch to preserve more context
+        guidanceScale: 10,
+        scheduler: "FlowMatchEulerDiscreteScheduler",
+        steps: 35,
+        seed: Math.floor(Math.random() * 1000000)
       });
       
-      if (result.startsWith('data:')) {
-        const base64Data = result.split(',')[1];
-        return Buffer.from(base64Data, 'base64');
+      if (!result || result.length === 0) {
+        throw new Error('No batch inpainting result generated');
       }
       
-      return imageBuffer; // Return original if all fails
+      // Download and return the inpainted image
+      const inpaintedUrl = result[0].imageURL;
+      const response = await fetch(inpaintedUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+      
     } catch (error) {
       console.error("Failed to inpaint all plants:", error);
       return imageBuffer;
@@ -300,6 +323,38 @@ export class AIInpaintingService {
   }
   
   // Get realistic plant size based on plant type
+  // Generate combined mask for multiple plant positions
+  private async generateCombinedMask(
+    imageWidth: number, 
+    imageHeight: number, 
+    plants: PlantInpaintRequest[]
+  ): Promise<Buffer> {
+    // Size mapping for mask radius - calibrated for 10x10m garden at 800px
+    const sizeMap = {
+      small: 0.015,   // ~12px = ~0.15m diameter (small herbs like lavender, hostas)
+      medium: 0.08,   // ~64px = ~0.8m diameter (medium shrubs) 
+      large: 0.2      // ~160px = ~2m diameter (mature trees)
+    };
+    
+    const svg = `
+      <svg width="${imageWidth}" height="${imageHeight}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="${imageWidth}" height="${imageHeight}" fill="black"/>
+        ${plants.map(plant => {
+          const radius = imageWidth * sizeMap[plant.size];
+          const centerX = (plant.x / 100) * imageWidth;
+          const centerY = (plant.y / 100) * imageHeight;
+          
+          return `
+            <circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="white" opacity="0.9"/>
+            <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.8}" fill="white" opacity="1"/>
+          `;
+        }).join('')}
+      </svg>
+    `;
+    
+    return sharp(Buffer.from(svg)).png().toBuffer();
+  }
+  
   private getPlantSize(plantName: string): 'small' | 'medium' | 'large' {
     const name = plantName.toLowerCase();
     
