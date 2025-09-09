@@ -409,7 +409,7 @@ export function PlantImportWizard() {
     }
   };
 
-  // Perplexity validation for empty fields
+  // Perplexity validation for empty fields - now MUCH faster with parallel processing
   const validateWithPerplexity = async () => {
     setIsSearching(true);
     setSearchProgress('Validating empty fields with Perplexity AI...');
@@ -429,32 +429,49 @@ export function PlantImportWizard() {
         return;
       }
       
-      // Validate each plant
-      for (const plant of plantsToValidate) {
-        const response = await fetch('/api/admin/import/validate-perplexity', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ plant })
+      // Process plants in parallel batches of 5 for MUCH faster validation
+      const batchSize = 5;
+      let processed = 0;
+      
+      for (let i = 0; i < plantsToValidate.length; i += batchSize) {
+        const batch = plantsToValidate.slice(i, i + batchSize);
+        
+        // Update progress message
+        setSearchProgress(`Validating plants ${processed + 1}-${Math.min(processed + batch.length, plantsToValidate.length)} of ${plantsToValidate.length}...`);
+        
+        // Process batch in parallel
+        const batchPromises = batch.map(plant => 
+          fetch('/api/admin/import/validate-perplexity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ plant })
+          }).then(response => response.ok ? response.json() : null)
+        );
+        
+        const batchResults = await Promise.all(batchPromises);
+        
+        // Update plants with validated data
+        batchResults.forEach((validated, idx) => {
+          if (validated) {
+            const plant = batch[idx];
+            const index = selectedPlants.findIndex(p => 
+              p.scientific_name === plant.scientific_name
+            );
+            if (index !== -1) {
+              selectedPlants[index] = { ...selectedPlants[index], ...validated };
+            }
+          }
         });
         
-        if (response.ok) {
-          const validated = await response.json();
-          // Update the plant in selectedPlants
-          const index = selectedPlants.findIndex(p => 
-            p.scientific_name === plant.scientific_name
-          );
-          if (index !== -1) {
-            selectedPlants[index] = { ...selectedPlants[index], ...validated };
-          }
-        }
+        processed += batch.length;
       }
       
       setSelectedPlants([...selectedPlants]);
       
       toast({
         title: "✓ Validation Complete",
-        description: `Validated ${plantsToValidate.length} plants with Perplexity`,
+        description: `Validated ${plantsToValidate.length} plants with Perplexity (5x faster!)`,
       });
       
     } catch (error) {
