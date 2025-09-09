@@ -53,8 +53,8 @@ export class PlantImportService {
     'helianthus lemon queen': 'pauciflorus',
     'helianthus monarch': 'atrorubens',
     'helianthus happy days': 'annuus',
-    'helianthus sunfiniti yellow dark center': '× multiflorus',  // hybrid cultivar
-    'helianthus sunfiniti': '× multiflorus',  // hybrid series
+    'helianthus sunfiniti yellow dark center': 'annuus',  // Sunfiniti™ series cultivar
+    'helianthus sunfiniti': 'annuus',  // Sunfiniti™ series
     
     // Add more corrections as we discover them
     // Format: 'genus cultivar' : 'species'
@@ -162,6 +162,9 @@ export class PlantImportService {
     let scientificName = plant.scientific_name || '';
     const commonName = (plant.common_name || '').toLowerCase();
     
+    // Check if this is a hybrid (contains ×)
+    const isHybrid = scientificName.includes('×') || scientificName.toLowerCase().includes(' x ');
+    
     // Fix ALL CAPS issue first
     if (scientificName && scientificName === scientificName.toUpperCase()) {
       // Convert to proper case: first word capitalized (genus), rest lowercase except cultivar names
@@ -172,10 +175,19 @@ export class PlantImportService {
         
         // For remaining words, check if they look like cultivar names (multiple capitalized words)
         if (words.length > 1) {
-          // If we have 3+ words after genus and no quotes, it's likely a cultivar
+          // Check for × or X indicating hybrid
+          const hasHybridMarker = words.some(w => w === 'X' || w === '×');
           const remainingWords = words.slice(1);
-          if (remainingWords.length >= 2 && !scientificName.includes("'")) {
-            // Format as cultivar
+          
+          if (hasHybridMarker) {
+            // Handle hybrid notation
+            scientificName = words.map((w, i) => {
+              if (w === 'X') return '×';  // Replace X with proper ×
+              if (i === 0) return w;  // Genus already formatted
+              return w.toLowerCase();  // Species names lowercase
+            }).join(' ');
+          } else if (remainingWords.length >= 2 && !scientificName.includes("'")) {
+            // Multiple words without hybrid marker = likely a cultivar
             const cultivarName = remainingWords.map(w => 
               w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
             ).join(' ');
@@ -188,6 +200,12 @@ export class PlantImportService {
           }
         }
       }
+      plant.scientific_name = scientificName;
+    }
+    
+    // Normalize hybrid notation (replace ' x ' with ' × ')
+    if (scientificName.toLowerCase().includes(' x ')) {
+      scientificName = scientificName.replace(/ x /gi, ' × ');
       plant.scientific_name = scientificName;
     }
     
