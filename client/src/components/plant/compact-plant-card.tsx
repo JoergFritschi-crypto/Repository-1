@@ -341,16 +341,16 @@ export function CompactPlantCard({
 
       {/* Details Dialog */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-gray-900">
               {plant.scientificName || 'Unknown Species'}
-              <span className="text-sm font-normal text-muted-foreground block">
+              <span className="text-sm font-normal text-gray-600 block">
                 {plant.commonName || 'Unknown Plant'}
               </span>
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-900">
             {/* Images */}
             {(primaryImage || secondaryImage) && (
               <div className="grid grid-cols-2 gap-2">
@@ -375,55 +375,55 @@ export function CompactPlantCard({
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               {plant.family && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Family:</span>
-                  <span>{plant.family}</span>
+                  <span className="text-gray-500">Family:</span>
+                  <span className="text-gray-900">{plant.family}</span>
                 </div>
               )}
               {plant.type && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Type:</span>
-                  <span>{plant.type}</span>
+                  <span className="text-gray-500">Type:</span>
+                  <span className="text-gray-900">{plant.type}</span>
                 </div>
               )}
               {plant.sunlight && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Sun:</span>
-                  <span>{Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight}</span>
+                  <span className="text-gray-500">Sun:</span>
+                  <span className="text-gray-900">{Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight}</span>
                 </div>
               )}
               {plant.watering && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Water:</span>
-                  <span>{plant.watering}</span>
+                  <span className="text-gray-500">Water:</span>
+                  <span className="text-gray-900">{plant.watering}</span>
                 </div>
               )}
               {plant.hardiness && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Hardiness:</span>
+                  <span className="text-gray-500">Hardiness:</span>
                   <span>
-                    <span className="font-medium">{getHardinessCategory(plant.hardiness)}</span>
-                    <span className="text-xs text-muted-foreground ml-1">(Zone {plant.hardiness})</span>
+                    <span className="font-medium text-gray-900">{getHardinessCategory(plant.hardiness)}</span>
+                    <span className="text-xs text-gray-500 ml-1">(Zone {plant.hardiness})</span>
                   </span>
                 </div>
               )}
               {plant.dimension && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Size:</span>
-                  <span>{typeof plant.dimension === 'object' ? 
+                  <span className="text-gray-500">Size:</span>
+                  <span className="text-gray-900">{typeof plant.dimension === 'object' ? 
                     `${plant.dimension.height || ''} ${plant.dimension.spread ? `× ${plant.dimension.spread}` : ''}`.trim() : 
                     plant.dimension}</span>
                 </div>
               )}
               {plant.floweringSeason && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Bloom:</span>
-                  <span>{plant.floweringSeason}</span>
+                  <span className="text-gray-500">Bloom:</span>
+                  <span className="text-gray-900">{plant.floweringSeason}</span>
                 </div>
               )}
               {plant.flowerColor && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Flowers:</span>
-                  <span>{Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor}</span>
+                  <span className="text-gray-500">Flowers:</span>
+                  <span className="text-gray-900">{Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor}</span>
                 </div>
               )}
             </div>
@@ -442,8 +442,8 @@ export function CompactPlantCard({
             {/* Description */}
             {plant.description && (
               <div>
-                <h4 className="font-medium mb-1">Description</h4>
-                <p className="text-sm text-muted-foreground">{plant.description}</p>
+                <h4 className="font-medium mb-1 text-gray-900">Description</h4>
+                <p className="text-sm text-gray-600">{plant.description}</p>
               </div>
             )}
           </div>
