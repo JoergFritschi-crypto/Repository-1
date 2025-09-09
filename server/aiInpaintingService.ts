@@ -213,10 +213,10 @@ export class AIInpaintingService {
                     single plant only, no duplicates, maintain correct proportions`;
     
     try {
-      // Use Runware for inpainting-like generation
+      // Use Runware for inpainting with controlnet/img2img approach
       const result = await runwareService.generateSeasonalImage({
         season: options.season,
-        specificTime: seasonDesc,
+        specificTime: prompt,  // Use our detailed prompt with size specifications
         canvasDesign: {
           plants: [{
             plant: { id: '1', name: plant.plantName },
@@ -228,15 +228,23 @@ export class AIInpaintingService {
         referenceImage: `data:image/png;base64,${imageBase64}`
       });
       
-      // Convert result URL to buffer
-      if (result.startsWith('data:')) {
-        const base64Data = result.split(',')[1];
-        return Buffer.from(base64Data, 'base64');
-      } else {
-        // For URL results, would need to fetch the image
-        // For now, return original image
-        return imageBuffer;
+      // Convert result URL to buffer - CRITICAL FIX!
+      if (result) {
+        if (result.startsWith('data:')) {
+          const base64Data = result.split(',')[1];
+          return Buffer.from(base64Data, 'base64');
+        } else if (result.startsWith('http')) {
+          // Fetch the image from URL - this was missing!
+          console.log(`  Downloading result from: ${result}`);
+          const response = await fetch(result);
+          const buffer = Buffer.from(await response.arrayBuffer());
+          return buffer;
+        }
       }
+      
+      // If all fails, return original
+      console.warn(`Failed to generate result for ${plant.plantName}`);
+      return imageBuffer;
     } catch (error) {
       console.error(`Failed to inpaint ${plant.plantName}:`, error);
       return imageBuffer; // Return original on failure
@@ -335,13 +343,13 @@ export class AIInpaintingService {
       return 'large';
     }
     
-    // Small plants
+    // Small plants (30-60cm) - including Hosta perennials
     if (name.includes('lavender') || name.includes('thyme') || name.includes('sage') || 
-        name.includes('rosemary') || name.includes('herb')) {
-      return 'small';
+        name.includes('rosemary') || name.includes('herb') || name.includes('hosta')) {
+      return 'small';  // Hostas are typically 40-60cm tall
     }
     
-    // Everything else is medium (shrubs, perennials like hosta)
+    // Everything else is medium (actual shrubs 1-1.5m tall)
     return 'medium';
   }
   
@@ -390,47 +398,31 @@ export class AIInpaintingService {
     const { spriteCompositor } = await import('./spriteCompositor.js');
     const compositeUrl = await spriteCompositor.testTwoPlantComposite();
     
-    // 1b. ENHANCE the composite with AI to make it photorealistic
+    // 1b. ENHANCE the composite with AI to make it photorealistic - the magical step!
     let enhancedCompositeUrl = compositeUrl;
     try {
       // Read the composite image
       const compositePath = path.join(process.cwd(), "client", "public", compositeUrl);
       const compositeBuffer = await fs.readFile(compositePath);
-      const compositeBase64 = compositeBuffer.toString('base64');
       
-      // Use Gemini to enhance the composite to photorealistic
-      const GeminiAI = (await import('./geminiAI.js')).default;
-      const geminiAI = new GeminiAI(process.env.GEMINI_API_KEY || '');
-      const enhancedResult = await geminiAI.enhanceGardenToPhotorealistic({
-        imageBase64: compositeBase64,
-        plants: testPlants,
-        gardenSize: '10x10 meters',
+      // Use the batch inpainting approach to transform the composite to photorealistic
+      // This maintains positions while making plants look real
+      console.log("🎨 Enhancing composite to photorealistic...");
+      const enhancedBuffer = await this.inpaintAllPlants(compositeBuffer, {
+        plants: testPlants, // Plants are already in the image, this guides the enhancement
         season: 'summer',
         style: 'photorealistic'
       });
       
       // Save enhanced composite
-      if (enhancedResult) {
-        const enhancedFilename = `enhanced-composite-${timestamp}.png`;
-        const enhancedPath = path.join(this.outputDir, enhancedFilename);
-        
-        if (enhancedResult.startsWith('data:')) {
-          const base64Data = enhancedResult.split(',')[1];
-          await fs.writeFile(enhancedPath, Buffer.from(base64Data, 'base64'));
-        } else if (enhancedResult.startsWith('http')) {
-          // Download and save if it's a URL
-          const response = await fetch(enhancedResult);
-          const buffer = Buffer.from(await response.arrayBuffer());
-          await fs.writeFile(enhancedPath, buffer);
-        } else {
-          // If Gemini returns base64 without prefix
-          await fs.writeFile(enhancedPath, Buffer.from(enhancedResult, 'base64'));
-        }
-        
-        enhancedCompositeUrl = `/inpainted-gardens/${enhancedFilename}`;
-      }
+      const enhancedFilename = `enhanced-composite-${timestamp}.png`;
+      const enhancedPath = path.join(this.outputDir, enhancedFilename);
+      await fs.writeFile(enhancedPath, enhancedBuffer);
+      enhancedCompositeUrl = `/inpainted-gardens/${enhancedFilename}`;
+      
+      console.log("✅ Enhanced composite saved");
     } catch (error) {
-      console.error("Failed to enhance composite with Gemini:", error);
+      console.error("Failed to enhance composite:", error);
     }
     
     // 2. Sequential inpainting (one plant at a time)
