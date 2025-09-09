@@ -288,6 +288,9 @@ export default function PlantLibrary() {
                 </Button>
               </div>
             )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* My Collection Tab */}
