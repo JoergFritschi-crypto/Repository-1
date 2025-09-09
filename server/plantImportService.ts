@@ -954,6 +954,7 @@ export class PlantImportService {
           indoor: plantData.indoor || false,
           careLevel: plantData.care_level || 'moderate',
           maintenance: plantData.maintenance || plantData.care_level || 'low',
+          hardinessLocation: plantData.hardiness_location || null,
           
           // Appearance - v2 API provides actual colors!
           leafColor: plantData.leaf_color || (plantData.leaf ? ['green'] : null),
@@ -970,10 +971,12 @@ export class PlantImportService {
           cuisine: plantData.cuisine || false,
           medicinal: plantData.medicinal || false,
           
-          // Propagation
+          // Propagation and problems
           propagation: Array.isArray(plantData.propagation)
             ? plantData.propagation
             : plantData.propagation ? [plantData.propagation] : null,
+          resistance: plantData.resistance || null, // v2 API - disease resistance
+          problem: plantData.problem || null, // v2 API - common problems
           pruningMonth: plantData.pruning_month || null,
           
           // Metadata
