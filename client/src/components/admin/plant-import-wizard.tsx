@@ -23,7 +23,8 @@ import {
   Globe,
   Leaf,
   BookOpen,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 
 interface PlantImportData {
@@ -94,9 +95,19 @@ export function PlantImportWizard() {
       if (!response.ok) throw new Error('Search failed');
       
       const data = await response.json();
-      setSearchResults(data.plants || []);
+      const plants = data.plants || [];
+      setSearchResults(plants);
       
-      if (data.plants.length === 0) {
+      // Automatically select all found plants by default
+      if (plants.length > 0) {
+        setSelectedPlants(prevSelected => {
+          const existingIds = new Set(prevSelected.map(p => p.scientific_name));
+          const newPlants = plants.filter((p: PlantImportData) => !existingIds.has(p.scientific_name));
+          return [...prevSelected, ...newPlants];
+        });
+      }
+      
+      if (plants.length === 0) {
         toast({
           title: "No results",
           description: "No plants found in Perenual. Try a different search term.",
@@ -257,21 +268,36 @@ export function PlantImportWizard() {
                               </Badge>
                             )}
                           </div>
-                          <Checkbox
-                            checked={selectedPlants.some(p => 
-                              p.scientific_name === plant.scientific_name
-                            )}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedPlants([...selectedPlants, plant]);
-                              } else {
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={selectedPlants.some(p => 
+                                p.scientific_name === plant.scientific_name
+                              )}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedPlants([...selectedPlants, plant]);
+                                } else {
+                                  setSelectedPlants(selectedPlants.filter(p => 
+                                    p.scientific_name !== plant.scientific_name
+                                  ));
+                                }
+                              }}
+                              data-testid={`checkbox-plant-${idx}`}
+                            />
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-8 w-8 p-0"
+                              onClick={() => {
                                 setSelectedPlants(selectedPlants.filter(p => 
                                   p.scientific_name !== plant.scientific_name
                                 ));
-                              }
-                            }}
-                            data-testid={`checkbox-plant-${idx}`}
-                          />
+                              }}
+                              data-testid={`button-delete-plant-${idx}`}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                       </div>
@@ -334,16 +360,31 @@ export function PlantImportWizard() {
                           {plant.common_name || 'No common name'}
                         </p>
                       </div>
-                      {plant.gbif_id ? (
-                        <Badge variant="default" className="bg-green-500">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          GBIF Enriched
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline">
-                          Pending
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {plant.gbif_id ? (
+                          <Badge variant="default" className="bg-green-500">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            GBIF Enriched
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">
+                            Pending
+                          </Badge>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setSelectedPlants(selectedPlants.filter(p => 
+                              p.scientific_name !== plant.scientific_name
+                            ));
+                          }}
+                          data-testid={`button-delete-plant-gbif-${idx}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                     {plant.native_region && (
                       <p className="text-sm mt-2">
@@ -404,7 +445,7 @@ export function PlantImportWizard() {
                           {plant.common_name || 'No common name'}
                         </p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         {plant.gbif_id && (
                           <Badge variant="default" className="bg-green-500">
                             GBIF
@@ -415,6 +456,19 @@ export function PlantImportWizard() {
                             iNat
                           </Badge>
                         )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setSelectedPlants(selectedPlants.filter(p => 
+                              p.scientific_name !== plant.scientific_name
+                            ));
+                          }}
+                          data-testid={`button-delete-plant-inat-${idx}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -518,13 +572,28 @@ export function PlantImportWizard() {
                         </div>
                       </div>
                       
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        data-testid={`button-edit-plant-${idx}`}
-                      >
-                        Edit
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          data-testid={`button-edit-plant-${idx}`}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setSelectedPlants(selectedPlants.filter(p => 
+                              p.scientific_name !== plant.scientific_name
+                            ));
+                          }}
+                          data-testid={`button-delete-plant-review-${idx}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
