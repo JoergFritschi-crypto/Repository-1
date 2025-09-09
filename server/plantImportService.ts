@@ -687,7 +687,9 @@ export class PlantImportService {
       
       const prompt = `For the plant "${plant.scientific_name}" (${plant.common_name || 'common name unknown'}), provide ALL the following missing information in JSON format: ${emptyFields.join(', ')}.
       
-      IMPORTANT: For flower_color, provide SPECIFIC colors like "yellow", "orange", "red", "pink", "white", "purple", "blue". Never use "varies", "mixed", or "multiple" - list the actual colors instead. If the plant doesn't flower, use null. 
+      IMPORTANT RULES:
+      1. For flower_color: provide SPECIFIC colors like "yellow", "orange", "red", "pink", "white", "purple", "blue". Never use "varies", "mixed", or "multiple" - list the actual colors instead. If the plant doesn't flower, use null.
+      2. For dimensions: ALWAYS use METRIC units (meters). Example: {"height": "0.6-1.2 m", "spread": "0.9-1.5 m"}. Never use feet or inches. 
       
       Research thoroughly and return ONLY a JSON object with ALL these exact keys (use appropriate values or null if truly unknown):
       {
@@ -701,7 +703,7 @@ export class PlantImportService {
         "care_level": "low/moderate/high or null",
         "growth_rate": "slow/moderate/fast or null",
         "soil": ["well-drained", "moist", "sandy"] or similar array or null,
-        "dimension": {"height": "1-3 feet", "spread": "2-3 feet"} or null,
+        "dimension": {"height": "0.3-0.9 m", "spread": "0.6-0.9 m"} (always in meters) or null,
         "flowering_season": "spring/summer/fall/winter or months or null",
         "flower_color": ["yellow", "orange", "red"] (specific colors only, never "varies" or "mixed") or null if no flowers,
         "maintenance": "low/moderate/high or null",

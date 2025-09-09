@@ -41,6 +41,30 @@ interface CompactPlantCardProps {
   onGenerateImages?: () => void;
 }
 
+// Convert feet string to meters (e.g., "2-3 feet" -> "0.6-0.9 m")
+function convertFeetToMeters(measurement: string): string {
+  if (!measurement) return '';
+  
+  // Handle different formats: "2-3 feet", "3 feet", "2-3 ft", etc.
+  const feetMatch = measurement.match(/([\d.]+)(?:\s*-\s*([\d.]+))?\s*(?:feet|foot|ft)/i);
+  if (feetMatch) {
+    const min = parseFloat(feetMatch[1]);
+    const max = feetMatch[2] ? parseFloat(feetMatch[2]) : min;
+    
+    const minMeters = (min * 0.3048).toFixed(1);
+    const maxMeters = (max * 0.3048).toFixed(1);
+    
+    if (min === max) {
+      return `${minMeters} m`;
+    } else {
+      return `${minMeters}-${maxMeters} m`;
+    }
+  }
+  
+  // If already in meters or other format, return as-is
+  return measurement;
+}
+
 // Convert USDA zones to 4-tier hardiness system
 function getHardinessCategory(hardiness: string | undefined): string | null {
   if (!hardiness) return null;
@@ -529,8 +553,8 @@ export function CompactPlantCard({
                 <span className="text-gray-500">Size: </span>
                 <span className={plant.dimension ? "text-gray-900" : "text-red-400"}>
                   {plant.dimension ? (typeof plant.dimension === 'object' ? 
-                    `${plant.dimension.height || ''} ${plant.dimension.spread ? `× ${plant.dimension.spread}` : ''}`.trim() : 
-                    plant.dimension) : 'Missing'}
+                    `${convertFeetToMeters(plant.dimension.height) || ''} ${plant.dimension.spread ? `× ${convertFeetToMeters(plant.dimension.spread)}` : ''}`.trim() : 
+                    convertFeetToMeters(plant.dimension)) : 'Missing'}
                 </span>
               </div>
               <div className="flex justify-between">
