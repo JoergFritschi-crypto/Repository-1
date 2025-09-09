@@ -35,10 +35,23 @@ export class AIInpaintingService {
     this.outputDir = path.join(process.cwd(), "client", "public", "inpainted-gardens");
   }
   
+  // Ensure dimensions are valid multiples of 64 for Runware
+  private getValidDimensions(width?: number, height?: number): { width: number, height: number } {
+    // Round to nearest multiple of 64
+    const validWidth = width ? Math.round(width / 64) * 64 : 1920;
+    const validHeight = height ? Math.round(height / 64) * 64 : 1472;
+    
+    // Ensure within Runware limits (128-2048)
+    return {
+      width: Math.max(128, Math.min(2048, validWidth || 1920)),
+      height: Math.max(128, Math.min(2048, validHeight || 1472))
+    };
+  }
+  
   // Create a base garden image with empty bed
   async createEmptyGardenBase(shape: string = 'rectangle', dimensions: any = { width: 10, height: 10 }): Promise<Buffer> {
-    const width = 1920;
-    const height = 1440;
+    const width = 1920;  // 1920 = 30 * 64 (valid)
+    const height = 1472;  // 1472 = 23 * 64 (valid, was 1440 which is not a multiple of 64)
     
     // Create a simple garden bed - just soil, no decorative elements
     const svg = `
@@ -165,11 +178,12 @@ export class AIInpaintingService {
     // True sequential inpainting using Runware's inpainting with mask
     const imageBase64 = imageBuffer.toString('base64');
     const imageMeta = await sharp(imageBuffer).metadata();
+    const validDims = this.getValidDimensions(imageMeta.width, imageMeta.height);
     
     // Generate mask for the plant position
     const maskBuffer = await this.generateInpaintMask(
       imageMeta.width || 1920,
-      imageMeta.height || 1440,
+      imageMeta.height || 1472,
       plant.x,
       plant.y,
       plant.size
@@ -204,8 +218,8 @@ export class AIInpaintingService {
         negativePrompt: "cartoon, anime, illustration, multiple plants, duplicates, oversized, tiny, unrealistic scale",
         model: runwareModels.civitai_74407, // Photorealistic Vision model
         numberResults: 1,
-        height: imageMeta.height || 1440,
-        width: imageMeta.width || 1920,
+        height: validDims.height,
+        width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
         strength: 0.9,  // High strength for significant changes
@@ -241,11 +255,12 @@ export class AIInpaintingService {
   ): Promise<Buffer> {
     const imageBase64 = imageBuffer.toString('base64');
     const imageMeta = await sharp(imageBuffer).metadata();
+    const validDims = this.getValidDimensions(imageMeta.width, imageMeta.height);
     
     // Generate a combined mask for all plant positions
     const maskBuffer = await this.generateCombinedMask(
       imageMeta.width || 1920,
-      imageMeta.height || 1440,
+      imageMeta.height || 1472,
       options.plants
     );
     const maskBase64 = maskBuffer.toString('base64');
@@ -286,8 +301,8 @@ export class AIInpaintingService {
         negativePrompt: "cartoon, anime, illustration, duplicates, oversized plants, tiny plants, unrealistic scale, missing stone border",
         model: runwareModels.civitai_74407, // Photorealistic Vision model
         numberResults: 1,
-        height: imageMeta.height || 1440,
-        width: imageMeta.width || 1920,
+        height: validDims.height,
+        width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
         strength: 0.85,  // Slightly lower strength for batch to preserve more context
@@ -474,7 +489,7 @@ export class AIInpaintingService {
         negativePrompt: "cartoon, anime, illustration, blurry, artifacts, low quality",
         model: runwareModels.civitai_74407,
         numberResults: 1,
-        height: 1440,
+        height: 1472,  // Must be multiple of 64
         width: 1920,
         seedImage: `data:image/png;base64,${sequentialBuffer.toString('base64')}`,
         strength: 0.3,  // Lower strength to preserve plant positions
@@ -519,7 +534,7 @@ export class AIInpaintingService {
         negativePrompt: "cartoon, anime, illustration, blurry, artifacts, low quality",
         model: runwareModels.civitai_74407,
         numberResults: 1,
-        height: 1440,
+        height: 1472,  // Must be multiple of 64
         width: 1920,
         seedImage: `data:image/png;base64,${batchBuffer.toString('base64')}`,
         strength: 0.3,  // Lower strength to preserve plant positions

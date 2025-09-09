@@ -12,10 +12,10 @@ interface PlantPosition {
 }
 
 export class SpriteCompositor {
-  private baseWidth = 1920;  // Base canvas width in pixels
-  private baseHeight = 1440; // Base canvas height in pixels
+  private baseWidth = 1920;  // Base canvas width in pixels (1920 = 30 * 64, valid for Runware)
+  private baseHeight = 1472; // Base canvas height in pixels (1472 = 23 * 64, valid for Runware)
   private cellWidth = 48;    // Width per grid cell (1920/40)
-  private cellHeight = 48;   // Height per grid cell (1440/30)
+  private cellHeight = 49;   // Height per grid cell (approximately 1472/30)
   
   constructor() {}
   
