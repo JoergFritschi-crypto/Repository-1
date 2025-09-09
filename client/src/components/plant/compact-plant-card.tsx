@@ -495,27 +495,27 @@ export function CompactPlantCard({
             )}
             
             {/* Plant Details Grid - ALWAYS show all fields */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-500">Family:</span>
+                <span className="text-gray-500">Family: </span>
                 <span className={plant.family ? "text-gray-900" : "text-red-400"}>{plant.family || 'Missing'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Type:</span>
+                <span className="text-gray-500">Type: </span>
                 <span className={plant.type ? "text-gray-900" : "text-red-400"}>{plant.type || 'Missing'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Sun:</span>
+                <span className="text-gray-500">Sun: </span>
                 <span className={plant.sunlight ? "text-gray-900" : "text-red-400"}>
                   {plant.sunlight ? (Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight) : 'Missing'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Water:</span>
+                <span className="text-gray-500">Water: </span>
                 <span className={plant.watering ? "text-gray-900" : "text-red-400"}>{plant.watering || 'Missing'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Hardiness:</span>
+                <span className="text-gray-500">Hardiness: </span>
                 {plant.hardiness ? (
                   <span>
                     <span className="font-medium text-gray-900">{getHardinessCategory(plant.hardiness)}</span>
@@ -526,7 +526,7 @@ export function CompactPlantCard({
                 )}
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Size:</span>
+                <span className="text-gray-500">Size: </span>
                 <span className={plant.dimension ? "text-gray-900" : "text-red-400"}>
                   {plant.dimension ? (typeof plant.dimension === 'object' ? 
                     `${plant.dimension.height || ''} ${plant.dimension.spread ? `× ${plant.dimension.spread}` : ''}`.trim() : 
@@ -534,25 +534,25 @@ export function CompactPlantCard({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Growth Rate:</span>
+                <span className="text-gray-500">Growth Rate: </span>
                 <span className={plant.growthRate ? "text-gray-900" : "text-red-400"}>{plant.growthRate || 'Missing'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Maintenance:</span>
+                <span className="text-gray-500">Maintenance: </span>
                 <span className={plant.maintenance ? "text-gray-900" : "text-red-400"}>{plant.maintenance || 'Missing'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Bloom:</span>
+                <span className="text-gray-500">Bloom: </span>
                 <span className={plant.floweringSeason ? "text-gray-900" : "text-red-400"}>{plant.floweringSeason || 'Missing'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Flowers:</span>
+                <span className="text-gray-500">Flowers: </span>
                 <span className={plant.flowerColor ? "text-gray-900" : "text-red-400"}>
                   {plant.flowerColor ? (Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor) : 'Missing'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Soil:</span>
+                <span className="text-gray-500">Soil: </span>
                 <span className={plant.soil ? "text-gray-900" : "text-red-400"}>
                   {plant.soil ? (Array.isArray(plant.soil) ? plant.soil.join(', ') : plant.soil) : 'Missing'}
                 </span>
@@ -574,7 +574,7 @@ export function CompactPlantCard({
             {plant.description && (
               <div>
                 <h4 className="font-medium mb-1 text-gray-900">Description</h4>
-                <p className="text-sm text-gray-600">{plant.description}</p>
+                <p className="text-xs text-gray-600">{plant.description}</p>
               </div>
             )}
           </div>
