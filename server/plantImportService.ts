@@ -598,9 +598,9 @@ export class PlantImportService {
       // Filter and format results
       const filteredResults = results
         .filter((taxon: any) => {
-          // Filter out non-plant kingdoms
-          if (taxon.iconic_taxon_name && 
-              !['Plantae', 'Fungi'].includes(taxon.iconic_taxon_name)) {
+          // STRICT: Only allow Kingdom Plantae (no fungi, no animals, no missing kingdoms)
+          if (taxon.iconic_taxon_name !== 'Plantae') {
+            console.log(`  Filtering out non-plant: ${taxon.name} (Kingdom: ${taxon.iconic_taxon_name || 'unknown'})`);
             return false;
           }
           
