@@ -1100,9 +1100,12 @@ Rules:
         updates.floweringSeason = validatedData.flowering_season;
         updatedFields++;
       }
-      if (validatedData.flower_color && (!plant.flowerColor || plant.flowerColor.length === 0)) {
-        updates.flowerColor = validatedData.flower_color;
-        updatedFields++;
+      if (validatedData.flower_color && (!plant.flowerColor || plant.flowerColor.length === 0 || plant.flowerColor === 'varies')) {
+        // Reject "varies" and ensure we get specific colors
+        if (validatedData.flower_color !== 'varies' && validatedData.flower_color !== 'mixed') {
+          updates.flowerColor = validatedData.flower_color;
+          updatedFields++;
+        }
       }
       if (validatedData.maintenance && !plant.maintenance) {
         updates.maintenance = validatedData.maintenance;
