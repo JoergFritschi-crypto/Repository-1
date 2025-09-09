@@ -160,7 +160,7 @@ export class PlantImportService {
       
       // Transform to our format and fix common nomenclature issues
       return filteredPlants.map((plant: any) => {
-        // Start with basic transformation
+        // Start with basic transformation - v2 API provides TONS of data!
         let result = {
           scientific_name: plant.scientific_name?.[0] || plant.scientific_name || '',
           common_name: plant.common_name || '',
@@ -170,9 +170,38 @@ export class PlantImportService {
           cycle: plant.cycle,
           watering: plant.watering,
           sunlight: plant.sunlight,
-          flower_color: plant.flower_color,  // v2 API includes this
-          flowering_season: plant.flowering_season,  // v2 API includes this
-          dimension: plant.dimension,  // v2 API might include this
+          // v2 API includes MUCH more data:
+          flower_color: plant.flower_color,
+          flowering_season: plant.flowering_season,
+          dimension: plant.dimension,
+          growth_rate: plant.growth_rate,
+          drought_tolerant: plant.drought_tolerant,
+          salt_tolerant: plant.salt_tolerant,
+          thorny: plant.thorny,
+          invasive: plant.invasive,
+          tropical: plant.tropical,
+          indoor: plant.indoor,
+          care_level: plant.care_level,
+          maintenance: plant.maintenance,
+          flowers: plant.flowers,
+          leaf: plant.leaf,
+          leaf_color: plant.leaf_color,
+          fruit_color: plant.fruit_color,
+          harvest_season: plant.harvest_season,
+          hardiness: plant.hardiness,
+          hardiness_location: plant.hardiness_location,
+          attracts: plant.attracts,
+          propagation: plant.propagation,
+          resistance: plant.resistance,
+          soil: plant.soil,
+          problem: plant.problem,
+          pest_susceptibility: plant.pest_susceptibility,
+          edible_fruit: plant.edible_fruit,
+          edible_leaf: plant.edible_leaf,
+          cuisine: plant.cuisine,
+          medicinal: plant.medicinal,
+          poisonous_to_humans: plant.poisonous_to_humans,
+          poisonous_to_pets: plant.poisonous_to_pets,
           external_id: `perenual-${plant.id}`,
           source: 'perenual'
         };
@@ -915,19 +944,23 @@ export class PlantImportService {
           depthWaterRequirement: plantData.depth_water_requirement || null,
           volumeWaterRequirement: plantData.volume_water_requirement || null,
           
-          // Plant characteristics
+          // Plant characteristics - v2 API provides all these!
           growthRate: plantData.growth_rate || 'moderate',
           droughtTolerant: plantData.drought_tolerant || false,
           saltTolerant: plantData.salt_tolerant || false,
           thorny: plantData.thorny || false,
+          invasive: plantData.invasive || false,
           tropical: plantData.tropical || false,
+          indoor: plantData.indoor || false,
           careLevel: plantData.care_level || 'moderate',
           maintenance: plantData.maintenance || plantData.care_level || 'low',
           
-          // Appearance
-          leafColor: plantData.leaf_color || ['green'],
-          flowerColor: plantData.flower_color || null,  // Don't default to 'varies'
+          // Appearance - v2 API provides actual colors!
+          leafColor: plantData.leaf_color || (plantData.leaf ? ['green'] : null),
+          flowerColor: plantData.flower_color || null,  // v2 provides real colors, not 'varies'
           floweringSeason: plantData.flowering_season || plantData.bloom_time || null,
+          fruitColor: plantData.fruit_color || null,
+          harvestSeason: plantData.harvest_season || null,
           
           // Features
           poisonousToPets: plantData.poisonous_to_pets === true ? 1 : 0,
