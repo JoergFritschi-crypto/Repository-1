@@ -9,14 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import PlantSearch from "@/components/plant/plant-search";
 import PlantAdvancedSearch from "@/components/plant/plant-advanced-search";
-import { Sprout, Search, Heart, Grid, List, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Sprout, Search, Heart, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import type { Plant, PlantSearchFilters } from "@/types/plant";
 
 export default function PlantLibrary() {
   const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<PlantSearchFilters>({});
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"name-asc" | "name-desc" | "newest" | "oldest">("name-asc");
   const plantsPerPage = 24; // 3x8 grid
@@ -151,23 +150,6 @@ export default function PlantLibrary() {
                           <SelectItem value="oldest">Oldest First</SelectItem>
                         </SelectContent>
                       </Select>
-                      {/* View Mode Buttons */}
-                      <Button
-                        variant={viewMode === "grid" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setViewMode("grid")}
-                        data-testid="button-grid-view"
-                      >
-                        <Grid className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant={viewMode === "list" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setViewMode("list")}
-                        data-testid="button-list-view"
-                      >
-                        <List className="w-4 h-4" />
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
