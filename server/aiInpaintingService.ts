@@ -108,11 +108,11 @@ export class AIInpaintingService {
     y: number, 
     size: 'small' | 'medium' | 'large'
   ): Promise<Buffer> {
-    // Size mapping for mask radius
+    // Size mapping for mask radius - adjusted for realistic proportions
     const sizeMap = {
-      small: 0.05,   // 5% of image width
-      medium: 0.08,  // 8% of image width
-      large: 0.12    // 12% of image width
+      small: 0.02,   // 2% of image width (herbs, small flowers)
+      medium: 0.05,  // 5% of image width (shrubs, perennials)
+      large: 0.15    // 15% of image width (trees)
     };
     
     const radius = imageWidth * sizeMap[size];
@@ -197,8 +197,16 @@ export class AIInpaintingService {
     const depthDesc = plant.y < 30 ? "in the background" : 
                       plant.y > 70 ? "in the foreground" : "in the middle ground";
     
-    const prompt = `A ${plant.plantName} ${depthDesc} of a garden, ${seasonDesc}, 
-                    natural lighting, photorealistic, maintaining perspective and scale`;
+    // Add size descriptors to the prompt
+    const sizeDesc = plant.size === 'small' ? 'small, low-growing' :
+                      plant.size === 'large' ? 'large, mature tree' :
+                      'medium-sized';
+    
+    const prompt = `A ${sizeDesc} ${plant.plantName} ${depthDesc} of a garden, ${seasonDesc}, 
+                    natural lighting, photorealistic, maintaining proper scale and perspective,
+                    ${plant.size === 'small' ? 'herb-sized plant about 1-2 feet tall' :
+                      plant.size === 'large' ? 'full-grown tree 10-15 feet tall' :
+                      'shrub or perennial 2-4 feet tall'}`;
     
     try {
       // Use Runware for inpainting-like generation
@@ -238,11 +246,22 @@ export class AIInpaintingService {
   ): Promise<Buffer> {
     const imageBase64 = imageBuffer.toString('base64');
     
-    // Build comprehensive prompt for all plants
+    // Build comprehensive prompt for all plants with proper sizing
     const plantDescriptions = options.plants.map(plant => {
       const position = plant.x < 33 ? "left" : plant.x > 66 ? "right" : "center";
       const depth = plant.y < 33 ? "background" : plant.y > 66 ? "foreground" : "midground";
-      return `${plant.plantName} in the ${position} ${depth}`;
+      
+      // Add size descriptors
+      const sizeDesc = plant.size === 'small' ? 'small herb-sized' :
+                       plant.size === 'large' ? 'large tree' :
+                       'medium-sized';
+      
+      // Add specific height guidance
+      const heightDesc = plant.size === 'small' ? '(1-2 feet tall)' :
+                        plant.size === 'large' ? '(10-15 feet tall)' :
+                        '(3-5 feet tall)';
+      
+      return `${sizeDesc} ${plant.plantName} ${heightDesc} in the ${position} ${depth}`;
     }).join(", ");
     
     const seasonDesc = this.getSeasonDescription(options.season);
@@ -302,36 +321,56 @@ export class AIInpaintingService {
     return seasonMap[season.toLowerCase()] || 'lush garden';
   }
   
+  // Get realistic plant size based on plant type
+  private getPlantSize(plantName: string): 'small' | 'medium' | 'large' {
+    const name = plantName.toLowerCase();
+    
+    // Trees are large
+    if (name.includes('maple') || name.includes('oak') || name.includes('tree')) {
+      return 'large';
+    }
+    
+    // Small plants
+    if (name.includes('lavender') || name.includes('thyme') || name.includes('sage') || 
+        name.includes('rosemary') || name.includes('herb')) {
+      return 'small';
+    }
+    
+    // Everything else is medium (shrubs, perennials like hosta)
+    return 'medium';
+  }
+  
   // Comparison test between composite and inpainting
   async compareApproaches(): Promise<{
     composite: string;
+    enhancedComposite: string;
     inpaintSequential: string;
     inpaintBatch: string;
     emptyBase: string;
   }> {
     console.log("🔬 Running comparison test between approaches...");
     
-    // Test plants configuration
+    // Test plants configuration with proper sizing
     const testPlants: PlantInpaintRequest[] = [
       {
         plantName: "Japanese Maple",
         x: 70,  // Right side
         y: 25,  // Background
-        size: 'large',
+        size: this.getPlantSize("Japanese Maple"), // Will be 'large'
         season: 'summer'
       },
       {
         plantName: "Hosta",
         x: 30,  // Left side
         y: 65,  // Foreground
-        size: 'medium',
+        size: this.getPlantSize("Hosta"), // Will be 'medium'
         season: 'summer'
       },
       {
         plantName: "Lavender",
         x: 50,  // Center
         y: 45,  // Middle
-        size: 'small',
+        size: this.getPlantSize("Lavender"), // Will be 'small'
         season: 'summer'
       }
     ];
@@ -345,6 +384,50 @@ export class AIInpaintingService {
     // 1. Use existing sprite compositor for mechanical approach
     const { spriteCompositor } = await import('./spriteCompositor.js');
     const compositeUrl = await spriteCompositor.testTwoPlantComposite();
+    
+    // 1b. ENHANCE the composite with AI to make it photorealistic (the missing step!)
+    let enhancedCompositeUrl = compositeUrl;
+    try {
+      // Read the composite image
+      const compositePath = path.join(process.cwd(), "client", "public", compositeUrl);
+      const compositeBuffer = await fs.readFile(compositePath);
+      const compositeBase64 = compositeBuffer.toString('base64');
+      
+      // Use Runware to enhance it to photorealistic
+      const enhancedResult = await runwareService.generateSeasonalImage({
+        season: 'summer',
+        specificTime: 'summer in full bloom',
+        canvasDesign: {
+          plants: testPlants.map((p, idx) => ({
+            plant: { id: idx.toString(), name: p.plantName },
+            position: { x: p.x, y: p.y }
+          }))
+        },
+        gardenDimensions: { width: 10, length: 10 },
+        useReferenceMode: true,
+        referenceImage: `data:image/png;base64,${compositeBase64}`
+      });
+      
+      // Save enhanced composite
+      if (enhancedResult) {
+        const enhancedFilename = `enhanced-composite-${timestamp}.png`;
+        const enhancedPath = path.join(this.outputDir, enhancedFilename);
+        
+        if (enhancedResult.startsWith('data:')) {
+          const base64Data = enhancedResult.split(',')[1];
+          await fs.writeFile(enhancedPath, Buffer.from(base64Data, 'base64'));
+        } else if (enhancedResult.startsWith('http')) {
+          // Download and save if it's a URL
+          const response = await fetch(enhancedResult);
+          const buffer = Buffer.from(await response.arrayBuffer());
+          await fs.writeFile(enhancedPath, buffer);
+        }
+        
+        enhancedCompositeUrl = `/inpainted-gardens/${enhancedFilename}`;
+      }
+    } catch (error) {
+      console.error("Failed to enhance composite:", error);
+    }
     
     // 2. Sequential inpainting (one plant at a time)
     const sequentialUrl = await this.inpaintGarden({
@@ -366,6 +449,7 @@ export class AIInpaintingService {
     
     return {
       composite: compositeUrl,
+      enhancedComposite: enhancedCompositeUrl,
       inpaintSequential: sequentialUrl,
       inpaintBatch: batchUrl,
       emptyBase: `/inpainted-gardens/empty-base-${timestamp}.png`

@@ -11,6 +11,7 @@ export default function InpaintingComparison() {
   const [isLoading, setIsLoading] = useState(false);
   const [comparisonResults, setComparisonResults] = useState<{
     composite?: string;
+    enhancedComposite?: string;
     inpaintSequential?: string;
     inpaintBatch?: string;
     emptyBase?: string;
@@ -99,25 +100,25 @@ export default function InpaintingComparison() {
             
             <TabsContent value="side-by-side" className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Composite Approach */}
+                {/* Enhanced Composite Approach */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
                         <Layers className="h-5 w-5" />
-                        Composite Sprites
+                        Enhanced Composite
                       </span>
-                      <Badge variant="outline">Yesterday's Approach</Badge>
+                      <Badge variant="outline">Current Approach</Badge>
                     </CardTitle>
                     <CardDescription>
-                      Mechanical placement of individual plant sprites
+                      Sprite placement + AI enhancement for photorealism
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {comparisonResults.composite ? (
+                    {comparisonResults.enhancedComposite ? (
                       <img 
-                        src={comparisonResults.composite} 
-                        alt="Composite approach" 
+                        src={comparisonResults.enhancedComposite} 
+                        alt="Enhanced composite approach" 
                         className="w-full rounded-lg border"
                       />
                     ) : (
@@ -126,9 +127,9 @@ export default function InpaintingComparison() {
                       </div>
                     )}
                     <div className="mt-3 p-3 bg-muted/50 rounded text-sm">
-                      <strong>Pros:</strong> Precise positioning, predictable results
+                      <strong>Pros:</strong> Precise positioning, photorealistic finish
                       <br />
-                      <strong>Cons:</strong> Less natural, no environmental coherence
+                      <strong>Cons:</strong> Two-step process, may lose some plant details
                     </div>
                   </CardContent>
                 </Card>
@@ -169,7 +170,33 @@ export default function InpaintingComparison() {
               </div>
 
               {/* Additional comparisons */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* Basic Composite (Mechanical) */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Layers className="h-5 w-5" />
+                      Mechanical Composite
+                    </CardTitle>
+                    <CardDescription>
+                      Raw sprite placement (before enhancement)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {comparisonResults.composite ? (
+                      <img 
+                        src={comparisonResults.composite} 
+                        alt="Mechanical composite" 
+                        className="w-full rounded-lg border"
+                      />
+                    ) : (
+                      <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
+                        <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                
                 {/* Sequential Inpainting */}
                 <Card>
                   <CardHeader>
@@ -186,32 +213,6 @@ export default function InpaintingComparison() {
                       <img 
                         src={comparisonResults.inpaintSequential} 
                         alt="Sequential inpainting approach" 
-                        className="w-full rounded-lg border"
-                      />
-                    ) : (
-                      <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                        <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Empty Base */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5" />
-                      Empty Garden Base
-                    </CardTitle>
-                    <CardDescription>
-                      Starting point for inpainting
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {comparisonResults.emptyBase ? (
-                      <img 
-                        src={comparisonResults.emptyBase} 
-                        alt="Empty garden base" 
                         className="w-full rounded-lg border"
                       />
                     ) : (
