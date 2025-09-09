@@ -2,13 +2,31 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Check } from "lucide-react";
+import { Star, Check, MoreVertical, Shield } from "lucide-react";
 import { GardenScapeIcon, GardenDesignIcon, SeasonIcon, PlantDoctorIcon } from "@/components/ui/brand-icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import gardenImage from '@assets/generated_images/Mixed_perennial_garden_scene_5872224a.png';
 
 export default function Landing() {
   const { isAuthenticated } = useAuth();
+  
+  // Get the actual user (not affected by tier testing)
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+  
+  // Check if testing mode is active
+  const isTestingMode = !!sessionStorage.getItem('tierTestingMode');
+  const isActualAdmin = user?.isAdmin === true;
   
   return (
     <div className="min-h-screen bg-background">
@@ -16,9 +34,35 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <GardenScapeIcon className="w-8 h-8" />
-              <span className="text-xl font-serif font-bold text-primary">GardenScape Pro</span>
+            <div className="flex items-center">
+              {/* Admin menu - only visible to admins */}
+              {isActualAdmin && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="mr-2 h-8 w-8"
+                      data-testid="button-admin-menu"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="flex items-center cursor-pointer">
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>{isTestingMode ? "Admin (Testing)" : "Admin Panel"}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              
+              <div className="flex items-center space-x-2">
+                <GardenScapeIcon className="w-8 h-8" />
+                <span className="text-xl font-serif font-bold text-primary">GardenScape Pro</span>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               {!isAuthenticated ? (
