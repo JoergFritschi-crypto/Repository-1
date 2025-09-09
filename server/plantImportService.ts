@@ -73,6 +73,27 @@ export class PlantImportService {
     this.perenualApiKey = process.env.PERENUAL_API_KEY;
   }
   
+  // Correct botanical nomenclature formatting
+  private correctBotanicalNomenclature(name: string): string {
+    if (!name) return '';
+    
+    // Handle ALL CAPS names
+    if (name === name.toUpperCase() && name.length > 3) {
+      name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    }
+    
+    // Remove extra spaces and fix formatting
+    name = name.trim().replace(/\s+/g, ' ');
+    
+    // Fix common issues
+    name = name.replace(/\s+x\s+/g, ' × '); // Hybrid notation
+    name = name.replace(/\s+var\.\s+/g, ' var. ');
+    name = name.replace(/\s+subsp\.\s+/g, ' subsp. ');
+    name = name.replace(/\s+f\.\s+/g, ' f. ');
+    
+    return name;
+  }
+  
   // Search Perenual API with pagination support
   async searchPerenual(query: string): Promise<any[]> {
     if (!this.perenualApiKey) {
