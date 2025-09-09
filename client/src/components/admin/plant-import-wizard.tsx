@@ -114,15 +114,17 @@ export function PlantImportWizard() {
       const data = await response.json();
       setSearchResults(data.plants || []);
       
-      // Pre-select all GBIF results by default
-      const plantsToAdd = data.plants.filter((plant: PlantImportData) => 
-        !selectedPlants.some(p => p.scientific_name === plant.scientific_name)
-      );
-      setSelectedPlants([...selectedPlants, ...plantsToAdd]);
+      // Don't auto-select for GBIF - let user see the full list first
+      // Count duplicates
+      const duplicateCount = data.plants.filter((plant: PlantImportData) => 
+        selectedPlants.some(p => p.scientific_name === plant.scientific_name)
+      ).length;
+      
+      const newCount = data.total - duplicateCount;
       
       toast({
         title: "GBIF search complete",
-        description: `Found ${data.total || 0} plants with rigorous filtering applied`
+        description: `Found ${data.total || 0} plants (${newCount} new, ${duplicateCount} duplicates)`
       });
     } catch (error) {
       console.error('GBIF search error:', error);
@@ -417,10 +419,16 @@ export function PlantImportWizard() {
                     </p>
                     <ScrollArea className="h-[400px] border rounded-lg p-4">
                       <div className="space-y-2">
-                      {searchResults.map((plant, idx) => (
+                      {searchResults.map((plant, idx) => {
+                        const isDuplicate = selectedPlants.some(p => 
+                          p.scientific_name === plant.scientific_name
+                        );
+                        return (
                         <div 
                           key={idx} 
-                          className="flex items-center justify-between p-3 border rounded hover:bg-accent"
+                          className={`flex items-center justify-between p-3 border rounded hover:bg-accent ${
+                            isDuplicate ? 'opacity-60 bg-muted/30' : ''
+                          }`}
                         >
                           <div>
                             <p className="font-medium italic">{plant.scientific_name}</p>
@@ -428,6 +436,11 @@ export function PlantImportWizard() {
                               {plant.common_name || 'No common name'}
                             </p>
                             <div className="flex gap-1 mt-1">
+                              {isDuplicate && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Already selected
+                                </Badge>
+                              )}
                               {plant.family && (
                                 <Badge variant="outline">
                                   {plant.family}
@@ -471,7 +484,8 @@ export function PlantImportWizard() {
                             </Button>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                       </div>
                     </ScrollArea>
                   </div>
