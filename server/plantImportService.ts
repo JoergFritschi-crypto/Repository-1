@@ -131,7 +131,7 @@ export class PlantImportService {
           pagePromises.push(
             fetch(pageUrl, { method: 'GET' })
               .then(res => res.json())
-              .then(data => data.data || [])
+              .then((data: any) => data.data || [])
               .catch(err => {
                 console.error(`Error fetching page ${page}:`, err);
                 return [];
@@ -140,7 +140,7 @@ export class PlantImportService {
         }
         
         const additionalPages = await Promise.all(pagePromises);
-        additionalPages.forEach(plants => {
+        additionalPages.forEach((plants: any[]) => {
           allPlants = allPlants.concat(plants);
         });
         
@@ -197,7 +197,7 @@ export class PlantImportService {
     
     // Fix ALL CAPS or improper capitalization (e.g., "SUNFINITY" or every word capitalized)
     let words = scientificName.split(/\s+/);
-    const hasImproperCaps = words.length > 0 && words.some(word => 
+    const hasImproperCaps = words.length > 0 && words.some((word: string) => 
       word.length > 3 && word === word.toUpperCase() && /[A-Z]/.test(word)
     );
     
@@ -211,12 +211,12 @@ export class PlantImportService {
         // For remaining words, check if they look like cultivar names (multiple capitalized words)
         if (words.length > 1) {
           // Check for × or X indicating hybrid
-          const hasHybridMarker = words.some(w => w === 'X' || w === '×');
+          const hasHybridMarker = words.some((w: string) => w === 'X' || w === '×');
           const remainingWords = words.slice(1);
           
           if (hasHybridMarker) {
             // Handle hybrid notation
-            scientificName = words.map((w, i) => {
+            scientificName = words.map((w: string, i: number) => {
               if (w === 'X') return '×';  // Replace X with proper ×
               if (i === 0) return w;  // Genus already formatted
               return w.toLowerCase();  // Species names lowercase
@@ -233,20 +233,20 @@ export class PlantImportService {
               // Format as Series cultivar
               const seriesName = firstRemainingWord.charAt(0).toUpperCase() + 
                                 firstRemainingWord.slice(1).toLowerCase();
-              const cultivarPart = remainingWords.slice(1).map(w => 
+              const cultivarPart = remainingWords.slice(1).map((w: string) => 
                 w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
               ).join(' ');
               scientificName = `${words[0]} ${seriesName} Series '${cultivarPart}'`;
             } else {
               // Regular cultivar
-              const cultivarName = remainingWords.map(w => 
+              const cultivarName = remainingWords.map((w: string) => 
                 w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
               ).join(' ');
               scientificName = `${words[0]} '${cultivarName}'`;
             }
           } else {
             // Just fix the case
-            scientificName = words.map((w, i) => 
+            scientificName = words.map((w: string, i: number) => 
               i === 0 ? w : w.toLowerCase()
             ).join(' ');
           }

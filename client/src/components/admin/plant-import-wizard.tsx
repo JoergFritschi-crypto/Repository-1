@@ -93,6 +93,7 @@ interface PlantImportData {
   inaturalist_id?: string;
   external_id?: string;
   confidence_score?: number;
+  observations_count?: number;
 }
 
 interface DatabaseCounts {
