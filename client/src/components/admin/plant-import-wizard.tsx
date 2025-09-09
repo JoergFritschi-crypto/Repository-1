@@ -22,7 +22,8 @@ import {
   Leaf,
   X,
   Shield,
-  Brain
+  Brain,
+  Ban
 } from 'lucide-react';
 
 interface PlantImportData {
@@ -948,6 +949,18 @@ export function PlantImportWizard() {
               </AlertDescription>
             </Alert>
             
+            {/* Show validation progress */}
+            {isSearching && searchProgress.includes('Validating') && (
+              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                <AlertDescription className="text-blue-800 dark:text-blue-200">
+                  <strong>{searchProgress}</strong>
+                  <br />
+                  Processing in parallel batches for faster validation...
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <PlantList plants={selectedPlants} />
             
             <div className="flex justify-between">
@@ -966,16 +979,34 @@ export function PlantImportWizard() {
                   disabled={isSearching}
                   data-testid="button-validate"
                 >
-                  <Brain className="w-4 h-4 mr-2" />
-                  Validate Empty Fields
+                  {isSearching && searchProgress.includes('Validating') ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Validating...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-4 h-4 mr-2" />
+                      Validate Empty Fields
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={() => setStep(5)}
-                  disabled={selectedPlants.length === 0}
+                  disabled={selectedPlants.length === 0 || (isSearching && searchProgress.includes('Validating'))}
                   data-testid="button-continue"
                 >
-                  Continue to Import
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  {isSearching && searchProgress.includes('Validating') ? (
+                    <>
+                      <Ban className="w-4 h-4 mr-2" />
+                      Wait for Validation
+                    </>
+                  ) : (
+                    <>
+                      Continue to Import
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
