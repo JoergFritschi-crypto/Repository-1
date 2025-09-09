@@ -206,3 +206,7 @@ class RunwareService {
 }
 
 export const runwareService = new RunwareService();
+export const runwareAI = runwareService.runware;
+export const runwareModels = {
+  civitai_74407: "civitai:74407@95489"  // Photorealistic Vision model
+};

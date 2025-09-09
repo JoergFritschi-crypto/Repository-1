@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
 import GeminiAI from './geminiAI.js';
-import { runwareService } from './runwareAI.js';
+import { runwareService, runwareAI, runwareModels } from './runwareAI.js';
 
 interface PlantInpaintRequest {
   plantName: string;
@@ -429,9 +429,11 @@ export class AIInpaintingService {
       // This maintains positions while making plants look real
       console.log("🎨 Enhancing composite to photorealistic...");
       const enhancedBuffer = await this.inpaintAllPlants(compositeBuffer, {
+        baseImage: compositeBuffer,
         plants: testPlants, // Plants are already in the image, this guides the enhancement
         season: 'summer',
-        style: 'photorealistic'
+        style: 'photorealistic',
+        approach: 'batch'
       });
       
       // Save enhanced composite
@@ -446,7 +448,7 @@ export class AIInpaintingService {
     }
     
     // 2. Sequential inpainting (one plant at a time)
-    const sequentialUrl = await this.inpaintGarden({
+    let sequentialUrl = await this.inpaintGarden({
       baseImage: emptyBase,
       plants: testPlants,
       season: 'summer',
@@ -454,14 +456,80 @@ export class AIInpaintingService {
       approach: 'sequential'
     });
     
+    // 2b. ENHANCE the sequential result with the magical step!
+    try {
+      console.log("🎨 Enhancing sequential inpainting result...");
+      const sequentialPath = path.join(process.cwd(), "client", "public", sequentialUrl);
+      const sequentialBuffer = await fs.readFile(sequentialPath);
+      
+      // Apply the magical enhancement transformation
+      const enhancedSequential = await runwareAI.imageInference({
+        positivePrompt: "Photorealistic garden with plants, natural lighting, highly detailed, professional photography, vibrant colors, clear stone border frame, 10x10 meter garden bed",
+        negativePrompt: "cartoon, anime, illustration, blurry, artifacts, low quality",
+        model: runwareModels.civitai_74407,
+        numberResults: 1,
+        height: 1440,
+        width: 1920,
+        inputImage: `data:image/png;base64,${sequentialBuffer.toString('base64')}`,
+        strength: 0.3,  // Lower strength to preserve plant positions
+        guidanceScale: 7,
+        steps: 25
+      });
+      
+      if (enhancedSequential && enhancedSequential.length > 0) {
+        const response = await fetch(enhancedSequential[0].imageURL);
+        const arrayBuffer = await response.arrayBuffer();
+        const enhancedFilename = `enhanced-sequential-${timestamp}.png`;
+        const enhancedPath = path.join(this.outputDir, enhancedFilename);
+        await fs.writeFile(enhancedPath, Buffer.from(arrayBuffer));
+        sequentialUrl = `/inpainted-gardens/${enhancedFilename}`;
+        console.log("✅ Enhanced sequential result saved");
+      }
+    } catch (error) {
+      console.error("Failed to enhance sequential result:", error);
+    }
+    
     // 3. Batch inpainting (all plants at once)
-    const batchUrl = await this.inpaintGarden({
+    let batchUrl = await this.inpaintGarden({
       baseImage: emptyBase,
       plants: testPlants,
       season: 'summer',
       style: 'photorealistic',
       approach: 'batch'
     });
+    
+    // 3b. ENHANCE the batch result with the magical step!
+    try {
+      console.log("🎨 Enhancing batch inpainting result...");
+      const batchPath = path.join(process.cwd(), "client", "public", batchUrl);
+      const batchBuffer = await fs.readFile(batchPath);
+      
+      // Apply the magical enhancement transformation
+      const enhancedBatch = await runwareAI.imageInference({
+        positivePrompt: "Photorealistic garden with plants, natural lighting, highly detailed, professional photography, vibrant colors, clear stone border frame, 10x10 meter garden bed",
+        negativePrompt: "cartoon, anime, illustration, blurry, artifacts, low quality",
+        model: runwareModels.civitai_74407,
+        numberResults: 1,
+        height: 1440,
+        width: 1920,
+        inputImage: `data:image/png;base64,${batchBuffer.toString('base64')}`,
+        strength: 0.3,  // Lower strength to preserve plant positions
+        guidanceScale: 7,
+        steps: 25
+      });
+      
+      if (enhancedBatch && enhancedBatch.length > 0) {
+        const response = await fetch(enhancedBatch[0].imageURL);
+        const arrayBuffer = await response.arrayBuffer();
+        const enhancedFilename = `enhanced-batch-${timestamp}.png`;
+        const enhancedPath = path.join(this.outputDir, enhancedFilename);
+        await fs.writeFile(enhancedPath, Buffer.from(arrayBuffer));
+        batchUrl = `/inpainted-gardens/${enhancedFilename}`;
+        console.log("✅ Enhanced batch result saved");
+      }
+    } catch (error) {
+      console.error("Failed to enhance batch result:", error);
+    }
     
     return {
       composite: compositeUrl,
