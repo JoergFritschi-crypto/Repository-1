@@ -606,6 +606,21 @@ export default function Admin() {
                             <span className="font-medium text-sm">Sprite Test</span>
                             <span className="text-xs text-muted-foreground mt-1">Plant sprites</span>
                           </Button>
+                          
+                          <Button
+                            variant="outline"
+                            className="h-auto flex flex-col items-center py-4 hover:bg-purple-50 hover:border-purple-300"
+                            onClick={() => {
+                              window.location.href = "/admin/inpainting-comparison";
+                            }}
+                            data-testid="button-inpainting-comparison"
+                          >
+                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                              <Zap className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <span className="font-medium text-sm">AI Inpainting</span>
+                            <span className="text-xs text-muted-foreground mt-1">Compare approaches</span>
+                          </Button>
                         </div>
                       </div>
                     </div>
