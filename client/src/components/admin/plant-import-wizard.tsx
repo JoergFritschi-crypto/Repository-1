@@ -243,9 +243,9 @@ export function PlantImportWizard() {
                           className="flex items-center justify-between p-3 border rounded hover:bg-accent"
                         >
                           <div>
-                            <p className="font-medium">{plant.common_name}</p>
-                            <p className="text-sm text-muted-foreground italic">
-                              {plant.scientific_name}
+                            <p className="font-medium italic">{plant.scientific_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {plant.common_name || 'No common name'}
                             </p>
                             {plant.family && (
                               <Badge variant="outline" className="mt-1">
@@ -324,9 +324,9 @@ export function PlantImportWizard() {
                   <div key={idx} className="p-3 border rounded">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">{plant.common_name}</p>
-                        <p className="text-sm text-muted-foreground italic">
-                          {plant.scientific_name}
+                        <p className="font-medium italic">{plant.scientific_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {plant.common_name || 'No common name'}
                         </p>
                       </div>
                       {plant.gbif_id ? (
@@ -394,9 +394,9 @@ export function PlantImportWizard() {
                   <div key={idx} className="p-3 border rounded">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">{plant.common_name}</p>
-                        <p className="text-sm text-muted-foreground italic">
-                          {plant.scientific_name}
+                        <p className="font-medium italic">{plant.scientific_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {plant.common_name || 'No common name'}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -470,9 +470,9 @@ export function PlantImportWizard() {
                   <div key={idx} className="p-4 border rounded hover:bg-accent cursor-pointer">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="font-medium">{plant.common_name || 'Unknown'}</p>
-                        <p className="text-sm text-muted-foreground italic">
-                          {plant.scientific_name}
+                        <p className="font-medium italic">{plant.scientific_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {plant.common_name || 'No common name'}
                         </p>
                         
                         <div className="mt-2 grid grid-cols-2 gap-2 text-sm">

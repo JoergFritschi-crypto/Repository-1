@@ -315,8 +315,8 @@ export default function GardenDesign() {
                         {searchResults.map((plant: any) => (
                           <div key={plant.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
                             <div className="mb-3">
-                              <h4 className="font-medium text-lg">{plant.commonName}</h4>
-                              <p className="text-sm text-muted-foreground italic">{plant.scientificName}</p>
+                              <h4 className="font-medium text-lg italic">{plant.scientificName}</h4>
+                              <p className="text-sm text-muted-foreground">{plant.commonName || 'No common name'}</p>
                             </div>
                             
                             <div className="space-y-1 text-sm mb-4">

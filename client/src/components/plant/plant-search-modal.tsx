@@ -87,7 +87,7 @@ export default function PlantSearchModal({
                           className="h-auto py-1 px-2"
                         >
                           {selectedPlants.has(plant.id) && <Check className="w-3 h-3 mr-1" />}
-                          <span className="text-xs">{plant.commonName}</span>
+                          <span className="text-xs italic">{plant.scientificName}</span>
                         </Button>
                       ))}
                     </div>
@@ -124,9 +124,9 @@ export default function PlantSearchModal({
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{plant.commonName}</p>
-                          {plant.scientificName && (
-                            <p className="text-xs text-gray-600 italic truncate">{plant.scientificName}</p>
+                          <p className="font-medium text-sm italic truncate">{plant.scientificName}</p>
+                          {plant.commonName && (
+                            <p className="text-xs text-gray-600 truncate">{plant.commonName}</p>
                           )}
                         </div>
                         {selectedPlants.has(plant.id) && (
