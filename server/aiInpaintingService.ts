@@ -450,9 +450,47 @@ export class AIInpaintingService {
     const { spriteCompositor } = await import('./spriteCompositor.js');
     const compositeUrl = await spriteCompositor.testTwoPlantComposite();
     
-    // 1b. Skip enhancement for now - it's too aggressive
+    // 1b. ENHANCE the composite with AI to make it photorealistic - the magical step!
     let enhancedCompositeUrl = compositeUrl;
-    console.log("🎨 Skipping enhancement step - using raw composite for comparison");
+    try {
+      // Read the composite image
+      const compositePath = path.join(process.cwd(), "client", "public", compositeUrl);
+      const compositeBuffer = await fs.readFile(compositePath);
+      
+      // Use image-to-image transformation to enhance realism while preserving composition
+      console.log("🎨 Enhancing composite to photorealistic...");
+      const enhancedResult = await runwareAI.imageInference({
+        positivePrompt: "Photorealistic garden bed with plants, natural lighting, detailed foliage, realistic shadows, maintain exact plant positions and types",
+        negativePrompt: "cartoon, anime, illustration, changing composition, moving plants, adding extra plants",
+        model: runwareModels.civitai_74407,
+        numberResults: 1,
+        height: 1472,
+        width: 1920,
+        seedImage: `data:image/png;base64,${compositeBuffer.toString('base64')}`,
+        strength: 0.35,  // Low strength to preserve sprite positions while enhancing realism
+        CFGScale: 8,
+        steps: 30
+      });
+      
+      if (enhancedResult && enhancedResult.length > 0) {
+        const imageUrl = enhancedResult[0].imageURL || enhancedResult[0].imageUrl || enhancedResult[0].url;
+        if (imageUrl) {
+          const response = await fetch(imageUrl);
+          const arrayBuffer = await response.arrayBuffer();
+          const enhancedBuffer = Buffer.from(arrayBuffer);
+          
+          // Save enhanced composite
+          const enhancedFilename = `enhanced-composite-${timestamp}.png`;
+          const enhancedPath = path.join(this.outputDir, enhancedFilename);
+          await fs.writeFile(enhancedPath, enhancedBuffer);
+          enhancedCompositeUrl = `/inpainted-gardens/${enhancedFilename}`;
+          
+          console.log("✅ Enhanced composite saved");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to enhance composite:", error);
+    }
     
     // 2. Sequential inpainting (one plant at a time)
     let sequentialUrl = await this.inpaintGarden({
