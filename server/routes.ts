@@ -720,15 +720,53 @@ Rules:
   app.get('/api/plants/search', async (req, res) => {
     try {
       const query = req.query.q as string || "";
-      const filters = {
-        type: req.query.type as string,
-        hardiness_zone: req.query.hardiness_zone as string,
-        sun_requirements: req.query.sun_requirements as string,
-        pet_safe: req.query.pet_safe === 'true' ? true : undefined
-      };
       
-      const plants = await storage.searchPlants(query, filters);
-      res.json(plants);
+      // Check if we have advanced filters
+      const hasAdvancedFilters = req.query.heightMin || req.query.heightMax || 
+                                 req.query.spreadMin || req.query.spreadMax || 
+                                 req.query.selectedColors;
+      
+      if (hasAdvancedFilters) {
+        // Build advanced filters object
+        const advancedFilters: any = {};
+        
+        // Range filters
+        if (req.query.heightMin) advancedFilters.minHeight = parseInt(req.query.heightMin as string);
+        if (req.query.heightMax) advancedFilters.maxHeight = parseInt(req.query.heightMax as string);
+        if (req.query.spreadMin) advancedFilters.minSpread = parseInt(req.query.spreadMin as string);
+        if (req.query.spreadMax) advancedFilters.maxSpread = parseInt(req.query.spreadMax as string);
+        
+        // Color filters
+        if (req.query.selectedColors) {
+          const colors = req.query.selectedColors as string;
+          advancedFilters.colors = colors.split(',');
+        }
+        
+        // Include basic filters too
+        if (req.query.type) advancedFilters.plantType = req.query.type as string;
+        if (req.query.hardiness_zone) advancedFilters.hardiness = req.query.hardiness_zone as string;
+        if (req.query.sun_requirements) advancedFilters.sunlight = req.query.sun_requirements as string;
+        if (req.query.pet_safe === 'true') advancedFilters.isSafe = true;
+        
+        // Add query text if present
+        if (query) {
+          advancedFilters.genus = query; // Will search in genus, species, etc.
+        }
+        
+        const plants = await storage.advancedSearchPlants(advancedFilters);
+        res.json(plants);
+      } else {
+        // Use basic search for simple queries
+        const filters = {
+          type: req.query.type as string,
+          hardiness_zone: req.query.hardiness_zone as string,
+          sun_requirements: req.query.sun_requirements as string,
+          pet_safe: req.query.pet_safe === 'true' ? true : undefined
+        };
+        
+        const plants = await storage.searchPlants(query, filters);
+        res.json(plants);
+      }
     } catch (error) {
       console.error("Error searching plants:", error);
       res.status(500).json({ message: "Failed to search plants" });

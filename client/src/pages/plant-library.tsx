@@ -27,7 +27,16 @@ export default function PlantLibrary() {
       const params = new URLSearchParams();
       if (searchQuery) params.append("q", searchQuery);
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined) params.append(key, value.toString());
+        if (value !== undefined) {
+          // Handle array values (like selectedColors) as comma-separated strings
+          if (Array.isArray(value)) {
+            if (value.length > 0) {
+              params.append(key, value.join(','));
+            }
+          } else {
+            params.append(key, value.toString());
+          }
+        }
       });
       
       const response = await fetch(`/api/plants/search?${params}`);
