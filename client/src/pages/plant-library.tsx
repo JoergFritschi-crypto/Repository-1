@@ -113,69 +113,87 @@ export default function PlantLibrary() {
           </TabsList>
 
           {/* Browse Plants Tab */}
-          <TabsContent value="browse" className="mt-6">
-            {/* Advanced Search at the top */}
-            <div className="mb-6">
+          <TabsContent value="browse" className="mt-8">
+            <div className="space-y-6">
+              {/* Database Overview Bar - similar to admin */}
+              <Card>
+                <CardContent className="py-4">
+                  <div className="flex flex-wrap gap-8 items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Plants</p>
+                      <p className="text-2xl font-bold" data-testid="text-total-plants">{sortedPlants?.length || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Showing</p>
+                      <p className="text-xl font-semibold text-accent" data-testid="text-showing-plants">
+                        {paginatedPlants?.length || 0} of {sortedPlants?.length || 0}
+                      </p>
+                    </div>
+                    {currentPage > 1 || totalPages > 1 ? (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Page</p>
+                        <p className="text-xl font-semibold" data-testid="text-current-page">
+                          {currentPage} of {totalPages}
+                        </p>
+                      </div>
+                    ) : null}
+                    <div className="ml-auto flex gap-2">
+                      {/* Sorting Dropdown */}
+                      <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                        <SelectTrigger className="w-[180px]" data-testid="select-sort">
+                          <ArrowUpDown className="w-4 h-4 mr-2" />
+                          <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                          <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                          <SelectItem value="newest">Newly Added</SelectItem>
+                          <SelectItem value="oldest">Oldest First</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {/* View Mode Buttons */}
+                      <Button
+                        variant={viewMode === "grid" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setViewMode("grid")}
+                        data-testid="button-grid-view"
+                      >
+                        <Grid className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === "list" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setViewMode("list")}
+                        data-testid="button-list-view"
+                      >
+                        <List className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Advanced Search - EXACTLY like admin */}
               <PlantAdvancedSearch 
-                onSearch={(searchFilters) => {
-                  setFilters(searchFilters);
+                onSearch={(filters) => {
+                  console.log('Searching with filters:', filters);
+                  setFilters(filters);
                   setCurrentPage(1);
                 }}
                 totalResults={sortedPlants?.length || 0}
               />
-            </div>
 
-            {/* Sorting and View Options */}
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-4">
-                <p className="text-sm text-muted-foreground" data-testid="text-results-count">
-                  {plantsLoading ? "Loading..." : `${sortedPlants?.length || 0} plants found`}
-                </p>
-                {currentPage > 1 || totalPages > 1 ? (
-                  <Badge variant="outline" data-testid="badge-page-info">
-                    Page {currentPage} of {totalPages}
-                  </Badge>
-                ) : null}
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {/* Sorting Dropdown */}
-                <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                  <SelectTrigger className="w-[180px]" data-testid="select-sort">
-                    <ArrowUpDown className="w-4 h-4 mr-2" />
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                    <SelectItem value="newest">Newly Added</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {/* View Mode Buttons */}
-                <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  data-testid="button-grid-view"
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  data-testid="button-list-view"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Plants Grid */}
-            {plantsLoading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Plant Cards Grid */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Plant Database</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Plants Display */}
+                  {plantsLoading ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
                   <Card key={i} className="animate-pulse" data-testid={`skeleton-plant-${i}`}>
                     <div className="h-48 bg-muted"></div>
