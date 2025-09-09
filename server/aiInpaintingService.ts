@@ -205,9 +205,9 @@ export class AIInpaintingService {
                       plant.size === 'large' ? '3-4 meter tall tree' :
                       '80cm-1 meter tall shrub';
     
-    const prompt = `In a clearly defined 10x10 meter square garden bed with stone border framing, add ONE ${sizeDesc} ${plant.plantName} (${scaleRef}) ${depthDesc}, 
-                    ${seasonDesc}, natural lighting, photorealistic, proper scale to stone-framed 10x10m bed,
-                    single plant only, no duplicates, maintain correct proportions, show stone edge of bed`;
+    const prompt = `Add exactly ONE ${plant.plantName} plant to the marked area. ${scaleRef}, ${depthDesc}. 
+                    Keep existing garden bed unchanged, only add this specific plant in the white mask area.
+                    Photorealistic ${plant.plantName}, ${seasonDesc}, proper scale, no other changes`;
     
     try {
       console.log(`  Sequential: Adding ${plant.plantName} at (${plant.x}, ${plant.y})`);
@@ -222,7 +222,7 @@ export class AIInpaintingService {
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.9,  // High strength for significant changes
+        strength: 0.7,  // Moderate strength to add plant while preserving bed
         CFGScale: 12,
         steps: 40,
         seed: Math.floor(Math.random() * 1000000)
@@ -288,9 +288,9 @@ export class AIInpaintingService {
                       options.style === 'artistic' ? "artistic illustration" :
                       "photorealistic";
     
-    const prompt = `A clearly defined 10x10 meter square garden bed with stone border framing, containing EXACTLY ${options.plants.length} plants: ${plantDescriptions}. 
-                    ${seasonDesc}, ${styleDesc}, proper scale showing full 10x10m bed with stone edge, natural lighting and shadows, 
-                    no duplicate plants, only the specified plants, ground level view showing entire bed with stone frame, photorealistic garden bed`;
+    const prompt = `Add EXACTLY these ${options.plants.length} plants to marked areas: ${plantDescriptions}. 
+                    Keep the existing stone-framed garden bed, only add plants in white mask areas.
+                    ${seasonDesc}, ${styleDesc}, maintain original garden structure, no duplicates`;
     
     try {
       console.log(`  Batch: Adding ${options.plants.length} plants at once`);
@@ -305,7 +305,7 @@ export class AIInpaintingService {
         width: validDims.width,
         seedImage: `data:image/png;base64,${imageBase64}`,
         mask: `data:image/png;base64,${maskBase64}`,
-        strength: 0.85,  // Slightly lower strength for batch to preserve more context
+        strength: 0.6,  // Lower strength to preserve garden bed while adding plants
         CFGScale: 10,
         steps: 35,
         seed: Math.floor(Math.random() * 1000000)
@@ -439,34 +439,9 @@ export class AIInpaintingService {
     const { spriteCompositor } = await import('./spriteCompositor.js');
     const compositeUrl = await spriteCompositor.testTwoPlantComposite();
     
-    // 1b. ENHANCE the composite with AI to make it photorealistic - the magical step!
+    // 1b. Skip enhancement for now - it's too aggressive
     let enhancedCompositeUrl = compositeUrl;
-    try {
-      // Read the composite image
-      const compositePath = path.join(process.cwd(), "client", "public", compositeUrl);
-      const compositeBuffer = await fs.readFile(compositePath);
-      
-      // Use the batch inpainting approach to transform the composite to photorealistic
-      // This maintains positions while making plants look real
-      console.log("🎨 Enhancing composite to photorealistic...");
-      const enhancedBuffer = await this.inpaintAllPlants(compositeBuffer, {
-        baseImage: compositeBuffer,
-        plants: testPlants, // Plants are already in the image, this guides the enhancement
-        season: 'summer',
-        style: 'photorealistic',
-        approach: 'batch'
-      });
-      
-      // Save enhanced composite
-      const enhancedFilename = `enhanced-composite-${timestamp}.png`;
-      const enhancedPath = path.join(this.outputDir, enhancedFilename);
-      await fs.writeFile(enhancedPath, enhancedBuffer);
-      enhancedCompositeUrl = `/inpainted-gardens/${enhancedFilename}`;
-      
-      console.log("✅ Enhanced composite saved");
-    } catch (error) {
-      console.error("Failed to enhance composite:", error);
-    }
+    console.log("🎨 Skipping enhancement step - using raw composite for comparison");
     
     // 2. Sequential inpainting (one plant at a time)
     let sequentialUrl = await this.inpaintGarden({
@@ -492,7 +467,7 @@ export class AIInpaintingService {
         height: 1472,  // Must be multiple of 64
         width: 1920,
         seedImage: `data:image/png;base64,${sequentialBuffer.toString('base64')}`,
-        strength: 0.3,  // Lower strength to preserve plant positions
+        strength: 0.15,  // Very low strength to only enhance details, not change composition
         CFGScale: 7,
         steps: 25
       });
@@ -537,7 +512,7 @@ export class AIInpaintingService {
         height: 1472,  // Must be multiple of 64
         width: 1920,
         seedImage: `data:image/png;base64,${batchBuffer.toString('base64')}`,
-        strength: 0.3,  // Lower strength to preserve plant positions
+        strength: 0.15,  // Very low strength to only enhance details, not change composition
         CFGScale: 7,
         steps: 25
       });
