@@ -1129,6 +1129,75 @@ Rules:
       });
     }
   });
+
+  // Plant Import Wizard endpoints
+  app.get('/api/admin/import/search-perenual', isAuthenticated, async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: 'Search query required' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      const results = await plantImportService.searchPerenual(q);
+      
+      res.json({ plants: results });
+    } catch (error) {
+      console.error('Perenual search error:', error);
+      res.status(500).json({ error: 'Search failed' });
+    }
+  });
+  
+  app.post('/api/admin/import/enrich-gbif', isAuthenticated, async (req, res) => {
+    try {
+      const { scientific_name } = req.body;
+      if (!scientific_name) {
+        return res.status(400).json({ error: 'Scientific name required' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      const enrichment = await plantImportService.enrichWithGBIF(scientific_name);
+      
+      res.json(enrichment);
+    } catch (error) {
+      console.error('GBIF enrichment error:', error);
+      res.status(500).json({ error: 'Enrichment failed' });
+    }
+  });
+  
+  app.post('/api/admin/import/enrich-inaturalist', isAuthenticated, async (req, res) => {
+    try {
+      const { scientific_name } = req.body;
+      if (!scientific_name) {
+        return res.status(400).json({ error: 'Scientific name required' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      const enrichment = await plantImportService.enrichWithINaturalist(scientific_name);
+      
+      res.json(enrichment);
+    } catch (error) {
+      console.error('iNaturalist enrichment error:', error);
+      res.status(500).json({ error: 'Enrichment failed' });
+    }
+  });
+  
+  app.post('/api/admin/import/plants', isAuthenticated, async (req, res) => {
+    try {
+      const { plants } = req.body;
+      if (!plants || !Array.isArray(plants)) {
+        return res.status(400).json({ error: 'Plants array required' });
+      }
+      
+      const { plantImportService } = await import('./plantImportService.js');
+      const result = await plantImportService.importPlants(plants);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Plant import error:', error);
+      res.status(500).json({ error: 'Import failed' });
+    }
+  });
   
   // Reset stuck items back to pending
   app.post('/api/admin/image-generation/reset-stuck', isAuthenticated, async (req: any, res) => {

@@ -19,6 +19,7 @@ import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import { ImageGenerationMonitor } from "@/components/admin/image-generation-monitor";
 import { ImageComparisonTool } from "@/components/admin/image-comparison-tool";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
+import { PlantImportWizard } from "@/components/admin/plant-import-wizard";
 import { useLocation } from "wouter";
 import { 
   Settings, 
@@ -435,22 +436,9 @@ export default function Admin() {
                   </div>
               </TabsContent>
 
-              {/* Other admin tabs would be implemented similarly */}
+              {/* Plant Import Wizard Tab */}
               <TabsContent value="import" className="mt-8">
-                <Card>
-                  <CardHeader>
-                    <CardTitle data-testid="text-import-wizard-title">Plant Import Wizard</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12" data-testid="import-wizard-placeholder">
-                      <Upload className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">Import Wizard</h3>
-                      <p className="text-muted-foreground">
-                        Bulk import plants from CSV files or external APIs
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <PlantImportWizard />
               </TabsContent>
 
               <TabsContent value="testing" className="mt-8 space-y-6">
