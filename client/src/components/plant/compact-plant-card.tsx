@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { 
   Eye,
   Plus,
@@ -26,7 +28,10 @@ import {
   Shield,
   AlertTriangle,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Printer,
+  Share2,
+  Download
 } from "lucide-react";
 import type { Plant } from "@/types/plant";
 
@@ -165,6 +170,104 @@ export function CompactPlantCard({
     }
   });
 
+  const handlePrint = () => {
+    const printContent = document.getElementById('plant-detail-card');
+    if (!printContent) return;
+    
+    const originalContents = document.body.innerHTML;
+    const printContents = printContent.innerHTML;
+    
+    document.body.innerHTML = `
+      <html>
+        <head>
+          <title>${plant.commonName || 'Plant'} - ${plant.scientificName || ''}</title>
+          <style>
+            @media print {
+              body { margin: 0; padding: 20px; font-family: system-ui; }
+              .print\\:hidden { display: none !important; }
+              img { max-width: 100%; height: auto; }
+            }
+          </style>
+        </head>
+        <body>
+          ${printContents}
+        </body>
+      </html>
+    `;
+    
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload();
+  };
+  
+  const handleShare = async () => {
+    const shareData = {
+      title: plant.commonName || 'Plant',
+      text: `Check out ${plant.commonName} (${plant.scientificName})`,
+      url: window.location.href
+    };
+    
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link Copied",
+          description: "Plant link copied to clipboard!",
+        });
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
+  
+  const handleSave = async () => {
+    const element = document.getElementById('plant-detail-card');
+    if (!element) return;
+    
+    try {
+      // Hide action buttons for screenshot
+      const buttons = element.querySelectorAll('.print\\:hidden');
+      buttons.forEach(btn => (btn as HTMLElement).style.display = 'none');
+      
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false
+      });
+      
+      // Restore buttons
+      buttons.forEach(btn => (btn as HTMLElement).style.display = '');
+      
+      // Convert to image and download
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${plant.commonName || 'plant'}-${plant.scientificName || 'info'}.png`.replace(/\s+/g, '-');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Image Saved",
+          description: "Plant card saved as image!",
+        });
+      });
+    } catch (err) {
+      console.error('Error saving image:', err);
+      toast({
+        title: "Save Failed",
+        description: "Could not save plant card",
+        variant: "destructive"
+      });
+    }
+  };
+  
   const validatePlantData = async () => {
     setIsValidating(true);
     try {
@@ -488,13 +591,44 @@ export function CompactPlantCard({
 
       {/* Details Dialog */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-2xl bg-white text-gray-900">
+        <DialogContent className="max-w-2xl bg-white text-gray-900 print:max-w-none" id="plant-detail-card">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">
-              {plant.scientificName || 'Unknown Species'}
-              <span className="text-sm font-normal text-gray-600 block">
-                {plant.commonName || 'Unknown Plant'}
-              </span>
+            <DialogTitle className="text-gray-900 flex justify-between items-start">
+              <div>
+                {plant.scientificName || 'Unknown Species'}
+                <span className="text-sm font-normal text-gray-600 block">
+                  {plant.commonName || 'Unknown Plant'}
+                </span>
+              </div>
+              <div className="flex gap-2 print:hidden">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={handlePrint}
+                  title="Print"
+                  className="h-8 w-8"
+                >
+                  <Printer className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={handleShare}
+                  title="Share"
+                  className="h-8 w-8"
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={handleSave}
+                  title="Save as Image"
+                  className="h-8 w-8"
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 text-gray-900">

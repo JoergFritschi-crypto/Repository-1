@@ -66,6 +66,51 @@
     @apply font-sans antialiased bg-background text-foreground text-sm;
   }
   
+  /* Print styles for plant cards */
+  @media print {
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    .print\:hidden {
+      display: none !important;
+    }
+    
+    #plant-detail-card {
+      max-width: 100%;
+      padding: 20px;
+      border: 1px solid #e5e5e5;
+    }
+    
+    #plant-detail-card img {
+      max-width: 100%;
+      height: auto;
+      page-break-inside: avoid;
+    }
+    
+    #plant-detail-card .grid {
+      page-break-inside: avoid;
+    }
+    
+    /* Ensure text is black for printing */
+    #plant-detail-card * {
+      color: black !important;
+      background: white !important;
+    }
+    
+    /* Preserve borders and badges */
+    #plant-detail-card .border {
+      border-color: #d1d5db !important;
+    }
+    
+    #plant-detail-card .badge {
+      border: 1px solid #d1d5db !important;
+      padding: 2px 8px !important;
+    }
+  }
+  
   /* Global typography - compact and elegant */
   h1 {
     @apply text-2xl font-semibold;
