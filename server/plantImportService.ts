@@ -571,9 +571,6 @@ export class PlantImportService {
       
       console.log(`iNaturalist search for "${query}" returned ${results.length} results`);
       
-      // Store reference to this for use in map
-      const self = this;
-      
       // Filter and format results
       const filteredResults = results
         .filter((taxon: any) => {
@@ -593,8 +590,8 @@ export class PlantImportService {
           return true;
         })
         .map((taxon: any) => {
-          // Use self reference to call the method
-          const scientificName = self.correctBotanicalNomenclature(taxon.name || '');
+          // Use arrow function to preserve 'this' context
+          const scientificName = this.correctBotanicalNomenclature(taxon.name || '');
           
           return {
             scientific_name: scientificName,
