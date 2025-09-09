@@ -347,7 +347,26 @@ export default function Admin() {
                   {/* Plant Cards Grid */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Plant Database</CardTitle>
+                      <div className="flex justify-between items-center">
+                        <CardTitle>Plant Database</CardTitle>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={async () => {
+                            await refetchPlants();
+                            toast({
+                              title: "Plants Refreshed",
+                              description: "Plant database has been updated with latest data and images.",
+                            });
+                          }}
+                          disabled={plantsLoading}
+                          className="gap-2"
+                          data-testid="button-refresh-plants"
+                        >
+                          <RefreshCw className={`w-4 h-4 ${plantsLoading ? 'animate-spin' : ''}`} />
+                          Refresh Plants
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent>
 
