@@ -300,11 +300,11 @@ export function EnhancedPlantCard({
                   View Details
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+              <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-white text-gray-900">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl">
+                  <DialogTitle className="text-2xl text-gray-900">
                     {plant.commonName}
-                    <span className="text-base text-muted-foreground italic block">
+                    <span className="text-base text-gray-600 italic block">
                       {plant.scientificName}
                     </span>
                   </DialogTitle>
@@ -335,11 +335,11 @@ export function EnhancedPlantCard({
                     Add to Garden
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-white text-gray-900">
                   <DialogHeader>
-                    <DialogTitle>Add to Your Garden</DialogTitle>
+                    <DialogTitle className="text-gray-900">Add to Your Garden</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="space-y-4 text-gray-900">
                     <div className="flex items-center gap-3">
                       {primaryImage && (
                         <img 

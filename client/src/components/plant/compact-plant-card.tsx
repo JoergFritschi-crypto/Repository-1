@@ -270,11 +270,11 @@ export function CompactPlantCard({
       {/* Admin Dialog */}
       {isAdmin && (
         <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-900">
             <DialogHeader>
-              <DialogTitle>Admin Controls</DialogTitle>
+              <DialogTitle className="text-gray-900">Admin Controls</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 text-gray-900">
               <div>
                 <h4 className="font-medium mb-2">{plant.scientificName}</h4>
                 <p className="text-sm text-muted-foreground">{plant.commonName}</p>
@@ -452,11 +452,11 @@ export function CompactPlantCard({
 
       {/* Add to Collection Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle>Add to Garden</DialogTitle>
+            <DialogTitle className="text-gray-900">Add to Garden</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-900">
             <p>Add <strong>{plant.commonName}</strong> to your collection?</p>
             <div>
               <label className="block text-sm font-medium mb-2">Notes (optional)</label>
