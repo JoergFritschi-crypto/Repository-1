@@ -552,10 +552,6 @@ export function CompactPlantCard({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Native:</span>
-                <span className={plant.nativeRegion ? "text-gray-900" : "text-red-400"}>{plant.nativeRegion || 'Missing'}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-gray-500">Soil:</span>
                 <span className={plant.soil ? "text-gray-900" : "text-red-400"}>
                   {plant.soil ? (Array.isArray(plant.soil) ? plant.soil.join(', ') : plant.soil) : 'Missing'}

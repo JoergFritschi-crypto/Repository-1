@@ -668,7 +668,6 @@ export class PlantImportService {
       if (!plant.sunlight || plant.sunlight?.length === 0) emptyFields.push('sunlight requirements');
       if (!plant.hardiness) emptyFields.push('hardiness zones');
       if (!plant.care_level) emptyFields.push('care level');
-      if (!plant.native_region) emptyFields.push('native region');
       if (!plant.growth_rate) emptyFields.push('growth rate');
       if (!plant.soil || plant.soil?.length === 0) emptyFields.push('soil requirements');
       if (!plant.dimension) emptyFields.push('mature size dimensions');
@@ -686,7 +685,9 @@ export class PlantImportService {
         return plant; // No validation needed
       }
       
-      const prompt = `For the plant "${plant.scientific_name}" (${plant.common_name || 'common name unknown'}), provide ALL the following missing information in JSON format: ${emptyFields.join(', ')}. 
+      const prompt = `For the plant "${plant.scientific_name}" (${plant.common_name || 'common name unknown'}), provide ALL the following missing information in JSON format: ${emptyFields.join(', ')}.
+      
+      IMPORTANT: For flower_color, provide SPECIFIC colors like "yellow", "orange", "red", "pink", "white", "purple", "blue". Never use "varies", "mixed", or "multiple" - list the actual colors instead. If the plant doesn't flower, use null. 
       
       Research thoroughly and return ONLY a JSON object with ALL these exact keys (use appropriate values or null if truly unknown):
       {
@@ -698,12 +699,11 @@ export class PlantImportService {
         "sunlight": ["full sun", "part shade", "shade"] or similar array or null,
         "hardiness": "zone range like 3-9 or null",
         "care_level": "low/moderate/high or null",
-        "native_region": "string (geographic origin) or null",
         "growth_rate": "slow/moderate/fast or null",
         "soil": ["well-drained", "moist", "sandy"] or similar array or null,
         "dimension": {"height": "1-3 feet", "spread": "2-3 feet"} or null,
         "flowering_season": "spring/summer/fall/winter or months or null",
-        "flower_color": ["yellow", "orange"] or similar array or null,
+        "flower_color": ["yellow", "orange", "red"] (specific colors only, never "varies" or "mixed") or null if no flowers,
         "maintenance": "low/moderate/high or null",
         "propagation": ["seed", "division", "cuttings"] or similar array or null,
         "drought_tolerant": true/false or null,
