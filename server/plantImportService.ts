@@ -796,7 +796,7 @@ export class PlantImportService {
         // Generate a unique ID
         const plantId = `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
-        // Map the data to our database schema
+        // Map the data to our database schema - using correct field names from schema
         const plantRecord = {
           id: plantId,
           scientificName: plantData.scientific_name,
@@ -804,63 +804,62 @@ export class PlantImportService {
           species: plantData.species || plantData.scientific_name?.split(' ')[1] || undefined,
           commonName: plantData.common_name || 'Unknown',
           description: plantData.description || '',
+          family: plantData.family || null, // Add family field!
+          
+          // Plant characteristics - use correct field names
+          type: plantData.cycle || plantData.type || 'perennial', // Use 'type' not 'plantType'
+          dimension: plantData.dimension || null, // Keep as JSON
+          cycle: plantData.cycle || null,
+          foliage: plantData.foliage || null,
+          
+          // Growing conditions - use correct field names from schema
+          hardiness: plantData.hardiness 
+            ? (typeof plantData.hardiness === 'object' 
+                ? `${plantData.hardiness.min}-${plantData.hardiness.max}`
+                : plantData.hardiness)
+            : '5-9',
+          sunlight: plantData.sunlight || ['full sun to part shade'], // Keep as array
+          soil: plantData.soil || ['well-drained'], // Keep as array
+          soilPH: plantData.soil_ph || '6.0-7.0',
+          watering: plantData.watering || 'moderate', // Use 'watering' not 'waterNeeds'
+          wateringGeneralBenchmark: plantData.watering_general_benchmark || null,
+          wateringPeriod: plantData.watering_period || null,
+          depthWaterRequirement: plantData.depth_water_requirement || null,
+          volumeWaterRequirement: plantData.volume_water_requirement || null,
           
           // Plant characteristics
-          plantType: plantData.cycle || 'perennial',
-          matureHeight: plantData.mature_height || '1-3 feet',
-          matureWidth: plantData.mature_width || '1-2 feet',
           growthRate: plantData.growth_rate || 'moderate',
-          bloomTime: plantData.flowering_season || 'summer',
-          flowerColor: Array.isArray(plantData.flower_color) 
-            ? plantData.flower_color.join(', ') 
-            : plantData.flower_color || 'varies',
-          foliageColor: Array.isArray(plantData.leaf_color)
-            ? plantData.leaf_color.join(', ')
-            : plantData.leaf_color || 'green',
-          texture: 'medium', // Default
+          droughtTolerant: plantData.drought_tolerant || false,
+          saltTolerant: plantData.salt_tolerant || false,
+          thorny: plantData.thorny || false,
+          tropical: plantData.tropical || false,
+          careLevel: plantData.care_level || 'moderate',
+          maintenance: plantData.maintenance || plantData.care_level || 'low',
           
-          // Growing conditions
-          sunExposure: Array.isArray(plantData.sunlight)
-            ? plantData.sunlight.join(', ')
-            : plantData.sunlight || 'full sun to part shade',
-          soilType: Array.isArray(plantData.soil)
-            ? plantData.soil.join(', ')
-            : plantData.soil || 'well-drained',
-          soilPH: '6.0-7.0', // Default
-          waterNeeds: plantData.watering || 'moderate',
-          hardinessZones: plantData.hardiness 
-            ? `${plantData.hardiness.min}-${plantData.hardiness.max}`
-            : '5-9',
+          // Appearance
+          leafColor: plantData.leaf_color || ['green'],
+          flowerColor: plantData.flower_color || ['varies'],
+          floweringSeason: plantData.flowering_season || plantData.bloom_time || 'summer',
           
-          // Special features
-          nativeRegion: plantData.native_region || '',
-          wildlifeAttracted: '',
-          resistances: [
-            plantData.drought_tolerant && 'drought',
-            plantData.salt_tolerant && 'salt'
-          ].filter(Boolean).join(', ') || '',
-          toxicity: plantData.poisonous_to_humans || plantData.poisonous_to_pets
-            ? 'toxic to humans/pets'
-            : 'non-toxic',
+          // Features
+          poisonousToPets: plantData.poisonous_to_pets === true ? 1 : 0,
+          poisonousToHumans: plantData.poisonous_to_humans === true ? 1 : 0,
+          edibleFruit: plantData.edible_fruit || false,
+          edibleLeaf: plantData.edible_leaf || false,
+          cuisine: plantData.cuisine || false,
+          medicinal: plantData.medicinal || false,
           
-          // Care
-          maintenance: plantData.care_level || plantData.maintenance || 'low',
-          pruning: Array.isArray(plantData.pruning_month)
-            ? `Prune in ${plantData.pruning_month.join(', ')}`
-            : '',
+          // Propagation
           propagation: Array.isArray(plantData.propagation)
-            ? plantData.propagation.join(', ')
-            : '',
-          
-          // Uses
-          landscapeUses: '',
-          companionPlants: '',
+            ? plantData.propagation
+            : plantData.propagation ? [plantData.propagation] : null,
+          pruningMonth: plantData.pruning_month || null,
           
           // Metadata
           createdAt: new Date(),
           updatedAt: new Date(),
           source: plantData.source || 'import',
-          perennialId: plantData.external_id,
+          perenualId: plantData.perenual_id || plantData.external_id || null,
           status: 'approved',
           submittedBy: 'admin-import',
           approvedBy: 'admin-import',
