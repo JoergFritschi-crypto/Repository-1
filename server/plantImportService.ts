@@ -49,27 +49,50 @@ export class PlantImportService {
     this.perenualApiKey = process.env.PERENUAL_API_KEY;
   }
   
-  // Search Perenual API
+  // Search Perenual API with pagination support
   async searchPerenual(query: string): Promise<any[]> {
     if (!this.perenualApiKey) {
       throw new Error('Perenual API key not configured');
     }
     
     try {
-      const response = await fetch(
-        `https://perenual.com/api/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}`,
+      // First, get initial page to determine total pages
+      const initialResponse = await fetch(
+        `https://perenual.com/api/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}&per_page=30`,
         { method: 'GET' }
       );
       
-      if (!response.ok) {
-        throw new Error(`Perenual API error: ${response.status}`);
+      if (!initialResponse.ok) {
+        throw new Error(`Perenual API error: ${initialResponse.status}`);
       }
       
-      const data = await response.json() as any;
-      const plants = data.data || [];
+      const initialData = await initialResponse.json() as any;
+      const totalPages = Math.min(initialData.last_page || 1, 5); // Limit to 5 pages (150 results) to avoid rate limits
+      
+      let allPlants = initialData.data || [];
+      
+      // Fetch additional pages if there are more
+      if (totalPages > 1) {
+        const pagePromises = [];
+        for (let page = 2; page <= totalPages; page++) {
+          pagePromises.push(
+            fetch(
+              `https://perenual.com/api/species-list?key=${this.perenualApiKey}&q=${encodeURIComponent(query)}&per_page=30&page=${page}`,
+              { method: 'GET' }
+            ).then(res => res.json()).then(data => data.data || [])
+          );
+        }
+        
+        const additionalPages = await Promise.all(pagePromises);
+        additionalPages.forEach(plants => {
+          allPlants = allPlants.concat(plants);
+        });
+      }
+      
+      console.log(`Perenual search for "${query}" returned ${allPlants.length} results across ${totalPages} pages`);
       
       // Transform to our format
-      return plants.map((plant: any) => ({
+      return allPlants.map((plant: any) => ({
         scientific_name: plant.scientific_name?.[0] || plant.scientific_name || '',
         common_name: plant.common_name || '',
         family: plant.family,

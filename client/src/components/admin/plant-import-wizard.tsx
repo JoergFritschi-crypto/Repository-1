@@ -83,6 +83,7 @@ export function PlantImportWizard() {
   const [importMode, setImportMode] = useState<'search' | 'csv'>('search');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PlantImportData[]>([]);
+  const [searchProgress, setSearchProgress] = useState('');
   const { toast } = useToast();
 
   // Step 1: Search Perenual API
@@ -90,8 +91,13 @@ export function PlantImportWizard() {
     if (!searchQuery.trim()) return;
     
     setIsSearching(true);
+    setSearchProgress('Searching Perenual database (fetching multiple pages)...');
     try {
-      const response = await fetch(`/api/admin/import/search-perenual?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`/api/admin/import/search-perenual?q=${encodeURIComponent(searchQuery)}`, {
+        // Increase timeout for multi-page searches
+        signal: AbortSignal.timeout(30000) // 30 second timeout
+      });
+      
       if (!response.ok) throw new Error('Search failed');
       
       const data = await response.json();
@@ -105,9 +111,12 @@ export function PlantImportWizard() {
           const newPlants = plants.filter((p: PlantImportData) => !existingIds.has(p.scientific_name));
           return [...prevSelected, ...newPlants];
         });
-      }
-      
-      if (plants.length === 0) {
+        
+        toast({
+          title: "Search complete",
+          description: `Found ${plants.length} plant${plants.length !== 1 ? 's' : ''} matching "${searchQuery}"`,
+        });
+      } else {
         toast({
           title: "No results",
           description: "No plants found in Perenual. Try a different search term.",
@@ -115,13 +124,22 @@ export function PlantImportWizard() {
         });
       }
     } catch (error) {
-      toast({
-        title: "Search error",
-        description: "Failed to search Perenual database",
-        variant: "destructive"
-      });
+      if (error instanceof Error && error.name === 'AbortError') {
+        toast({
+          title: "Search timeout",
+          description: "Search took too long. Try a more specific search term.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Search error",
+          description: "Failed to search Perenual database",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsSearching(false);
+      setSearchProgress('');
     }
   };
 
@@ -244,6 +262,12 @@ export function PlantImportWizard() {
                     )}
                   </Button>
                 </div>
+                
+                {isSearching && searchProgress && (
+                  <p className="text-sm text-muted-foreground animate-pulse">
+                    {searchProgress}
+                  </p>
+                )}
                 
                 {searchResults.length > 0 && (
                   <div>
