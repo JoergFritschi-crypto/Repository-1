@@ -106,7 +106,7 @@ export default function PlantLibrary() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3 h-9" data-testid="tabs-plant-library">
+          <TabsList className="grid w-full grid-cols-2 h-9" data-testid="tabs-plant-library">
             <TabsTrigger value="browse" className="text-xs" data-testid="tab-browse-plants">
               <Sprout className="w-3 h-3 mr-1.5" />
               Browse Plants
@@ -114,10 +114,6 @@ export default function PlantLibrary() {
             <TabsTrigger value="collection" className="text-xs" data-testid="tab-my-collection">
               <Heart className="w-3 h-3 mr-1.5" />
               My Collection ({myCollection?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="search" className="hidden lg:flex text-xs" data-testid="tab-advanced-search">
-              <Search className="w-3 h-3 mr-1.5" />
-              Advanced Search
             </TabsTrigger>
           </TabsList>
 
@@ -377,10 +373,6 @@ export default function PlantLibrary() {
             </div>
           </TabsContent>
 
-          {/* Advanced Search Tab */}
-          <TabsContent value="search" className="mt-8">
-            <PlantSearch onResults={(results) => console.log(results)} />
-          </TabsContent>
         </Tabs>
       </div>
     </div>
