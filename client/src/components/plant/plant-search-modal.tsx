@@ -169,7 +169,7 @@ export default function PlantSearchModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-7xl h-[90vh] flex flex-col bg-white">
+      <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-[95vh] flex flex-col bg-white overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Search className="w-5 h-5" />
@@ -182,9 +182,9 @@ export default function PlantSearchModal({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           {/* Search Source Tabs */}
-          <Tabs value={searchSource} onValueChange={(value: any) => setSearchSource(value)} className="w-full">
+          <Tabs value={searchSource} onValueChange={(value: any) => setSearchSource(value)} className="w-full flex flex-col flex-1 min-h-0">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="database" className="flex items-center gap-2">
                 <Database className="w-4 h-4" />
@@ -210,9 +210,9 @@ export default function PlantSearchModal({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value={searchSource} className="mt-0 flex-1 flex flex-col">
+            <TabsContent value={searchSource} className="mt-0 flex-1 flex flex-col min-h-0 overflow-hidden">
               {/* Advanced Plant Search Component */}
-              <div className="mb-4">
+              <div className="mb-4 flex-shrink-0">
                 <PlantAdvancedSearch 
                   onSearch={handleSearchFilters}
                   totalResults={searchResults.length}
@@ -221,8 +221,8 @@ export default function PlantSearchModal({
               
               {/* Search Results with Plant Cards */}
               {searchResults.length > 0 && (
-                <div className="flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                  <div className="flex items-center justify-between mb-2 flex-shrink-0">
                     <h3 className="font-medium">
                       {searchSource === 'collection' ? 'Plants from Your Collection' : 'Search Results'}
                       <span className="text-sm font-normal text-muted-foreground ml-2">
@@ -242,8 +242,8 @@ export default function PlantSearchModal({
                       )}
                     </div>
                   </div>
-                  <ScrollArea className="flex-1 border rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <ScrollArea className="flex-1 border rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
                       {searchResults.map((plant: Plant) => (
                         <div 
                           key={plant.id} 

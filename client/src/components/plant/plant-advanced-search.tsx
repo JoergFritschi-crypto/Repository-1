@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Filter, X, Flower, Ruler } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -205,7 +206,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
 
         {/* Advanced Filters */}
         {showAdvanced && (
-          <div className="space-y-6 pt-4 border-t">
+          <ScrollArea className="h-[500px] pt-4 border-t">
+            <div className="space-y-6 pr-4">
             {/* Height Range Slider */}
             <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
               <CardHeader className="pb-3">
@@ -602,7 +604,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 <span className="text-sm font-medium">Rabbit Resistant</span>
               </label>
             </div>
-          </div>
+            </div>
+          </ScrollArea>
         )}
       </CardContent>
     </Card>
