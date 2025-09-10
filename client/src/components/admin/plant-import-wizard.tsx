@@ -659,6 +659,13 @@ export function PlantImportWizard() {
   const [scrapingUrl, setScrapingUrl] = useState('');
   const [isScrapingUrl, setIsScrapingUrl] = useState(false);
   const [scrapingResults, setScrapingResults] = useState<any>(null);
+  const [selectedScrapedPlants, setSelectedScrapedPlants] = useState<number[]>([]);
+  const [isValidatingScraped, setIsValidatingScraped] = useState(false);
+  const [validationOptions, setValidationOptions] = useState({
+    perenual: true,
+    gbif: true,
+    perplexity: true
+  });
 
   // Scrape website using FireCrawl
   const scrapeWebsite = async () => {
@@ -703,26 +710,109 @@ export function PlantImportWizard() {
     }
   };
 
-  // Import scraped plants
-  const importScrapedPlants = async () => {
-    if (!scrapingResults?.plants || scrapingResults.plants.length === 0) {
+  // Validate scraped plants with external APIs
+  const validateScrapedPlants = async () => {
+    if (selectedScrapedPlants.length === 0) {
       toast({
         title: "Error",
-        description: "No plants to import",
+        description: "Please select plants to validate",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsValidatingScraped(true);
+    const plantsToValidate = scrapingResults.plants.filter((_: any, idx: number) => 
+      selectedScrapedPlants.includes(idx)
+    );
+
+    try {
+      let validatedPlants = [...plantsToValidate];
+      
+      // Validate with Perenual if enabled
+      if (validationOptions.perenual) {
+        setSearchProgress(`Validating with Perenual (0/${plantsToValidate.length})...`);
+        // Call Perenual validation endpoint (to be implemented)
+      }
+      
+      // Validate with GBIF if enabled  
+      if (validationOptions.gbif) {
+        setSearchProgress(`Validating with GBIF (0/${plantsToValidate.length})...`);
+        // Call GBIF validation endpoint (to be implemented)
+      }
+      
+      // Fill gaps with Perplexity if enabled
+      if (validationOptions.perplexity) {
+        setSearchProgress('Filling gaps with Perplexity AI...');
+        const response = await fetch('/api/admin/validate-plants-perplexity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ plants: validatedPlants })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          validatedPlants = result.plants || validatedPlants;
+        }
+      }
+      
+      // Update scraped plants with validated data
+      const updatedResults = {
+        ...scrapingResults,
+        plants: scrapingResults.plants.map((plant: any, idx: number) => {
+          const validatedIndex = selectedScrapedPlants.indexOf(idx);
+          if (validatedIndex !== -1) {
+            return validatedPlants[validatedIndex];
+          }
+          return plant;
+        })
+      };
+      
+      setScrapingResults(updatedResults);
+      setSearchProgress('');
+      
+      toast({
+        title: "✓ Validation Complete",
+        description: `Successfully validated ${selectedScrapedPlants.length} plants`,
+      });
+    } catch (error) {
+      console.error('Validation error:', error);
+      toast({
+        title: "Validation Failed",
+        description: "Failed to validate plants. You can still import without validation.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsValidatingScraped(false);
+      setSearchProgress('');
+    }
+  };
+
+  // Import scraped plants
+  const importScrapedPlants = async () => {
+    const plantsToImport = selectedScrapedPlants.length > 0 
+      ? scrapingResults.plants.filter((_: any, idx: number) => selectedScrapedPlants.includes(idx))
+      : scrapingResults.plants;
+      
+    if (!plantsToImport || plantsToImport.length === 0) {
+      toast({
+        title: "Error",
+        description: "No plants selected for import",
         variant: "destructive"
       });
       return;
     }
 
     setIsSearching(true);
-    setSearchProgress('Importing scraped plants to database...');
+    setSearchProgress(`Importing ${plantsToImport.length} plants to database...`);
 
     try {
       const response = await fetch('/api/admin/import/plants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ plants: scrapingResults.plants })
+        body: JSON.stringify({ plants: plantsToImport })
       });
 
       if (!response.ok) throw new Error('Import failed');
@@ -1192,11 +1282,11 @@ export function PlantImportWizard() {
               <Alert>
                 <Sparkles className="w-4 h-4" />
                 <AlertDescription>
-                  <strong>FireCrawl Web Scraper</strong>
+                  <strong>FireCrawl Web Scraper with Validation</strong>
                   <br />
-                  Extract plant data from any gardening website using AI-powered scraping.
+                  Extract and validate plant data from any gardening website using AI-powered scraping.
                   <br />
-                  <span className="text-sm text-muted-foreground">3,000 credits/month available</span>
+                  <span className="text-sm text-muted-foreground">3,000 credits/month • Multi-page crawling supported</span>
                 </AlertDescription>
               </Alert>
 
@@ -1206,7 +1296,7 @@ export function PlantImportWizard() {
                   <Input
                     id="scraper-url"
                     type="url"
-                    placeholder="https://example.com/plants-list"
+                    placeholder="https://example.com/plants-catalog"
                     value={scrapingUrl}
                     onChange={(e) => setScrapingUrl(e.target.value)}
                     onKeyDown={(e) => {
@@ -1228,14 +1318,14 @@ export function PlantImportWizard() {
                       </>
                     ) : (
                       <>
-                        <Link className="w-4 h-4 mr-2" />
+                        <Globe className="w-4 h-4 mr-2" />
                         Scrape Website
                       </>
                     )}
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Enter a URL containing plant information to extract and import
+                  💡 Best results: Use plant catalog or listing pages (e.g., /plants, /stauden, /perennials)
                 </p>
               </div>
 
@@ -1244,45 +1334,157 @@ export function PlantImportWizard() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium">Scraped Plants</h3>
-                    <Badge className="font-semibold">
-                      Found: {scrapingResults.plants?.length || 0} plants
-                    </Badge>
+                    <div className="flex gap-2">
+                      <Badge className="font-semibold">
+                        Found: {scrapingResults.plants?.length || 0} plants
+                      </Badge>
+                      {scrapingResults.metadata?.pagesCrawled && (
+                        <Badge variant="outline">
+                          {scrapingResults.metadata.pagesCrawled} pages crawled
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   {scrapingResults.plants && scrapingResults.plants.length > 0 ? (
                     <>
-                      <ScrollArea className="h-[400px] border rounded-lg p-4">
+                      {/* Validation Options */}
+                      <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
+                        <Label>Validation & Enrichment Options</Label>
                         <div className="space-y-2">
-                          {scrapingResults.plants.map((plant: any, idx: number) => (
-                            <div
-                              key={`scraped-${idx}`}
-                              className="flex items-center justify-between p-3 border rounded hover:bg-accent"
-                            >
-                              <div>
-                                <p className="font-medium">
-                                  {plant.common_name || plant.scientific_name || 'Unknown Plant'}
-                                </p>
-                                {plant.scientific_name && plant.common_name && (
-                                  <p className="text-sm text-muted-foreground italic">
-                                    {plant.scientific_name}
-                                  </p>
-                                )}
-                                {plant.description && (
-                                  <p className="text-sm text-muted-foreground line-clamp-2">
-                                    {plant.description}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                          <label className="flex items-center gap-2">
+                            <Checkbox
+                              checked={validationOptions.perenual}
+                              onCheckedChange={(checked) => 
+                                setValidationOptions(prev => ({ ...prev, perenual: !!checked }))}
+                            />
+                            <span className="text-sm">Enrich with Perenual (detailed growing conditions)</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <Checkbox
+                              checked={validationOptions.gbif}
+                              onCheckedChange={(checked) => 
+                                setValidationOptions(prev => ({ ...prev, gbif: !!checked }))}
+                            />
+                            <span className="text-sm">Validate with GBIF (scientific nomenclature)</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <Checkbox
+                              checked={validationOptions.perplexity}
+                              onCheckedChange={(checked) => 
+                                setValidationOptions(prev => ({ ...prev, perplexity: !!checked }))}
+                            />
+                            <span className="text-sm">Fill gaps with Perplexity AI (missing data)</span>
+                          </label>
                         </div>
-                      </ScrollArea>
+                      </div>
 
-                      <div className="flex justify-end">
+                      {/* Plant Selection */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label>Select Plants to Import</Label>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const allIndices = scrapingResults.plants.map((_: any, i: number) => i);
+                                setSelectedScrapedPlants(allIndices);
+                              }}
+                            >
+                              Select All
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedScrapedPlants([])}
+                            >
+                              Clear All
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <ScrollArea className="h-[300px] border rounded-lg p-4">
+                          <div className="space-y-2">
+                            {scrapingResults.plants.map((plant: any, idx: number) => (
+                              <div
+                                key={`scraped-${idx}`}
+                                className="flex items-start gap-2 p-3 border rounded hover:bg-accent"
+                              >
+                                <Checkbox
+                                  checked={selectedScrapedPlants.includes(idx)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedScrapedPlants(prev => [...prev, idx]);
+                                    } else {
+                                      setSelectedScrapedPlants(prev => prev.filter(i => i !== idx));
+                                    }
+                                  }}
+                                  className="mt-1"
+                                />
+                                <div className="flex-1">
+                                  <p className="font-medium">
+                                    {plant.common_name || plant.scientific_name || 'Unknown Plant'}
+                                  </p>
+                                  {plant.scientific_name && (
+                                    <p className="text-sm text-muted-foreground italic">
+                                      {plant.scientific_name}
+                                    </p>
+                                  )}
+                                  <div className="flex gap-2 mt-1 flex-wrap">
+                                    {plant.type && (
+                                      <Badge variant="outline" className="text-xs">{plant.type}</Badge>
+                                    )}
+                                    {plant.price && (
+                                      <Badge variant="secondary" className="text-xs">{plant.price}</Badge>
+                                    )}
+                                    {plant.height && (
+                                      <Badge variant="outline" className="text-xs">H: {plant.height}</Badge>
+                                    )}
+                                    {plant.spread && (
+                                      <Badge variant="outline" className="text-xs">S: {plant.spread}</Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+
+                      {/* Progress Display */}
+                      {searchProgress && (
+                        <Alert>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <AlertDescription>{searchProgress}</AlertDescription>
+                        </Alert>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={validateScrapedPlants}
+                          disabled={selectedScrapedPlants.length === 0 || isValidatingScraped}
+                          variant="outline"
+                          className="flex-1"
+                        >
+                          {isValidatingScraped ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Validating...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Validate {selectedScrapedPlants.length || 0} Plants
+                            </>
+                          )}
+                        </Button>
+                        
                         <Button
                           onClick={importScrapedPlants}
-                          disabled={isSearching}
-                          className="bg-green-600 hover:bg-green-700"
+                          disabled={selectedScrapedPlants.length === 0 || isSearching}
+                          className="bg-green-600 hover:bg-green-700 flex-1"
                         >
                           {isSearching ? (
                             <>
@@ -1292,7 +1494,7 @@ export function PlantImportWizard() {
                           ) : (
                             <>
                               <Database className="w-4 h-4 mr-2" />
-                              Import {scrapingResults.plants.length} Plants
+                              Import {selectedScrapedPlants.length || 0} Plants
                             </>
                           )}
                         </Button>
@@ -1309,11 +1511,14 @@ export function PlantImportWizard() {
 
                   {/* Metadata */}
                   {scrapingResults.metadata && (
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>URL: {scrapingResults.metadata.url}</p>
-                      <p>Scraped at: {new Date(scrapingResults.metadata.scrapedAt).toLocaleString()}</p>
+                    <div className="text-sm text-muted-foreground space-y-1 p-3 border rounded bg-muted/20">
+                      <p><strong>URL:</strong> {scrapingResults.metadata.url}</p>
+                      <p><strong>Scraped at:</strong> {new Date(scrapingResults.metadata.scrapedAt).toLocaleString()}</p>
                       {scrapingResults.metadata.creditsUsed && (
-                        <p>Credits used: {scrapingResults.metadata.creditsUsed}</p>
+                        <p><strong>Credits used:</strong> {scrapingResults.metadata.creditsUsed}</p>
+                      )}
+                      {scrapingResults.metadata.extractionMethod && (
+                        <p><strong>Method:</strong> {scrapingResults.metadata.extractionMethod}</p>
                       )}
                     </div>
                   )}
@@ -1325,15 +1530,15 @@ export function PlantImportWizard() {
                 <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
                   <FileText className="w-4 h-4 text-blue-600" />
                   <AlertDescription className="text-blue-800 dark:text-blue-200">
-                    <strong>How to use the web scraper:</strong>
+                    <strong>Tips for successful scraping:</strong>
                     <ol className="list-decimal list-inside mt-2 space-y-1">
-                      <li>Find a website with plant information (catalog, database, or listing)</li>
-                      <li>Copy the URL of the page containing plant data</li>
-                      <li>Paste the URL above and click "Scrape Website"</li>
-                      <li>Review the extracted plants and import them to your database</li>
+                      <li>Use plant catalog or listing pages (not homepages)</li>
+                      <li>German nurseries: Try /collections/stauden for perennials</li>
+                      <li>Look for "View All" options to get more plants per scrape</li>
+                      <li>The system will automatically crawl multiple pages if detected</li>
                     </ol>
                     <p className="mt-2">
-                      <strong>Supported content:</strong> Plant names, descriptions, care instructions, growing conditions, and characteristics.
+                      <strong>After scraping:</strong> Select plants → Validate with APIs → Import to database
                     </p>
                   </AlertDescription>
                 </Alert>

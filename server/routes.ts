@@ -2988,6 +2988,113 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
+  // Validate plants with Perplexity AI to fill missing data
+  app.post('/api/admin/validate-plants-perplexity', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      if (!perplexityAI) {
+        return res.status(503).json({ message: "Perplexity API not configured" });
+      }
+
+      const { plants } = req.body;
+      if (!plants || plants.length === 0) {
+        return res.status(400).json({ message: "No plants to validate" });
+      }
+
+      console.log(`Validating ${plants.length} plants with Perplexity AI...`);
+      
+      // Process plants in batches to avoid overwhelming the API
+      const batchSize = 5;
+      const validatedPlants = [];
+      
+      for (let i = 0; i < plants.length; i += batchSize) {
+        const batch = plants.slice(i, i + batchSize);
+        
+        // Process each plant in the batch
+        const batchPromises = batch.map(async (plant: any) => {
+          try {
+            // Only query for missing essential data
+            const missingFields = [];
+            if (!plant.heightMinCm) missingFields.push('height range');
+            if (!plant.spreadMinCm) missingFields.push('spread/width');
+            if (!plant.sunlight || plant.sunlight.length === 0) missingFields.push('sunlight requirements');
+            if (!plant.watering) missingFields.push('watering needs');
+            if (!plant.hardiness) missingFields.push('hardiness zones');
+            if (!plant.toxicityCategory) missingFields.push('toxicity to humans and pets');
+            
+            if (missingFields.length === 0) {
+              // No missing fields, return as-is
+              return plant;
+            }
+            
+            const query = `For the plant ${plant.scientific_name || plant.common_name}, provide the following missing information in a concise format:
+              ${missingFields.join(', ')}
+              
+              Format the response as JSON with these fields (use metric units for dimensions):
+              - heightMinCm: minimum height in centimeters
+              - heightMaxCm: maximum height in centimeters
+              - spreadMinCm: minimum spread in centimeters
+              - spreadMaxCm: maximum spread in centimeters
+              - sunlight: array of light requirements (e.g., ["full sun", "partial shade"])
+              - watering: "minimum", "average", or "frequent"
+              - hardiness: USDA hardiness zones (e.g., "5-9")
+              - toxicityCategory: "low", "moderate", or "high"
+              - childSafe: boolean
+              - petSafe: boolean`;
+            
+            const response = await perplexityAI.query(query);
+            
+            if (response && response.choices && response.choices[0]) {
+              const content = response.choices[0].message.content;
+              
+              // Try to parse JSON from response
+              try {
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                  const enrichmentData = JSON.parse(jsonMatch[0]);
+                  
+                  // Merge enrichment data with existing plant data
+                  return {
+                    ...plant,
+                    ...enrichmentData,
+                    sources: {
+                      ...plant.sources,
+                      perplexity: true
+                    }
+                  };
+                }
+              } catch (parseError) {
+                console.error('Failed to parse Perplexity response for plant:', plant.common_name);
+              }
+            }
+            
+            return plant;
+          } catch (error) {
+            console.error(`Error validating plant ${plant.common_name}:`, error);
+            return plant;
+          }
+        });
+        
+        const batchResults = await Promise.all(batchPromises);
+        validatedPlants.push(...batchResults);
+      }
+      
+      res.json({ 
+        success: true, 
+        plants: validatedPlants,
+        validated: validatedPlants.filter(p => p.sources?.perplexity).length
+      });
+    } catch (error) {
+      console.error("Error validating plants with Perplexity:", error);
+      res.status(500).json({ message: "Failed to validate plants" });
+    }
+  });
+
   // FireCrawl Plant Data Scraping Endpoint
   app.post('/api/admin/scrape-plant-data', isAuthenticated, async (req: any, res) => {
     try {
