@@ -293,7 +293,8 @@ export default function PlantSearchModal({
                               <CompactPlantCard
                                 plant={plant}
                                 isAdmin={false}
-                                hideActions={true}
+                                hideActions={false}
+                                hideCollectionActions={true}
                               />
                             </div>
                             

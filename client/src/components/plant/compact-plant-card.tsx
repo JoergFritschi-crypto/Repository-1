@@ -40,6 +40,7 @@ interface CompactPlantCardProps {
   isAdmin?: boolean;
   isInCollection?: boolean;
   hideActions?: boolean;
+  hideCollectionActions?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   onVerify?: () => void;
@@ -175,6 +176,7 @@ export function CompactPlantCard({
   isAdmin = false,
   isInCollection = false,
   hideActions = false,
+  hideCollectionActions = false,
   onEdit,
   onDelete,
   onVerify,
@@ -599,31 +601,33 @@ export function CompactPlantCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="flex-1 h-6 text-[10px] px-2"
+                className={`${hideCollectionActions ? 'flex-1' : 'flex-1'} h-6 text-[10px] px-2`}
                 onClick={() => setShowDetailsDialog(true)}
               >
                 <Eye className="w-3 h-3 mr-0.5" />
                 Details
               </Button>
-              {!isInCollection ? (
-                <Button
-                  size="sm"
-                  className="flex-1 h-6 text-[10px] px-2"
-                  onClick={() => setShowAddDialog(true)}
-                >
-                  <Plus className="w-3 h-3 mr-0.5" />
-                  Add
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="flex-1 h-6 text-[10px] px-2"
-                  onClick={() => removeFromCollectionMutation.mutate(plant.id)}
-                >
-                  <Heart className="w-3 h-3 mr-0.5 fill-current" />
-                  Remove
-                </Button>
+              {!hideCollectionActions && (
+                !isInCollection ? (
+                  <Button
+                    size="sm"
+                    className="flex-1 h-6 text-[10px] px-2"
+                    onClick={() => setShowAddDialog(true)}
+                  >
+                    <Plus className="w-3 h-3 mr-0.5" />
+                    Add
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="flex-1 h-6 text-[10px] px-2"
+                    onClick={() => removeFromCollectionMutation.mutate(plant.id)}
+                  >
+                    <Heart className="w-3 h-3 mr-0.5 fill-current" />
+                    Remove
+                  </Button>
+                )
               )}
             </div>
           )}
