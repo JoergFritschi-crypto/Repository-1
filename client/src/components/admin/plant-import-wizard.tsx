@@ -12,6 +12,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { 
   Search, 
   ChevronRight, 
@@ -28,7 +36,11 @@ import {
   Ban,
   Link,
   FileText,
-  Sparkles
+  Sparkles,
+  Info,
+  BarChart3,
+  TrendingUp,
+  AlertTriangle
 } from 'lucide-react';
 
 interface PlantImportData {
@@ -666,6 +678,8 @@ export function PlantImportWizard() {
     gbif: true,
     perplexity: true
   });
+  const [validationSummary, setValidationSummary] = useState<any>(null);
+  const [showValidationSummary, setShowValidationSummary] = useState(false);
 
   // Scrape website using FireCrawl
   const scrapeWebsite = async () => {
@@ -779,28 +793,34 @@ export function PlantImportWizard() {
           setScrapingResults(updatedResults);
           setSearchProgress('');
           
-          // Show enrichment statistics
-          let message = `Validated ${selectedScrapedPlants.length} plants`;
-          if (result.enriched) {
-            const details = [];
-            if (result.enriched.perenual > 0) {
-              details.push(`${result.enriched.perenual} from Perenual`);
+          // Store and show validation summary
+          if (result.summary) {
+            setValidationSummary(result.summary);
+            setShowValidationSummary(true);
+          } else {
+            // Fallback to old format if backend doesn't return summary yet
+            let message = `Validated ${selectedScrapedPlants.length} plants`;
+            if (result.enriched) {
+              const details = [];
+              if (result.enriched.perenual > 0) {
+                details.push(`${result.enriched.perenual} from Perenual`);
+              }
+              if (result.enriched.perplexity > 0) {
+                details.push(`${result.enriched.perplexity} from Perplexity`);
+              }
+              if (result.enriched.both > 0) {
+                details.push(`${result.enriched.both} used both sources`);
+              }
+              if (details.length > 0) {
+                message = `${message} (${details.join(', ')})`;
+              }
             }
-            if (result.enriched.perplexity > 0) {
-              details.push(`${result.enriched.perplexity} from Perplexity`);
-            }
-            if (result.enriched.both > 0) {
-              details.push(`${result.enriched.both} used both sources`);
-            }
-            if (details.length > 0) {
-              message = `${message} (${details.join(', ')})`;
-            }
+            
+            toast({
+              title: "✓ Validation Complete",
+              description: message,
+            });
           }
-          
-          toast({
-            title: "✓ Validation Complete",
-            description: message,
-          });
         } else {
           throw new Error('Validation failed');
         }
@@ -1587,5 +1607,219 @@ export function PlantImportWizard() {
         </Tabs>
       </CardContent>
     </Card>
+    
+    {/* Validation Summary Dialog */}
+    <Dialog open={showValidationSummary} onOpenChange={setShowValidationSummary}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            Validation Quality Report
+          </DialogTitle>
+          <DialogDescription>
+            Comprehensive analysis of plant data validation results
+          </DialogDescription>
+        </DialogHeader>
+        
+        {validationSummary && (
+          <div className="space-y-6">
+            {/* Overall Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">Total Plants</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{validationSummary.totalPlants}</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">Average Data Quality</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold flex items-center">
+                    {validationSummary.dataQuality?.averageScore || 0}%
+                    {validationSummary.dataQuality?.averageScore >= 70 ? 
+                      <TrendingUp className="w-4 h-4 ml-2 text-green-500" /> :
+                      <AlertTriangle className="w-4 h-4 ml-2 text-yellow-500" />
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">Cultivar Success Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">
+                    {validationSummary.cultivars?.perenualRate || 0}%
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {validationSummary.cultivars?.foundInPerenual || 0} of {validationSummary.cultivars?.total || 0} cultivars found
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Source Performance */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Data Source Performance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Perenual Performance */}
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Perenual Database</span>
+                    <span className="text-sm text-muted-foreground">
+                      {validationSummary.sources?.perenual?.found || 0} found / {validationSummary.totalPlants} total
+                    </span>
+                  </div>
+                  <Progress 
+                    value={validationSummary.sources?.perenual?.successRate || 0} 
+                    className="h-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {validationSummary.sources?.perenual?.successRate || 0}% success rate
+                    {validationSummary.sources?.perenual?.notFound > 0 && 
+                      ` (${validationSummary.sources.perenual.notFound} not found)`
+                    }
+                  </p>
+                </div>
+                
+                {/* Perplexity Performance */}
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Perplexity AI Gap Filling</span>
+                    <span className="text-sm text-muted-foreground">
+                      {validationSummary.sources?.perplexity?.enriched || 0} enriched
+                    </span>
+                  </div>
+                  <Progress 
+                    value={validationSummary.sources?.perplexity?.enrichmentRate || 0} 
+                    className="h-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {validationSummary.sources?.perplexity?.enrichmentRate || 0}% of plants enhanced with AI
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Data Quality Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Data Quality Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full" />
+                      <span className="text-sm">Excellent (80-100%)</span>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {validationSummary.dataQuality?.excellentPlants || 0} plants
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                      <span className="text-sm">Good (60-79%)</span>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {validationSummary.dataQuality?.goodPlants || 0} plants
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+                      <span className="text-sm">Fair (40-59%)</span>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {validationSummary.dataQuality?.fairPlants || 0} plants
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full" />
+                      <span className="text-sm">Poor (&lt;40%)</span>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {validationSummary.dataQuality?.poorPlants || 0} plants
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Most Missing Fields */}
+            {validationSummary.mostMissingFields && validationSummary.mostMissingFields.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                    Most Commonly Missing Fields
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {validationSummary.mostMissingFields.slice(0, 5).map((field: any) => (
+                      <div key={field.field} className="flex items-center justify-between">
+                        <span className="text-sm capitalize">
+                          {field.field.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {field.percentage}% missing
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Cultivar Analysis (if relevant) */}
+            {validationSummary.cultivars?.total > 0 && (
+              <Alert>
+                <Info className="w-4 h-4" />
+                <AlertDescription>
+                  <strong>Cultivar Coverage:</strong> Out of {validationSummary.cultivars.total} cultivars detected, 
+                  only {validationSummary.cultivars.foundInPerenual} ({validationSummary.cultivars.perenualRate}%) 
+                  were found in Perenual's database. {validationSummary.cultivars.enrichedByPerplexity} cultivars 
+                  ({validationSummary.cultivars.perplexityRate}%) were enriched using AI.
+                  This is expected as cultivar databases are often incomplete.
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowValidationSummary(false)}
+              >
+                Close Report
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowValidationSummary(false);
+                  importScrapedPlants();
+                }}
+                disabled={!scrapingResults?.plants?.length}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Database className="w-4 h-4 mr-2" />
+                Proceed to Import
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

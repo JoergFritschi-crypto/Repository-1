@@ -3006,12 +3006,60 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       console.log(`Starting combined validation for ${plants.length} plants...`);
       const validatedPlants = [];
       
+      // Initialize statistics tracking
+      const stats = {
+        totalPlants: plants.length,
+        perenualFound: 0,
+        perenualNotFound: 0,
+        perplexityEnriched: 0,
+        fieldCompleteness: {
+          beforeValidation: {} as Record<string, number>,
+          afterPerenual: {} as Record<string, number>,
+          afterPerplexity: {} as Record<string, number>
+        },
+        missingFieldsFrequency: {} as Record<string, number>,
+        dataQualityScores: [] as number[],
+        cultivarStats: {
+          total: 0,
+          foundInPerenual: 0,
+          enrichedByPerplexity: 0
+        }
+      };
+      
+      // Track which fields we care about for completeness
+      const trackedFields = [
+        'scientific_name', 'common_name', 'family', 'genus', 'species',
+        'heightMinCm', 'heightMaxCm', 'spreadMinCm', 'spreadMaxCm',
+        'sunlight', 'watering', 'soil', 'soilPH', 'hardiness',
+        'flowerColor', 'leafColor', 'floweringSeason',
+        'droughtTolerant', 'careLevel', 'maintenance',
+        'poisonousToHumans', 'poisonousToPets'
+      ];
+      
+      // Calculate initial field completeness
+      plants.forEach(plant => {
+        trackedFields.forEach(field => {
+          if (!stats.fieldCompleteness.beforeValidation[field]) {
+            stats.fieldCompleteness.beforeValidation[field] = 0;
+          }
+          if (plant[field] && (Array.isArray(plant[field]) ? plant[field].length > 0 : true)) {
+            stats.fieldCompleteness.beforeValidation[field]++;
+          }
+        });
+        
+        // Check if it's a cultivar (has quotes in scientific name or has cultivar field)
+        if (plant.scientific_name?.includes("'") || plant.cultivar) {
+          stats.cultivarStats.total++;
+        }
+      });
+      
       // Initialize plant import service for Perenual
       const plantImportService = new PlantImportService();
       
       // Process each plant
       for (let i = 0; i < plants.length; i++) {
         let plant = { ...plants[i] };
+        const isCultivar = plant.scientific_name?.includes("'") || plant.cultivar;
         
         // Step 1: Search Perenual if enabled
         if (options?.perenual && perenualAPI) {
@@ -3082,12 +3130,31 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
                   };
                   
                   console.log(`Enriched ${plant.common_name} with Perenual data`);
+                  stats.perenualFound++;
+                  if (isCultivar) {
+                    stats.cultivarStats.foundInPerenual++;
+                  }
                 }
               }
+            } else {
+              stats.perenualNotFound++;
             }
           } catch (error) {
             console.error(`Perenual search failed for ${plant.common_name}:`, error);
+            stats.perenualNotFound++;
           }
+        }
+        
+        // Track field completeness after Perenual
+        if (options?.perenual) {
+          trackedFields.forEach(field => {
+            if (!stats.fieldCompleteness.afterPerenual[field]) {
+              stats.fieldCompleteness.afterPerenual[field] = 0;
+            }
+            if (plant[field] && (Array.isArray(plant[field]) ? plant[field].length > 0 : true)) {
+              stats.fieldCompleteness.afterPerenual[field]++;
+            }
+          });
         }
         
         // Step 2: Fill remaining gaps with Perplexity if enabled
@@ -3150,6 +3217,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
                     };
                     
                     console.log(`Filled gaps for ${plant.common_name} with Perplexity`);
+                    stats.perplexityEnriched++;
+                    if (isCultivar) {
+                      stats.cultivarStats.enrichedByPerplexity++;
+                    }
                   }
                 } catch (parseError) {
                   console.error('Failed to parse Perplexity response');
@@ -3158,19 +3229,113 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
             } catch (error) {
               console.error(`Perplexity validation failed for ${plant.common_name}:`, error);
             }
+            
+            // Track which fields are still missing
+            missingFields.forEach(field => {
+              if (!stats.missingFieldsFrequency[field]) {
+                stats.missingFieldsFrequency[field] = 0;
+              }
+              stats.missingFieldsFrequency[field]++;
+            });
           }
         }
+        
+        // Calculate data quality score for this plant (percentage of tracked fields filled)
+        let filledFields = 0;
+        trackedFields.forEach(field => {
+          if (plant[field] && (Array.isArray(plant[field]) ? plant[field].length > 0 : true)) {
+            filledFields++;
+          }
+        });
+        const qualityScore = (filledFields / trackedFields.length) * 100;
+        stats.dataQualityScores.push(qualityScore);
         
         validatedPlants.push(plant);
       }
       
+      // Calculate final field completeness after all validation
+      trackedFields.forEach(field => {
+        if (!stats.fieldCompleteness.afterPerplexity[field]) {
+          stats.fieldCompleteness.afterPerplexity[field] = 0;
+        }
+        validatedPlants.forEach(plant => {
+          if (plant[field] && (Array.isArray(plant[field]) ? plant[field].length > 0 : true)) {
+            stats.fieldCompleteness.afterPerplexity[field]++;
+          }
+        });
+      });
+      
+      // Calculate summary statistics
+      const avgQualityScore = stats.dataQualityScores.length > 0 
+        ? stats.dataQualityScores.reduce((a, b) => a + b, 0) / stats.dataQualityScores.length 
+        : 0;
+      
+      const minQualityScore = stats.dataQualityScores.length > 0 
+        ? Math.min(...stats.dataQualityScores) 
+        : 0;
+        
+      const maxQualityScore = stats.dataQualityScores.length > 0 
+        ? Math.max(...stats.dataQualityScores) 
+        : 0;
+      
+      // Create field completeness percentages
+      const fieldCompletionRates = {} as Record<string, { before: number, afterPerenual: number, afterPerplexity: number }>;
+      trackedFields.forEach(field => {
+        fieldCompletionRates[field] = {
+          before: Math.round((stats.fieldCompleteness.beforeValidation[field] || 0) / plants.length * 100),
+          afterPerenual: Math.round((stats.fieldCompleteness.afterPerenual[field] || 0) / plants.length * 100),
+          afterPerplexity: Math.round((stats.fieldCompleteness.afterPerplexity[field] || 0) / plants.length * 100)
+        };
+      });
+      
+      // Sort missing fields by frequency
+      const sortedMissingFields = Object.entries(stats.missingFieldsFrequency)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10) // Top 10 most commonly missing fields
+        .map(([field, count]) => ({ 
+          field, 
+          count, 
+          percentage: Math.round(count / plants.length * 100) 
+        }));
+      
       res.json({ 
         success: true, 
         plants: validatedPlants,
-        enriched: {
-          perenual: validatedPlants.filter(p => p.sources?.perenual).length,
-          perplexity: validatedPlants.filter(p => p.sources?.perplexity).length,
-          both: validatedPlants.filter(p => p.sources?.perenual && p.sources?.perplexity).length
+        summary: {
+          totalPlants: stats.totalPlants,
+          sources: {
+            perenual: {
+              found: stats.perenualFound,
+              notFound: stats.perenualNotFound,
+              successRate: Math.round(stats.perenualFound / stats.totalPlants * 100)
+            },
+            perplexity: {
+              enriched: stats.perplexityEnriched,
+              enrichmentRate: Math.round(stats.perplexityEnriched / stats.totalPlants * 100)
+            }
+          },
+          cultivars: {
+            total: stats.cultivarStats.total,
+            foundInPerenual: stats.cultivarStats.foundInPerenual,
+            perenualRate: stats.cultivarStats.total > 0 
+              ? Math.round(stats.cultivarStats.foundInPerenual / stats.cultivarStats.total * 100) 
+              : 0,
+            enrichedByPerplexity: stats.cultivarStats.enrichedByPerplexity,
+            perplexityRate: stats.cultivarStats.total > 0 
+              ? Math.round(stats.cultivarStats.enrichedByPerplexity / stats.cultivarStats.total * 100) 
+              : 0
+          },
+          dataQuality: {
+            averageScore: Math.round(avgQualityScore),
+            minScore: Math.round(minQualityScore),
+            maxScore: Math.round(maxQualityScore),
+            excellentPlants: stats.dataQualityScores.filter(s => s >= 80).length,
+            goodPlants: stats.dataQualityScores.filter(s => s >= 60 && s < 80).length,
+            fairPlants: stats.dataQualityScores.filter(s => s >= 40 && s < 60).length,
+            poorPlants: stats.dataQualityScores.filter(s => s < 40).length
+          },
+          fieldCompletionRates,
+          mostMissingFields: sortedMissingFields
         }
       });
     } catch (error) {
