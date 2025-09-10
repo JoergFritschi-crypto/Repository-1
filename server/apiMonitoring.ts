@@ -404,7 +404,16 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
-            // Test authentication using Authorization header only (not both header and body)
+            // Generate a proper UUID v4 for Runware
+            const generateUUID = () => {
+              return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+              });
+            };
+            
+            // Test with a minimal request that validates the API key
             const response = await fetch('https://api.runware.ai/v1', {
               method: 'POST',
               headers: { 
@@ -414,38 +423,59 @@ export class APIMonitoringService {
               body: JSON.stringify([
                 {
                   taskType: 'imageInference',
-                  taskUUID: 'health-check-' + Date.now(),
+                  taskUUID: generateUUID(),
                   positivePrompt: 'test',
                   width: 512,
                   height: 512,
                   model: 'runware:100@1',
-                  numberResults: 1,
-                  outputType: 'URL',
-                  checkNSFW: false
+                  numberResults: 1
                 }
               ])
             });
             const responseTime = Date.now() - startTime;
             
-            if (response.ok) {
-              const data = await response.json();
-              // Check for successful response
-              if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-                return {
-                  service: 'runware',
-                  status: 'healthy',
-                  responseTime,
-                  metadata: { taskType: data.data[0].taskType }
-                };
-              } else if (data.errors && data.errors[0]) {
-                // Request failed
+            const data = await response.json();
+            
+            // Runware returns errors even with 200 status
+            if (data.errors && data.errors.length > 0) {
+              const error = data.errors[0];
+              // Check if it's an auth error or other error
+              if (error.code === 'invalidApiKey' || error.message?.includes('Invalid API key')) {
                 return {
                   service: 'runware',
                   status: 'down',
                   responseTime,
-                  errorMessage: data.errors[0].message || 'Request failed'
+                  errorMessage: 'Invalid API key'
+                };
+              } else {
+                // Other errors might just mean rate limits or temporary issues
+                return {
+                  service: 'runware',
+                  status: 'degraded',
+                  responseTime,
+                  errorMessage: error.message || 'Service issue'
                 };
               }
+            }
+            
+            // If we get a successful response with data
+            if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+              return {
+                service: 'runware',
+                status: 'healthy',
+                responseTime,
+                metadata: { taskType: data.data[0].taskType }
+              };
+            }
+            
+            // If response is ok but no data (might be queued)
+            if (response.ok) {
+              return {
+                service: 'runware',
+                status: 'healthy',
+                responseTime,
+                metadata: { note: 'Request accepted' }
+              };
             } 
             
             // Handle non-200 responses
