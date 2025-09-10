@@ -721,61 +721,100 @@ export function PlantImportWizard() {
       return;
     }
 
+    // Check if at least one validation option is selected
+    if (!validationOptions.perenual && !validationOptions.gbif && !validationOptions.perplexity) {
+      toast({
+        title: "Error",
+        description: "Please select at least one validation source",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsValidatingScraped(true);
     const plantsToValidate = scrapingResults.plants.filter((_: any, idx: number) => 
       selectedScrapedPlants.includes(idx)
     );
 
     try {
-      let validatedPlants = [...plantsToValidate];
-      
-      // Validate with Perenual if enabled
-      if (validationOptions.perenual) {
-        setSearchProgress(`Validating with Perenual (0/${plantsToValidate.length})...`);
-        // Call Perenual validation endpoint (to be implemented)
-      }
-      
-      // Validate with GBIF if enabled  
-      if (validationOptions.gbif) {
-        setSearchProgress(`Validating with GBIF (0/${plantsToValidate.length})...`);
-        // Call GBIF validation endpoint (to be implemented)
-      }
-      
-      // Fill gaps with Perplexity if enabled
-      if (validationOptions.perplexity) {
-        setSearchProgress('Filling gaps with Perplexity AI...');
-        const response = await fetch('/api/admin/validate-plants-perplexity', {
+      // Use combined validation endpoint for Perenual + Perplexity
+      if (validationOptions.perenual || validationOptions.perplexity) {
+        // Set progress message based on selected options
+        if (validationOptions.perenual && validationOptions.perplexity) {
+          setSearchProgress('Searching Perenual database and filling gaps with Perplexity AI...');
+        } else if (validationOptions.perenual) {
+          setSearchProgress(`Searching Perenual database for ${plantsToValidate.length} plants...`);
+        } else {
+          setSearchProgress('Filling gaps with Perplexity AI...');
+        }
+
+        const response = await fetch('/api/admin/validate-plants-combined', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ plants: validatedPlants })
+          body: JSON.stringify({ 
+            plants: plantsToValidate,
+            options: {
+              perenual: validationOptions.perenual,
+              perplexity: validationOptions.perplexity
+            }
+          })
         });
         
         if (response.ok) {
           const result = await response.json();
-          validatedPlants = result.plants || validatedPlants;
+          
+          // Update scraped plants with validated data
+          const updatedResults = {
+            ...scrapingResults,
+            plants: scrapingResults.plants.map((plant: any, idx: number) => {
+              const validatedIndex = selectedScrapedPlants.indexOf(idx);
+              if (validatedIndex !== -1 && result.plants[validatedIndex]) {
+                return result.plants[validatedIndex];
+              }
+              return plant;
+            })
+          };
+          
+          setScrapingResults(updatedResults);
+          setSearchProgress('');
+          
+          // Show enrichment statistics
+          let message = `Validated ${selectedScrapedPlants.length} plants`;
+          if (result.enriched) {
+            const details = [];
+            if (result.enriched.perenual > 0) {
+              details.push(`${result.enriched.perenual} from Perenual`);
+            }
+            if (result.enriched.perplexity > 0) {
+              details.push(`${result.enriched.perplexity} from Perplexity`);
+            }
+            if (result.enriched.both > 0) {
+              details.push(`${result.enriched.both} used both sources`);
+            }
+            if (details.length > 0) {
+              message = `${message} (${details.join(', ')})`;
+            }
+          }
+          
+          toast({
+            title: "✓ Validation Complete",
+            description: message,
+          });
+        } else {
+          throw new Error('Validation failed');
         }
       }
       
-      // Update scraped plants with validated data
-      const updatedResults = {
-        ...scrapingResults,
-        plants: scrapingResults.plants.map((plant: any, idx: number) => {
-          const validatedIndex = selectedScrapedPlants.indexOf(idx);
-          if (validatedIndex !== -1) {
-            return validatedPlants[validatedIndex];
-          }
-          return plant;
-        })
-      };
-      
-      setScrapingResults(updatedResults);
-      setSearchProgress('');
-      
-      toast({
-        title: "✓ Validation Complete",
-        description: `Successfully validated ${selectedScrapedPlants.length} plants`,
-      });
+      // GBIF validation can be added separately if needed
+      if (validationOptions.gbif && !validationOptions.perenual && !validationOptions.perplexity) {
+        setSearchProgress(`Validating with GBIF...`);
+        // GBIF-only validation endpoint can be added here if needed
+        toast({
+          title: "GBIF Validation",
+          description: "GBIF-only validation is not yet implemented. Please use Perenual or Perplexity.",
+        });
+      }
     } catch (error) {
       console.error('Validation error:', error);
       toast({

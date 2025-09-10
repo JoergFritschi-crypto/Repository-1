@@ -403,6 +403,11 @@ export class PlantImportService {
     return plant;
   }
   
+  // Search Perenual by plant name (alias for searchPerenual)
+  async searchPerenualByName(name: string): Promise<any[]> {
+    return this.searchPerenual(name);
+  }
+  
   // Get detailed plant info from Perenual
   async getPerenualDetails(plantId: string): Promise<any> {
     if (!this.perenualApiKey) {

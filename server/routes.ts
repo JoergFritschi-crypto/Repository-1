@@ -15,6 +15,7 @@ import { apiMonitoring } from "./apiMonitoring";
 import { imageGenerationService } from "./imageGenerationService";
 import { runwareImageGenerator } from "./runwareImageGenerator";
 import { aiInpaintingService } from "./aiInpaintingService";
+import { PlantImportService } from "./plantImportService";
 import path from "path";
 
 // Initialize Stripe if API key is available
@@ -2985,6 +2986,196 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     } catch (error) {
       console.error("Error creating test garden:", error);
       res.status(500).json({ message: "Failed to create test garden" });
+    }
+  });
+
+  // Combined validation with Perenual first, then Perplexity for gaps
+  app.post('/api/admin/validate-plants-combined', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { plants, options } = req.body;
+      if (!plants || plants.length === 0) {
+        return res.status(400).json({ message: "No plants to validate" });
+      }
+
+      console.log(`Starting combined validation for ${plants.length} plants...`);
+      const validatedPlants = [];
+      
+      // Initialize plant import service for Perenual
+      const plantImportService = new PlantImportService();
+      
+      // Process each plant
+      for (let i = 0; i < plants.length; i++) {
+        let plant = { ...plants[i] };
+        
+        // Step 1: Search Perenual if enabled
+        if (options?.perenual && perenualAPI) {
+          try {
+            console.log(`Searching Perenual for: ${plant.scientific_name || plant.common_name}`);
+            
+            // Search by scientific name first, then common name
+            const searchTerm = plant.scientific_name || plant.common_name;
+            const perenualResults = await plantImportService.searchPerenualByName(searchTerm);
+            
+            if (perenualResults && perenualResults.length > 0) {
+              // Find best match (exact match preferred)
+              const exactMatch = perenualResults.find((p: any) => 
+                p.scientific_name?.toLowerCase() === plant.scientific_name?.toLowerCase()
+              );
+              const bestMatch = exactMatch || perenualResults[0];
+              
+              // Get detailed plant info if we have a Perenual ID
+              if (bestMatch.external_id) {
+                const detailedInfo = await plantImportService.getPerenualDetails(
+                  bestMatch.external_id.replace('perenual-', '')
+                );
+                
+                if (detailedInfo) {
+                  // Merge Perenual data with scraped data
+                  plant = {
+                    ...plant,
+                    // Taxonomy
+                    family: detailedInfo.family || plant.family,
+                    genus: detailedInfo.genus || plant.genus,
+                    species: detailedInfo.species || plant.species,
+                    
+                    // Growing conditions
+                    sunlight: detailedInfo.sunlight || plant.sunlight,
+                    watering: detailedInfo.watering || plant.watering,
+                    soil: detailedInfo.soil || plant.soil,
+                    hardiness: detailedInfo.hardiness || plant.hardiness,
+                    growthRate: detailedInfo.growth_rate || plant.growthRate,
+                    
+                    // Characteristics
+                    droughtTolerant: detailedInfo.drought_tolerant ?? plant.droughtTolerant,
+                    saltTolerant: detailedInfo.salt_tolerant ?? plant.saltTolerant,
+                    thorny: detailedInfo.thorny ?? plant.thorny,
+                    invasive: detailedInfo.invasive ?? plant.invasive,
+                    indoor: detailedInfo.indoor ?? plant.indoor,
+                    
+                    // Appearance
+                    flowerColor: detailedInfo.flower_color || plant.flowerColor,
+                    leafColor: detailedInfo.leaf_color || plant.leafColor,
+                    floweringSeason: detailedInfo.flowering_season || plant.floweringSeason,
+                    
+                    // Safety
+                    poisonousToHumans: detailedInfo.poisonous_to_humans ?? plant.poisonousToHumans,
+                    poisonousToPets: detailedInfo.poisonous_to_pets ?? plant.poisonousToPets,
+                    edibleFruit: detailedInfo.edible_fruit ?? plant.edibleFruit,
+                    edibleLeaf: detailedInfo.edible_leaf ?? plant.edibleLeaf,
+                    medicinal: detailedInfo.medicinal ?? plant.medicinal,
+                    
+                    // Care
+                    careLevel: detailedInfo.care_level || plant.careLevel,
+                    maintenance: detailedInfo.maintenance || plant.maintenance,
+                    
+                    // Add source tracking
+                    sources: {
+                      ...plant.sources,
+                      perenual: true
+                    }
+                  };
+                  
+                  console.log(`Enriched ${plant.common_name} with Perenual data`);
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Perenual search failed for ${plant.common_name}:`, error);
+          }
+        }
+        
+        // Step 2: Fill remaining gaps with Perplexity if enabled
+        if (options?.perplexity && perplexityAI) {
+          // Check for missing essential fields
+          const missingFields = [];
+          if (!plant.heightMinCm && !plant.heightMaxCm) missingFields.push('height range');
+          if (!plant.spreadMinCm && !plant.spreadMaxCm) missingFields.push('spread/width');
+          if (!plant.sunlight || plant.sunlight.length === 0) missingFields.push('sunlight requirements');
+          if (!plant.watering) missingFields.push('watering needs');
+          if (!plant.hardiness) missingFields.push('hardiness zones');
+          if (!plant.soil || plant.soil.length === 0) missingFields.push('soil type preferences');
+          if (!plant.soilPH) missingFields.push('soil pH requirements');
+          if (!plant.flowerColor || plant.flowerColor.length === 0) missingFields.push('flower colors');
+          if (!plant.leafColor || plant.leafColor.length === 0) missingFields.push('foliage colors');
+          if (!plant.toxicityCategory) missingFields.push('toxicity to humans and pets');
+          
+          if (missingFields.length > 0) {
+            try {
+              const query = `For the plant ${plant.scientific_name || plant.common_name}, provide the following missing information in a concise format:
+                ${missingFields.join(', ')}
+                
+                Format the response as JSON with these fields (use metric units for dimensions):
+                - heightMinCm: minimum height in centimeters
+                - heightMaxCm: maximum height in centimeters
+                - spreadMinCm: minimum spread in centimeters  
+                - spreadMaxCm: maximum spread in centimeters
+                - sunlight: array of light requirements (e.g., ["full sun", "partial shade"])
+                - watering: "minimum", "average", or "frequent"
+                - hardiness: USDA hardiness zones (e.g., "5-9")
+                - soil: array of soil types (e.g., ["well-drained", "sandy", "loamy"])
+                - soilPH: pH range (e.g., "6.0-7.5" or "acidic", "neutral", "alkaline")
+                - flowerColor: array of flower colors (e.g., ["purple", "pink", "white"])
+                - leafColor: array of foliage colors (e.g., ["green", "variegated", "silver"])
+                - toxicityCategory: "low", "moderate", or "high"
+                - childSafe: boolean
+                - petSafe: boolean`;
+              
+              const response = await perplexityAI.query(query);
+              
+              if (response && response.choices && response.choices[0]) {
+                const content = response.choices[0].message.content;
+                
+                // Try to parse JSON from response
+                try {
+                  const jsonMatch = content.match(/\{[\s\S]*\}/);
+                  if (jsonMatch) {
+                    const enrichmentData = JSON.parse(jsonMatch[0]);
+                    
+                    // Only merge fields that were missing
+                    Object.keys(enrichmentData).forEach(key => {
+                      if (!plant[key] || (Array.isArray(plant[key]) && plant[key].length === 0)) {
+                        plant[key] = enrichmentData[key];
+                      }
+                    });
+                    
+                    plant.sources = {
+                      ...plant.sources,
+                      perplexity: true
+                    };
+                    
+                    console.log(`Filled gaps for ${plant.common_name} with Perplexity`);
+                  }
+                } catch (parseError) {
+                  console.error('Failed to parse Perplexity response');
+                }
+              }
+            } catch (error) {
+              console.error(`Perplexity validation failed for ${plant.common_name}:`, error);
+            }
+          }
+        }
+        
+        validatedPlants.push(plant);
+      }
+      
+      res.json({ 
+        success: true, 
+        plants: validatedPlants,
+        enriched: {
+          perenual: validatedPlants.filter(p => p.sources?.perenual).length,
+          perplexity: validatedPlants.filter(p => p.sources?.perplexity).length,
+          both: validatedPlants.filter(p => p.sources?.perenual && p.sources?.perplexity).length
+        }
+      });
+    } catch (error) {
+      console.error("Error in combined validation:", error);
+      res.status(500).json({ message: "Failed to validate plants" });
     }
   });
 
