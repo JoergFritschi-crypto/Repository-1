@@ -204,66 +204,84 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         {showAdvanced && (
           <div className="space-y-6 pt-4 border-t">
             {/* Height Range Slider */}
-            <Card className="border-2">
+            <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Ruler className="w-4 h-4" />
+                <CardTitle className="text-base flex items-center gap-2 text-green-800">
+                  <Ruler className="w-4 h-4 text-green-600" />
                   Height Range
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Min Height: {filters.heightMin} cm</span>
-                    <span>Max Height: {filters.heightMax} cm</span>
+                  <div className="flex justify-between text-sm font-medium">
+                    <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
+                      Min: {filters.heightMin === 0 ? 'Any' : `${(filters.heightMin / 100).toFixed(1)}m`}
+                    </span>
+                    <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
+                      Max: {filters.heightMax === 500 ? 'Any' : `${(filters.heightMax / 100).toFixed(1)}m`}
+                    </span>
                   </div>
-                  <Slider
-                    min={0}
-                    max={500}
-                    step={10}
-                    value={[filters.heightMin, filters.heightMax]}
-                    onValueChange={(value) => {
-                      handleSliderChange("heightMin", value[0]);
-                      handleSliderChange("heightMax", value[1]);
-                    }}
-                    className="w-full"
-                    data-testid="slider-height-range"
-                  />
-                  <div className="text-xs text-center text-muted-foreground italic">
+                  <div className="relative">
+                    <Slider
+                      min={0}
+                      max={500}
+                      step={10}
+                      value={[filters.heightMin, filters.heightMax]}
+                      onValueChange={(value) => {
+                        handleSliderChange("heightMin", value[0]);
+                        handleSliderChange("heightMax", value[1]);
+                      }}
+                      className="w-full [&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-700 [&_.relative]:bg-green-200 [&_[data-orientation]]:bg-green-100"
+                      data-testid="slider-height-range"
+                    />
+                  </div>
+                  <div className="text-xs text-center text-green-600 font-medium">
                     From tiny ground covers to towering trees
+                  </div>
+                  <div className="text-xs text-center text-muted-foreground">
+                    Default: Shows all heights • Adjust to filter
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Spread/Width Range Slider */}
-            <Card className="border-2">
+            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Ruler className="w-4 h-4 rotate-90" />
+                <CardTitle className="text-base flex items-center gap-2 text-blue-800">
+                  <Ruler className="w-4 h-4 rotate-90 text-blue-600" />
                   Spread/Width Range
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Min Spread: {filters.spreadMin} cm</span>
-                    <span>Max Spread: {filters.spreadMax} cm</span>
+                  <div className="flex justify-between text-sm font-medium">
+                    <span className="text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                      Min: {filters.spreadMin === 0 ? 'Any' : `${(filters.spreadMin / 100).toFixed(1)}m`}
+                    </span>
+                    <span className="text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                      Max: {filters.spreadMax === 300 ? 'Any' : `${(filters.spreadMax / 100).toFixed(1)}m`}
+                    </span>
                   </div>
-                  <Slider
-                    min={0}
-                    max={300}
-                    step={10}
-                    value={[filters.spreadMin, filters.spreadMax]}
-                    onValueChange={(value) => {
-                      handleSliderChange("spreadMin", value[0]);
-                      handleSliderChange("spreadMax", value[1]);
-                    }}
-                    className="w-full"
-                    data-testid="slider-spread-range"
-                  />
-                  <div className="text-xs text-center text-muted-foreground italic">
+                  <div className="relative">
+                    <Slider
+                      min={0}
+                      max={300}
+                      step={10}
+                      value={[filters.spreadMin, filters.spreadMax]}
+                      onValueChange={(value) => {
+                        handleSliderChange("spreadMin", value[0]);
+                        handleSliderChange("spreadMax", value[1]);
+                      }}
+                      className="w-full [&_[role=slider]]:bg-blue-600 [&_[role=slider]]:border-blue-700 [&_.relative]:bg-blue-200 [&_[data-orientation]]:bg-blue-100"
+                      data-testid="slider-spread-range"
+                    />
+                  </div>
+                  <div className="text-xs text-center text-blue-600 font-medium">
                     Plant width for proper spacing
+                  </div>
+                  <div className="text-xs text-center text-muted-foreground">
+                    Default: Shows all spreads • Adjust to filter
                   </div>
                 </div>
               </CardContent>
