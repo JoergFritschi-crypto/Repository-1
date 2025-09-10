@@ -751,6 +751,11 @@ export class APIMonitoringService {
         enabled: !!process.env.STRIPE_SECRET_KEY,
         critical: true,
         purpose: 'Payment processing'
+      },
+      firecrawl: {
+        enabled: !!process.env.FIRECRAWL_API_KEY,
+        critical: false,
+        purpose: 'Web scraping and crawling for plant data'
       }
     };
   }
