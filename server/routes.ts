@@ -1581,6 +1581,22 @@ Rules:
     }
   });
 
+  // Get collection limits for current user
+  app.get('/api/my-collection/limits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limits = await storage.canAddToCollection(userId);
+      const user = await storage.getUser(userId);
+      res.json({
+        ...limits,
+        userTier: user?.userTier || 'free'
+      });
+    } catch (error) {
+      console.error("Error fetching collection limits:", error);
+      res.status(500).json({ message: "Failed to fetch collection limits" });
+    }
+  });
+
   app.post('/api/my-collection', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -1593,7 +1609,22 @@ Rules:
       res.status(201).json(collection);
     } catch (error) {
       console.error("Error adding to plant collection:", error);
-      res.status(400).json({ message: "Failed to add to collection", error: (error as Error).message });
+      const errorMessage = (error as Error).message;
+      
+      // Check if it's a collection limit error
+      if (errorMessage.includes('Collection limit reached')) {
+        res.status(403).json({ 
+          message: errorMessage,
+          code: 'COLLECTION_LIMIT_REACHED'
+        });
+      } else if (errorMessage.includes('already in collection')) {
+        res.status(409).json({ 
+          message: errorMessage,
+          code: 'DUPLICATE_PLANT'
+        });
+      } else {
+        res.status(400).json({ message: "Failed to add to collection", error: errorMessage });
+      }
     }
   });
 

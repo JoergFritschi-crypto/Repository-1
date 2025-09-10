@@ -64,6 +64,8 @@ export interface IStorage {
   
   // User plant collection operations
   getUserPlantCollection(userId: string): Promise<UserPlantCollection[]>;
+  getUserCollectionCount(userId: string): Promise<number>;
+  canAddToCollection(userId: string): Promise<{ canAdd: boolean; limit: number; current: number }>;
   addToUserCollection(collection: InsertUserPlantCollection): Promise<UserPlantCollection>;
   removeFromUserCollection(userId: string, plantId: string): Promise<void>;
   
@@ -392,7 +394,64 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(userPlantCollections).where(eq(userPlantCollections.userId, userId));
   }
 
+  async getUserCollectionCount(userId: string): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(userPlantCollections)
+      .where(eq(userPlantCollections.userId, userId));
+    return Number(result[0]?.count || 0);
+  }
+
+  async canAddToCollection(userId: string): Promise<{ canAdd: boolean; limit: number; current: number }> {
+    // Get user to check their tier
+    const user = await this.getUser(userId);
+    if (!user) {
+      return { canAdd: false, limit: 0, current: 0 };
+    }
+
+    // Define collection limits based on tier
+    const limits = {
+      free: 15,           // Free users can save up to 15 plants
+      pay_per_design: 100, // Pay-per-design users get 100 plants
+      premium: -1         // Premium users have unlimited (-1 = unlimited)
+    };
+
+    const userTier = user.userTier || 'free';
+    const limit = limits[userTier as keyof typeof limits];
+    const current = await this.getUserCollectionCount(userId);
+    
+    // For unlimited (premium), always allow
+    if (limit === -1) {
+      return { canAdd: true, limit: -1, current };
+    }
+    
+    return { 
+      canAdd: current < limit, 
+      limit, 
+      current 
+    };
+  }
+
   async addToUserCollection(collection: InsertUserPlantCollection): Promise<UserPlantCollection> {
+    // Check if user can add more plants
+    const { canAdd } = await this.canAddToCollection(collection.userId);
+    if (!canAdd) {
+      throw new Error('Collection limit reached. Upgrade to Premium for unlimited plants.');
+    }
+    
+    // Check if plant already in collection
+    const existing = await db.select()
+      .from(userPlantCollections)
+      .where(
+        and(
+          eq(userPlantCollections.userId, collection.userId),
+          eq(userPlantCollections.plantId, collection.plantId)
+        )
+      );
+    
+    if (existing.length > 0) {
+      throw new Error('Plant already in collection');
+    }
+    
     const [newCollection] = await db.insert(userPlantCollections).values(collection).returning();
     return newCollection;
   }
