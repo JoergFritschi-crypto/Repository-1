@@ -39,7 +39,7 @@ export default function PlantSearchModal({
             if (value.length > 0) {
               params.append(key, value.join(','));
             }
-          } else {
+          } else if (value !== null) {
             params.append(key, value.toString());
           }
         }
