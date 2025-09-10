@@ -75,6 +75,23 @@ export default function PlantSearchModal({
     
     let filtered = myCollection.map(item => item.plant).filter(Boolean);
     
+    // If no filters are applied, return all collection plants
+    const hasActiveFilters = Object.keys(filters).some(key => {
+      const value = filters[key];
+      if (key === 'heightMin' && value === 0) return false;
+      if (key === 'heightMax' && value === 500) return false;
+      if (key === 'spreadMin' && value === 0) return false;
+      if (key === 'spreadMax' && value === 300) return false;
+      if (key === 'selectedColors' && (!value || value.length === 0)) return false;
+      if (key === 'includeLargeSpecimens' && value === false) return false;
+      if (value === undefined || value === '' || value === 'all') return false;
+      return true;
+    });
+    
+    if (!hasActiveFilters) {
+      return filtered; // Return all collection plants when no filters
+    }
+    
     // Apply filters to collection
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
@@ -394,24 +411,28 @@ export default function PlantSearchModal({
                 </div>
               )}
 
-              {/* Initial State */}
-              {!isLoading && searchResults.length === 0 && Object.keys(filters).length === 0 && (
+              {/* Initial State - only show for database search */}
+              {!isLoading && searchResults.length === 0 && Object.keys(filters).length === 0 && searchSource === 'database' && (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
                     <Leaf className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">
-                      {searchSource === 'collection' 
-                        ? 'Search Your Collection'
-                        : 'Search Plant Database'}
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-2">Search Plant Database</h3>
                     <p className="text-muted-foreground">
                       Use the filters above to find plants
                     </p>
-                    {searchSource === 'collection' && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        You have {myCollection.length} plants in your collection
-                      </p>
-                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Empty Collection State */}
+              {!isLoading && searchSource === 'collection' && myCollection.length === 0 && (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Your Collection is Empty</h3>
+                    <p className="text-muted-foreground">
+                      Switch to the Plant Database tab to find and add plants to your collection
+                    </p>
                   </div>
                 </div>
               )}
