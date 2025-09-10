@@ -175,92 +175,32 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         {/* All Filters Section - Always visible */}
         <ScrollArea className="h-[450px] border rounded-lg p-4 bg-gray-50/50">
             <div className="space-y-6 pr-4">
-            {/* Basic Characteristics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Type</label>
-                <Select
-                  value={filters.type || "all"}
-                  onValueChange={(value) => handleFilterChange("type", value)}
-                >
-                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-plant-type">
-                    <SelectValue placeholder="All Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="perennial">Perennials</SelectItem>
-                    <SelectItem value="annual">Annuals</SelectItem>
-                    <SelectItem value="biennial">Biennials</SelectItem>
-                    <SelectItem value="shrub">Shrubs</SelectItem>
-                    <SelectItem value="tree">Trees</SelectItem>
-                    <SelectItem value="bulb">Bulbs</SelectItem>
-                    <SelectItem value="climber">Climbers</SelectItem>
-                    <SelectItem value="grass">Ornamental Grasses</SelectItem>
-                    <SelectItem value="succulent">Succulents</SelectItem>
-                    <SelectItem value="cactus">Cacti</SelectItem>
-                    <SelectItem value="fern">Ferns</SelectItem>
-                    <SelectItem value="aquatic">Aquatic Plants</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Sun Requirements</label>
-                <Select
-                  value={filters.sunlight || "all"}
-                  onValueChange={(value) => handleFilterChange("sunlight", value)}
-                >
-                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-sunlight">
-                    <SelectValue placeholder="Any Sun" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any Sun</SelectItem>
-                    <SelectItem value="full_sun">Full Sun</SelectItem>
-                    <SelectItem value="part_shade">Part Shade</SelectItem>
-                    <SelectItem value="full_shade">Full Shade</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Soil Type</label>
-                <Select
-                  value={filters.soil || "all"}
-                  onValueChange={(value) => handleFilterChange("soil", value)}
-                >
-                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-soil">
-                    <SelectValue placeholder="Any Soil" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any Soil</SelectItem>
-                    <SelectItem value="acidic">Acidic (pH below 6.5)</SelectItem>
-                    <SelectItem value="neutral">Neutral (pH 6.5-7.5)</SelectItem>
-                    <SelectItem value="alkaline">Alkaline (pH above 7.5)</SelectItem>
-                    <SelectItem value="well-drained">Well-drained</SelectItem>
-                    <SelectItem value="clay">Clay</SelectItem>
-                    <SelectItem value="sandy">Sandy</SelectItem>
-                    <SelectItem value="loamy">Loamy</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Water Needs</label>
-                <Select
-                  value={filters.water || "all"}
-                  onValueChange={(value) => handleFilterChange("water", value)}
-                >
-                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-water">
-                    <SelectValue placeholder="Any Water" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any Water</SelectItem>
-                    <SelectItem value="low">Low Water</SelectItem>
-                    <SelectItem value="moderate">Moderate Water</SelectItem>
-                    <SelectItem value="high">High Water</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Plant Type - standalone at top */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Type</label>
+              <Select
+                value={filters.type || "all"}
+                onValueChange={(value) => handleFilterChange("type", value)}
+              >
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-plant-type">
+                  <SelectValue placeholder="All Plant Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Plant Types</SelectItem>
+                  <SelectItem value="perennial">Perennials</SelectItem>
+                  <SelectItem value="annual">Annuals</SelectItem>
+                  <SelectItem value="biennial">Biennials</SelectItem>
+                  <SelectItem value="shrub">Shrubs</SelectItem>
+                  <SelectItem value="tree">Trees</SelectItem>
+                  <SelectItem value="bulb">Bulbs</SelectItem>
+                  <SelectItem value="climber">Climbers</SelectItem>
+                  <SelectItem value="grass">Ornamental Grasses</SelectItem>
+                  <SelectItem value="succulent">Succulents</SelectItem>
+                  <SelectItem value="cactus">Cacti</SelectItem>
+                  <SelectItem value="fern">Ferns</SelectItem>
+                  <SelectItem value="aquatic">Aquatic Plants</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             {/* Height Range Slider */}
@@ -437,110 +377,31 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             {/* Row 1: Growing Conditions */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Select
-                value={filters.watering || "all"}
-                onValueChange={(value) => handleFilterChange("watering", value)}
+                value={filters.sunlight || "all"}
+                onValueChange={(value) => handleFilterChange("sunlight", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-watering">
-                  <SelectValue placeholder="Water Needs" />
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-sunlight">
+                  <SelectValue placeholder="Any Sun Requirements" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Any Water</SelectItem>
-                  <SelectItem value="minimal">Minimal</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="moderate">Moderate</SelectItem>
-                  <SelectItem value="frequent">Frequent</SelectItem>
+                  <SelectItem value="all">Any Sun Requirements</SelectItem>
+                  <SelectItem value="full_sun">Full Sun</SelectItem>
+                  <SelectItem value="part_shade">Part Shade</SelectItem>
+                  <SelectItem value="full_shade">Full Shade</SelectItem>
                 </SelectContent>
               </Select>
               <Select
-                value={filters.growth_rate || "all"}
-                onValueChange={(value) => handleFilterChange("growth_rate", value)}
+                value={filters.water || "all"}
+                onValueChange={(value) => handleFilterChange("water", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-growth-rate">
-                  <SelectValue placeholder="Growth Rate" />
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-water">
+                  <SelectValue placeholder="Any Water Requirements" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Any Growth</SelectItem>
-                  <SelectItem value="slow">Slow</SelectItem>
-                  <SelectItem value="moderate">Moderate</SelectItem>
-                  <SelectItem value="fast">Fast</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.maintenance || "all"}
-                onValueChange={(value) => handleFilterChange("maintenance", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-maintenance">
-                  <SelectValue placeholder="Maintenance" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any Level</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="moderate">Moderate</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.hardiness || "all"}
-                onValueChange={(value) => handleFilterChange("hardiness", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-hardiness">
-                  <SelectValue placeholder="Hardiness Zone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Zones</SelectItem>
-                  <SelectItem value="3-5">Zones 3-5 (Cold)</SelectItem>
-                  <SelectItem value="6-7">Zones 6-7 (Temperate)</SelectItem>
-                  <SelectItem value="8-9">Zones 8-9 (Warm)</SelectItem>
-                  <SelectItem value="10-11">Zones 10-11 (Tropical)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Row 2: Additional Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Select
-                value={filters.flowering_season || "all"}
-                onValueChange={(value) => handleFilterChange("flowering_season", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-flowering-season">
-                  <SelectValue placeholder="Bloom Time" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any Season</SelectItem>
-                  <SelectItem value="spring">Spring</SelectItem>
-                  <SelectItem value="summer">Summer</SelectItem>
-                  <SelectItem value="fall">Fall</SelectItem>
-                  <SelectItem value="winter">Winter</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.foliage || "all"}
-                onValueChange={(value) => handleFilterChange("foliage", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-foliage">
-                  <SelectValue placeholder="Foliage Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any Foliage</SelectItem>
-                  <SelectItem value="evergreen">Evergreen</SelectItem>
-                  <SelectItem value="deciduous">Deciduous</SelectItem>
-                  <SelectItem value="semi-evergreen">Semi-Evergreen</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.family || "all"}
-                onValueChange={(value) => handleFilterChange("family", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-family">
-                  <SelectValue placeholder="Plant Family" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Families</SelectItem>
-                  <SelectItem value="Asteraceae">Asteraceae (Daisy)</SelectItem>
-                  <SelectItem value="Rosaceae">Rosaceae (Rose)</SelectItem>
-                  <SelectItem value="Lamiaceae">Lamiaceae (Mint)</SelectItem>
-                  <SelectItem value="Fabaceae">Fabaceae (Legume)</SelectItem>
-                  <SelectItem value="Solanaceae">Solanaceae (Nightshade)</SelectItem>
+                  <SelectItem value="all">Any Water Requirements</SelectItem>
+                  <SelectItem value="low">Low Water</SelectItem>
+                  <SelectItem value="moderate">Moderate Water</SelectItem>
+                  <SelectItem value="high">High Water</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -548,14 +409,111 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 onValueChange={(value) => handleFilterChange("soil_type", value)}
               >
                 <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-soil-type">
-                  <SelectValue placeholder="Soil Type" />
+                  <SelectValue placeholder="Any Soil Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Any Soil</SelectItem>
+                  <SelectItem value="all">Any Soil Type</SelectItem>
                   <SelectItem value="clay">Clay</SelectItem>
                   <SelectItem value="loam">Loam</SelectItem>
-                  <SelectItem value="sand">Sand</SelectItem>
-                  <SelectItem value="chalk">Chalk</SelectItem>
+                  <SelectItem value="sand">Sandy</SelectItem>
+                  <SelectItem value="well-drained">Well-drained</SelectItem>
+                  <SelectItem value="moist">Moist</SelectItem>
+                  <SelectItem value="dry">Dry</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.soil_ph || "all"}
+                onValueChange={(value) => handleFilterChange("soil_ph", value)}
+              >
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-soil-ph">
+                  <SelectValue placeholder="Any Soil pH" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Soil pH</SelectItem>
+                  <SelectItem value="acidic">Acidic (pH below 6.5)</SelectItem>
+                  <SelectItem value="neutral">Neutral (pH 6.5-7.5)</SelectItem>
+                  <SelectItem value="alkaline">Alkaline (pH above 7.5)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Row 2: Additional Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Select
+                value={filters.growth_rate || "all"}
+                onValueChange={(value) => handleFilterChange("growth_rate", value)}
+              >
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-growth-rate">
+                  <SelectValue placeholder="Any Growth Pattern" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Growth Pattern</SelectItem>
+                  <SelectItem value="slow">Slow Growing</SelectItem>
+                  <SelectItem value="moderate">Moderate Growing</SelectItem>
+                  <SelectItem value="fast">Fast Growing</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.maintenance || "all"}
+                onValueChange={(value) => handleFilterChange("maintenance", value)}
+              >
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-maintenance">
+                  <SelectValue placeholder="Any Care Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Care Level</SelectItem>
+                  <SelectItem value="low">Low Maintenance</SelectItem>
+                  <SelectItem value="moderate">Moderate Maintenance</SelectItem>
+                  <SelectItem value="high">High Maintenance</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.hardiness || "all"}
+                onValueChange={(value) => handleFilterChange("hardiness", value)}
+              >
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-hardiness">
+                  <SelectValue placeholder="All Hardiness Zones" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Hardiness Zones</SelectItem>
+                  <SelectItem value="3-5">Zones 3-5 (Cold)</SelectItem>
+                  <SelectItem value="6-7">Zones 6-7 (Temperate)</SelectItem>
+                  <SelectItem value="8-9">Zones 8-9 (Warm)</SelectItem>
+                  <SelectItem value="10-11">Zones 10-11 (Tropical)</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.flowering_season || "all"}
+                onValueChange={(value) => handleFilterChange("flowering_season", value)}
+              >
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-flowering-season">
+                  <SelectValue placeholder="Any Bloom Season" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Bloom Season</SelectItem>
+                  <SelectItem value="spring">Spring Blooming</SelectItem>
+                  <SelectItem value="summer">Summer Blooming</SelectItem>
+                  <SelectItem value="fall">Fall Blooming</SelectItem>
+                  <SelectItem value="winter">Winter Blooming</SelectItem>
+                  <SelectItem value="year-round">Year-round Blooming</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Row 3: More Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Select
+                value={filters.foliage || "all"}
+                onValueChange={(value) => handleFilterChange("foliage", value)}
+              >
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-foliage">
+                  <SelectValue placeholder="Any Foliage Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Foliage Type</SelectItem>
+                  <SelectItem value="evergreen">Evergreen</SelectItem>
+                  <SelectItem value="deciduous">Deciduous</SelectItem>
+                  <SelectItem value="semi-evergreen">Semi-Evergreen</SelectItem>
                 </SelectContent>
               </Select>
             </div>
