@@ -6,8 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Filter, X, Flower, Ruler } from "lucide-react";
+import { Search, Filter, X, Flower, Ruler, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PlantAdvancedSearchProps {
   onSearch: (filters: any) => void;
@@ -175,32 +181,171 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         {/* All Filters Section - Always visible */}
         <ScrollArea className="h-[450px] border rounded-lg p-4 bg-gray-50/50">
             <div className="space-y-6 pr-4">
-            {/* Plant Type - standalone at top */}
+            {/* Plant Type - Multi-select */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Type</label>
-              <Select
-                value={filters.type || "all"}
-                onValueChange={(value) => handleFilterChange("type", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-plant-type">
-                  <SelectValue placeholder="All Plant Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Plant Types</SelectItem>
-                  <SelectItem value="perennial">Perennials</SelectItem>
-                  <SelectItem value="annual">Annuals</SelectItem>
-                  <SelectItem value="biennial">Biennials</SelectItem>
-                  <SelectItem value="shrub">Shrubs</SelectItem>
-                  <SelectItem value="tree">Trees</SelectItem>
-                  <SelectItem value="bulb">Bulbs</SelectItem>
-                  <SelectItem value="climber">Climbers</SelectItem>
-                  <SelectItem value="grass">Ornamental Grasses</SelectItem>
-                  <SelectItem value="succulent">Succulents</SelectItem>
-                  <SelectItem value="cactus">Cacti</SelectItem>
-                  <SelectItem value="fern">Ferns</SelectItem>
-                  <SelectItem value="aquatic">Aquatic Plants</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Types (Select Multiple)</label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between h-10 text-sm font-medium"
+                    data-testid="select-plant-types"
+                  >
+                    <span className="truncate">
+                      {filters.plantTypes && filters.plantTypes.length > 0
+                        ? `${filters.plantTypes.length} type${filters.plantTypes.length !== 1 ? 's' : ''} selected`
+                        : "Select Plant Types"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-64">
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("perennial") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "perennial"]
+                        : current.filter((t: string) => t !== "perennial");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Perennials
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("annual") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "annual"]
+                        : current.filter((t: string) => t !== "annual");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Annuals
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("biennial") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "biennial"]
+                        : current.filter((t: string) => t !== "biennial");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Biennials
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("shrub") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "shrub"]
+                        : current.filter((t: string) => t !== "shrub");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Shrubs
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("tree") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "tree"]
+                        : current.filter((t: string) => t !== "tree");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Trees
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("bulb") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "bulb"]
+                        : current.filter((t: string) => t !== "bulb");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Bulbs
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("climber") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "climber"]
+                        : current.filter((t: string) => t !== "climber");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Climbers
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("grass") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "grass"]
+                        : current.filter((t: string) => t !== "grass");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Ornamental Grasses
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("succulent") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "succulent"]
+                        : current.filter((t: string) => t !== "succulent");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Succulents
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("cactus") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "cactus"]
+                        : current.filter((t: string) => t !== "cactus");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Cacti
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("fern") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "fern"]
+                        : current.filter((t: string) => t !== "fern");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Ferns
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.plantTypes?.includes("aquatic") || false}
+                    onCheckedChange={(checked) => {
+                      const current = filters.plantTypes || [];
+                      const updated = checked 
+                        ? [...current, "aquatic"]
+                        : current.filter((t: string) => t !== "aquatic");
+                      handleFilterChange("plantTypes", updated);
+                    }}
+                  >
+                    Aquatic Plants
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             
             {/* Height Range Slider */}
@@ -375,12 +520,12 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </Card>
 
             {/* Row 1: Growing Conditions */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 value={filters.sunlight || "all"}
                 onValueChange={(value) => handleFilterChange("sunlight", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-sunlight">
+                <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-sunlight">
                   <SelectValue placeholder="Any Sun Requirements" />
                 </SelectTrigger>
                 <SelectContent>
@@ -394,7 +539,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.water || "all"}
                 onValueChange={(value) => handleFilterChange("water", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-water">
+                <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-water">
                   <SelectValue placeholder="Any Water Requirements" />
                 </SelectTrigger>
                 <SelectContent>
@@ -408,7 +553,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.soil_type || "all"}
                 onValueChange={(value) => handleFilterChange("soil_type", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-soil-type">
+                <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-soil-type">
                   <SelectValue placeholder="Any Soil Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -421,11 +566,15 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   <SelectItem value="dry">Dry</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Row 2: More Growing Conditions */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 value={filters.soil_ph || "all"}
                 onValueChange={(value) => handleFilterChange("soil_ph", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-soil-ph">
+                <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-soil-ph">
                   <SelectValue placeholder="Any Soil pH" />
                 </SelectTrigger>
                 <SelectContent>
@@ -437,13 +586,13 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </Select>
             </div>
 
-            {/* Row 2: Additional Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Row 3: Additional Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 value={filters.growth_rate || "all"}
                 onValueChange={(value) => handleFilterChange("growth_rate", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-growth-rate">
+                <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-growth-rate">
                   <SelectValue placeholder="Any Growth Pattern" />
                 </SelectTrigger>
                 <SelectContent>
@@ -457,7 +606,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.maintenance || "all"}
                 onValueChange={(value) => handleFilterChange("maintenance", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-maintenance">
+                <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-maintenance">
                   <SelectValue placeholder="Any Care Level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -471,7 +620,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.hardiness || "all"}
                 onValueChange={(value) => handleFilterChange("hardiness", value)}
               >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-hardiness">
+                <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-hardiness">
                   <SelectValue placeholder="All Hardiness Zones" />
                 </SelectTrigger>
                 <SelectContent>
@@ -482,40 +631,187 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   <SelectItem value="10-11">Zones 10-11 (Tropical)</SelectItem>
                 </SelectContent>
               </Select>
-              <Select
-                value={filters.flowering_season || "all"}
-                onValueChange={(value) => handleFilterChange("flowering_season", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-flowering-season">
-                  <SelectValue placeholder="Any Bloom Season" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any Bloom Season</SelectItem>
-                  <SelectItem value="spring">Spring Blooming</SelectItem>
-                  <SelectItem value="summer">Summer Blooming</SelectItem>
-                  <SelectItem value="fall">Fall Blooming</SelectItem>
-                  <SelectItem value="winter">Winter Blooming</SelectItem>
-                  <SelectItem value="year-round">Year-round Blooming</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
-            {/* Row 3: More Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Select
-                value={filters.foliage || "all"}
-                onValueChange={(value) => handleFilterChange("foliage", value)}
-              >
-                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-foliage">
-                  <SelectValue placeholder="Any Foliage Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any Foliage Type</SelectItem>
-                  <SelectItem value="evergreen">Evergreen</SelectItem>
-                  <SelectItem value="deciduous">Deciduous</SelectItem>
-                  <SelectItem value="semi-evergreen">Semi-Evergreen</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Row 4: Bloom and Foliage - Multi-select */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Bloom Season - Multi-select */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Bloom Season (Select Multiple)</label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between h-10 text-sm font-medium"
+                      data-testid="select-bloom-seasons"
+                    >
+                      <span className="truncate">
+                        {filters.bloomSeasons && filters.bloomSeasons.length > 0
+                          ? `${filters.bloomSeasons.length} season${filters.bloomSeasons.length !== 1 ? 's' : ''} selected`
+                          : "Select Bloom Seasons"}
+                      </span>
+                      <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-64">
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("early-spring") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "early-spring"]
+                          : current.filter((s: string) => s !== "early-spring");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Early Spring (March-April)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("late-spring") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "late-spring"]
+                          : current.filter((s: string) => s !== "late-spring");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Late Spring (May-June)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("early-summer") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "early-summer"]
+                          : current.filter((s: string) => s !== "early-summer");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Early Summer (June-July)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("late-summer") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "late-summer"]
+                          : current.filter((s: string) => s !== "late-summer");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Late Summer (August-September)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("early-fall") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "early-fall"]
+                          : current.filter((s: string) => s !== "early-fall");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Early Fall (September-October)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("late-fall") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "late-fall"]
+                          : current.filter((s: string) => s !== "late-fall");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Late Fall (October-November)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("winter") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "winter"]
+                          : current.filter((s: string) => s !== "winter");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Winter (December-February)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.bloomSeasons?.includes("year-round") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.bloomSeasons || [];
+                        const updated = checked 
+                          ? [...current, "year-round"]
+                          : current.filter((s: string) => s !== "year-round");
+                        handleFilterChange("bloomSeasons", updated);
+                      }}
+                    >
+                      Year-round Blooming
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              
+              {/* Foliage Type - Multi-select */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Foliage Type (Select Multiple)</label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between h-10 text-sm font-medium"
+                      data-testid="select-foliage-types"
+                    >
+                      <span className="truncate">
+                        {filters.foliageTypes && filters.foliageTypes.length > 0
+                          ? `${filters.foliageTypes.length} type${filters.foliageTypes.length !== 1 ? 's' : ''} selected`
+                          : "Select Foliage Types"}
+                      </span>
+                      <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-64">
+                    <DropdownMenuCheckboxItem
+                      checked={filters.foliageTypes?.includes("evergreen") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.foliageTypes || [];
+                        const updated = checked 
+                          ? [...current, "evergreen"]
+                          : current.filter((f: string) => f !== "evergreen");
+                        handleFilterChange("foliageTypes", updated);
+                      }}
+                    >
+                      Evergreen
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.foliageTypes?.includes("deciduous") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.foliageTypes || [];
+                        const updated = checked 
+                          ? [...current, "deciduous"]
+                          : current.filter((f: string) => f !== "deciduous");
+                        handleFilterChange("foliageTypes", updated);
+                      }}
+                    >
+                      Deciduous
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.foliageTypes?.includes("semi-evergreen") || false}
+                      onCheckedChange={(checked) => {
+                        const current = filters.foliageTypes || [];
+                        const updated = checked 
+                          ? [...current, "semi-evergreen"]
+                          : current.filter((f: string) => f !== "semi-evergreen");
+                        handleFilterChange("foliageTypes", updated);
+                      }}
+                    >
+                      Semi-Evergreen
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
             {/* Row 3: Special Features - Checkboxes */}
