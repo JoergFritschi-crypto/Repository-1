@@ -36,7 +36,7 @@ export default function PlantSearchModal({
   // Fetch user's collection
   const { data: myCollection = [], isLoading: collectionLoading } = useQuery<any[]>({
     queryKey: ['/api/my-collection'],
-    enabled: isOpen && userTier === 'premium'
+    enabled: isOpen
   });
 
   // Fetch user info for tier
@@ -276,6 +276,7 @@ export default function PlantSearchModal({
                       {searchResults.map((plant: Plant) => {
                         const isSelected = selectedPlants.has(plant.id);
                         const quantity = selectedPlants.get(plant.id)?.quantity || 1;
+                        const isInCollection = myCollection.some((item: any) => item.plantId === plant.id);
                         
                         return (
                           <div 
@@ -293,8 +294,9 @@ export default function PlantSearchModal({
                               <CompactPlantCard
                                 plant={plant}
                                 isAdmin={false}
+                                isInCollection={isInCollection}
                                 hideActions={false}
-                                hideCollectionActions={true}
+                                hideCollectionActions={false}
                               />
                             </div>
                             
