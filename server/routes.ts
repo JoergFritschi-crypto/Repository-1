@@ -476,13 +476,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save to file vault if user is authenticated
       if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
         try {
-          // File vault save is optional - skip if method doesn't exist
-          if (fileVaultService && typeof fileVaultService.saveDataToVault === 'function') {
-            await fileVaultService.saveDataToVault(
+          // File vault save is optional - save soil testing data
+          if (fileVaultService) {
+            await fileVaultService.saveClimateReport(
               req.user.claims.sub,
               `soil-testing-${location.replace(/[^a-zA-Z0-9]/g, '-')}`,
-              soilTestingData,
-              'soil-testing'
+              JSON.stringify(soilTestingData)
             );
           }
         } catch (vaultError) {
@@ -613,10 +612,10 @@ Garden Details:
 - Dimensions: ${JSON.stringify(garden.dimensions)} ${garden.units}
 - Location: ${garden.location || 'United Kingdom'}
 - Sun Exposure: ${garden.sunExposure || 'mixed'}
-- Style: ${garden.design_style || 'mixed border'}
+- Style: mixed border
 
 Available Plants (use these exact names and IDs):
-${verifiedPlants.map(p => `- ID: ${p.id}, Name: ${p.commonName}, Scientific: ${p.scientificName}, Height: ${p.heightMax}cm, Spread: ${p.spreadMax}cm`).join('\n')}
+${verifiedPlants.map(p => `- ID: ${p.id}, Name: ${p.commonName}, Scientific: ${p.scientificName}, Height: ${p.heightMaxCm}cm, Spread: ${p.spreadMaxCm}cm`).join('\n')}
 
 Generate a JSON response with this exact structure:
 {
@@ -641,13 +640,13 @@ Rules:
 5. Ensure good coverage without overcrowding
 6. Use only plants from the provided list`;
 
-      const response = await anthropicAI.generateText(prompt);
+      const textContent = await anthropicAI.getGardeningAdvice(prompt);
       
       // Parse the AI response
       let aiDesign;
       try {
         // Extract JSON from the response
-        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           aiDesign = JSON.parse(jsonMatch[0]);
         } else {
