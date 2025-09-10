@@ -22,8 +22,8 @@ export class FireCrawlAPI {
         
         // Use crawl mode to get all pages with JavaScript rendering
         const crawlResult = await this.app.crawlUrl(url, {
-          limit: 300, // Increased to ensure we get all ~1010 Stauden
-          maxDepth: 3, // Follow links deeper to find all products
+          limit: 250, // Proven to work - captures ~964 plants
+          maxDepth: 2, // Keep at 2 to avoid overload
           includePaths: ['/collections/stauden', '/collections/pflanzen', '/products/'],
           excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog', '/blogs/', '/pages/'],
           scrapeOptions: {
