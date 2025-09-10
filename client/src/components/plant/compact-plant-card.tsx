@@ -120,6 +120,56 @@ function getFlowerColorClass(color: string): string {
   return 'bg-gray-400';
 }
 
+// Get plant size category based on maximum height
+function getSizeCategory(heightMaxCm: number | null | undefined): {
+  category: string;
+  label: string;
+  color: string;
+  icon: string;
+} | null {
+  if (!heightMaxCm || heightMaxCm <= 0) return null;
+  
+  // Convert cm to meters for comparison
+  const heightM = heightMaxCm / 100;
+  
+  if (heightM <= 2) {
+    return {
+      category: 'compact',
+      label: 'Compact',
+      color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      icon: '🌱'
+    };
+  } else if (heightM <= 5) {
+    return {
+      category: 'standard',
+      label: 'Standard',
+      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+      icon: '🌿'
+    };
+  } else if (heightM <= 10) {
+    return {
+      category: 'medium',
+      label: 'Medium Tree',
+      color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+      icon: '🌳'
+    };
+  } else if (heightM <= 20) {
+    return {
+      category: 'large',
+      label: 'Large Tree',
+      color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      icon: '🌲'
+    };
+  } else {
+    return {
+      category: 'giant',
+      label: 'Giant Tree',
+      color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      icon: '🌴'
+    };
+  }
+}
+
 export function CompactPlantCard({ 
   plant,
   isAdmin = false,
@@ -521,6 +571,24 @@ export function CompactPlantCard({
                   Type ?
                 </span>
               )}
+              
+              {/* Size category for trees over 5m */}
+              {(() => {
+                const sizeInfo = getSizeCategory(plant.heightMaxCm);
+                if (!sizeInfo || sizeInfo.category === 'compact' || sizeInfo.category === 'standard') {
+                  return null;
+                }
+                return (
+                  <div className="group/size relative">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${sizeInfo.color} cursor-help`}>
+                      {sizeInfo.icon} {sizeInfo.label}
+                    </span>
+                    <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 invisible group-hover/size:visible bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                      Best suited for spacious gardens
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           

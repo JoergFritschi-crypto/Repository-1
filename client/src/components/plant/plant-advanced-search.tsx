@@ -41,7 +41,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     heightMax: 500,
     spreadMin: 0,
     spreadMax: 300,
-    selectedColors: []
+    selectedColors: [],
+    includeLargeSpecimens: false
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -83,7 +84,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       heightMax: 500,
       spreadMin: 0,
       spreadMax: 300,
-      selectedColors: []
+      selectedColors: [],
+      includeLargeSpecimens: false
     };
     setFilters(clearedFilters);
     onSearch({});
@@ -95,6 +97,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     if (key === 'spreadMin' && filters[key] === 0) return false;
     if (key === 'spreadMax' && filters[key] === 300) return false;
     if (key === 'selectedColors' && filters[key].length === 0) return false;
+    if (key === 'includeLargeSpecimens' && filters[key] === false) return false;
     return filters[key] !== undefined;
   }).length;
 
@@ -213,33 +216,73 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* Large Specimen Checkbox */}
+                  <div className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-green-200">
+                    <label htmlFor="large-specimens" className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="large-specimens"
+                        checked={filters.includeLargeSpecimens}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setFilters((prev: any) => ({
+                            ...prev,
+                            includeLargeSpecimens: checked,
+                            heightMax: checked ? 0 : 500 // 0 means no limit when checked
+                          }));
+                        }}
+                        className="w-4 h-4 text-green-600 rounded border-green-300 focus:ring-green-500"
+                        data-testid="checkbox-large-specimens"
+                      />
+                      <span className="text-sm font-medium text-green-800">
+                        Include large specimen trees
+                      </span>
+                      <span className="text-xs text-green-600">
+                        (5m+)
+                      </span>
+                    </label>
+                    {filters.includeLargeSpecimens && (
+                      <Badge className="bg-amber-100 text-amber-700">
+                        🌳 All heights
+                      </Badge>
+                    )}
+                  </div>
+                  
                   <div className="flex justify-between text-sm font-medium">
                     <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
                       Min: {filters.heightMin === 0 ? 'Any' : `${(filters.heightMin / 100).toFixed(1)}m`}
                     </span>
                     <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
-                      Max: {filters.heightMax === 500 ? 'Any' : `${(filters.heightMax / 100).toFixed(1)}m`}
+                      Max: {filters.includeLargeSpecimens ? 'Any height' : 
+                            filters.heightMax === 500 ? 'Any' : `${(filters.heightMax / 100).toFixed(1)}m`}
                     </span>
                   </div>
                   <div className="relative">
                     <Slider
                       min={0}
-                      max={500}
+                      max={filters.includeLargeSpecimens ? 2000 : 500}
                       step={10}
-                      value={[filters.heightMin, filters.heightMax]}
+                      value={[filters.heightMin, filters.includeLargeSpecimens ? 2000 : filters.heightMax]}
                       onValueChange={(value) => {
                         handleSliderChange("heightMin", value[0]);
-                        handleSliderChange("heightMax", value[1]);
+                        if (!filters.includeLargeSpecimens) {
+                          handleSliderChange("heightMax", value[1]);
+                        }
                       }}
+                      disabled={filters.includeLargeSpecimens && filters.heightMin === 0}
                       className="w-full [&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-700 [&_.relative]:bg-green-200 [&_[data-orientation]]:bg-green-100"
                       data-testid="slider-height-range"
                     />
                   </div>
                   <div className="text-xs text-center text-green-600 font-medium">
-                    From tiny ground covers to towering trees
+                    {filters.includeLargeSpecimens 
+                      ? "Showing all ornamental trees including large specimens"
+                      : "From tiny ground covers to medium trees (up to 5m)"}
                   </div>
                   <div className="text-xs text-center text-muted-foreground">
-                    Default: Shows all heights • Adjust to filter
+                    {filters.includeLargeSpecimens
+                      ? "Includes Araucaria, Cedars, and other specimen trees"
+                      : "Default: Shows typical garden plants • Check box for larger trees"}
                   </div>
                 </div>
               </CardContent>
