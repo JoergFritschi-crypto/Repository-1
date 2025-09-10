@@ -404,32 +404,24 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
-            // Test with minimal image generation request (Runware requires array format)
-            const response = await fetch('https://api.runware.ai/v1/images/generate', {
-              method: 'POST',
+            // Simple connectivity test - check if we can authenticate with the API
+            // Using /v1 endpoint which should return API info
+            const response = await fetch('https://api.runware.ai/v1', {
+              method: 'GET',
               headers: { 
                 'Authorization': `Bearer ${process.env.RUNWARE_API_KEY}`,
                 'Content-Type': 'application/json'
-              },
-              body: JSON.stringify([{  // Note: Runware requires array of requests
-                prompt: 'Test image',
-                model: 'runware-v1',
-                style: 'photorealistic',
-                aspect_ratio: '1:1',
-                num_images: 1,
-                guidance_scale: 7.5,
-                steps: 1  // Minimal steps for health check
-              }])
+              }
             });
             const responseTime = Date.now() - startTime;
             
-            if (response.ok) {
-              const data = await response.json();
+            if (response.ok || response.status === 401) {
+              // Even 401 means the API is reachable, just the key might be invalid
               return {
                 service: 'runware',
-                status: 'healthy',
+                status: response.status === 401 ? 'down' : 'healthy',
                 responseTime,
-                metadata: { model: 'runware-v1' }
+                errorMessage: response.status === 401 ? 'Invalid API key' : undefined
               };
             } else {
               const errorText = await response.text();
