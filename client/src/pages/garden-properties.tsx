@@ -18,7 +18,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
 import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles, Shield, Wand2, Palette, AlertCircle } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
-import InteractiveCanvas from '@/components/garden/interactive-canvas';
+import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
+import PlantSearchModal from '@/components/plant/plant-search-modal';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
 import PhotoUpload from '@/components/garden/photo-upload';
@@ -123,6 +124,9 @@ const stepDetails = [
 
 export default function GardenProperties() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [inventoryPlants, setInventoryPlants] = useState<any[]>([]);
+  const [placedPlants, setPlacedPlants] = useState<PlacedPlant[]>([]);
+  const [showPlantSearch, setShowPlantSearch] = useState(false);
   const [showClimateModal, setShowClimateModal] = useState(false);
   const [showSoilTestingModal, setShowSoilTestingModal] = useState(false);
   const [gardenId, setGardenId] = useState<string | null>(null); // Track saved garden ID
@@ -373,6 +377,15 @@ export default function GardenProperties() {
       fetchClimateData();
     }
   }, [locationToFetch]);
+
+  // Handler for adding plants to inventory
+  const handleAddPlantToInventory = (plant: any) => {
+    setInventoryPlants(prev => [...prev, plant]);
+    toast({
+      title: "Plant Added",
+      description: `${plant.commonName} added to inventory`,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50">
@@ -2353,11 +2366,15 @@ export default function GardenProperties() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <InteractiveCanvas
+                    <GardenLayoutCanvas
                       shape={watchedShape}
                       dimensions={watchedDimensions}
                       units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
+                      gardenName={watchedName}
                       aiDesign={completeDesign}
+                      inventoryPlants={inventoryPlants}
+                      onOpenPlantSearch={() => setShowPlantSearch(true)}
+                      onPlacedPlantsChange={setPlacedPlants}
                     />
                   </CardContent>
                 </Card>
@@ -2504,6 +2521,13 @@ export default function GardenProperties() {
           open={showSoilTestingModal}
           onClose={() => setShowSoilTestingModal(false)}
           location={watchedCountry || locationToFetch || ''}
+        />
+        
+        {/* Plant Search Modal */}
+        <PlantSearchModal
+          isOpen={showPlantSearch}
+          onClose={() => setShowPlantSearch(false)}
+          onSelectPlant={handleAddPlantToInventory}
         />
       </div>
     </div>
