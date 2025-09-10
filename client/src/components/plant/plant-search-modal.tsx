@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Check, Search, Leaf, Database, Heart, Minus } from 'lucide-react';
 import { PlantAdvancedSearch } from './plant-advanced-search';
 import { CompactPlantCard } from './compact-plant-card';
-import type { Plant } from '@shared/schema';
+import type { Plant } from '@/types/plant';
 
 interface PlantSearchModalProps {
   isOpen: boolean;
