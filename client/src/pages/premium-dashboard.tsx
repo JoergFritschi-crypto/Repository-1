@@ -35,6 +35,10 @@ export default function PremiumDashboard() {
     queryKey: ["/api/my-collection"],
   });
 
+  const { data: collectionLimits } = useQuery({
+    queryKey: ["/api/my-collection/limits"],
+  });
+
   const { data: plantDoctorSessions } = useQuery({
     queryKey: ["/api/plant-doctor/sessions"],
   });
@@ -258,24 +262,79 @@ export default function PremiumDashboard() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* My Plant Collection */}
-            <Card>
+            <Card className={collectionLimits?.userTier === 'premium' ? 'border-canary bg-canary/5' : ''}>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle data-testid="text-collection-title">My Plant Collection</CardTitle>
+                <CardTitle className="flex items-center" data-testid="text-collection-title">
+                  {collectionLimits?.userTier === 'premium' && (
+                    <Crown className="w-4 h-4 mr-2 text-canary" />
+                  )}
+                  My Plant Collection
+                </CardTitle>
                 <Button variant="ghost" size="sm" asChild data-testid="button-manage-collection">
                   <a href="/plant-library?tab=collection">Manage</a>
                 </Button>
               </CardHeader>
               <CardContent>
+                {/* Collection Stats */}
+                {collectionLimits && (
+                  <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Collection Status</span>
+                      {collectionLimits.userTier === 'premium' ? (
+                        <Badge variant="default" className="bg-canary text-primary">
+                          Unlimited
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">
+                          {collectionLimits.current}/{collectionLimits.limit}
+                        </Badge>
+                      )}
+                    </div>
+                    {collectionLimits.limit > 0 && (
+                      <>
+                        <Progress 
+                          value={(collectionLimits.current / collectionLimits.limit) * 100} 
+                          className="h-2" 
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {collectionLimits.limit - collectionLimits.current} slots remaining
+                        </p>
+                      </>
+                    )}
+                    {collectionLimits.userTier === 'premium' && (
+                      <div className="grid grid-cols-2 gap-2 mt-3">
+                        <div>
+                          <p className="text-2xl font-bold">{plantCollection?.length || 0}</p>
+                          <p className="text-xs text-muted-foreground">Total Plants</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-green-600">
+                            {plantCollection?.filter((i: any) => i.isFavorite)?.length || 0}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Favorites</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Plant List */}
                 {plantCollection && plantCollection.length > 0 ? (
                   <div className="space-y-3">
                     {plantCollection.slice(0, 3).map((item: any) => (
                       <div key={item.id} className="flex items-center space-x-3" data-testid={`collection-item-${item.id}`}>
-                        <div className="w-8 h-8 bg-accent rounded-full flex-shrink-0"></div>
+                        <div className="w-8 h-8 bg-accent rounded-full flex-shrink-0">
+                          {item.isFavorite && (
+                            <Star className="w-4 h-4 text-canary m-2" />
+                          )}
+                        </div>
                         <div className="flex-1">
                           <p className="font-medium text-sm" data-testid={`text-plant-name-${item.id}`}>
                             {item.plant?.commonName || 'Unknown Plant'}
                           </p>
-                          <p className="text-xs text-muted-foreground">Added to collection</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.plant?.scientificName || 'Added to collection'}
+                          </p>
                         </div>
                       </div>
                     ))}
