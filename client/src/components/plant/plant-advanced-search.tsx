@@ -175,13 +175,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         {/* All Filters Section - Always visible */}
         <ScrollArea className="h-[450px] border rounded-lg p-4 bg-gray-50/50">
             <div className="space-y-6 pr-4">
-            {/* Primary Filters */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                Primary Filters
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Basic Characteristics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Type</label>
                 <Select
@@ -228,6 +223,28 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </div>
               
               <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Soil Type</label>
+                <Select
+                  value={filters.soil || "all"}
+                  onValueChange={(value) => handleFilterChange("soil", value)}
+                >
+                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-soil">
+                    <SelectValue placeholder="Any Soil" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any Soil</SelectItem>
+                    <SelectItem value="acidic">Acidic (pH < 6.5)</SelectItem>
+                    <SelectItem value="neutral">Neutral (pH 6.5-7.5)</SelectItem>
+                    <SelectItem value="alkaline">Alkaline (pH > 7.5)</SelectItem>
+                    <SelectItem value="well-drained">Well-drained</SelectItem>
+                    <SelectItem value="clay">Clay</SelectItem>
+                    <SelectItem value="sandy">Sandy</SelectItem>
+                    <SelectItem value="loamy">Loamy</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Water Needs</label>
                 <Select
                   value={filters.water || "all"}
@@ -243,7 +260,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                     <SelectItem value="high">High Water</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
               </div>
             </div>
             
