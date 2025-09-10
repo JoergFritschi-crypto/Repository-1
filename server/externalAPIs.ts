@@ -22,10 +22,10 @@ export class FireCrawlAPI {
         
         // Use crawl mode to get all pages with JavaScript rendering
         const crawlResult = await this.app.crawlUrl(url, {
-          limit: 250, // Increased to capture all ~1010 Stauden products
-          maxDepth: 2, // Follow pagination links one level deep
-          includePaths: ['/collections/stauden', '/collections/pflanzen'],
-          excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog'],
+          limit: 300, // Increased to ensure we get all ~1010 Stauden
+          maxDepth: 3, // Follow links deeper to find all products
+          includePaths: ['/collections/stauden', '/collections/pflanzen', '/products/'],
+          excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog', '/blogs/', '/pages/'],
           scrapeOptions: {
             formats: ['markdown', 'html'],
             waitFor: 2000,  // Wait 2 seconds for JavaScript to render
