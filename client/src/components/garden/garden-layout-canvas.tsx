@@ -549,7 +549,7 @@ export default function GardenLayoutCanvas({
           propagationMethod: '',
           commercialProduction: '',
           climateAdaptability: null,
-          petSafety: 'safe',
+          petSafe: true,
           childSafe: false,
           toxicParts: null,
           toxicSymptoms: null,
@@ -650,81 +650,6 @@ export default function GardenLayoutCanvas({
           <div className="text-xs text-muted-foreground">
             <Info className="w-3 h-3 inline mr-1" />
             Drag plants to/from canvas
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Seasonal Image Generation */}
-      <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
-        <CardContent className="py-2 px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground uppercase">Visualize Garden:</span>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant={selectedSeason === 'spring' ? 'default' : 'outline'}
-                  onClick={() => {
-                    setSelectedSeason('spring');
-                    generateSeasonalImage('spring');
-                  }}
-                  disabled={isGeneratingImage}
-                  className="h-7 px-2"
-                  data-testid="button-generate-spring"
-                >
-                  <Flower2 className="w-3 h-3 mr-1" />
-                  Spring
-                </Button>
-                <Button
-                  size="sm"
-                  variant={selectedSeason === 'summer' ? 'default' : 'outline'}
-                  onClick={() => {
-                    setSelectedSeason('summer');
-                    generateSeasonalImage('summer');
-                  }}
-                  disabled={isGeneratingImage}
-                  className="h-7 px-2"
-                  data-testid="button-generate-summer"
-                >
-                  <Sun className="w-3 h-3 mr-1" />
-                  Summer
-                </Button>
-                <Button
-                  size="sm"
-                  variant={selectedSeason === 'autumn' ? 'default' : 'outline'}
-                  onClick={() => {
-                    setSelectedSeason('autumn');
-                    generateSeasonalImage('autumn');
-                  }}
-                  disabled={isGeneratingImage}
-                  className="h-7 px-2"
-                  data-testid="button-generate-autumn"
-                >
-                  <Cloud className="w-3 h-3 mr-1" />
-                  Autumn
-                </Button>
-                <Button
-                  size="sm"
-                  variant={selectedSeason === 'winter' ? 'default' : 'outline'}
-                  onClick={() => {
-                    setSelectedSeason('winter');
-                    generateSeasonalImage('winter');
-                  }}
-                  disabled={isGeneratingImage}
-                  className="h-7 px-2"
-                  data-testid="button-generate-winter"
-                >
-                  <Snowflake className="w-3 h-3 mr-1" />
-                  Winter
-                </Button>
-              </div>
-            </div>
-            {isGeneratingImage && (
-              <span className="text-xs text-muted-foreground animate-pulse">
-                <Image className="w-3 h-3 inline mr-1" />
-                Generating {selectedSeason} visualization...
-              </span>
-            )}
           </div>
         </CardContent>
       </Card>
