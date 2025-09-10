@@ -359,6 +359,25 @@ export const fileVault = pgTable("file_vault", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Scraping progress tracking table
+export const scrapingProgress = pgTable("scraping_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  url: varchar("url").notNull().unique(),
+  status: varchar("status").notNull().default("in_progress"), // 'in_progress', 'completed', 'failed'
+  totalBatches: integer("total_batches").default(0),
+  completedBatches: integer("completed_batches").default(0),
+  totalPlants: integer("total_plants").default(0),
+  savedPlants: integer("saved_plants").default(0),
+  duplicatePlants: integer("duplicate_plants").default(0),
+  failedPlants: integer("failed_plants").default(0),
+  lastProductUrl: varchar("last_product_url"), // Last successfully processed product URL to resume from
+  productUrls: jsonb("product_urls"), // Store all product URLs found
+  errors: jsonb("errors"), // Store any errors encountered
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // API usage statistics
 export const apiUsageStats = pgTable("api_usage_stats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -411,6 +430,8 @@ export type ImageGenerationQueue = typeof imageGenerationQueue.$inferSelect;
 export type InsertImageGenerationQueue = typeof imageGenerationQueue.$inferInsert;
 export type FileVault = typeof fileVault.$inferSelect;
 export type InsertFileVault = typeof fileVault.$inferInsert;
+export type ScrapingProgress = typeof scrapingProgress.$inferSelect;
+export type InsertScrapingProgress = typeof scrapingProgress.$inferInsert;
 
 // Schema exports for validation
 export const insertGardenSchema = createInsertSchema(gardens);
@@ -425,3 +446,4 @@ export const insertApiUsageStatSchema = createInsertSchema(apiUsageStats);
 export const insertApiAlertSchema = createInsertSchema(apiAlerts);
 export const insertImageGenerationQueueSchema = createInsertSchema(imageGenerationQueue);
 export const insertFileVaultSchema = createInsertSchema(fileVault);
+export const insertScrapingProgressSchema = createInsertSchema(scrapingProgress);

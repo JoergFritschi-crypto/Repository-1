@@ -3473,42 +3473,90 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(503).json({ message: "FireCrawl API not configured. Please add FIRECRAWL_API_KEY to environment variables." });
       }
 
-      const { url } = req.body;
+      const { url, saveToDatabase = true } = req.body; // Default to saving to database
       
       if (!url) {
         return res.status(400).json({ message: "URL is required" });
       }
 
       console.log('Starting plant data scraping for URL:', url);
+      console.log('Save to database:', saveToDatabase);
 
-      // Scrape the website
-      const scrapingResult = await fireCrawlAPI.scrapePlantData(url);
+      // Scrape the website with incremental saving
+      const scrapingResult = await fireCrawlAPI.scrapePlantData(url, saveToDatabase);
       
-      console.log(`Scraped ${scrapingResult.plants?.length || 0} plants from ${url}`);
-      
-      // Format plants for compatibility with import wizard
-      const formattedPlants = scrapingResult.plants.map((plant: any) => ({
-        ...plant,
-        // Ensure required fields
-        scientific_name: plant.scientific_name || plant.common_name || 'Unknown',
-        common_name: plant.common_name || '',
-        // Add source tracking
-        sources: { firecrawl: true },
-        // Add import metadata
-        import_source: 'firecrawl',
-        import_url: url,
-        import_date: new Date().toISOString()
-      }));
+      if (saveToDatabase) {
+        // When saving to database, return progress stats
+        res.json({
+          success: true,
+          message: "Scraping completed and plants saved to database",
+          stats: {
+            totalPlantsFound: scrapingResult.metadata.totalPlantsFound,
+            savedToDatabase: scrapingResult.metadata.saved,
+            duplicates: scrapingResult.metadata.duplicates,
+            errors: scrapingResult.metadata.errors
+          },
+          metadata: scrapingResult.metadata
+        });
+      } else {
+        // Legacy mode: return plants for frontend processing
+        console.log(`Scraped ${scrapingResult.plants?.length || 0} plants from ${url}`);
+        
+        // Format plants for compatibility with import wizard
+        const formattedPlants = scrapingResult.plants.map((plant: any) => ({
+          ...plant,
+          // Ensure required fields
+          scientific_name: plant.scientific_name || plant.common_name || 'Unknown',
+          common_name: plant.common_name || '',
+          // Add source tracking
+          sources: { firecrawl: true },
+          // Add import metadata
+          import_source: 'firecrawl',
+          import_url: url,
+          import_date: new Date().toISOString()
+        }));
 
-      res.json({
-        success: true,
-        plants: formattedPlants,
-        metadata: scrapingResult.metadata
-      });
+        res.json({
+          success: true,
+          plants: formattedPlants,
+          metadata: scrapingResult.metadata
+        });
+      }
     } catch (error) {
       console.error("Error scraping plant data:", error);
       res.status(500).json({ 
         message: "Failed to scrape plant data", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Get scraping progress endpoint
+  app.get('/api/admin/scraping-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { url } = req.query;
+      
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+
+      const progress = await storage.getScrapingProgress(url as string);
+      
+      if (!progress) {
+        return res.status(404).json({ message: "No scraping progress found for this URL" });
+      }
+
+      res.json(progress);
+    } catch (error) {
+      console.error("Error getting scraping progress:", error);
+      res.status(500).json({ 
+        message: "Failed to get scraping progress", 
         error: (error as Error).message 
       });
     }

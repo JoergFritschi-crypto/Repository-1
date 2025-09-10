@@ -8,6 +8,7 @@ import {
   designGenerations,
   climateData,
   fileVault,
+  scrapingProgress,
   type User,
   type UpsertUser,
   type Garden,
@@ -26,6 +27,8 @@ import {
   type InsertClimateData,
   type FileVault,
   type InsertFileVault,
+  type ScrapingProgress,
+  type InsertScrapingProgress,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, or, desc, isNotNull, lte, sql, gte } from "drizzle-orm";
@@ -100,6 +103,14 @@ export interface IStorage {
   // Visualization data operations
   getVisualizationData(gardenId: string): Promise<any | undefined>;
   updateVisualizationData(gardenId: string, data: any): Promise<void>;
+  
+  // Scraping progress operations
+  getScrapingProgress(url: string): Promise<ScrapingProgress | undefined>;
+  createScrapingProgress(progress: InsertScrapingProgress): Promise<ScrapingProgress>;
+  updateScrapingProgress(id: string, progress: Partial<InsertScrapingProgress>): Promise<ScrapingProgress>;
+  getPlantByScientificName(scientificName: string): Promise<Plant | undefined>;
+  getPlantByExternalId(externalId: string): Promise<Plant | undefined>;
+  bulkCreatePlants(plants: InsertPlant[]): Promise<{ saved: number; duplicates: number; errors: number }>;  
 }
 
 export class DatabaseStorage implements IStorage {
@@ -636,6 +647,71 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       })
       .where(eq(gardens.id, gardenId.toString()));
+  }
+  
+  // Scraping progress operations
+  async getScrapingProgress(url: string): Promise<ScrapingProgress | undefined> {
+    const [progress] = await db.select().from(scrapingProgress).where(eq(scrapingProgress.url, url));
+    return progress;
+  }
+  
+  async createScrapingProgress(progress: InsertScrapingProgress): Promise<ScrapingProgress> {
+    const [newProgress] = await db.insert(scrapingProgress).values(progress).returning();
+    return newProgress;
+  }
+  
+  async updateScrapingProgress(id: string, progress: Partial<InsertScrapingProgress>): Promise<ScrapingProgress> {
+    const [updatedProgress] = await db
+      .update(scrapingProgress)
+      .set({ ...progress, updatedAt: new Date() })
+      .where(eq(scrapingProgress.id, id))
+      .returning();
+    return updatedProgress;
+  }
+  
+  async getPlantByScientificName(scientificName: string): Promise<Plant | undefined> {
+    const [plant] = await db.select().from(plants).where(eq(plants.scientificName, scientificName));
+    return plant;
+  }
+  
+  async getPlantByExternalId(externalId: string): Promise<Plant | undefined> {
+    const [plant] = await db.select().from(plants).where(eq(plants.externalId, externalId));
+    return plant;
+  }
+  
+  async bulkCreatePlants(plantsToSave: InsertPlant[]): Promise<{ saved: number; duplicates: number; errors: number }> {
+    let saved = 0;
+    let duplicates = 0;
+    let errors = 0;
+    
+    // Process plants in batches of 10 for safety
+    const batchSize = 10;
+    for (let i = 0; i < plantsToSave.length; i += batchSize) {
+      const batch = plantsToSave.slice(i, i + batchSize);
+      
+      for (const plant of batch) {
+        try {
+          // Check for duplicate by scientific name or external ID
+          const existingByName = await this.getPlantByScientificName(plant.scientificName);
+          const existingById = plant.externalId ? await this.getPlantByExternalId(plant.externalId) : undefined;
+          
+          if (existingByName || existingById) {
+            duplicates++;
+            console.log(`Duplicate plant found: ${plant.scientificName}`);
+          } else {
+            // Create the plant
+            await this.createPlant(plant);
+            saved++;
+            console.log(`Saved plant: ${plant.scientificName}`);
+          }
+        } catch (error) {
+          console.error(`Error saving plant ${plant.scientificName}:`, error);
+          errors++;
+        }
+      }
+    }
+    
+    return { saved, duplicates, errors };
   }
 }
 
