@@ -233,9 +233,9 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any Soil</SelectItem>
-                    <SelectItem value="acidic">Acidic (pH < 6.5)</SelectItem>
+                    <SelectItem value="acidic">Acidic (pH below 6.5)</SelectItem>
                     <SelectItem value="neutral">Neutral (pH 6.5-7.5)</SelectItem>
-                    <SelectItem value="alkaline">Alkaline (pH > 7.5)</SelectItem>
+                    <SelectItem value="alkaline">Alkaline (pH above 7.5)</SelectItem>
                     <SelectItem value="well-drained">Well-drained</SelectItem>
                     <SelectItem value="clay">Clay</SelectItem>
                     <SelectItem value="sandy">Sandy</SelectItem>
