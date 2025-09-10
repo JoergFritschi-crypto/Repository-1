@@ -45,7 +45,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     selectedColors: [],
     includeLargeSpecimens: false
   });
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(true); // Always show by default
 
   const handleFilterChange = (key: string, value: any) => {
     const newFilters = { ...filters };
@@ -103,111 +103,143 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
   }).length;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-2 border-primary/20">
+      <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 pb-4">
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2">
-            <Search className="w-5 h-5" />
-            Advanced Search
-          </CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Filter className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-bold">
+                Plant Filters & Search
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Use any combination of filters to find your perfect plants
+              </p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" data-testid="badge-active-filters">
-                {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+              <Badge variant="secondary" className="text-sm py-1 px-3" data-testid="badge-active-filters">
+                <Filter className="w-3 h-3 mr-1" />
+                {activeFilterCount} active
               </Badge>
             )}
             {totalResults !== undefined && (
-              <Badge variant="outline" data-testid="badge-total-results">
-                {totalResults} results
+              <Badge variant="outline" className="text-sm py-1 px-3" data-testid="badge-total-results">
+                {totalResults} plants found
               </Badge>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              data-testid="button-toggle-advanced"
-            >
-              <Filter className="w-4 h-4 mr-1" />
-              {showAdvanced ? 'Hide' : 'Show'} Filters
-            </Button>
-            {showAdvanced && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={applyFilters}
-                data-testid="button-apply-filters"
-              >
-                <Search className="w-4 h-4 mr-1" />
-                Apply
-              </Button>
             )}
             {activeFilterCount > 0 && (
               <Button
-                variant="ghost"
+                variant="destructive"
                 size="sm"
                 onClick={clearFilters}
                 data-testid="button-clear-filters"
               >
                 <X className="w-4 h-4 mr-1" />
-                Clear
+                Clear All
               </Button>
             )}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={applyFilters}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-apply-filters"
+            >
+              <Search className="w-4 h-4 mr-1" />
+              Search
+            </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        {/* Basic Search */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <Input
-            placeholder="Search by name..."
-            value={filters.search || ""}
-            onChange={(e) => handleFilterChange("search", e.target.value)}
-            className="md:col-span-2 h-10 text-sm font-medium"
-            data-testid="input-search"
-          />
-          <Select
-            value={filters.type || "all"}
-            onValueChange={(value) => handleFilterChange("type", value)}
-          >
-            <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-plant-type">
-              <SelectValue placeholder="Plant Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="perennial">Perennials</SelectItem>
-              <SelectItem value="annual">Annuals</SelectItem>
-              <SelectItem value="biennial">Biennials</SelectItem>
-              <SelectItem value="shrub">Shrubs</SelectItem>
-              <SelectItem value="tree">Trees</SelectItem>
-              <SelectItem value="bulb">Bulbs</SelectItem>
-              <SelectItem value="climber">Climbers</SelectItem>
-              <SelectItem value="grass">Ornamental Grasses</SelectItem>
-              <SelectItem value="succulent">Succulents</SelectItem>
-              <SelectItem value="cactus">Cacti</SelectItem>
-              <SelectItem value="fern">Ferns</SelectItem>
-              <SelectItem value="aquatic">Aquatic Plants</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.sunlight || "all"}
-            onValueChange={(value) => handleFilterChange("sunlight", value)}
-          >
-            <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-sunlight">
-              <SelectValue placeholder="Sun Requirements" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Any Sun</SelectItem>
-              <SelectItem value="full_sun">Full Sun</SelectItem>
-              <SelectItem value="part_shade">Part Shade</SelectItem>
-              <SelectItem value="full_shade">Full Shade</SelectItem>
-            </SelectContent>
-          </Select>
+      <CardContent className="pt-6">
+        {/* Main search bar - prominent at the top */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Search plants by name..."
+              value={filters.search || ""}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
+              className="pl-10 h-12 text-base font-medium border-2 focus:border-primary"
+              data-testid="input-search"
+            />
+          </div>
         </div>
 
-        {/* Advanced Filters */}
-        {showAdvanced && (
-          <ScrollArea className="h-[500px] pt-4 border-t">
+        {/* All Filters Section - Always visible */}
+        {
+          <ScrollArea className="h-[500px]">
             <div className="space-y-6 pr-4">
+            {/* Quick Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Type</label>
+                <Select
+                  value={filters.type || "all"}
+                  onValueChange={(value) => handleFilterChange("type", value)}
+                >
+                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-plant-type">
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="perennial">Perennials</SelectItem>
+                    <SelectItem value="annual">Annuals</SelectItem>
+                    <SelectItem value="biennial">Biennials</SelectItem>
+                    <SelectItem value="shrub">Shrubs</SelectItem>
+                    <SelectItem value="tree">Trees</SelectItem>
+                    <SelectItem value="bulb">Bulbs</SelectItem>
+                    <SelectItem value="climber">Climbers</SelectItem>
+                    <SelectItem value="grass">Ornamental Grasses</SelectItem>
+                    <SelectItem value="succulent">Succulents</SelectItem>
+                    <SelectItem value="cactus">Cacti</SelectItem>
+                    <SelectItem value="fern">Ferns</SelectItem>
+                    <SelectItem value="aquatic">Aquatic Plants</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Sun Requirements</label>
+                <Select
+                  value={filters.sunlight || "all"}
+                  onValueChange={(value) => handleFilterChange("sunlight", value)}
+                >
+                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-sunlight">
+                    <SelectValue placeholder="Any Sun" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any Sun</SelectItem>
+                    <SelectItem value="full_sun">Full Sun</SelectItem>
+                    <SelectItem value="part_shade">Part Shade</SelectItem>
+                    <SelectItem value="full_shade">Full Shade</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Water Needs</label>
+                <Select
+                  value={filters.water || "all"}
+                  onValueChange={(value) => handleFilterChange("water", value)}
+                >
+                  <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-water">
+                    <SelectValue placeholder="Any Water" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any Water</SelectItem>
+                    <SelectItem value="low">Low Water</SelectItem>
+                    <SelectItem value="moderate">Moderate Water</SelectItem>
+                    <SelectItem value="high">High Water</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             {/* Height Range Slider */}
             <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
               <CardHeader className="pb-3">
@@ -606,7 +638,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </div>
             </div>
           </ScrollArea>
-        )}
+        
       </CardContent>
     </Card>
   );
