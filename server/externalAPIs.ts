@@ -51,12 +51,17 @@ export class FireCrawlAPI {
         // Deduplicate plants based on scientific name
         const uniquePlants = this.deduplicatePlants(allPlants);
         
-        // Add plant type for all German nursery plants
-        const plantsWithType = uniquePlants.map(plant => ({
-          ...plant,
-          type: 'herbaceous perennials', // Since this is their Stauden collection
-          sources: { firecrawl: true }
-        }));
+        // Add plant type based on URL collection
+        const plantsWithType = uniquePlants.map(plant => {
+          // Only set herbaceous perennials for /stauden collection
+          const isStaudenCollection = url.includes('/collections/stauden') || url.includes('/stauden');
+          
+          return {
+            ...plant,
+            type: isStaudenCollection ? 'herbaceous perennials' : plant.type,
+            sources: { firecrawl: true }
+          };
+        });
         
         return {
           plants: plantsWithType,

@@ -3025,6 +3025,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
             if (!plant.sunlight || plant.sunlight.length === 0) missingFields.push('sunlight requirements');
             if (!plant.watering) missingFields.push('watering needs');
             if (!plant.hardiness) missingFields.push('hardiness zones');
+            if (!plant.soil || plant.soil.length === 0) missingFields.push('soil type preferences');
+            if (!plant.soilPH) missingFields.push('soil pH requirements');
+            if (!plant.flowerColor || plant.flowerColor.length === 0) missingFields.push('flower colors');
+            if (!plant.leafColor || plant.leafColor.length === 0) missingFields.push('foliage colors');
             if (!plant.toxicityCategory) missingFields.push('toxicity to humans and pets');
             
             if (missingFields.length === 0) {
@@ -3043,6 +3047,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
               - sunlight: array of light requirements (e.g., ["full sun", "partial shade"])
               - watering: "minimum", "average", or "frequent"
               - hardiness: USDA hardiness zones (e.g., "5-9")
+              - soil: array of soil types (e.g., ["well-drained", "sandy", "loamy"])
+              - soilPH: pH range (e.g., "6.0-7.5" or "acidic", "neutral", "alkaline")
+              - flowerColor: array of flower colors (e.g., ["purple", "pink", "white"])
+              - leafColor: array of foliage colors (e.g., ["green", "variegated", "silver"])
               - toxicityCategory: "low", "moderate", or "high"
               - childSafe: boolean
               - petSafe: boolean`;
