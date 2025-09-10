@@ -318,40 +318,30 @@ export class FireCrawlAPI {
   private extractPlantsFromEcommercePage(markdown: string, pageUrl: string): any[] {
     const plants: any[] = [];
     
-    // Try multiple patterns to find plant products
-    // Pattern 1: Standard markdown links to product pages
-    const linkPattern = /\[([^\]]+)\]\(([^\)]*\/products\/[^\)]+)\)/g;
-    // Pattern 2: Look for any product links (more flexible)
-    const productLinkPattern = /href=["']([^"']*\/products\/[^"']+)["'][^>]*>([^<]+)</g;
-    // Pattern 3: Simple text patterns for plant names with prices
-    const plantWithPricePattern = /([A-Z][a-z]+ [a-z]+(?:\s+['"][^'"]+['"])?)[^\n]*€\s*(\d+[,\.]\d+)/g;
+    // Check if this is a product detail page or a collection page
+    const isProductPage = pageUrl.includes('/products/') && !pageUrl.includes('/collections/');
     
-    // Try standard markdown links first
-    let match;
-    while ((match = linkPattern.exec(markdown)) !== null) {
-      const fullName = match[1];
-      const productUrl = match[2];
+    if (isProductPage) {
+      // Extract data from product detail page
+      const plant = this.extractProductDetails(markdown, pageUrl);
+      if (plant) {
+        plants.push(plant);
+      }
+    } else {
+      // Extract links from collection pages
+      const linkPattern = /\[([^\]]+)\]\(([^\)]*\/products\/[^\)]+)\)/g;
+      // Pattern 2: Look for any product links (more flexible)
+      const productLinkPattern = /href=["']([^"']*\/products\/[^"']+)["'][^>]*>([^<]+)</g;
+      // Pattern 3: Simple text patterns for plant names with prices
+      const plantWithPricePattern = /([A-Z][a-z]+ [a-z]+(?:\s+['"][^'"]+['"])?)[^\n]*€\s*(\d+[,\.]\d+)/g;
       
-      // Parse the plant name
-      const scientificName = this.extractScientificFromName(fullName);
-      const commonName = fullName.replace(scientificName || '', '').trim();
-      
-      plants.push({
-        common_name: commonName || fullName,
-        scientific_name: scientificName,
-        product_url: productUrl,
-        product_slug: productUrl.split('/').pop(),
-        page_url: pageUrl
-      });
-    }
-    
-    // If no plants found, try HTML-style links
-    if (plants.length === 0) {
-      linkPattern.lastIndex = 0; // Reset regex
-      while ((match = productLinkPattern.exec(markdown)) !== null) {
-        const productUrl = match[1];
-        const fullName = match[2];
+      // Try standard markdown links first
+      let match;
+      while ((match = linkPattern.exec(markdown)) !== null) {
+        const fullName = match[1];
+        const productUrl = match[2];
         
+        // Parse the plant name
         const scientificName = this.extractScientificFromName(fullName);
         const commonName = fullName.replace(scientificName || '', '').trim();
         
@@ -363,25 +353,87 @@ export class FireCrawlAPI {
           page_url: pageUrl
         });
       }
-    }
-    
-    // If still no plants, try simple text pattern matching
-    if (plants.length === 0) {
-      plantWithPricePattern.lastIndex = 0;
-      while ((match = plantWithPricePattern.exec(markdown)) !== null) {
-        const scientificName = match[1];
-        const price = match[2];
-        
-        plants.push({
-          common_name: scientificName,
-          scientific_name: scientificName,
-          price: `€${price}`,
-          page_url: pageUrl
-        });
+      
+      // If no plants found, try HTML-style links
+      if (plants.length === 0) {
+        linkPattern.lastIndex = 0; // Reset regex
+          const productUrl = match[1];
+          const fullName = match[2];
+          
+          const scientificName = this.extractScientificFromName(fullName);
+          const commonName = fullName.replace(scientificName || '', '').trim();
+          
+          plants.push({
+            common_name: commonName || fullName,
+            scientific_name: scientificName,
+            product_url: productUrl,
+            product_slug: productUrl.split('/').pop(),
+            page_url: pageUrl
+          });
+        }
+      }
+      
+      // If still no plants, try simple text pattern matching
+      if (plants.length === 0) {
+        plantWithPricePattern.lastIndex = 0;
+        while ((match = plantWithPricePattern.exec(markdown)) !== null) {
+          const scientificName = match[1];
+          const price = match[2];
+          
+          plants.push({
+            common_name: scientificName,
+            scientific_name: scientificName,
+            price: `€${price}`,
+            page_url: pageUrl
+          });
+        }
       }
     }
     
     return plants;
+  }
+  
+  private extractProductDetails(markdown: string, pageUrl: string): any {
+    // Extract product title (usually h1 or first header)
+    const titleMatch = markdown.match(/^#\s+(.+)/m) || markdown.match(/\*\*(.+?)\*\*/);  
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    
+    // Extract price
+    const priceMatch = markdown.match(/€\s*(\d+[,.]\d+)/);  
+    const price = priceMatch ? `€${priceMatch[1]}` : undefined;
+    
+    // Extract scientific name from title or content
+    const scientificName = this.extractScientificFromName(title) || 
+                          this.extractScientificFromName(markdown);
+    
+    // Extract characteristics
+    const heightMatch = markdown.match(/(?:Höhe|Height|Wuchshöhe)[:\s]*([\d,.-]+\s*(?:cm|m))/i);
+    const spreadMatch = markdown.match(/(?:Breite|Width|Spread|Wuchsbreite)[:\s]*([\d,.-]+\s*(?:cm|m))/i);
+    const bloomMatch = markdown.match(/(?:Blütezeit|Bloom Time|Flowering)[:\s]*([^\n]+)/i);
+    const sunMatch = markdown.match(/(?:Standort|Sun|Light|Sonne)[:\s]*([^\n]+)/i);
+    const waterMatch = markdown.match(/(?:Wasser|Water|Feuchtigkeit)[:\s]*([^\n]+)/i);
+    
+    // Extract description (first paragraph after title)
+    const descMatch = markdown.match(/^#[^\n]+\n+([^#\n][^\n]+)/m);
+    const description = descMatch ? descMatch[1].trim() : undefined;
+    
+    if (!title && !scientificName) {
+      return null; // No valid plant data found
+    }
+    
+    return {
+      common_name: title,
+      scientific_name: scientificName,
+      price,
+      description,
+      height: heightMatch ? heightMatch[1] : undefined,
+      spread: spreadMatch ? spreadMatch[1] : undefined,
+      bloom_time: bloomMatch ? bloomMatch[1] : undefined,
+      sunlight: sunMatch ? sunMatch[1] : undefined,
+      water: waterMatch ? waterMatch[1] : undefined,
+      product_url: pageUrl,
+      product_slug: pageUrl.split('/').pop()
+    };
   }
   
   private deduplicatePlants(plants: any[]): any[] {
