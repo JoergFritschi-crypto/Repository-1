@@ -32,6 +32,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, or, desc, isNotNull, lte, sql, gte } from "drizzle-orm";
+import { extractBotanicalParts } from "@shared/botanicalUtils";
 
 // Interface for storage operations
 export interface IStorage {
@@ -108,6 +109,7 @@ export interface IStorage {
   getScrapingProgress(url: string): Promise<ScrapingProgress | undefined>;
   createScrapingProgress(progress: InsertScrapingProgress): Promise<ScrapingProgress>;
   updateScrapingProgress(id: string, progress: Partial<InsertScrapingProgress>): Promise<ScrapingProgress>;
+  finalizeScrapingProgress(id: string, stats: { totalPlants: number; savedPlants: number; duplicatePlants: number; failedPlants: number }): Promise<ScrapingProgress>;
   getPlantByScientificName(scientificName: string): Promise<Plant | undefined>;
   getPlantByExternalId(externalId: string): Promise<Plant | undefined>;
   bulkCreatePlants(plants: InsertPlant[]): Promise<{ saved: number; duplicates: number; errors: number }>;  
@@ -669,6 +671,25 @@ export class DatabaseStorage implements IStorage {
     return updatedProgress;
   }
   
+  async finalizeScrapingProgress(id: string, stats: { totalPlants: number; savedPlants: number; duplicatePlants: number; failedPlants: number }): Promise<ScrapingProgress> {
+    const [finalized] = await db
+      .update(scrapingProgress)
+      .set({
+        status: 'completed',
+        totalPlants: stats.totalPlants,
+        savedPlants: stats.savedPlants,
+        duplicatePlants: stats.duplicatePlants,
+        failedPlants: stats.failedPlants,
+        completedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(scrapingProgress.id, id))
+      .returning();
+    
+    console.log(`Scraping finalized - Total: ${stats.totalPlants}, Saved: ${stats.savedPlants}, Duplicates: ${stats.duplicatePlants}, Failed: ${stats.failedPlants}`);
+    return finalized;
+  }
+  
   async getPlantByScientificName(scientificName: string): Promise<Plant | undefined> {
     const [plant] = await db.select().from(plants).where(eq(plants.scientificName, scientificName));
     return plant;
@@ -691,22 +712,86 @@ export class DatabaseStorage implements IStorage {
       
       for (const plant of batch) {
         try {
-          // Check for duplicate by scientific name or external ID
-          const existingByName = await this.getPlantByScientificName(plant.scientificName);
-          const existingById = plant.externalId ? await this.getPlantByExternalId(plant.externalId) : undefined;
+          // Ensure genus is extracted if not provided
+          let processedPlant = { ...plant };
           
-          if (existingByName || existingById) {
-            duplicates++;
-            console.log(`Duplicate plant found: ${plant.scientificName}`);
-          } else {
-            // Create the plant
-            await this.createPlant(plant);
-            saved++;
-            console.log(`Saved plant: ${plant.scientificName}`);
+          if (!processedPlant.genus || processedPlant.genus === 'Unknown') {
+            // Extract genus from scientific name (first word)
+            const scientificName = processedPlant.scientificName || '';
+            const botanicalParts = extractBotanicalParts(scientificName);
+            
+            processedPlant.genus = botanicalParts.genus || 'Unknown';
+            processedPlant.species = processedPlant.species || botanicalParts.species;
+            processedPlant.cultivar = processedPlant.cultivar || botanicalParts.cultivar;
           }
-        } catch (error) {
-          console.error(`Error saving plant ${plant.scientificName}:`, error);
-          errors++;
+          
+          // Validate required fields
+          if (!processedPlant.scientificName || !processedPlant.genus) {
+            console.error(`Skipping invalid plant: Missing required fields (scientificName: ${processedPlant.scientificName}, genus: ${processedPlant.genus})`);
+            errors++;
+            continue;
+          }
+          
+          // Try to upsert the plant
+          const [upsertedPlant] = await db
+            .insert(plants)
+            .values(processedPlant)
+            .onConflictDoUpdate({
+              target: plants.scientificName,
+              set: {
+                commonName: processedPlant.commonName,
+                genus: processedPlant.genus,
+                species: processedPlant.species,
+                cultivar: processedPlant.cultivar,
+                description: processedPlant.description,
+                sourceUrl: processedPlant.sourceUrl,
+                updatedAt: new Date()
+              }
+            })
+            .returning();
+          
+          if (upsertedPlant) {
+            saved++;
+            console.log(`Saved/Updated plant: ${processedPlant.scientificName}`);
+          }
+        } catch (error: any) {
+          // Check if it's a duplicate key error for externalId
+          if (error.code === '23505' && error.detail?.includes('external_id')) {
+            duplicates++;
+            console.log(`Duplicate external ID found: ${plant.externalId}`);
+            
+            // Try to update by external ID instead
+            if (plant.externalId) {
+              try {
+                const [updated] = await db
+                  .update(plants)
+                  .set({
+                    scientificName: plant.scientificName,
+                    commonName: plant.commonName,
+                    genus: plant.genus || 'Unknown',
+                    species: plant.species,
+                    cultivar: plant.cultivar,
+                    description: plant.description,
+                    sourceUrl: plant.sourceUrl,
+                    updatedAt: new Date()
+                  })
+                  .where(eq(plants.externalId, plant.externalId))
+                  .returning();
+                
+                if (updated) {
+                  saved++;
+                  duplicates--; // It was actually an update, not a duplicate
+                  console.log(`Updated plant by external ID: ${plant.scientificName}`);
+                }
+              } catch (updateError) {
+                console.error(`Error updating plant by external ID ${plant.externalId}:`, updateError);
+                errors++;
+              }
+            }
+          } else {
+            errors++;
+            console.error(`Error saving plant ${plant.scientificName}:`, error.message || error);
+          }
         }
       }
     }

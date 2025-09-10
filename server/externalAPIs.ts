@@ -3,6 +3,7 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { storage } from './storage';
 import { type InsertPlant } from '@shared/schema';
+import { extractBotanicalParts } from '@shared/botanicalUtils';
 
 // FireCrawl Web Scraping API
 export class FireCrawlAPI {
@@ -184,34 +185,41 @@ export class FireCrawlAPI {
               console.log(`Saving batch ${i + 1} with ${batchPlants.length} plants to database...`);
               
               // Prepare plants for database insertion
-              const plantsToSave: InsertPlant[] = batchPlants.map(plant => ({
-                scientificName: plant.scientific_name || plant.common_name || 'Unknown',
-                commonName: plant.common_name || '',
-                family: plant.family,
-                genus: plant.genus,
-                species: plant.species,
-                cultivar: plant.cultivar,
-                type: plant.type || 'herbaceous perennials',
-                externalId: plant.product_url ? `firecrawl-${plant.product_url}` : undefined,
-                sourceUrl: plant.product_url || plant.page_url || url,
-                description: plant.description,
-                heightMinCm: plant.height_min,
-                heightMaxCm: plant.height_max,
-                spreadMinCm: plant.spread_min,
-                spreadMaxCm: plant.spread_max,
-                bloomStartMonth: plant.bloom_start,
-                bloomEndMonth: plant.bloom_end,
-                flowerColor: plant.flower_color,
-                sunlight: plant.sunlight,
-                watering: plant.watering,
-                soil: plant.soil,
-                hardiness: plant.hardiness,
-                maintenance: plant.maintenance,
-                growthRate: plant.growth_rate,
-                droughtTolerant: plant.drought_tolerant,
-                saltTolerant: plant.salt_tolerant,
-                verificationStatus: 'pending' as const
-              }));
+              const plantsToSave: InsertPlant[] = batchPlants.map(plant => {
+                const scientificName = plant.scientific_name || plant.common_name || 'Unknown';
+                
+                // Extract botanical parts from scientific name
+                const botanicalParts = extractBotanicalParts(scientificName);
+                
+                return {
+                  scientificName,
+                  commonName: plant.common_name || '',
+                  family: plant.family,
+                  genus: plant.genus || botanicalParts.genus || 'Unknown', // Use extracted genus if not provided
+                  species: plant.species || botanicalParts.species,
+                  cultivar: plant.cultivar || botanicalParts.cultivar,
+                  type: plant.type || 'herbaceous perennials',
+                  externalId: plant.product_url ? `firecrawl-${plant.product_url}` : undefined,
+                  sourceUrl: plant.product_url || plant.page_url || url,
+                  description: plant.description,
+                  heightMinCm: plant.height_min,
+                  heightMaxCm: plant.height_max,
+                  spreadMinCm: plant.spread_min,
+                  spreadMaxCm: plant.spread_max,
+                  bloomStartMonth: plant.bloom_start,
+                  bloomEndMonth: plant.bloom_end,
+                  flowerColor: plant.flower_color,
+                  sunlight: plant.sunlight,
+                  watering: plant.watering,
+                  soil: plant.soil,
+                  hardiness: plant.hardiness,
+                  maintenance: plant.maintenance,
+                  growthRate: plant.growth_rate,
+                  droughtTolerant: plant.drought_tolerant,
+                  saltTolerant: plant.salt_tolerant,
+                  verificationStatus: 'pending' as const
+                };
+              });
               
               const saveResult = await storage.bulkCreatePlants(plantsToSave);
               
