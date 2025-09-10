@@ -116,7 +116,7 @@ export class FireCrawlAPI {
           }
           
           console.log(`Resuming scraping from batch ${progress.completedBatches}`);
-          startBatchIndex = progress.completedBatches;
+          startBatchIndex = progress.completedBatches || 0;
           
           // Update progress with current run
           await storage.updateScrapingProgress(progress.id, {
@@ -216,29 +216,33 @@ export class FireCrawlAPI {
               const saveResult = await storage.bulkCreatePlants(plantsToSave);
               
               // Update progress
-              await storage.updateScrapingProgress(progress!.id, {
-                completedBatches: i + 1,
-                totalPlants: progress!.totalPlants + batchPlants.length,
-                savedPlants: progress!.savedPlants + saveResult.saved,
-                duplicatePlants: progress!.duplicatePlants + saveResult.duplicates,
-                failedPlants: progress!.failedPlants + saveResult.errors,
-                lastProductUrl: batch[batch.length - 1]
-              });
-              
-              // Update local progress object
-              progress!.totalPlants += batchPlants.length;
-              progress!.savedPlants += saveResult.saved;
-              progress!.duplicatePlants += saveResult.duplicates;
-              progress!.failedPlants += saveResult.errors;
+              if (progress) {
+                await storage.updateScrapingProgress(progress.id, {
+                  completedBatches: i + 1,
+                  totalPlants: progress.totalPlants + batchPlants.length,
+                  savedPlants: progress.savedPlants + saveResult.saved,
+                  duplicatePlants: progress.duplicatePlants + saveResult.duplicates,
+                  failedPlants: progress.failedPlants + saveResult.errors,
+                  lastProductUrl: batch[batch.length - 1]
+                });
+                
+                // Update local progress object
+                progress.totalPlants += batchPlants.length;
+                progress.savedPlants += saveResult.saved;
+                progress.duplicatePlants += saveResult.duplicates;
+                progress.failedPlants += saveResult.errors;
+              }
               
               console.log(`Batch ${i + 1} results: Saved: ${saveResult.saved}, Duplicates: ${saveResult.duplicates}, Errors: ${saveResult.errors}`);
             } else if (!saveToDatabase) {
               // Even when not saving, update the batch progress
-              await storage.updateScrapingProgress(progress!.id, {
-                completedBatches: i + 1,
-                totalPlants: progress!.totalPlants + batchPlants.length,
-                lastProductUrl: batch[batch.length - 1]
-              });
+              if (progress) {
+                await storage.updateScrapingProgress(progress.id, {
+                  completedBatches: i + 1,
+                  totalPlants: progress.totalPlants + batchPlants.length,
+                  lastProductUrl: batch[batch.length - 1]
+                });
+              }
             }
             
             successfulBatches++;
@@ -247,13 +251,15 @@ export class FireCrawlAPI {
             failedBatches++;
             
             // Store error in progress
-            const errors = (progress!.errors as any[]) || [];
-            errors.push({
-              batch: i + 1,
-              error: (error as Error).message,
-              timestamp: new Date().toISOString()
-            });
-            await storage.updateScrapingProgress(progress!.id, { errors });
+            if (progress) {
+              const errors = (progress.errors as any[]) || [];
+              errors.push({
+                batch: i + 1,
+                error: (error as Error).message,
+                timestamp: new Date().toISOString()
+              });
+              await storage.updateScrapingProgress(progress.id, { errors });
+            }
             
             // If we get 502 errors, wait longer before retrying
             if ((error as any).toString().includes('502')) {
@@ -300,11 +306,11 @@ export class FireCrawlAPI {
             scrapedAt: new Date().toISOString(),
             creditsUsed: productUrls.length,
             pagesCrawled: productUrls.length,
-            totalPlantsFound: saveToDatabase ? progress!.totalPlants : plantsWithType.length,
+            totalPlantsFound: saveToDatabase && progress ? progress.totalPlants : plantsWithType.length,
             extractionMethod: 'two-stage-batch',
-            saved: saveToDatabase ? progress!.savedPlants : 0,
-            duplicates: saveToDatabase ? progress!.duplicatePlants : 0,
-            errors: saveToDatabase ? progress!.failedPlants : 0
+            saved: saveToDatabase && progress ? progress.savedPlants : 0,
+            duplicates: saveToDatabase && progress ? progress.duplicatePlants : 0,
+            errors: saveToDatabase && progress ? progress.failedPlants : 0
           }
         };
       } else {
@@ -314,7 +320,7 @@ export class FireCrawlAPI {
           timeout: 30000,
           extract: {
             schema: {
-              type: 'object',
+              _type: 'object' as const,
               properties: {
                 products: {
                   _type: 'array' as const,
