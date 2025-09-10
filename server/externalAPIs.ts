@@ -22,7 +22,7 @@ export class FireCrawlAPI {
         
         // Use crawl mode to get all pages with JavaScript rendering
         const crawlResult = await this.app.crawlUrl(url, {
-          limit: 250, // Proven to work - captures ~964 plants
+          limit: 270, // Increased slightly to capture the missing ~40 plants (4 pages x 12 plants)
           maxDepth: 2, // Keep at 2 to avoid overload
           includePaths: ['/collections/stauden', '/collections/pflanzen', '/products/'],
           excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog', '/blogs/', '/pages/'],
