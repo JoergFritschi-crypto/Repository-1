@@ -357,6 +357,7 @@ export class FireCrawlAPI {
       // If no plants found, try HTML-style links
       if (plants.length === 0) {
         linkPattern.lastIndex = 0; // Reset regex
+        while ((match = productLinkPattern.exec(markdown)) !== null) {
           const productUrl = match[1];
           const fullName = match[2];
           
