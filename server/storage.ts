@@ -258,7 +258,8 @@ export class DatabaseStorage implements IStorage {
     if (filters.minHeight) {
       conditions.push(gte(plants.heightMaxCm, filters.minHeight));
     }
-    if (filters.maxHeight) {
+    // Only apply max height filter if not including large specimens (maxHeight === 0 means no limit)
+    if (filters.maxHeight && filters.maxHeight !== 0) {
       conditions.push(lte(plants.heightMinCm, filters.maxHeight));
     }
     if (filters.minSpread) {
