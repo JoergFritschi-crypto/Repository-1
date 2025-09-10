@@ -213,11 +213,12 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (filters?.sun_requirements) {
-      conditions.push(eq(plants.sun_requirements, filters.sun_requirements as any));
+      // sunlight is stored as JSONB array, so we need to check if it contains the value
+      conditions.push(sql`${plants.sunlight}::jsonb @> ${JSON.stringify([filters.sun_requirements])}::jsonb`);
     }
     
     if (filters?.pet_safe !== undefined) {
-      conditions.push(eq(plants.pet_safe, filters.pet_safe));
+      conditions.push(eq(plants.petSafe, filters.pet_safe));
     }
     
     if (conditions.length > 0) {
@@ -236,32 +237,33 @@ export class DatabaseStorage implements IStorage {
     if (filters.cultivar) conditions.push(ilike(plants.cultivar, `%${filters.cultivar}%`));
     
     // Single selection fields
-    if (filters.plantType) conditions.push(eq(plants.plantType, filters.plantType));
+    if (filters.plantType) conditions.push(eq(plants.type, filters.plantType));
     if (filters.sunlight) {
-      const sunMap: any = {
-        'Full Sun': 'full sun',
-        'Partial Sun': 'partial sun',
-        'Partial Shade': 'partial shade',
-        'Full Shade': 'full shade'
-      };
-      conditions.push(eq(plants.sunRequirements, sunMap[filters.sunlight] || filters.sunlight));
+      // sunlight is stored as JSONB array
+      conditions.push(sql`${plants.sunlight}::jsonb @> ${JSON.stringify([filters.sunlight])}::jsonb`);
     }
-    if (filters.soilType) conditions.push(ilike(plants.soilType, `%${filters.soilType}%`));
-    if (filters.maintenance) conditions.push(eq(plants.maintenanceLevel, filters.maintenance.toLowerCase()));
+    if (filters.soilType) {
+      // soil is stored as JSONB array
+      conditions.push(sql`${plants.soil}::jsonb @> ${JSON.stringify([filters.soilType])}::jsonb`);
+    }
+    if (filters.maintenance) conditions.push(eq(plants.maintenance, filters.maintenance.toLowerCase()));
     if (filters.watering) {
-      const waterMap: any = {
-        'Minimal': 'low',
-        'Average': 'medium',
-        'Frequent': 'high'
-      };
-      conditions.push(eq(plants.wateringNeeds, waterMap[filters.watering] || filters.watering));
+      conditions.push(eq(plants.watering, filters.watering.toLowerCase()));
     }
     
-    // Range fields
-    if (filters.minHeight) conditions.push(gte(plants.heightMax, filters.minHeight));
-    if (filters.maxHeight) conditions.push(lte(plants.heightMin, filters.maxHeight));
-    if (filters.minSpread) conditions.push(gte(plants.spreadMax, filters.minSpread));
-    if (filters.maxSpread) conditions.push(lte(plants.spreadMin, filters.maxSpread));
+    // Range fields - dimension is stored as JSONB {height: {min, max}, spread: {min, max}}
+    if (filters.minHeight) {
+      conditions.push(sql`(${plants.dimension}->'height'->>'max')::numeric >= ${filters.minHeight}`);
+    }
+    if (filters.maxHeight) {
+      conditions.push(sql`(${plants.dimension}->'height'->>'min')::numeric <= ${filters.maxHeight}`);
+    }
+    if (filters.minSpread) {
+      conditions.push(sql`(${plants.dimension}->'spread'->>'max')::numeric >= ${filters.minSpread}`);
+    }
+    if (filters.maxSpread) {
+      conditions.push(sql`(${plants.dimension}->'spread'->>'min')::numeric <= ${filters.maxSpread}`);
+    }
     
     // Boolean fields
     if (filters.isSafe) {
@@ -283,49 +285,57 @@ export class DatabaseStorage implements IStorage {
       if (filters.specialFeatures.includes('Fast Growing')) {
         featureConditions.push(eq(plants.growthRate, 'fast'));
       }
-      if (filters.specialFeatures.includes('Fragrant')) {
-        featureConditions.push(eq(plants.fragrant, true));
-      }
+      // Note: fragrant column doesn't exist in current schema
       if (featureConditions.length > 0) {
         conditions.push(or(...featureConditions));
       }
     }
     
-    // Wildlife attractants
+    // Wildlife attractants - attracts is stored as JSONB array
     if (filters.attractsWildlife && filters.attractsWildlife.length > 0) {
-      const wildlifeConditions = [];
-      if (filters.attractsWildlife.includes('Butterflies')) {
-        wildlifeConditions.push(eq(plants.attractsButterflies, true));
-      }
-      if (filters.attractsWildlife.includes('Birds')) {
-        wildlifeConditions.push(eq(plants.attractsBirds, true));
-      }
-      if (filters.attractsWildlife.includes('Bees')) {
-        wildlifeConditions.push(eq(plants.attractsBees, true));
-      }
-      if (filters.attractsWildlife.includes('Hummingbirds')) {
-        wildlifeConditions.push(eq(plants.attractsHummingbirds, true));
-      }
+      const wildlifeConditions = filters.attractsWildlife.map((wildlife: string) => {
+        const wildlifeMap: any = {
+          'Butterflies': 'butterflies',
+          'Birds': 'birds', 
+          'Bees': 'bees',
+          'Hummingbirds': 'hummingbirds'
+        };
+        const wildlifeName = wildlifeMap[wildlife] || wildlife.toLowerCase();
+        return sql`${plants.attracts}::jsonb @> ${JSON.stringify([wildlifeName])}::jsonb`;
+      });
       if (wildlifeConditions.length > 0) {
         conditions.push(or(...wildlifeConditions));
       }
     }
     
-    // Bloom months
+    // Bloom months - using bloomStartMonth and bloomEndMonth integer fields
     if (filters.bloomMonths && filters.bloomMonths.length > 0) {
+      const monthMap: any = {
+        'January': 1, 'February': 2, 'March': 3, 'April': 4,
+        'May': 5, 'June': 6, 'July': 7, 'August': 8,
+        'September': 9, 'October': 10, 'November': 11, 'December': 12
+      };
       const monthConditions = filters.bloomMonths.map((month: string) => {
-        const monthName = month.replace('Early ', '').replace('Late ', '').toLowerCase();
-        return ilike(plants.bloomTime, `%${monthName}%`);
-      });
+        const monthName = month.replace('Early ', '').replace('Late ', '');
+        const monthNum = monthMap[monthName];
+        if (monthNum) {
+          return or(
+            and(gte(plants.bloomStartMonth, monthNum), lte(plants.bloomStartMonth, monthNum)),
+            and(gte(plants.bloomEndMonth, monthNum), lte(plants.bloomEndMonth, monthNum)),
+            and(lte(plants.bloomStartMonth, monthNum), gte(plants.bloomEndMonth, monthNum))
+          );
+        }
+        return null;
+      }).filter(Boolean);
       if (monthConditions.length > 0) {
         conditions.push(or(...monthConditions));
       }
     }
     
-    // Colors
+    // Colors - flowerColor is stored as JSONB array
     if (filters.colors && filters.colors.length > 0) {
       const colorConditions = filters.colors.map((color: string) => 
-        ilike(plants.flowerColor, `%${color}%`)
+        sql`${plants.flowerColor}::jsonb @> ${JSON.stringify([color.toLowerCase()])}::jsonb`
       );
       if (colorConditions.length > 0) {
         conditions.push(or(...colorConditions));
