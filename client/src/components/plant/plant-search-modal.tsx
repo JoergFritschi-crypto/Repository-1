@@ -256,17 +256,19 @@ export default function PlantSearchModal({
 
             <TabsContent value={searchSource} className="mt-0 flex-1 flex flex-col min-h-0 overflow-hidden">
               {/* Advanced Plant Search Component */}
-              <div className="mb-4 flex-shrink-0">
-                <PlantAdvancedSearch 
-                  onSearch={handleSearchFilters}
-                  totalResults={searchResults.length}
-                />
-              </div>
+              <ScrollArea className="mb-4 max-h-[40vh] flex-shrink-0 border rounded-lg">
+                <div className="p-2">
+                  <PlantAdvancedSearch 
+                    onSearch={handleSearchFilters}
+                    totalResults={searchResults.length}
+                  />
+                </div>
+              </ScrollArea>
               
               {/* Search Results with Plant Cards */}
               {searchResults.length > 0 && (
-                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                  <div className="flex items-center justify-between mb-2 flex-shrink-0">
+                <div className="flex-1 flex flex-col min-h-[200px] overflow-hidden">
+                  <div className="flex items-center justify-between mb-2 flex-shrink-0 px-2">
                     <h3 className="font-medium">
                       {searchSource === 'collection' ? 'Plants from Your Collection' : 'Search Results'}
                       <span className="text-sm font-normal text-muted-foreground ml-2">

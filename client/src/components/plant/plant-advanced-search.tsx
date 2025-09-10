@@ -185,8 +185,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
         </div>
 
         {/* All Filters Section - Always visible */}
-        <ScrollArea className="h-[450px] border rounded-lg p-4 bg-gray-50/50">
-            <div className="space-y-6 pr-4">
+        <div className="border rounded-lg p-4 bg-gray-50/50">
+            <div className="space-y-6">
             {/* Plant Type - Multi-select */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Types (Select Multiple)</label>
@@ -958,7 +958,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </label>
             </div>
             </div>
-          </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
