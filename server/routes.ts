@@ -2730,39 +2730,62 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      console.log('Testing Runware with key:', process.env.RUNWARE_API_KEY ? 'Key exists' : 'No key');
+      const apiKey = process.env.RUNWARE_API_KEY;
+      console.log('Testing Runware with key:', apiKey ? `${apiKey.slice(0, 8)}...` : 'No key');
       
-      // Test authentication using Runware's expected format
-      const response = await fetch('https://api.runware.ai/v1', {
+      // Test 1: Try with just Authorization header (no authentication task)
+      const test1 = await fetch('https://api.runware.ai/v1', {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${process.env.RUNWARE_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([
+          {
+            taskType: 'imageInference',
+            taskUUID: 'test-' + Date.now(),
+            positivePrompt: 'test',
+            width: 512,
+            height: 512,
+            model: 'runware:100@1',
+            numberResults: 1
+          }
+        ])
+      });
+      
+      const test1Response = await test1.text();
+      console.log('Test 1 (Auth header only) status:', test1.status);
+      console.log('Test 1 response:', test1Response);
+      
+      // Test 2: Try with authentication in the request body (no header)
+      const test2 = await fetch('https://api.runware.ai/v1', {
+        method: 'POST',
+        headers: { 
           'Content-Type': 'application/json'
         },
         body: JSON.stringify([
           {
             taskType: 'authentication',
-            apiKey: process.env.RUNWARE_API_KEY
+            apiKey: apiKey
           }
         ])
       });
-
-      const responseText = await response.text();
-      console.log('Runware response status:', response.status);
-      console.log('Runware response:', responseText);
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        data = { raw: responseText };
-      }
+      
+      const test2Response = await test2.text();
+      console.log('Test 2 (Auth in body) status:', test2.status);
+      console.log('Test 2 response:', test2Response);
 
       res.json({
-        status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
-        body: data,
-        keyExists: !!process.env.RUNWARE_API_KEY
+        test1: {
+          status: test1.status,
+          response: JSON.parse(test1Response || '{}')
+        },
+        test2: {
+          status: test2.status,
+          response: JSON.parse(test2Response || '{}')
+        },
+        keyExists: !!apiKey,
+        keyPrefix: apiKey ? apiKey.slice(0, 8) : null
       });
     } catch (error) {
       console.error("Error testing Runware:", error);
