@@ -959,7 +959,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </div>
             </div>
           </ScrollArea>
-        
       </CardContent>
     </Card>
   );
