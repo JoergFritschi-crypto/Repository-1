@@ -118,6 +118,7 @@ export const gardens = pgTable("gardens", {
 export const plants = pgTable("plants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   perenualId: integer("perenual_id").unique(), // Perenual's ID for reference
+  externalId: varchar("external_id").unique(), // External source ID (e.g., firecrawl URL)
   
   // Core botanical identity - THE PRIMARY FOCUS OF THE APP
   scientificName: varchar("scientific_name").notNull().unique(), // Full botanical name

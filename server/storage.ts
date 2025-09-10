@@ -607,7 +607,7 @@ export class DatabaseStorage implements IStorage {
         isNotNull(fileVault.expiresAt),
         lte(fileVault.expiresAt, new Date())
       ));
-    return result.count || 0;
+    return result.rowCount || 0;
   }
   
   // Visualization data operations (stored in garden metadata)
@@ -615,12 +615,12 @@ export class DatabaseStorage implements IStorage {
     const garden = await this.getGarden(gardenId);
     if (!garden) return undefined;
     
-    // Store visualization data in garden's additionalInfo JSON field
-    const additionalInfo = garden.additionalInfo as any || {};
+    // Store visualization data in garden's layout_data JSON field
+    const layoutData = garden.layout_data as any || {};
     return {
-      iterationCount: additionalInfo.visualizationIterationCount || 0,
-      savedImages: additionalInfo.savedSeasonalImages || [],
-      lastSaved: additionalInfo.lastSeasonalImagesSaved || null
+      iterationCount: layoutData.visualizationIterationCount || 0,
+      savedImages: layoutData.savedSeasonalImages || [],
+      lastSaved: layoutData.lastSeasonalImagesSaved || null
     };
   }
   
@@ -628,22 +628,22 @@ export class DatabaseStorage implements IStorage {
     const garden = await this.getGarden(gardenId);
     if (!garden) return;
     
-    const additionalInfo = garden.additionalInfo as any || {};
+    const layoutData = garden.layout_data as any || {};
     
     // Update visualization data
     if (data.iterationCount !== undefined) {
-      additionalInfo.visualizationIterationCount = data.iterationCount;
+      layoutData.visualizationIterationCount = data.iterationCount;
     }
     if (data.savedImages !== undefined) {
-      additionalInfo.savedSeasonalImages = data.savedImages;
+      layoutData.savedSeasonalImages = data.savedImages;
     }
     if (data.lastSaved !== undefined) {
-      additionalInfo.lastSeasonalImagesSaved = data.lastSaved;
+      layoutData.lastSeasonalImagesSaved = data.lastSaved;
     }
     
     await db.update(gardens)
       .set({ 
-        additionalInfo,
+        layout_data: layoutData,
         updatedAt: new Date()
       })
       .where(eq(gardens.id, gardenId.toString()));
