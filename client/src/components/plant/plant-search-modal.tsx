@@ -6,7 +6,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Check, Search, Leaf, Database, Heart } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Plus, Check, Search, Leaf, Database, Heart, Minus } from 'lucide-react';
 import { PlantAdvancedSearch } from './plant-advanced-search';
 import { CompactPlantCard } from './compact-plant-card';
 import type { Plant } from '@shared/schema';
@@ -18,6 +19,10 @@ interface PlantSearchModalProps {
   userTier?: 'free' | 'pay_per_design' | 'premium';
 }
 
+interface SelectedPlantInfo {
+  quantity: number;
+}
+
 export default function PlantSearchModal({
   isOpen,
   onClose,
@@ -25,7 +30,7 @@ export default function PlantSearchModal({
   userTier = 'free'
 }: PlantSearchModalProps) {
   const [filters, setFilters] = useState<any>({});
-  const [selectedPlants, setSelectedPlants] = useState<Set<string>>(new Set());
+  const [selectedPlants, setSelectedPlants] = useState<Map<string, SelectedPlantInfo>>(new Map());
   const [searchSource, setSearchSource] = useState<'database' | 'collection'>('database');
 
   // Fetch user's collection
@@ -134,24 +139,40 @@ export default function PlantSearchModal({
   const isLoading = searchSource === 'database' ? databaseLoading : collectionLoading;
   
   const handleTogglePlant = (plantId: string) => {
-    const newSelected = new Set(selectedPlants);
+    const newSelected = new Map(selectedPlants);
     if (newSelected.has(plantId)) {
       newSelected.delete(plantId);
     } else {
-      newSelected.add(plantId);
+      newSelected.set(plantId, { quantity: 1 });
     }
     setSelectedPlants(newSelected);
   };
   
+  const handleQuantityChange = (plantId: string, quantity: number) => {
+    if (quantity < 1) return;
+    const newSelected = new Map(selectedPlants);
+    if (newSelected.has(plantId)) {
+      newSelected.set(plantId, { quantity });
+      setSelectedPlants(newSelected);
+    }
+  };
+  
   const handleAddSelectedPlants = () => {
-    const plantsToAdd = searchResults.filter((plant: Plant) => selectedPlants.has(plant.id));
-    plantsToAdd.forEach((plant: Plant) => onSelectPlant(plant));
-    setSelectedPlants(new Set());
+    selectedPlants.forEach((info, plantId) => {
+      const plant = searchResults.find((p: Plant) => p.id === plantId);
+      if (plant) {
+        // Add the plant multiple times based on quantity
+        for (let i = 0; i < info.quantity; i++) {
+          onSelectPlant(plant);
+        }
+      }
+    });
+    setSelectedPlants(new Map());
     onClose();
   };
   
   const handleClose = () => {
-    setSelectedPlants(new Set());
+    setSelectedPlants(new Map());
     setFilters({});
     setSearchSource('database');
     onClose();
@@ -159,13 +180,19 @@ export default function PlantSearchModal({
 
   const handleSearchFilters = (newFilters: any) => {
     setFilters(newFilters);
-    setSelectedPlants(new Set()); // Clear selections when search changes
+    setSelectedPlants(new Map()); // Clear selections when search changes
   };
 
   // Reset selected plants when switching tabs
   useEffect(() => {
-    setSelectedPlants(new Set());
+    setSelectedPlants(new Map());
   }, [searchSource]);
+  
+  // Calculate total plants selected including quantities
+  const totalPlantsSelected = Array.from(selectedPlants.values()).reduce(
+    (sum, info) => sum + info.quantity, 
+    0
+  );
   
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -230,12 +257,14 @@ export default function PlantSearchModal({
                       </span>
                     </h3>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">{selectedPlants.size} selected</Badge>
+                      <Badge variant="outline">
+                        {selectedPlants.size} type{selectedPlants.size !== 1 ? 's' : ''}, {totalPlantsSelected} total
+                      </Badge>
                       {selectedPlants.size > 0 && (
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => setSelectedPlants(new Set())}
+                          onClick={() => setSelectedPlants(new Map())}
                         >
                           Clear Selection
                         </Button>
@@ -244,28 +273,87 @@ export default function PlantSearchModal({
                   </div>
                   <ScrollArea className="flex-1 border rounded-lg">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-                      {searchResults.map((plant: Plant) => (
-                        <div 
-                          key={plant.id} 
-                          className={`relative cursor-pointer transition-all ${
-                            selectedPlants.has(plant.id) 
-                              ? 'ring-2 ring-primary ring-offset-2 rounded-lg' 
-                              : ''
-                          }`}
-                          onClick={() => handleTogglePlant(plant.id)}
-                        >
-                          <CompactPlantCard
-                            plant={plant}
-                            isAdmin={false}
-                            hideActions={true}
-                          />
-                          {selectedPlants.has(plant.id) && (
-                            <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
-                              <Check className="w-4 h-4" />
+                      {searchResults.map((plant: Plant) => {
+                        const isSelected = selectedPlants.has(plant.id);
+                        const quantity = selectedPlants.get(plant.id)?.quantity || 1;
+                        
+                        return (
+                          <div 
+                            key={plant.id} 
+                            className="relative"
+                          >
+                            <div
+                              className={`transition-all cursor-pointer rounded-lg ${
+                                isSelected 
+                                  ? 'ring-4 ring-green-500 ring-offset-2 bg-green-50 scale-[1.02]' 
+                                  : 'hover:scale-[1.01]'
+                              }`}
+                              onClick={() => handleTogglePlant(plant.id)}
+                            >
+                              <CompactPlantCard
+                                plant={plant}
+                                isAdmin={false}
+                                hideActions={true}
+                              />
                             </div>
-                          )}
-                        </div>
-                      ))}
+                            
+                            {isSelected && (
+                              <>
+                                {/* Selection indicator */}
+                                <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1.5 shadow-lg">
+                                  <Check className="w-5 h-5" />
+                                </div>
+                                
+                                {/* Quantity selector */}
+                                <div className="absolute bottom-2 left-2 right-2 bg-white rounded-lg shadow-lg border-2 border-green-500 p-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-sm font-medium text-gray-700">Quantity:</span>
+                                    <div className="flex items-center gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 w-7 p-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleQuantityChange(plant.id, quantity - 1);
+                                        }}
+                                        disabled={quantity <= 1}
+                                      >
+                                        <Minus className="w-3 h-3" />
+                                      </Button>
+                                      <Input
+                                        type="number"
+                                        value={quantity}
+                                        onChange={(e) => {
+                                          e.stopPropagation();
+                                          const val = parseInt(e.target.value) || 1;
+                                          handleQuantityChange(plant.id, val);
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="h-7 w-14 text-center p-1 font-bold"
+                                        min="1"
+                                        max="99"
+                                      />
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 w-7 p-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleQuantityChange(plant.id, quantity + 1);
+                                        }}
+                                        disabled={quantity >= 99}
+                                      >
+                                        <Plus className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                 </div>
@@ -336,7 +424,7 @@ export default function PlantSearchModal({
           <div className="flex items-center gap-2">
             {selectedPlants.size > 0 && (
               <span className="text-sm text-muted-foreground">
-                {selectedPlants.size} plant{selectedPlants.size !== 1 ? 's' : ''} selected
+                {selectedPlants.size} type{selectedPlants.size !== 1 ? 's' : ''} • {totalPlantsSelected} plant{totalPlantsSelected !== 1 ? 's' : ''} total
               </span>
             )}
             <Button 
