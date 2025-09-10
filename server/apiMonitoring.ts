@@ -404,8 +404,7 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
-            // Test authentication using Runware's expected format
-            // Runware requires POST requests with array format
+            // Test authentication using Authorization header only (not both header and body)
             const response = await fetch('https://api.runware.ai/v1', {
               method: 'POST',
               headers: { 
@@ -414,8 +413,15 @@ export class APIMonitoringService {
               },
               body: JSON.stringify([
                 {
-                  taskType: 'authentication',
-                  apiKey: process.env.RUNWARE_API_KEY
+                  taskType: 'imageInference',
+                  taskUUID: 'health-check-' + Date.now(),
+                  positivePrompt: 'test',
+                  width: 512,
+                  height: 512,
+                  model: 'runware:100@1',
+                  numberResults: 1,
+                  outputType: 'URL',
+                  checkNSFW: false
                 }
               ])
             });
@@ -423,21 +429,21 @@ export class APIMonitoringService {
             
             if (response.ok) {
               const data = await response.json();
-              // Check for successful authentication response
-              if (data.data && data.data[0] && data.data[0].taskType === 'authentication') {
+              // Check for successful response
+              if (data.data && Array.isArray(data.data) && data.data.length > 0) {
                 return {
                   service: 'runware',
                   status: 'healthy',
                   responseTime,
-                  metadata: { sessionId: data.data[0].connectionSessionUUID }
+                  metadata: { taskType: data.data[0].taskType }
                 };
               } else if (data.errors && data.errors[0]) {
-                // Authentication failed
+                // Request failed
                 return {
                   service: 'runware',
                   status: 'down',
                   responseTime,
-                  errorMessage: data.errors[0].message || 'Authentication failed'
+                  errorMessage: data.errors[0].message || 'Request failed'
                 };
               }
             } 
