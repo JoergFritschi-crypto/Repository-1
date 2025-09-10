@@ -24,7 +24,7 @@ export class FireCrawlAPI {
         const crawlResult = await this.app.crawlUrl(url, {
           limit: 30, // Crawl up to 30 pages (300+ plants if 12 per page)
           maxDepth: 2, // Follow pagination links one level deep
-          includePaths: ['/collections/stauden/**', '/collections/pflanzen/**'],
+          includePaths: ['/collections/stauden', '/collections/pflanzen'],
           excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog']
         });
         
