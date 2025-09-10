@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Filter, X, Flower, Ruler, ChevronDown } from "lucide-react";
+import { Search, Filter, X, Flower, Ruler, ChevronDown, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -14,6 +14,12 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PlantAdvancedSearchProps {
   onSearch: (filters: any) => void;
@@ -199,7 +205,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                     <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64">
+                <DropdownMenuContent className="w-64 max-h-80 overflow-y-auto">
                   <DropdownMenuCheckboxItem
                     checked={filters.plantTypes?.includes("perennial") || false}
                     onCheckedChange={(checked) => {
@@ -621,19 +627,57 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 onValueChange={(value) => handleFilterChange("hardiness", value)}
               >
                 <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-hardiness">
-                  <SelectValue placeholder="All Hardiness Zones" />
+                  <SelectValue placeholder="All Hardiness Levels" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Hardiness Zones</SelectItem>
-                  <SelectItem value="3-5">Zones 3-5 (Cold)</SelectItem>
-                  <SelectItem value="6-7">Zones 6-7 (Temperate)</SelectItem>
-                  <SelectItem value="8-9">Zones 8-9 (Warm)</SelectItem>
-                  <SelectItem value="10-11">Zones 10-11 (Tropical)</SelectItem>
+                  <SelectItem value="all">All Hardiness Levels</SelectItem>
+                  <SelectItem value="very-hardy">Very Hardy (USDA Zones 3-5)</SelectItem>
+                  <SelectItem value="hardy">Hardy (USDA Zones 6-7)</SelectItem>
+                  <SelectItem value="half-hardy">Half-Hardy (USDA Zones 8-9)</SelectItem>
+                  <SelectItem value="tender">Tender (USDA Zones 10-11)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Row 4: Bloom and Foliage - Multi-select */}
+            {/* Row 4: Toxicity and Additional */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Toxicity Filter with RHS Ratings */}
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <label className="text-sm font-medium text-gray-700">Plant Toxicity</label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-3 h-3 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="font-semibold mb-1">RHS Toxicity Ratings:</p>
+                        <p className="text-xs mb-1"><span className="font-medium">A:</span> Poisonous - May cause serious illness or death</p>
+                        <p className="text-xs mb-1"><span className="font-medium">B:</span> Skin/eye irritant - May cause rashes or irritation</p>
+                        <p className="text-xs"><span className="font-medium">C:</span> Harmful if eaten - May cause stomach upset</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Select
+                  value={filters.toxicity || "all"}
+                  onValueChange={(value) => handleFilterChange("toxicity", value)}
+                >
+                  <SelectTrigger className="h-10 text-sm font-medium w-full" data-testid="select-toxicity">
+                    <SelectValue placeholder="Any Toxicity Level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any Toxicity Level</SelectItem>
+                    <SelectItem value="none">Non-toxic (Safe)</SelectItem>
+                    <SelectItem value="a">RHS A - Poisonous</SelectItem>
+                    <SelectItem value="b">RHS B - Skin/Eye Irritant</SelectItem>
+                    <SelectItem value="c">RHS C - Harmful if Eaten</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Row 5: Bloom and Foliage - Multi-select */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Bloom Season - Multi-select */}
               <div>
@@ -653,7 +697,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                       <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64">
+                  <DropdownMenuContent className="w-64 max-h-80 overflow-y-auto">
                     <DropdownMenuCheckboxItem
                       checked={filters.bloomSeasons?.includes("early-spring") || false}
                       onCheckedChange={(checked) => {
@@ -772,7 +816,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                       <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64">
+                  <DropdownMenuContent className="w-64 max-h-80 overflow-y-auto">
                     <DropdownMenuCheckboxItem
                       checked={filters.foliageTypes?.includes("evergreen") || false}
                       onCheckedChange={(checked) => {
@@ -814,7 +858,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </div>
             </div>
 
-            {/* Row 3: Special Features - Checkboxes */}
+            {/* Row 6: Special Features - Checkboxes */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               <label className="flex items-center space-x-2">
                 <Checkbox
