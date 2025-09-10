@@ -208,8 +208,6 @@ export class DatabaseStorage implements IStorage {
     sun_requirements?: string;
     pet_safe?: boolean;
   }): Promise<Plant[]> {
-    let queryBuilder = db.select().from(plants);
-    
     const conditions = [];
     
     if (query) {
@@ -233,6 +231,8 @@ export class DatabaseStorage implements IStorage {
     if (filters?.pet_safe !== undefined) {
       conditions.push(eq(plants.petSafe, filters.pet_safe));
     }
+    
+    let queryBuilder = db.select().from(plants);
     
     if (conditions.length > 0) {
       queryBuilder = queryBuilder.where(and(...conditions));
