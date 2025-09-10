@@ -2528,6 +2528,7 @@ export default function GardenProperties() {
           isOpen={showPlantSearch}
           onClose={() => setShowPlantSearch(false)}
           onSelectPlant={handleAddPlantToInventory}
+          userTier={user?.userTier || 'free'}
         />
       </div>
     </div>
