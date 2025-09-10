@@ -45,7 +45,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     selectedColors: [],
     includeLargeSpecimens: false
   });
-  const [showAdvanced, setShowAdvanced] = useState(true); // Always show by default
 
   const handleFilterChange = (key: string, value: any) => {
     const newFilters = { ...filters };
@@ -161,21 +160,28 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
-              placeholder="Search plants by name..."
+              placeholder="Search plants by common or scientific name..."
               value={filters.search || ""}
               onChange={(e) => handleFilterChange("search", e.target.value)}
               className="pl-10 h-12 text-base font-medium border-2 focus:border-primary"
               data-testid="input-search"
             />
           </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Tip: Use the filters below to narrow down your search by plant characteristics
+          </p>
         </div>
 
         {/* All Filters Section - Always visible */}
-        {
-          <ScrollArea className="h-[500px]">
+        <ScrollArea className="h-[450px] border rounded-lg p-4 bg-gray-50/50">
             <div className="space-y-6 pr-4">
-            {/* Quick Filters Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Primary Filters */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Primary Filters
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Plant Type</label>
                 <Select
@@ -237,6 +243,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                     <SelectItem value="high">High Water</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
               </div>
             </div>
             
