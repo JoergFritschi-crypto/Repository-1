@@ -14,37 +14,128 @@ export class FireCrawlAPI {
     try {
       console.log('FireCrawl: Starting to scrape URL:', url);
       
-      // Scrape the website with markdown format for better parsing
+      // Use structured extraction for better results on e-commerce sites
       const scrapeResult = await this.app.scrapeUrl(url, {
-        formats: ['markdown', 'html'],
-        includeTags: ['article', 'main', 'section', 'div', 'table', 'ul', 'ol'],
-        excludeTags: ['nav', 'header', 'footer', 'aside'],
-        waitFor: 2000, // Wait for dynamic content
-        timeout: 30000
+        formats: ['extract', 'markdown'],
+        waitFor: 3000, // Wait longer for dynamic content
+        timeout: 30000,
+        extract: {
+          schema: {
+            type: 'object',
+            properties: {
+              products: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: {
+                      type: 'string',
+                      description: 'Product name or plant name'
+                    },
+                    scientificName: {
+                      type: 'string',
+                      description: 'Scientific/botanical name if present'
+                    },
+                    price: {
+                      type: 'string',
+                      description: 'Price of the product'
+                    },
+                    description: {
+                      type: 'string',
+                      description: 'Product description or details'
+                    },
+                    imageUrl: {
+                      type: 'string',
+                      description: 'Product image URL'
+                    },
+                    link: {
+                      type: 'string',
+                      description: 'Link to product page'
+                    },
+                    characteristics: {
+                      type: 'object',
+                      properties: {
+                        height: { type: 'string' },
+                        spread: { type: 'string' },
+                        bloomTime: { type: 'string' },
+                        sunlight: { type: 'string' },
+                        water: { type: 'string' },
+                        hardiness: { type: 'string' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          prompt: `Extract all plant/perennial products from this nursery catalog page. For each product, capture:
+            - Product name (common name and/or scientific name)
+            - Price if listed
+            - Any description or details
+            - Product image URL if available
+            - Link to the product detail page
+            - Any growing characteristics mentioned (height, spread, bloom time, sun requirements, etc.)
+            
+            Focus ONLY on actual plant products, not accessories, tools, gift cards, or other non-plant items.
+            Look for product cards, listings, or grid items that represent individual plants for sale.`
+        }
       });
 
       if (!scrapeResult.success) {
         throw new Error(scrapeResult.error || 'Scraping failed');
       }
 
-      // Extract plant data from the scraped content
-      const plants = this.extractPlantsFromContent(
-        scrapeResult.markdown || scrapeResult.html || ''
-      );
+      console.log('FireCrawl extraction result:', JSON.stringify(scrapeResult.extract, null, 2));
+
+      // Convert extracted products to plant format
+      let plants = [];
+      
+      if (scrapeResult.extract?.products) {
+        plants = scrapeResult.extract.products.map((product: any) => ({
+          common_name: product.name || 'Unknown',
+          scientific_name: product.scientificName || this.extractScientificFromName(product.name),
+          description: product.description || '',
+          price: product.price,
+          image_url: product.imageUrl,
+          product_url: product.link,
+          height: product.characteristics?.height,
+          spread: product.characteristics?.spread,
+          bloom_time: product.characteristics?.bloomTime,
+          sunlight: product.characteristics?.sunlight ? [product.characteristics.sunlight] : undefined,
+          watering: product.characteristics?.water,
+          hardiness_zones: product.characteristics?.hardiness ? [product.characteristics.hardiness] : undefined,
+          sources: { firecrawl: true }
+        }));
+      }
+      
+      // If structured extraction didn't work, fall back to content parsing
+      if (plants.length === 0 && scrapeResult.markdown) {
+        console.log('No products found via extraction, trying content parsing...');
+        plants = this.extractPlantsFromContent(scrapeResult.markdown);
+      }
 
       return {
         plants,
         metadata: {
           url,
           scrapedAt: new Date().toISOString(),
-          creditsUsed: 1, // Each scrape uses 1 credit
-          rawContentLength: scrapeResult.markdown?.length || 0
+          creditsUsed: 1,
+          rawContentLength: scrapeResult.markdown?.length || 0,
+          extractionMethod: plants.length > 0 ? (scrapeResult.extract?.products ? 'structured' : 'content-parsing') : 'failed'
         }
       };
     } catch (error) {
       console.error('FireCrawl scraping error:', error);
       throw error;
     }
+  }
+  
+  private extractScientificFromName(name: string): string | undefined {
+    if (!name) return undefined;
+    // Look for scientific name patterns in the product name
+    // e.g., "Echinacea purpurea 'Magnus'" or "Lavandula angustifolia"
+    const match = name.match(/([A-Z][a-z]+ [a-z]+(?:\s+['"][^'"]+['"])?)/);
+    return match ? match[1] : undefined;
   }
 
   private extractPlantsFromContent(content: string): any[] {
