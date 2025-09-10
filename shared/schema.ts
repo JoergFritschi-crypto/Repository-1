@@ -129,7 +129,18 @@ export const plants = pgTable("plants", {
   
   // Basic characteristics
   type: varchar("type"), // annuals, perennials, herbaceous perennials, biennials, shrubs, ornamental trees, bulbs, climbers, ground covers, ornamental grasses, herbs-medicinal, herbs-culinary, succulents, cacti, aquatic plants, ferns, alpine rock garden plants
-  dimension: jsonb("dimension"), // {height: {min, max}, spread: {min, max}} - critical for garden design
+  dimension: jsonb("dimension"), // {height: {min, max}, spread: {min, max}} - DEPRECATED - kept for backward compatibility
+  
+  // Numeric dimensions for proper filtering and garden design (metric as primary, imperial as secondary)
+  heightMinCm: integer("height_min_cm"), // Minimum height in centimeters
+  heightMaxCm: integer("height_max_cm"), // Maximum height in centimeters
+  spreadMinCm: integer("spread_min_cm"), // Minimum spread in centimeters (for garden design circles)
+  spreadMaxCm: integer("spread_max_cm"), // Maximum spread in centimeters (for garden design circles)
+  heightMinInches: integer("height_min_inches"), // Minimum height in inches
+  heightMaxInches: integer("height_max_inches"), // Maximum height in inches
+  spreadMinInches: integer("spread_min_inches"), // Minimum spread in inches
+  spreadMaxInches: integer("spread_max_inches"), // Maximum spread in inches
+  
   cycle: varchar("cycle"), // Growth cycle
   foliage: varchar("foliage"), // variegated, deciduous, evergreen
   
