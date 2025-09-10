@@ -509,6 +509,70 @@ export class APIMonitoringService {
       });
     }
 
+    // FireCrawl API Health Check
+    if (process.env.FIRECRAWL_API_KEY) {
+      this.services.push({
+        name: 'firecrawl',
+        criticalService: false,
+        testFunction: async () => {
+          const startTime = Date.now();
+          try {
+            const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${process.env.FIRECRAWL_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                url: 'https://example.com',
+                formats: ['markdown']
+              })
+            });
+            const responseTime = Date.now() - startTime;
+            
+            // FireCrawl returns different status codes for different scenarios
+            if (response.status === 200) {
+              return {
+                service: 'firecrawl',
+                status: 'healthy',
+                responseTime
+              };
+            } else if (response.status === 402) {
+              // Out of credits but API key is valid
+              return {
+                service: 'firecrawl',
+                status: 'degraded',
+                responseTime,
+                errorMessage: 'Out of credits'
+              };
+            } else if (response.status === 401) {
+              return {
+                service: 'firecrawl',
+                status: 'down',
+                responseTime,
+                errorMessage: 'Invalid API key'
+              };
+            } else {
+              const errorText = await response.text();
+              return {
+                service: 'firecrawl',
+                status: 'down',
+                responseTime,
+                errorMessage: `Status ${response.status}: ${errorText}`
+              };
+            }
+          } catch (error) {
+            return {
+              service: 'firecrawl',
+              status: 'down',
+              responseTime: Date.now() - startTime,
+              errorMessage: `Connection failed: ${error.message}`
+            };
+          }
+        }
+      });
+    }
+
     // Stripe API Health Check
     if (process.env.STRIPE_SECRET_KEY) {
       this.services.push({
