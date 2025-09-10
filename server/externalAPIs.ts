@@ -193,10 +193,6 @@ export class FireCrawlAPI {
   private extractPlantsFromEcommercePage(markdown: string, pageUrl: string): any[] {
     const plants: any[] = [];
     
-    // Debug: Log first 500 chars of content to see what we're working with
-    console.log('Extracting from page:', pageUrl);
-    console.log('First 500 chars of markdown:', markdown.substring(0, 500));
-    
     // Try multiple patterns to find plant products
     // Pattern 1: Standard markdown links to product pages
     const linkPattern = /\[([^\]]+)\]\(([^\)]*\/products\/[^\)]+)\)/g;
@@ -260,7 +256,6 @@ export class FireCrawlAPI {
       }
     }
     
-    console.log(`Found ${plants.length} plants on page ${pageUrl}`);
     return plants;
   }
   

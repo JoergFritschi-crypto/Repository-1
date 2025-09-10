@@ -706,6 +706,7 @@ export function PlantImportWizard() {
       if (!response.ok) throw new Error('Scraping failed');
 
       const result = await response.json();
+      console.log('Scraping response:', result);
       setScrapingResults(result);
 
       toast({
