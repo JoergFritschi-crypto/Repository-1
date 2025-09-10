@@ -25,8 +25,7 @@ export class FireCrawlAPI {
           limit: 30, // Crawl up to 30 pages (300+ plants if 12 per page)
           maxDepth: 2, // Follow pagination links one level deep
           includePaths: ['/collections/stauden/**', '/collections/pflanzen/**'],
-          excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog'],
-          waitFor: 2000
+          excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog']
         });
         
         if (!crawlResult.success) {
@@ -78,7 +77,6 @@ export class FireCrawlAPI {
         // Standard single-page scraping for other sites
         const scrapeResult = await this.app.scrapeUrl(url, {
           formats: ['extract', 'markdown'],
-          waitFor: 3000,
           timeout: 30000,
           extract: {
             schema: {
