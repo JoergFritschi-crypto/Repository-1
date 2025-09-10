@@ -7,6 +7,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
@@ -23,7 +25,10 @@ import {
   X,
   Shield,
   Brain,
-  Ban
+  Ban,
+  Link,
+  FileText,
+  Sparkles
 } from 'lucide-react';
 
 interface PlantImportData {
@@ -650,15 +655,127 @@ export function PlantImportWizard() {
     );
   };
 
+  // FireCrawl scraping state
+  const [scrapingUrl, setScrapingUrl] = useState('');
+  const [isScrapingUrl, setIsScrapingUrl] = useState(false);
+  const [scrapingResults, setScrapingResults] = useState<any>(null);
+
+  // Scrape website using FireCrawl
+  const scrapeWebsite = async () => {
+    if (!scrapingUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a website URL",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsScrapingUrl(true);
+    setScrapingResults(null);
+
+    try {
+      const response = await fetch('/api/admin/scrape-plant-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ url: scrapingUrl })
+      });
+
+      if (!response.ok) throw new Error('Scraping failed');
+
+      const result = await response.json();
+      setScrapingResults(result);
+
+      toast({
+        title: "✓ Scraping Complete",
+        description: `Successfully scraped ${result.plants?.length || 0} plants from the website`,
+      });
+    } catch (error) {
+      console.error('Scraping error:', error);
+      toast({
+        title: "Scraping Failed",
+        description: "Failed to scrape the website. Please check the URL and try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsScrapingUrl(false);
+    }
+  };
+
+  // Import scraped plants
+  const importScrapedPlants = async () => {
+    if (!scrapingResults?.plants || scrapingResults.plants.length === 0) {
+      toast({
+        title: "Error",
+        description: "No plants to import",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchProgress('Importing scraped plants to database...');
+
+    try {
+      const response = await fetch('/api/admin/import/plants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ plants: scrapingResults.plants })
+      });
+
+      if (!response.ok) throw new Error('Import failed');
+
+      const result = await response.json();
+
+      toast({
+        title: "✓ Import Successful",
+        description: `Imported ${result.imported} plants successfully`,
+      });
+
+      // Reset scraper
+      setScrapingUrl('');
+      setScrapingResults(null);
+
+      // Refresh plant list
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/plants/pending'] });
+    } catch (error) {
+      console.error('Import error:', error);
+      toast({
+        title: "Import Failed",
+        description: "Failed to import plants to database",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSearching(false);
+      setSearchProgress('');
+    }
+  };
+
   return (
     <Card className="w-full max-w-6xl mx-auto">
       <CardHeader>
-        <CardTitle>Plant Import Wizard</CardTitle>
+        <CardTitle>Plant Import Tools</CardTitle>
         <CardDescription>
-          Progressive enrichment from multiple botanical databases
+          Import plants from multiple sources into your database
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <Tabs defaultValue="wizard" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="wizard" className="flex items-center gap-2">
+              <Database className="w-4 h-4" />
+              Import Wizard
+            </TabsTrigger>
+            <TabsTrigger value="scraper" className="flex items-center gap-2">
+              <Link className="w-4 h-4" />
+              Web Scraper
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Import Wizard Tab */}
+          <TabsContent value="wizard" className="space-y-4">
         {/* Progress indicator */}
         <div className="flex items-center justify-between mb-6">
           {[1, 2, 3, 4, 5].map((s) => (
@@ -1067,6 +1184,163 @@ export function PlantImportWizard() {
             </div>
           </div>
         )}
+          </TabsContent>
+
+          {/* Web Scraper Tab */}
+          <TabsContent value="scraper" className="space-y-4">
+            <div className="space-y-4">
+              <Alert>
+                <Sparkles className="w-4 h-4" />
+                <AlertDescription>
+                  <strong>FireCrawl Web Scraper</strong>
+                  <br />
+                  Extract plant data from any gardening website using AI-powered scraping.
+                  <br />
+                  <span className="text-sm text-muted-foreground">3,000 credits/month available</span>
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-2">
+                <Label htmlFor="scraper-url">Website URL</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="scraper-url"
+                    type="url"
+                    placeholder="https://example.com/plants-list"
+                    value={scrapingUrl}
+                    onChange={(e) => setScrapingUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !isScrapingUrl) {
+                        scrapeWebsite();
+                      }
+                    }}
+                    disabled={isScrapingUrl}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={scrapeWebsite}
+                    disabled={isScrapingUrl || !scrapingUrl.trim()}
+                  >
+                    {isScrapingUrl ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Scraping...
+                      </>
+                    ) : (
+                      <>
+                        <Link className="w-4 h-4 mr-2" />
+                        Scrape Website
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Enter a URL containing plant information to extract and import
+                </p>
+              </div>
+
+              {/* Scraping Results */}
+              {scrapingResults && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Scraped Plants</h3>
+                    <Badge className="font-semibold">
+                      Found: {scrapingResults.plants?.length || 0} plants
+                    </Badge>
+                  </div>
+
+                  {scrapingResults.plants && scrapingResults.plants.length > 0 ? (
+                    <>
+                      <ScrollArea className="h-[400px] border rounded-lg p-4">
+                        <div className="space-y-2">
+                          {scrapingResults.plants.map((plant: any, idx: number) => (
+                            <div
+                              key={`scraped-${idx}`}
+                              className="flex items-center justify-between p-3 border rounded hover:bg-accent"
+                            >
+                              <div>
+                                <p className="font-medium">
+                                  {plant.common_name || plant.scientific_name || 'Unknown Plant'}
+                                </p>
+                                {plant.scientific_name && plant.common_name && (
+                                  <p className="text-sm text-muted-foreground italic">
+                                    {plant.scientific_name}
+                                  </p>
+                                )}
+                                {plant.description && (
+                                  <p className="text-sm text-muted-foreground line-clamp-2">
+                                    {plant.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={importScrapedPlants}
+                          disabled={isSearching}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {isSearching ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Importing...
+                            </>
+                          ) : (
+                            <>
+                              <Database className="w-4 h-4 mr-2" />
+                              Import {scrapingResults.plants.length} Plants
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <Alert>
+                      <AlertCircle className="w-4 h-4" />
+                      <AlertDescription>
+                        No plants found on this page. Try a different URL or check if the page contains plant information.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Metadata */}
+                  {scrapingResults.metadata && (
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>URL: {scrapingResults.metadata.url}</p>
+                      <p>Scraped at: {new Date(scrapingResults.metadata.scrapedAt).toLocaleString()}</p>
+                      {scrapingResults.metadata.creditsUsed && (
+                        <p>Credits used: {scrapingResults.metadata.creditsUsed}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Instructions */}
+              {!scrapingResults && !isScrapingUrl && (
+                <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800 dark:text-blue-200">
+                    <strong>How to use the web scraper:</strong>
+                    <ol className="list-decimal list-inside mt-2 space-y-1">
+                      <li>Find a website with plant information (catalog, database, or listing)</li>
+                      <li>Copy the URL of the page containing plant data</li>
+                      <li>Paste the URL above and click "Scrape Website"</li>
+                      <li>Review the extracted plants and import them to your database</li>
+                    </ol>
+                    <p className="mt-2">
+                      <strong>Supported content:</strong> Plant names, descriptions, care instructions, growing conditions, and characteristics.
+                    </p>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

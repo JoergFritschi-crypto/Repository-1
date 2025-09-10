@@ -1,5 +1,165 @@
 // External API integrations for GardenScape Pro
 
+import FirecrawlApp from '@mendable/firecrawl-js';
+
+// FireCrawl Web Scraping API
+export class FireCrawlAPI {
+  private app: FirecrawlApp;
+
+  constructor(apiKey: string) {
+    this.app = new FirecrawlApp({ apiKey });
+  }
+
+  async scrapePlantData(url: string): Promise<any> {
+    try {
+      console.log('FireCrawl: Starting to scrape URL:', url);
+      
+      // Scrape the website with markdown format for better parsing
+      const scrapeResult = await this.app.scrapeUrl(url, {
+        formats: ['markdown', 'html'],
+        includeTags: ['article', 'main', 'section', 'div', 'table', 'ul', 'ol'],
+        excludeTags: ['nav', 'header', 'footer', 'aside'],
+        waitFor: 2000, // Wait for dynamic content
+        timeout: 30000
+      });
+
+      if (!scrapeResult.success) {
+        throw new Error(scrapeResult.error || 'Scraping failed');
+      }
+
+      // Extract plant data from the scraped content
+      const plants = this.extractPlantsFromContent(
+        scrapeResult.markdown || scrapeResult.html || ''
+      );
+
+      return {
+        plants,
+        metadata: {
+          url,
+          scrapedAt: new Date().toISOString(),
+          creditsUsed: 1, // Each scrape uses 1 credit
+          rawContentLength: scrapeResult.markdown?.length || 0
+        }
+      };
+    } catch (error) {
+      console.error('FireCrawl scraping error:', error);
+      throw error;
+    }
+  }
+
+  private extractPlantsFromContent(content: string): any[] {
+    const plants: any[] = [];
+    
+    // Basic extraction patterns for plant data
+    // This can be enhanced with more sophisticated parsing
+    const lines = content.split('\n');
+    let currentPlant: any = null;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      // Look for plant names (common patterns)
+      if (trimmed.match(/^#+\s+(.+)/) || trimmed.match(/^\*\*(.+)\*\*/)) {
+        if (currentPlant) {
+          plants.push(currentPlant);
+        }
+        const name = trimmed.replace(/^#+\s+/, '').replace(/\*\*/g, '').trim();
+        currentPlant = {
+          common_name: name,
+          scientific_name: this.extractScientificName(trimmed, lines),
+          description: '',
+          sources: { firecrawl: true }
+        };
+      }
+      
+      // Extract descriptions and care info
+      if (currentPlant && trimmed.length > 50 && !trimmed.startsWith('#')) {
+        if (!currentPlant.description) {
+          currentPlant.description = trimmed;
+        }
+        
+        // Extract care information from text
+        this.extractCareInfo(trimmed, currentPlant);
+      }
+    }
+    
+    // Add the last plant
+    if (currentPlant) {
+      plants.push(currentPlant);
+    }
+    
+    // If no structured data found, try to extract from paragraphs
+    if (plants.length === 0) {
+      plants.push(...this.extractFromParagraphs(content));
+    }
+    
+    return plants;
+  }
+
+  private extractScientificName(text: string, context: string[]): string | undefined {
+    // Look for italic text or parentheses which often contain scientific names
+    const italicMatch = text.match(/\*([A-Z][a-z]+ [a-z]+)\*/);
+    const parenMatch = text.match(/\(([A-Z][a-z]+ [a-z]+)\)/);
+    
+    if (italicMatch) return italicMatch[1];
+    if (parenMatch) return parenMatch[1];
+    
+    return undefined;
+  }
+
+  private extractCareInfo(text: string, plant: any): void {
+    // Extract sunlight requirements
+    if (text.match(/full sun|partial shade|shade|sun|bright/i)) {
+      const sunMatch = text.match(/(full sun|partial shade|full shade|partial sun|bright indirect)/i);
+      if (sunMatch) {
+        plant.sunlight = [sunMatch[1].toLowerCase()];
+      }
+    }
+    
+    // Extract watering needs
+    if (text.match(/water|moist|dry|drought/i)) {
+      if (text.match(/low water|drought tolerant|dry/i)) {
+        plant.watering = 'minimum';
+      } else if (text.match(/moderate water|average/i)) {
+        plant.watering = 'average';
+      } else if (text.match(/high water|moist|frequent/i)) {
+        plant.watering = 'frequent';
+      }
+    }
+    
+    // Extract hardiness zones
+    const zoneMatch = text.match(/zone[s]?\s+(\d+[ab]?)\s*[-–]\s*(\d+[ab]?)/i);
+    if (zoneMatch) {
+      plant.hardiness = {
+        min: parseInt(zoneMatch[1]),
+        max: parseInt(zoneMatch[2])
+      };
+    }
+  }
+
+  private extractFromParagraphs(content: string): any[] {
+    const plants: any[] = [];
+    const paragraphs = content.split(/\n\n+/);
+    
+    for (const para of paragraphs) {
+      // Look for plant-like content
+      if (para.match(/plant|flower|tree|shrub|grass|perennial|annual/i)) {
+        // Try to extract a plant name from the beginning of the paragraph
+        const nameMatch = para.match(/^([A-Z][a-z]+(?: [A-Z][a-z]+)*)/);
+        if (nameMatch) {
+          plants.push({
+            common_name: nameMatch[1],
+            description: para.substring(0, 500),
+            sources: { firecrawl: true }
+          });
+        }
+      }
+    }
+    
+    return plants;
+  }
+}
+
 // Perenual Plant Database API
 export class PerenualAPI {
   private apiKey: string;

@@ -8,7 +8,7 @@ import PerplexityAI from "./perplexityAI";
 import { analyzeGardenPhotos, generateDesignStyles, generateCompleteGardenDesign, getPlantAdvice } from "./anthropic";
 import AnthropicAI from "./anthropicAI";
 import GeminiAI from "./geminiAI";
-import { PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
+import { FireCrawlAPI, PerenualAPI, GBIFAPI, MapboxAPI, HuggingFaceAPI, RunwareAPI } from "./externalAPIs";
 import { generateGardeningAdvice } from "./gardening-advice";
 import { fileVaultService } from "./fileVault";
 import { apiMonitoring } from "./apiMonitoring";
@@ -65,6 +65,11 @@ if (process.env.HUGGINGFACE_API_KEY) {
 let runwareAPI: RunwareAPI | null = null;
 if (process.env.RUNWARE_API_KEY) {
   runwareAPI = new RunwareAPI(process.env.RUNWARE_API_KEY);
+}
+
+let fireCrawlAPI: FireCrawlAPI | null = null;
+if (process.env.FIRECRAWL_API_KEY) {
+  fireCrawlAPI = new FireCrawlAPI(process.env.FIRECRAWL_API_KEY);
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -2980,6 +2985,61 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     } catch (error) {
       console.error("Error creating test garden:", error);
       res.status(500).json({ message: "Failed to create test garden" });
+    }
+  });
+
+  // FireCrawl Plant Data Scraping Endpoint
+  app.post('/api/admin/scrape-plant-data', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Check if FireCrawl is configured
+      if (!fireCrawlAPI) {
+        return res.status(503).json({ message: "FireCrawl API not configured. Please add FIRECRAWL_API_KEY to environment variables." });
+      }
+
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+
+      console.log('Starting plant data scraping for URL:', url);
+
+      // Scrape the website
+      const scrapingResult = await fireCrawlAPI.scrapePlantData(url);
+      
+      console.log(`Scraped ${scrapingResult.plants?.length || 0} plants from ${url}`);
+      
+      // Format plants for compatibility with import wizard
+      const formattedPlants = scrapingResult.plants.map((plant: any) => ({
+        ...plant,
+        // Ensure required fields
+        scientific_name: plant.scientific_name || plant.common_name || 'Unknown',
+        common_name: plant.common_name || '',
+        // Add source tracking
+        sources: { firecrawl: true },
+        // Add import metadata
+        import_source: 'firecrawl',
+        import_url: url,
+        import_date: new Date().toISOString()
+      }));
+
+      res.json({
+        success: true,
+        plants: formattedPlants,
+        metadata: scrapingResult.metadata
+      });
+    } catch (error) {
+      console.error("Error scraping plant data:", error);
+      res.status(500).json({ 
+        message: "Failed to scrape plant data", 
+        error: (error as Error).message 
+      });
     }
   });
 
