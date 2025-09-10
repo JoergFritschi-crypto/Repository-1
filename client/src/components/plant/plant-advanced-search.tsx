@@ -61,7 +61,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
 
   const handleSliderChange = (key: string, value: any) => {
     // Update local state without triggering search
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev: any) => ({ ...prev, [key]: value }));
   };
 
   const applyFilters = () => {
@@ -158,14 +158,14 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             placeholder="Search by name..."
             value={filters.search || ""}
             onChange={(e) => handleFilterChange("search", e.target.value)}
-            className="md:col-span-2"
+            className="md:col-span-2 h-10 text-sm font-medium"
             data-testid="input-search"
           />
           <Select
             value={filters.type || "all"}
             onValueChange={(value) => handleFilterChange("type", value)}
           >
-            <SelectTrigger data-testid="select-plant-type">
+            <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-plant-type">
               <SelectValue placeholder="Plant Type" />
             </SelectTrigger>
             <SelectContent>
@@ -188,7 +188,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             value={filters.sunlight || "all"}
             onValueChange={(value) => handleFilterChange("sunlight", value)}
           >
-            <SelectTrigger data-testid="select-sunlight">
+            <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-sunlight">
               <SelectValue placeholder="Sun Requirements" />
             </SelectTrigger>
             <SelectContent>
@@ -340,7 +340,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.watering || "all"}
                 onValueChange={(value) => handleFilterChange("watering", value)}
               >
-                <SelectTrigger data-testid="select-watering">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-watering">
                   <SelectValue placeholder="Water Needs" />
                 </SelectTrigger>
                 <SelectContent>
@@ -355,7 +355,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.growth_rate || "all"}
                 onValueChange={(value) => handleFilterChange("growth_rate", value)}
               >
-                <SelectTrigger data-testid="select-growth-rate">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-growth-rate">
                   <SelectValue placeholder="Growth Rate" />
                 </SelectTrigger>
                 <SelectContent>
@@ -369,7 +369,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.maintenance || "all"}
                 onValueChange={(value) => handleFilterChange("maintenance", value)}
               >
-                <SelectTrigger data-testid="select-maintenance">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-maintenance">
                   <SelectValue placeholder="Maintenance" />
                 </SelectTrigger>
                 <SelectContent>
@@ -383,7 +383,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.hardiness || "all"}
                 onValueChange={(value) => handleFilterChange("hardiness", value)}
               >
-                <SelectTrigger data-testid="select-hardiness">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-hardiness">
                   <SelectValue placeholder="Hardiness Zone" />
                 </SelectTrigger>
                 <SelectContent>
@@ -402,7 +402,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.flowering_season || "all"}
                 onValueChange={(value) => handleFilterChange("flowering_season", value)}
               >
-                <SelectTrigger data-testid="select-flowering-season">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-flowering-season">
                   <SelectValue placeholder="Bloom Time" />
                 </SelectTrigger>
                 <SelectContent>
@@ -417,7 +417,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.foliage || "all"}
                 onValueChange={(value) => handleFilterChange("foliage", value)}
               >
-                <SelectTrigger data-testid="select-foliage">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-foliage">
                   <SelectValue placeholder="Foliage Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -431,7 +431,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.family || "all"}
                 onValueChange={(value) => handleFilterChange("family", value)}
               >
-                <SelectTrigger data-testid="select-family">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-family">
                   <SelectValue placeholder="Plant Family" />
                 </SelectTrigger>
                 <SelectContent>
@@ -447,7 +447,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                 value={filters.soil_type || "all"}
                 onValueChange={(value) => handleFilterChange("soil_type", value)}
               >
-                <SelectTrigger data-testid="select-soil-type">
+                <SelectTrigger className="h-10 text-sm font-medium" data-testid="select-soil-type">
                   <SelectValue placeholder="Soil Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -468,7 +468,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("drought_tolerant", checked)}
                   data-testid="checkbox-drought-tolerant"
                 />
-                <span className="text-sm">Drought Tolerant</span>
+                <span className="text-sm font-medium">Drought Tolerant</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -476,7 +476,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("salt_tolerant", checked)}
                   data-testid="checkbox-salt-tolerant"
                 />
-                <span className="text-sm">Salt Tolerant</span>
+                <span className="text-sm font-medium">Salt Tolerant</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -484,7 +484,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("pet_safe", checked)}
                   data-testid="checkbox-pet-safe"
                 />
-                <span className="text-sm">Pet Safe</span>
+                <span className="text-sm font-medium">Pet Safe</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -492,7 +492,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("edible", checked)}
                   data-testid="checkbox-edible"
                 />
-                <span className="text-sm">Edible</span>
+                <span className="text-sm font-medium">Edible</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -500,7 +500,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("medicinal", checked)}
                   data-testid="checkbox-medicinal"
                 />
-                <span className="text-sm">Medicinal</span>
+                <span className="text-sm font-medium">Medicinal</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -508,7 +508,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("indoor", checked)}
                   data-testid="checkbox-indoor"
                 />
-                <span className="text-sm">Indoor</span>
+                <span className="text-sm font-medium">Indoor</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -516,7 +516,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("invasive", checked ? false : undefined)}
                   data-testid="checkbox-non-invasive"
                 />
-                <span className="text-sm">Non-Invasive</span>
+                <span className="text-sm font-medium">Non-Invasive</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -524,7 +524,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("attracts_pollinators", checked)}
                   data-testid="checkbox-attracts-pollinators"
                 />
-                <span className="text-sm">Attracts Pollinators</span>
+                <span className="text-sm font-medium">Attracts Pollinators</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -532,7 +532,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("fragrant", checked)}
                   data-testid="checkbox-fragrant"
                 />
-                <span className="text-sm">Fragrant</span>
+                <span className="text-sm font-medium">Fragrant</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -540,7 +540,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("native", checked)}
                   data-testid="checkbox-native"
                 />
-                <span className="text-sm">Native</span>
+                <span className="text-sm font-medium">Native</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -548,7 +548,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("deer_resistant", checked)}
                   data-testid="checkbox-deer-resistant"
                 />
-                <span className="text-sm">Deer Resistant</span>
+                <span className="text-sm font-medium">Deer Resistant</span>
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
@@ -556,7 +556,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   onCheckedChange={(checked) => handleFilterChange("rabbit_resistant", checked)}
                   data-testid="checkbox-rabbit-resistant"
                 />
-                <span className="text-sm">Rabbit Resistant</span>
+                <span className="text-sm font-medium">Rabbit Resistant</span>
               </label>
             </div>
           </div>

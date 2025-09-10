@@ -125,18 +125,18 @@ export default function PlantLibrary() {
                 <CardContent className="py-4">
                   <div className="flex flex-wrap gap-8 items-center">
                     <div>
-                      <p className="text-sm text-muted-foreground">Total Plants</p>
-                      <p className="text-2xl font-bold" data-testid="text-total-plants">{sortedPlants?.length || 0}</p>
+                      <p className="text-sm text-muted-foreground font-medium">Total Plants</p>
+                      <p className="text-2xl font-semibold" data-testid="text-total-plants">{sortedPlants?.length || 0}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Verified</p>
-                      <p className="text-xl font-semibold text-accent" data-testid="text-verified-plants">
+                      <p className="text-sm text-muted-foreground font-medium">Verified</p>
+                      <p className="text-2xl font-semibold text-accent" data-testid="text-verified-plants">
                         {sortedPlants?.filter((p: any) => p.verificationStatus === 'verified').length || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Available</p>
-                      <p className="text-xl font-semibold text-green-600" data-testid="text-available-plants">
+                      <p className="text-sm text-muted-foreground font-medium">Available</p>
+                      <p className="text-2xl font-semibold text-green-600" data-testid="text-available-plants">
                         {sortedPlants?.length || 0}
                       </p>
                     </div>
