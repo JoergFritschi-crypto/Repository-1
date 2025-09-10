@@ -36,19 +36,31 @@ export class FireCrawlAPI {
         
         // Extract plants from all crawled pages
         let allPlants: any[] = [];
+        let pagesWithProducts = 0;
+        let pagesWithoutProducts = 0;
         
         if (crawlResult.data && Array.isArray(crawlResult.data)) {
           for (const page of crawlResult.data) {
             // Extract plants from each page's markdown content
             if (page.markdown) {
               const pagePlants = this.extractPlantsFromEcommercePage(page.markdown, page.url);
+              if (pagePlants.length > 0) {
+                pagesWithProducts++;
+              } else {
+                pagesWithoutProducts++;
+                console.log(`No products found on: ${page.url || 'unknown URL'}`);
+              }
               allPlants.push(...pagePlants);
             }
           }
         }
         
+        console.log(`Pages with products: ${pagesWithProducts}, Pages without products: ${pagesWithoutProducts}`);
+        console.log(`Total plants before deduplication: ${allPlants.length}`);
+        
         // Deduplicate plants based on scientific name
         const uniquePlants = this.deduplicatePlants(allPlants);
+        console.log(`After deduplication: ${uniquePlants.length} unique plants (removed ${allPlants.length - uniquePlants.length} duplicates)`);
         
         // Add plant type based on URL collection
         const plantsWithType = uniquePlants.map(plant => {
