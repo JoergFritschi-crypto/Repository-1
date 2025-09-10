@@ -732,7 +732,13 @@ Rules:
         
         // Range filters
         if (req.query.heightMin) advancedFilters.minHeight = parseInt(req.query.heightMin as string);
-        if (req.query.heightMax) advancedFilters.maxHeight = parseInt(req.query.heightMax as string);
+        // Handle includeLargeSpecimens flag - when true, don't set maxHeight (allows any height)
+        if (req.query.includeLargeSpecimens === 'true') {
+          // Don't set maxHeight, which allows trees of any height
+          advancedFilters.maxHeight = 0; // 0 means no limit in storage.ts
+        } else if (req.query.heightMax) {
+          advancedFilters.maxHeight = parseInt(req.query.heightMax as string);
+        }
         if (req.query.spreadMin) advancedFilters.minSpread = parseInt(req.query.spreadMin as string);
         if (req.query.spreadMax) advancedFilters.maxSpread = parseInt(req.query.spreadMax as string);
         
