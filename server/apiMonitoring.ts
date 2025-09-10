@@ -404,41 +404,63 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
-            // Simple connectivity test - check if we can authenticate with the API
-            // Using /v1 endpoint which should return API info
+            // Test authentication using Runware's expected format
+            // Runware requires POST requests with array format
             const response = await fetch('https://api.runware.ai/v1', {
-              method: 'GET',
+              method: 'POST',
               headers: { 
                 'Authorization': `Bearer ${process.env.RUNWARE_API_KEY}`,
                 'Content-Type': 'application/json'
-              }
+              },
+              body: JSON.stringify([
+                {
+                  taskType: 'authentication',
+                  apiKey: process.env.RUNWARE_API_KEY
+                }
+              ])
             });
             const responseTime = Date.now() - startTime;
             
-            if (response.ok || response.status === 401) {
-              // Even 401 means the API is reachable, just the key might be invalid
-              return {
-                service: 'runware',
-                status: response.status === 401 ? 'down' : 'healthy',
-                responseTime,
-                errorMessage: response.status === 401 ? 'Invalid API key' : undefined
-              };
-            } else {
-              const errorText = await response.text();
-              let errorDetails = errorText;
-              try {
-                const errorJson = JSON.parse(errorText);
-                errorDetails = errorJson.error?.message || errorJson.detail || errorText;
-              } catch (e) {
-                // Keep errorText as is
+            if (response.ok) {
+              const data = await response.json();
+              // Check for successful authentication response
+              if (data.data && data.data[0] && data.data[0].taskType === 'authentication') {
+                return {
+                  service: 'runware',
+                  status: 'healthy',
+                  responseTime,
+                  metadata: { sessionId: data.data[0].connectionSessionUUID }
+                };
+              } else if (data.errors && data.errors[0]) {
+                // Authentication failed
+                return {
+                  service: 'runware',
+                  status: 'down',
+                  responseTime,
+                  errorMessage: data.errors[0].message || 'Authentication failed'
+                };
               }
-              return {
-                service: 'runware',
-                status: response.status === 429 ? 'degraded' : 'down',
-                responseTime,
-                errorMessage: `Status ${response.status}: ${errorDetails}`
-              };
+            } 
+            
+            // Handle non-200 responses
+            const errorText = await response.text();
+            let errorDetails = errorText;
+            try {
+              const errorJson = JSON.parse(errorText);
+              if (errorJson.errors && errorJson.errors[0]) {
+                errorDetails = errorJson.errors[0].message;
+              } else {
+                errorDetails = errorJson.error?.message || errorJson.detail || errorText;
+              }
+            } catch (e) {
+              // Keep errorText as is
             }
+            return {
+              service: 'runware',
+              status: response.status === 429 ? 'degraded' : 'down',
+              responseTime,
+              errorMessage: `Status ${response.status}: ${errorDetails}`
+            };
           } catch (error) {
             return {
               service: 'runware',
