@@ -392,7 +392,20 @@ export class DatabaseStorage implements IStorage {
 
   // User plant collection operations
   async getUserPlantCollection(userId: string): Promise<UserPlantCollection[]> {
-    return await db.select().from(userPlantCollections).where(eq(userPlantCollections.userId, userId));
+    const results = await db
+      .select({
+        collection: userPlantCollections,
+        plant: plants
+      })
+      .from(userPlantCollections)
+      .leftJoin(plants, eq(userPlantCollections.plantId, plants.id))
+      .where(eq(userPlantCollections.userId, userId));
+    
+    // Transform the results to include the plant data in the collection item
+    return results.map(row => ({
+      ...row.collection,
+      plant: row.plant
+    }));
   }
 
   async getUserCollectionCount(userId: string): Promise<number> {
