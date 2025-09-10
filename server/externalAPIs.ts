@@ -20,12 +20,17 @@ export class FireCrawlAPI {
       if (isGermanNursery) {
         console.log('Detected German nursery - attempting to crawl all pages...');
         
-        // Use crawl mode to get all pages
+        // Use crawl mode to get all pages with JavaScript rendering
         const crawlResult = await this.app.crawlUrl(url, {
           limit: 250, // Increased to capture all ~1010 Stauden products
           maxDepth: 2, // Follow pagination links one level deep
           includePaths: ['/collections/stauden', '/collections/pflanzen'],
-          excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog']
+          excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog'],
+          scrapeOptions: {
+            formats: ['markdown', 'html'],
+            waitFor: 2000,  // Wait 2 seconds for JavaScript to render
+            timeout: 30000  // 30 second timeout per page
+          }
         });
         
         if (!crawlResult.success) {
