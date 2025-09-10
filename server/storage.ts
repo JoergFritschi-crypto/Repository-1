@@ -251,18 +251,19 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(plants.watering, filters.watering.toLowerCase()));
     }
     
-    // Range fields - dimension is stored as JSONB {height: {min, max}, spread: {min, max}}
+    // Range fields - now using numeric columns
+    // Note: filters come in as cm from the frontend
     if (filters.minHeight) {
-      conditions.push(sql`(${plants.dimension}->'height'->>'max')::numeric >= ${filters.minHeight}`);
+      conditions.push(gte(plants.heightMaxCm, filters.minHeight));
     }
     if (filters.maxHeight) {
-      conditions.push(sql`(${plants.dimension}->'height'->>'min')::numeric <= ${filters.maxHeight}`);
+      conditions.push(lte(plants.heightMinCm, filters.maxHeight));
     }
     if (filters.minSpread) {
-      conditions.push(sql`(${plants.dimension}->'spread'->>'max')::numeric >= ${filters.minSpread}`);
+      conditions.push(gte(plants.spreadMaxCm, filters.minSpread));
     }
     if (filters.maxSpread) {
-      conditions.push(sql`(${plants.dimension}->'spread'->>'min')::numeric <= ${filters.maxSpread}`);
+      conditions.push(lte(plants.spreadMinCm, filters.maxSpread));
     }
     
     // Boolean fields
