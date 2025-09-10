@@ -709,19 +709,22 @@ export function CompactPlantCard({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Height: </span>
-                <span className={plant.dimension ? "text-gray-900" : "text-red-400"}>
-                  {plant.dimension ? (typeof plant.dimension === 'object' && plant.dimension.height ? 
-                    convertFeetToMeters(plant.dimension.height) : 
-                    convertFeetToMeters(plant.dimension)) : 'Missing'}
+                <span className={plant.heightMinCm ? "text-gray-900" : "text-red-400"}>
+                  {plant.heightMinCm && plant.heightMaxCm ? 
+                    (plant.heightMinCm === plant.heightMaxCm ?
+                      `${(plant.heightMinCm / 100).toFixed(1)}m` :
+                      `${(plant.heightMinCm / 100).toFixed(1)}-${(plant.heightMaxCm / 100).toFixed(1)}m`)
+                    : 'Missing'}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Spread: </span>
-                <span className={plant.dimension ? "text-gray-900" : "text-red-400"}>
-                  {plant.dimension && typeof plant.dimension === 'object' && plant.dimension.spread ? 
-                    (typeof plant.dimension.spread === 'object' && plant.dimension.spread.min && plant.dimension.spread.max ? 
-                      `${convertFeetToMeters(plant.dimension.spread.min)} - ${convertFeetToMeters(plant.dimension.spread.max)}` :
-                      convertFeetToMeters(plant.dimension.spread)) : 'Missing'}
+                <span className={plant.spreadMinCm ? "text-gray-900" : "text-red-400"}>
+                  {plant.spreadMinCm && plant.spreadMaxCm ?
+                    (plant.spreadMinCm === plant.spreadMaxCm ?
+                      `${(plant.spreadMinCm / 100).toFixed(1)}m` :
+                      `${(plant.spreadMinCm / 100).toFixed(1)}-${(plant.spreadMaxCm / 100).toFixed(1)}m`)
+                    : 'Missing'}
                 </span>
               </div>
               <div className="flex justify-between">

@@ -13,7 +13,16 @@ export interface Plant {
   soil?: any; // JSON array
   watering?: string;
   wateringGeneralBenchmark?: any;
-  dimension?: any; // JSON object with height/spread
+  dimension?: any; // JSON object with height/spread - DEPRECATED
+  // Numeric dimensions for proper filtering and garden design
+  heightMinCm?: number | null;
+  heightMaxCm?: number | null;
+  spreadMinCm?: number | null;
+  spreadMaxCm?: number | null;
+  heightMinInches?: number | null;
+  heightMaxInches?: number | null;
+  spreadMinInches?: number | null;
+  spreadMaxInches?: number | null;
   cycle?: string;
   growthRate?: string;
   floweringSeason?: string;
