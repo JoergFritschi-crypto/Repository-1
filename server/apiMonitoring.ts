@@ -491,6 +491,63 @@ export class APIMonitoringService {
         }
       });
     }
+
+    // FireCrawl API Health Check
+    if (process.env.FIRECRAWL_API_KEY) {
+      this.services.push({
+        name: 'firecrawl',
+        criticalService: false,
+        testFunction: async () => {
+          const startTime = Date.now();
+          try {
+            // Test with a simple scrape status check
+            const response = await fetch('https://api.firecrawl.dev/v1/crawl/status', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${process.env.FIRECRAWL_API_KEY}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            const responseTime = Date.now() - startTime;
+            
+            if (response.ok || response.status === 404) {
+              // 404 is ok - it means the API is working but no crawl jobs exist
+              return {
+                service: 'firecrawl',
+                status: 'healthy',
+                responseTime,
+                metadata: { 
+                  endpoint: 'crawl/status',
+                  note: response.status === 404 ? 'No active crawl jobs' : 'API accessible'
+                }
+              };
+            } else if (response.status === 401) {
+              return {
+                service: 'firecrawl',
+                status: 'down',
+                responseTime,
+                errorMessage: 'Invalid API key'
+              };
+            } else {
+              const errorText = await response.text();
+              return {
+                service: 'firecrawl',
+                status: response.status === 429 ? 'degraded' : 'down',
+                responseTime,
+                errorMessage: `Status ${response.status}: ${errorText}`
+              };
+            }
+          } catch (error) {
+            return {
+              service: 'firecrawl',
+              status: 'down',
+              responseTime: Date.now() - startTime,
+              errorMessage: `Connection failed: ${error.message}`
+            };
+          }
+        }
+      });
+    }
   }
 
   // Run health checks for all services

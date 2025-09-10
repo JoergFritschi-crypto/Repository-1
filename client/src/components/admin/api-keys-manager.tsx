@@ -24,7 +24,8 @@ import {
   Cloud,
   Image,
   Sparkles,
-  Eye
+  Eye,
+  FileSearch
 } from "lucide-react";
 
 interface APIKeyInfo {
@@ -103,6 +104,12 @@ const SERVICE_INFO: Record<string, Partial<APIKeyInfo>> = {
     documentationUrl: "https://www.gbif.org/user/profile",
     icon: <Globe className="w-5 h-5" />,
     requiredKeys: ["GBIF_EMAIL", "GBIF_PASSWORD"]
+  },
+  firecrawl: {
+    description: "Web scraping and crawling for plant data extraction",
+    documentationUrl: "https://firecrawl.dev/app",
+    icon: <FileSearch className="w-5 h-5" />,
+    requiredKeys: ["FIRECRAWL_API_KEY"]
   }
 };
 
@@ -157,7 +164,7 @@ export function APIKeysManager() {
   };
 
   const criticalServices = ['anthropic', 'stripe', 'mapbox', 'perenual', 'visual_crossing'];
-  const optionalServices = ['huggingface', 'runware', 'perplexity', 'gemini', 'gbif'];
+  const optionalServices = ['huggingface', 'runware', 'perplexity', 'gemini', 'gbif', 'firecrawl'];
 
   const renderServiceCard = (service: string) => {
     const info = SERVICE_INFO[service];
