@@ -20,6 +20,16 @@ export default function PlantLibrary() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"name-asc" | "name-desc" | "newest" | "oldest">("name-asc");
   const plantsPerPage = 24; // 3x8 grid
+  
+  // Fetch collection limits
+  const { data: collectionLimits } = useQuery<any>({
+    queryKey: ["/api/my-collection/limits"],
+    queryFn: async () => {
+      const response = await fetch("/api/my-collection/limits");
+      if (!response.ok) throw new Error("Failed to fetch limits");
+      return response.json();
+    },
+  });
 
   const { data: plants, isLoading: plantsLoading } = useQuery({
     queryKey: ["/api/plants/search", { q: searchQuery, ...filters }],
@@ -111,9 +121,14 @@ export default function PlantLibrary() {
               <Sprout className="w-3 h-3 mr-1.5" />
               Browse Plants
             </TabsTrigger>
-            <TabsTrigger value="collection" className="text-xs" data-testid="tab-my-collection">
+            <TabsTrigger value="collection" className="text-xs relative" data-testid="tab-my-collection">
               <Heart className="w-3 h-3 mr-1.5" />
-              My Collection ({myCollection?.length || 0})
+              My Collection ({myCollection?.length || 0}{collectionLimits?.limit > 0 ? `/${collectionLimits.limit}` : ''})
+              {collectionLimits?.userTier === 'premium' && (
+                <Badge className="absolute -top-2 -right-2 text-[10px] px-1 py-0 h-4" variant="default">
+                  ∞
+                </Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -285,28 +300,74 @@ export default function PlantLibrary() {
                 <CardContent className="py-4">
                   <div className="flex flex-wrap gap-8 items-center">
                     <div>
-                      <p className="text-sm text-muted-foreground">Total in Collection</p>
-                      <p className="text-2xl font-bold" data-testid="text-total-collection">{myCollection?.length || 0}</p>
+                      <p className="text-sm text-muted-foreground font-medium">Total in Collection</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-semibold" data-testid="text-total-collection">
+                          {myCollection?.length || 0}
+                        </p>
+                        {collectionLimits && collectionLimits.limit > 0 && (
+                          <>
+                            <span className="text-lg text-muted-foreground">/</span>
+                            <span className="text-lg font-medium text-muted-foreground">
+                              {collectionLimits.limit}
+                            </span>
+                          </>
+                        )}
+                        {collectionLimits?.userTier === 'premium' && (
+                          <Badge variant="secondary" className="ml-2">
+                            Unlimited
+                          </Badge>
+                        )}
+                      </div>
+                      {collectionLimits && collectionLimits.limit > 0 && (
+                        <div className="mt-2">
+                          <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all ${
+                                ((myCollection?.length || 0) / collectionLimits.limit) > 0.8 
+                                  ? 'bg-orange-500' 
+                                  : 'bg-green-500'
+                              }`}
+                              style={{ width: `${Math.min(100, ((myCollection?.length || 0) / collectionLimits.limit) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Perennials</p>
-                      <p className="text-xl font-semibold text-accent" data-testid="text-perennials-collection">
+                      <p className="text-sm text-muted-foreground font-medium">Perennials</p>
+                      <p className="text-2xl font-semibold text-accent" data-testid="text-perennials-collection">
                         {myCollection?.filter((item: any) => item.plant?.type === 'perennial').length || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Annuals</p>
-                      <p className="text-xl font-semibold text-green-600" data-testid="text-annuals-collection">
+                      <p className="text-sm text-muted-foreground font-medium">Annuals</p>
+                      <p className="text-2xl font-semibold text-green-600" data-testid="text-annuals-collection">
                         {myCollection?.filter((item: any) => item.plant?.type === 'annual').length || 0}
                       </p>
                     </div>
                     <div className="ml-auto flex gap-2">
                       {/* Collection Actions */}
+                      {collectionLimits && collectionLimits.userTier !== 'premium' && 
+                       collectionLimits.current >= collectionLimits.limit && (
+                        <Button 
+                          size="sm" 
+                          variant="default"
+                          className="bg-gradient-to-r from-purple-600 to-blue-600"
+                          onClick={() => window.location.href = '/pricing'}
+                          data-testid="button-upgrade-premium"
+                        >
+                          <Sprout className="w-4 h-4 mr-1" />
+                          Upgrade to Premium
+                        </Button>
+                      )}
                       <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => setActiveTab("browse")}
                         data-testid="button-add-to-collection"
+                        disabled={collectionLimits && collectionLimits.userTier !== 'premium' && 
+                                 collectionLimits.current >= collectionLimits.limit}
                       >
                         <Heart className="w-4 h-4 mr-1" />
                         Add Plants

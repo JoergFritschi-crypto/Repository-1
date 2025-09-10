@@ -145,6 +145,10 @@ export function CompactPlantCard({
   const addToCollectionMutation = useMutation({
     mutationFn: async (data: { plantId: string; notes?: string }) => {
       const response = await apiRequest("POST", "/api/my-collection", data);
+      if (!response.ok) {
+        const error = await response.json();
+        throw error;
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -153,6 +157,38 @@ export function CompactPlantCard({
         description: `${plant.commonName} has been added to your garden!`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-collection/limits"] });
+      setShowAddDialog(false);
+    },
+    onError: (error: any) => {
+      if (error.code === 'COLLECTION_LIMIT_REACHED') {
+        toast({
+          title: "Collection Limit Reached",
+          description: error.message,
+          variant: "destructive",
+          action: (
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => window.location.href = '/pricing'}
+            >
+              Upgrade to Premium
+            </Button>
+          )
+        });
+      } else if (error.code === 'DUPLICATE_PLANT') {
+        toast({
+          title: "Already in Collection",
+          description: "This plant is already in your collection.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Failed to Add",
+          description: error.message || "Could not add plant to collection",
+          variant: "destructive"
+        });
+      }
       setShowAddDialog(false);
     }
   });
