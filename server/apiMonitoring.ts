@@ -500,41 +500,66 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
-            // Test with a simple scrape status check
-            const response = await fetch('https://api.firecrawl.dev/v1/crawl/status', {
-              method: 'GET',
+            // Test with a simple scrape request (won't actually scrape, just validates the key)
+            const response = await fetch('https://api.firecrawl.dev/v0/scrape', {
+              method: 'POST',
               headers: {
                 'Authorization': `Bearer ${process.env.FIRECRAWL_API_KEY}`,
                 'Content-Type': 'application/json'
-              }
+              },
+              body: JSON.stringify({
+                url: 'https://example.com',
+                formats: ['markdown']
+              })
             });
             const responseTime = Date.now() - startTime;
             
-            if (response.ok || response.status === 404) {
-              // 404 is ok - it means the API is working but no crawl jobs exist
+            if (response.ok) {
+              const data = await response.json();
               return {
                 service: 'firecrawl',
                 status: 'healthy',
                 responseTime,
                 metadata: { 
-                  endpoint: 'crawl/status',
-                  note: response.status === 404 ? 'No active crawl jobs' : 'API accessible'
+                  success: data.success,
+                  note: 'API key is valid and working'
                 }
               };
-            } else if (response.status === 401) {
+            } else if (response.status === 401 || response.status === 403) {
               return {
                 service: 'firecrawl',
                 status: 'down',
                 responseTime,
-                errorMessage: 'Invalid API key'
+                errorMessage: 'Invalid or expired API key'
+              };
+            } else if (response.status === 402) {
+              return {
+                service: 'firecrawl',
+                status: 'degraded',
+                responseTime,
+                errorMessage: 'Payment required - check your FireCrawl subscription'
+              };
+            } else if (response.status === 429) {
+              return {
+                service: 'firecrawl',
+                status: 'degraded',
+                responseTime,
+                errorMessage: 'Rate limit exceeded'
               };
             } else {
               const errorText = await response.text();
+              let errorMessage = `Status ${response.status}`;
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.error || errorJson.message || errorMessage;
+              } catch (e) {
+                errorMessage = errorText || errorMessage;
+              }
               return {
                 service: 'firecrawl',
-                status: response.status === 429 ? 'degraded' : 'down',
+                status: 'down',
                 responseTime,
-                errorMessage: `Status ${response.status}: ${errorText}`
+                errorMessage
               };
             }
           } catch (error) {
