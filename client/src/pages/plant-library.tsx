@@ -17,7 +17,9 @@ export default function PlantLibrary() {
   const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<PlantSearchFilters>({});
+  const [collectionFilters, setCollectionFilters] = useState<any>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentCollectionPage, setCurrentCollectionPage] = useState(1);
   const [sortBy, setSortBy] = useState<"name-asc" | "name-desc" | "newest" | "oldest">("name-asc");
   const plantsPerPage = 24; // 3x8 grid
   
@@ -54,9 +56,177 @@ export default function PlantLibrary() {
     },
   });
 
-  const { data: myCollection = [], isLoading: collectionLoading } = useQuery<any[]>({
+  const { data: myCollectionRaw = [], isLoading: collectionLoading } = useQuery<any[]>({
     queryKey: ["/api/my-collection"],
   });
+
+  // Filter collection based on search filters
+  const filteredCollection = useMemo(() => {
+    if (!myCollectionRaw || !Array.isArray(myCollectionRaw)) return [];
+    
+    let filtered = myCollectionRaw.filter(item => item.plant); // Only items with plant data
+    
+    // Check if any filters are active
+    const hasActiveFilters = Object.keys(collectionFilters).some(key => {
+      const value = collectionFilters[key];
+      if (key === 'heightMin' && value === 0) return false;
+      if (key === 'heightMax' && value === 500) return false;
+      if (key === 'spreadMin' && value === 0) return false;
+      if (key === 'spreadMax' && value === 300) return false;
+      if (key === 'selectedColors' && (!value || value.length === 0)) return false;
+      if (key === 'includeLargeSpecimens' && value === false) return false;
+      if (key === 'plantTypes' && (!value || value.length === 0)) return false;
+      if (key === 'bloomSeasons' && (!value || value.length === 0)) return false;
+      if (key === 'foliageTypes' && (!value || value.length === 0)) return false;
+      if (value === undefined || value === '' || value === 'all' || value === null) return false;
+      return true;
+    });
+    
+    if (!hasActiveFilters) return filtered;
+    
+    // Apply search filter
+    if (collectionFilters.search) {
+      const searchLower = collectionFilters.search.toLowerCase();
+      filtered = filtered.filter((item: any) => 
+        item.plant.commonName?.toLowerCase().includes(searchLower) ||
+        item.plant.scientificName?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply plant type filters (multi-select)
+    if (collectionFilters.plantTypes && collectionFilters.plantTypes.length > 0) {
+      filtered = filtered.filter((item: any) => 
+        collectionFilters.plantTypes.includes(item.plant.type)
+      );
+    }
+
+    // Apply sun requirements
+    if (collectionFilters.sunlight && collectionFilters.sunlight !== 'all') {
+      filtered = filtered.filter((item: any) => {
+        const plantSun = item.plant.sunlight;
+        if (Array.isArray(plantSun)) {
+          return plantSun.some((s: string) => s.toLowerCase().includes(collectionFilters.sunlight.toLowerCase()));
+        }
+        return plantSun?.toLowerCase().includes(collectionFilters.sunlight.toLowerCase());
+      });
+    }
+
+    // Apply water requirements
+    if (collectionFilters.water && collectionFilters.water !== 'all') {
+      filtered = filtered.filter((item: any) => 
+        item.plant.watering?.toLowerCase() === collectionFilters.water.toLowerCase()
+      );
+    }
+
+    // Apply soil type
+    if (collectionFilters.soil_type && collectionFilters.soil_type !== 'all') {
+      filtered = filtered.filter((item: any) => {
+        const plantSoil = item.plant.soil;
+        if (Array.isArray(plantSoil)) {
+          return plantSoil.some((s: string) => s.toLowerCase().includes(collectionFilters.soil_type.toLowerCase()));
+        }
+        return false;
+      });
+    }
+
+    // Apply numeric filters for height
+    if (collectionFilters.heightMin !== undefined && collectionFilters.heightMin > 0) {
+      filtered = filtered.filter((item: any) => 
+        item.plant.heightMaxCm >= collectionFilters.heightMin
+      );
+    }
+
+    if (collectionFilters.heightMax !== undefined && collectionFilters.heightMax < 500) {
+      filtered = filtered.filter((item: any) => 
+        item.plant.heightMinCm <= collectionFilters.heightMax
+      );
+    }
+
+    // Apply numeric filters for spread
+    if (collectionFilters.spreadMin !== undefined && collectionFilters.spreadMin > 0) {
+      filtered = filtered.filter((item: any) => 
+        item.plant.spreadMaxCm >= collectionFilters.spreadMin
+      );
+    }
+
+    if (collectionFilters.spreadMax !== undefined && collectionFilters.spreadMax < 300) {
+      filtered = filtered.filter((item: any) => 
+        item.plant.spreadMinCm <= collectionFilters.spreadMax
+      );
+    }
+
+    // Apply color filters
+    if (collectionFilters.selectedColors && collectionFilters.selectedColors.length > 0) {
+      filtered = filtered.filter((item: any) => {
+        const flowerColor = item.plant.flowerColor;
+        if (!flowerColor) return false;
+        if (Array.isArray(flowerColor)) {
+          return flowerColor.some((color: string) => 
+            collectionFilters.selectedColors.includes(color.toLowerCase())
+          );
+        }
+        return false;
+      });
+    }
+
+    // Apply bloom season filters (multi-select)
+    if (collectionFilters.bloomSeasons && collectionFilters.bloomSeasons.length > 0) {
+      filtered = filtered.filter((item: any) => {
+        const floweringSeason = item.plant.floweringSeason?.toLowerCase();
+        if (!floweringSeason) return false;
+        return collectionFilters.bloomSeasons.some((season: string) => 
+          floweringSeason.includes(season.toLowerCase())
+        );
+      });
+    }
+
+    // Apply foliage type filters (multi-select)
+    if (collectionFilters.foliageTypes && collectionFilters.foliageTypes.length > 0) {
+      filtered = filtered.filter((item: any) => {
+        const foliage = item.plant.foliage?.toLowerCase();
+        if (!foliage) return false;
+        return collectionFilters.foliageTypes.some((type: string) => 
+          foliage.includes(type.toLowerCase())
+        );
+      });
+    }
+
+    // Apply hardiness filter
+    if (collectionFilters.hardiness && collectionFilters.hardiness !== 'all') {
+      filtered = filtered.filter((item: any) => 
+        item.plant.hardiness === collectionFilters.hardiness
+      );
+    }
+
+    // Apply toxicity filter
+    if (collectionFilters.toxicity && collectionFilters.toxicity !== 'all') {
+      filtered = filtered.filter((item: any) => 
+        item.plant.toxicityCategory === collectionFilters.toxicity
+      );
+    }
+
+    // Apply growth rate filter
+    if (collectionFilters.growth_rate && collectionFilters.growth_rate !== 'all') {
+      filtered = filtered.filter((item: any) => 
+        item.plant.growthRate?.toLowerCase() === collectionFilters.growth_rate.toLowerCase()
+      );
+    }
+
+    // Apply native/exotic filter
+    if (collectionFilters.native && collectionFilters.native !== 'all') {
+      filtered = filtered.filter((item: any) => {
+        const isNative = collectionFilters.native === 'native';
+        // This would need a native field in the database
+        // For now, we'll skip this filter
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [myCollectionRaw, collectionFilters]);
+
+  // Use filtered collection
+  const myCollection = filteredCollection;
 
   const handleFilterChange = (newFilters: Partial<PlantSearchFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -96,6 +266,15 @@ export default function PlantLibrary() {
   }, [sortedPlants, currentPage, plantsPerPage]);
 
   const totalPages = Math.ceil((sortedPlants?.length || 0) / plantsPerPage);
+
+  // Paginate collection
+  const paginatedCollection = useMemo(() => {
+    const startIndex = (currentCollectionPage - 1) * plantsPerPage;
+    const endIndex = startIndex + plantsPerPage;
+    return myCollection.slice(startIndex, endIndex);
+  }, [myCollection, currentCollectionPage, plantsPerPage]);
+
+  const totalCollectionPages = Math.ceil((myCollection?.length || 0) / plantsPerPage);
 
   return (
     <div className="min-h-screen bg-background">
@@ -380,8 +559,8 @@ export default function PlantLibrary() {
               {/* Advanced Search for Collection */}
               <PlantAdvancedSearch 
                 onSearch={(filters) => {
-                  console.log('Searching collection with filters:', filters);
-                  // Filter collection based on search
+                  setCollectionFilters(filters);
+                  setCurrentCollectionPage(1); // Reset to first page when filters change
                 }}
                 totalResults={myCollection?.length || 0}
               />
@@ -406,9 +585,9 @@ export default function PlantLibrary() {
                         </Card>
                       ))}
                     </div>
-                  ) : myCollection && Array.isArray(myCollection) && myCollection.length > 0 ? (
+                  ) : paginatedCollection && Array.isArray(paginatedCollection) && paginatedCollection.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {myCollection.map((item: any) => (
+                      {paginatedCollection.map((item: any) => (
                         <CompactPlantCard
                           key={item.id}
                           plant={item.plant}
@@ -431,6 +610,66 @@ export default function PlantLibrary() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Pagination Controls for Collection */}
+              {totalCollectionPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentCollectionPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentCollectionPage === 1}
+                    data-testid="button-collection-prev-page"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Button>
+                  
+                  {/* Page Numbers */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(totalCollectionPages, 7) }, (_, i) => {
+                      let pageNum;
+                      if (totalCollectionPages <= 7) {
+                        pageNum = i + 1;
+                      } else if (currentCollectionPage <= 4) {
+                        pageNum = i < 5 ? i + 1 : i === 5 ? -1 : totalCollectionPages;
+                      } else if (currentCollectionPage >= totalCollectionPages - 3) {
+                        pageNum = i === 0 ? 1 : i === 1 ? -1 : totalCollectionPages - 5 + i;
+                      } else {
+                        pageNum = i === 0 ? 1 : i === 1 ? -1 : i === 2 ? currentCollectionPage - 1 : i === 3 ? currentCollectionPage : i === 4 ? currentCollectionPage + 1 : i === 5 ? -1 : totalCollectionPages;
+                      }
+                      
+                      if (pageNum === -1) {
+                        return <span key={`dots-${i}`} className="px-2">...</span>;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentCollectionPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentCollectionPage(pageNum)}
+                          className="w-10"
+                          data-testid={`button-collection-page-${pageNum}`}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentCollectionPage(prev => Math.min(totalCollectionPages, prev + 1))}
+                    disabled={currentCollectionPage === totalCollectionPages}
+                    data-testid="button-collection-next-page"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </TabsContent>
 
