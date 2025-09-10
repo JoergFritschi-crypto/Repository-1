@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Database Restructuring for Numeric Dimensions (September 2025)
+- Added numeric dimension fields to plant schema for precise measurements
+- Primary storage in metric units (centimeters) with secondary Imperial units (inches)
+- Fields added: heightMinCm, heightMaxCm, spreadMinCm, spreadMaxCm (and Imperial equivalents)
+- Successfully migrated existing text-based dimensions to numeric values
+- Updated advanced search to use numeric filtering for accurate height/spread ranges
+- Frontend now displays dimensions in metric format (meters) as primary measurement system
+
 ### Navigation Improvements (January 2025)
 - Added persistent navigation sidebar to garden properties form for unrestricted navigation
 - Users can now freely navigate to any page using the sidebar while creating a garden
