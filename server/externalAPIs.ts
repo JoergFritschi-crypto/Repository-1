@@ -18,76 +18,157 @@ export class FireCrawlAPI {
       const isGermanNursery = url.includes('graefin-von-zeppelin.de');
       
       if (isGermanNursery) {
-        console.log('Detected German nursery - attempting to crawl all pages...');
+        console.log('Detected German nursery - using two-stage approach...');
         
-        // Use crawl mode to get all pages with JavaScript rendering
-        const crawlResult = await this.app.crawlUrl(url, {
-          limit: 270, // Increased slightly to capture the missing ~40 plants (4 pages x 12 plants)
-          maxDepth: 2, // Keep at 2 to avoid overload
-          includePaths: ['/collections/stauden', '/collections/pflanzen', '/products/'],
-          excludePaths: ['/products/gift-card', '/products/beet-ideen', '/products/katalog', '/blogs/', '/pages/'],
-          scrapeOptions: {
-            formats: ['markdown', 'html'],
-            waitFor: 2000,  // Wait 2 seconds for JavaScript to render
-            timeout: 30000  // 30 second timeout per page
-          }
-        });
+        // Clean URL - remove hash fragments
+        const baseUrl = url.split('#')[0];
+        const domain = new URL(baseUrl).origin;
         
-        if (!crawlResult.success) {
-          throw new Error(crawlResult.error || 'Crawling failed');
-        }
+        // Stage 1: Get all product URLs
+        let productUrls: string[] = [];
         
-        console.log(`Crawled ${crawlResult.data?.length || 0} pages`);
-        
-        // Extract plants from all crawled pages
-        let allPlants: any[] = [];
-        let pagesWithProducts = 0;
-        let pagesWithoutProducts = 0;
-        
-        if (crawlResult.data && Array.isArray(crawlResult.data)) {
-          for (const page of crawlResult.data) {
-            // Extract plants from each page's markdown content
-            if (page.markdown) {
-              const pagePlants = this.extractPlantsFromEcommercePage(page.markdown, page.url);
-              if (pagePlants.length > 0) {
-                pagesWithProducts++;
+        // Try Shopify JSON endpoint first
+        try {
+          console.log('Attempting Shopify JSON API...');
+          for (let page = 1; page <= 10; page++) {
+            const jsonUrl = `${domain}/collections/stauden/products.json?limit=250&page=${page}`;
+            const response = await fetch(jsonUrl);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.products && data.products.length > 0) {
+                const pageUrls = data.products.map((p: any) => `${domain}/products/${p.handle}`);
+                productUrls.push(...pageUrls);
+                console.log(`Page ${page}: Found ${data.products.length} products`);
               } else {
-                pagesWithoutProducts++;
-                console.log(`No products found on: ${page.url || 'unknown URL'}`);
+                break; // No more products
               }
-              allPlants.push(...pagePlants);
+            } else {
+              break;
             }
           }
+        } catch (e) {
+          console.log('JSON API failed, using page scraping...');
         }
         
-        console.log(`Pages with products: ${pagesWithProducts}, Pages without products: ${pagesWithoutProducts}`);
-        console.log(`Total plants before deduplication: ${allPlants.length}`);
-        
-        // Deduplicate plants based on scientific name
-        const uniquePlants = this.deduplicatePlants(allPlants);
-        console.log(`After deduplication: ${uniquePlants.length} unique plants (removed ${allPlants.length - uniquePlants.length} duplicates)`);
-        
-        // Add plant type based on URL collection
-        const plantsWithType = uniquePlants.map(plant => {
-          // Only set herbaceous perennials for /stauden collection
-          const isStaudenCollection = url.includes('/collections/stauden') || url.includes('/stauden');
+        // Fallback: Scrape collection pages
+        if (productUrls.length === 0) {
+          console.log('Scraping collection pages for product URLs...');
+          const maxPages = 30; // Estimate ~35 products per page = 1050 products
           
-          return {
-            ...plant,
-            type: isStaudenCollection ? 'herbaceous perennials' : plant.type,
-            sources: { firecrawl: true }
-          };
-        });
+          for (let page = 1; page <= maxPages; page++) {
+            try {
+              const pageUrl = `${baseUrl}?page=${page}`;
+              console.log(`Scraping page ${page}...`);
+              
+              const pageResult = await this.app.scrapeUrl(pageUrl, {
+                formats: ['markdown'],
+                waitFor: 1000,
+                timeout: 15000
+              });
+              
+              if (pageResult.success && pageResult.markdown) {
+                const pageProductUrls = this.extractProductUrlsFromPage(pageResult.markdown, domain);
+                if (pageProductUrls.length === 0) {
+                  console.log(`No more products found at page ${page}`);
+                  break;
+                }
+                productUrls.push(...pageProductUrls);
+                console.log(`Page ${page}: Found ${pageProductUrls.length} product URLs`);
+              }
+              
+              // Small delay between pages
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (e) {
+              console.error(`Failed to scrape page ${page}:`, e);
+            }
+          }
+          
+          // Deduplicate URLs
+          productUrls = Array.from(new Set(productUrls));
+        }
+        
+        console.log(`Total unique product URLs found: ${productUrls.length}`);
+        
+        if (productUrls.length === 0) {
+          throw new Error('No product URLs found');
+        }
+        
+        // Stage 2: Scrape products in small batches
+        const allPlants: any[] = [];
+        const batchSize = 10; // Very small batches to avoid 502
+        const batches = Math.ceil(productUrls.length / batchSize);
+        let successfulBatches = 0;
+        let failedBatches = 0;
+        
+        for (let i = 0; i < batches; i++) {
+          const start = i * batchSize;
+          const end = Math.min(start + batchSize, productUrls.length);
+          const batch = productUrls.slice(start, end);
+          
+          console.log(`Processing batch ${i + 1}/${batches} (${batch.length} products)...`);
+          
+          try {
+            // Process each product in the batch
+            for (const productUrl of batch) {
+              try {
+                const result = await this.app.scrapeUrl(productUrl, {
+                  formats: ['markdown'],
+                  waitFor: 500,
+                  timeout: 10000
+                });
+                
+                if (result.success && result.markdown) {
+                  const plants = this.extractPlantsFromEcommercePage(result.markdown, productUrl);
+                  allPlants.push(...plants);
+                }
+                
+                // Rate limiting - wait between products
+                await new Promise(resolve => setTimeout(resolve, 300));
+              } catch (e) {
+                console.error(`Failed to scrape ${productUrl}`);
+              }
+            }
+            successfulBatches++;
+          } catch (error) {
+            console.error(`Batch ${i + 1} failed:`, error);
+            failedBatches++;
+            
+            // If we get 502 errors, wait longer before retrying
+            if ((error as any).toString().includes('502')) {
+              console.log('Got 502 error, waiting 30 seconds...');
+              await new Promise(resolve => setTimeout(resolve, 30000));
+            }
+          }
+          
+          // Progress update
+          if ((i + 1) % 10 === 0) {
+            console.log(`Progress: ${allPlants.length} plants scraped so far...`);
+          }
+        }
+        
+        console.log(`Batches completed: ${successfulBatches} successful, ${failedBatches} failed`);
+        console.log(`Total plants scraped: ${allPlants.length}`);
+        
+        // Deduplicate plants
+        const uniquePlants = this.deduplicatePlants(allPlants);
+        console.log(`After deduplication: ${uniquePlants.length} unique plants`);
+        
+        // Add plant type
+        const plantsWithType = uniquePlants.map(plant => ({
+          ...plant,
+          type: 'herbaceous perennials',
+          sources: { firecrawl: true }
+        }));
         
         return {
           plants: plantsWithType,
           metadata: {
             url,
             scrapedAt: new Date().toISOString(),
-            creditsUsed: crawlResult.data?.length || 1,
-            pagesCrawled: crawlResult.data?.length || 1,
+            creditsUsed: productUrls.length,
+            pagesCrawled: productUrls.length,
             totalPlantsFound: plantsWithType.length,
-            extractionMethod: 'crawl-pagination'
+            extractionMethod: 'two-stage-batch'
           }
         };
       } else {
@@ -100,7 +181,7 @@ export class FireCrawlAPI {
               type: 'object',
               properties: {
                 products: {
-                  type: 'array',
+                  _type: 'array' as const,
                   items: {
                     type: 'object',
                     properties: {
@@ -205,6 +286,33 @@ export class FireCrawlAPI {
       console.error('FireCrawl scraping error:', error);
       throw error;
     }
+  }
+  
+  private extractProductUrlsFromPage(content: string, domain: string): string[] {
+    const urls: string[] = [];
+    
+    // Pattern 1: Markdown links to /products/
+    const mdLinkPattern = /\[([^\]]+)\]\(\/products\/([^)]+)\)/g;
+    let match;
+    while ((match = mdLinkPattern.exec(content)) !== null) {
+      const productPath = match[2].split('?')[0]; // Remove query params
+      urls.push(`${domain}/products/${productPath}`);
+    }
+    
+    // Pattern 2: HTML links (if present in markdown)
+    const htmlLinkPattern = /href=["']\/products\/([^"'?]+)/g;
+    while ((match = htmlLinkPattern.exec(content)) !== null) {
+      urls.push(`${domain}/products/${match[1]}`);
+    }
+    
+    // Pattern 3: Direct product URLs
+    const fullUrlPattern = new RegExp(`${domain}/products/([^\\s"'?]+)`, 'g');
+    while ((match = fullUrlPattern.exec(content)) !== null) {
+      urls.push(match[0]);
+    }
+    
+    // Deduplicate URLs
+    return Array.from(new Set(urls));
   }
   
   private extractPlantsFromEcommercePage(markdown: string, pageUrl: string): any[] {
