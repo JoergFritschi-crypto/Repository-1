@@ -2721,6 +2721,59 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
+  // Test Runware connectivity directly
+  app.get('/api/admin/test-runware', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      console.log('Testing Runware with key:', process.env.RUNWARE_API_KEY ? 'Key exists' : 'No key');
+      
+      // Test authentication using Runware's expected format
+      const response = await fetch('https://api.runware.ai/v1', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${process.env.RUNWARE_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([
+          {
+            taskType: 'authentication',
+            apiKey: process.env.RUNWARE_API_KEY
+          }
+        ])
+      });
+
+      const responseText = await response.text();
+      console.log('Runware response status:', response.status);
+      console.log('Runware response:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        data = { raw: responseText };
+      }
+
+      res.json({
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: data,
+        keyExists: !!process.env.RUNWARE_API_KEY
+      });
+    } catch (error) {
+      console.error("Error testing Runware:", error);
+      res.status(500).json({ 
+        message: "Failed to test Runware", 
+        error: (error as Error).message,
+        keyExists: !!process.env.RUNWARE_API_KEY
+      });
+    }
+  });
+
   // API Key Management Routes
   app.get('/api/admin/api-keys/status', isAuthenticated, async (req: any, res) => {
     try {
