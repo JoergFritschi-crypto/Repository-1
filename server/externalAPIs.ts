@@ -193,15 +193,23 @@ export class FireCrawlAPI {
   private extractPlantsFromEcommercePage(markdown: string, pageUrl: string): any[] {
     const plants: any[] = [];
     
-    // Look for product patterns in markdown
-    // German site patterns: "Echinacea purpurea 'Magnus' Scheinsonnenhut"
-    const productPattern = /\[([^\]]+)\]\(\/collections\/[^\/]+\/products\/([^\)]+)\)/g;
-    const pricePattern = /€(\d+,\d+)/g;
+    // Debug: Log first 500 chars of content to see what we're working with
+    console.log('Extracting from page:', pageUrl);
+    console.log('First 500 chars of markdown:', markdown.substring(0, 500));
     
+    // Try multiple patterns to find plant products
+    // Pattern 1: Standard markdown links to product pages
+    const linkPattern = /\[([^\]]+)\]\(([^\)]*\/products\/[^\)]+)\)/g;
+    // Pattern 2: Look for any product links (more flexible)
+    const productLinkPattern = /href=["']([^"']*\/products\/[^"']+)["'][^>]*>([^<]+)</g;
+    // Pattern 3: Simple text patterns for plant names with prices
+    const plantWithPricePattern = /([A-Z][a-z]+ [a-z]+(?:\s+['"][^'"]+['"])?)[^\n]*€\s*(\d+[,\.]\d+)/g;
+    
+    // Try standard markdown links first
     let match;
-    while ((match = productPattern.exec(markdown)) !== null) {
+    while ((match = linkPattern.exec(markdown)) !== null) {
       const fullName = match[1];
-      const productSlug = match[2];
+      const productUrl = match[2];
       
       // Parse the plant name
       const scientificName = this.extractScientificFromName(fullName);
@@ -210,12 +218,49 @@ export class FireCrawlAPI {
       plants.push({
         common_name: commonName || fullName,
         scientific_name: scientificName,
-        product_url: `/collections/stauden/products/${productSlug}`,
-        product_slug: productSlug,
+        product_url: productUrl,
+        product_slug: productUrl.split('/').pop(),
         page_url: pageUrl
       });
     }
     
+    // If no plants found, try HTML-style links
+    if (plants.length === 0) {
+      linkPattern.lastIndex = 0; // Reset regex
+      while ((match = productLinkPattern.exec(markdown)) !== null) {
+        const productUrl = match[1];
+        const fullName = match[2];
+        
+        const scientificName = this.extractScientificFromName(fullName);
+        const commonName = fullName.replace(scientificName || '', '').trim();
+        
+        plants.push({
+          common_name: commonName || fullName,
+          scientific_name: scientificName,
+          product_url: productUrl,
+          product_slug: productUrl.split('/').pop(),
+          page_url: pageUrl
+        });
+      }
+    }
+    
+    // If still no plants, try simple text pattern matching
+    if (plants.length === 0) {
+      plantWithPricePattern.lastIndex = 0;
+      while ((match = plantWithPricePattern.exec(markdown)) !== null) {
+        const scientificName = match[1];
+        const price = match[2];
+        
+        plants.push({
+          common_name: scientificName,
+          scientific_name: scientificName,
+          price: `€${price}`,
+          page_url: pageUrl
+        });
+      }
+    }
+    
+    console.log(`Found ${plants.length} plants on page ${pageUrl}`);
     return plants;
   }
   
