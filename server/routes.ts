@@ -2781,6 +2781,11 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
           configured: !!(process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD),
           status: (process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD) ? 'active' : 'untested',
         },
+        {
+          service: 'firecrawl',
+          configured: !!process.env.FIRECRAWL_API_KEY,
+          status: process.env.FIRECRAWL_API_KEY ? 'active' : 'untested',
+        },
       ];
 
       res.json(keyStatus);
