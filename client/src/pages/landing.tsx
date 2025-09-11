@@ -102,20 +102,33 @@ export default function Landing() {
               <h1 className="text-2xl md:text-3xl font-serif font-bold mb-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" data-testid="text-hero-title">
                 Design Your Dream Garden with AI
               </h1>
-              <p className="text-base mb-4 text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-testid="text-hero-subtitle">
+              <p className="text-base mb-6 text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-testid="text-hero-subtitle">
                 Professional garden design tools with expert plant knowledge
               </p>
-              <div className="flex gap-3">
-                <Button asChild size="default" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300" data-testid="button-start-designing">
-                  {!isAuthenticated ? (
-                    <a href="/api/login">Start Designing</a>
-                  ) : (
-                    <Link href="/garden-properties">Start Designing</Link>
-                  )}
-                </Button>
-                <Button variant="outline" size="default" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300" data-testid="button-watch-demo">
-                  View Examples
-                </Button>
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <Button asChild size="lg" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto" data-testid="button-start-designing">
+                      {!isAuthenticated ? (
+                        <a href="/api/login">🌱 Create Your Garden</a>
+                      ) : (
+                        <Link href="/garden-properties">🌱 Create Your Garden</Link>
+                      )}
+                    </Button>
+                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Start designing with AI guidance</p>
+                  </div>
+                  <div className="flex-1">
+                    <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto" data-testid="button-watch-demo">
+                      🏡 Browse Gallery
+                    </Button>
+                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">See inspiring garden designs</p>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    ✨ Get personalized plant recommendations • 🎨 Design with professional tools • 📱 Save and share your creations
+                  </p>
+                </div>
               </div>
             </div>
           </div>
