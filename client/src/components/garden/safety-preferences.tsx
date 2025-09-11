@@ -64,7 +64,7 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#FFD500]/50 bg-[#FFD500]/20 hover:bg-[#FFD500]/30">
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-primary/40 bg-primary/15 hover:bg-primary/20">
                       <RadioGroupItem value="moderate" id="moderate" />
                       <div className="flex-1">
                         <Label htmlFor="moderate" className="font-medium text-sm cursor-pointer">
@@ -95,7 +95,7 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
         </div>
 
         {/* Important Safety Disclaimer */}
-        <Alert className="border-[#FFD500]/50 bg-[#FFD500]/20">
+        <Alert className="border-primary/40 bg-primary/15">
           <AlertTriangle className="h-4 w-4 text-[#004025]" />
           <AlertDescription className="text-xs">
             <strong>Important Safety Notice:</strong> There is never zero risk with plants. Even "low risk" plants may cause reactions in sensitive individuals or specific pets. 
@@ -150,7 +150,7 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#FFD500]/40 bg-[#FFD500]/15 hover:bg-[#FFD500]/20">
+                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-primary/50 bg-primary/20 hover:bg-primary/25">
                         <RadioGroupItem value="exotic" id="exotic" />
                         <div className="flex-1">
                           <Label htmlFor="exotic" className="font-medium text-sm cursor-pointer flex items-center gap-2">

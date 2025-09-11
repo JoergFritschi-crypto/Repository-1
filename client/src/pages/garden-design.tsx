@@ -170,12 +170,12 @@ export default function GardenDesign() {
       <div className="container mx-auto px-4 py-6">
         {/* Admin Testing Controls */}
         {isAdmin && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+          <div className="bg-primary/10 dark:bg-primary/20 border border-primary/30 dark:border-primary/40 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-primary">
                 Admin Testing Mode
               </h3>
-              <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/40">
+              <Badge variant="outline" className="bg-primary/20 dark:bg-primary/30">
                 Garden ID: {id || 'None'}
               </Badge>
             </div>
@@ -399,7 +399,7 @@ export default function GardenDesign() {
                       <p className="text-muted-foreground mb-4">
                         Experience your garden design in photorealistic 3D
                       </p>
-                      <Badge className="bg-yellow-400 text-black">Premium Feature</Badge>
+                      <Badge className="bg-accent text-primary">Premium Feature</Badge>
                     </div>
                   </div>
                 </div>

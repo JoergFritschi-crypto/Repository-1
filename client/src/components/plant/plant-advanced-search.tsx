@@ -390,7 +390,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                       </span>
                     </label>
                     {filters.includeLargeSpecimens && (
-                      <Badge className="bg-amber-100 text-amber-700">
+                      <Badge className="bg-primary/20 text-primary">
                         🌳 All heights
                       </Badge>
                     )}

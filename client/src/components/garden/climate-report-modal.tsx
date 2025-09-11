@@ -246,9 +246,9 @@ export default function ClimateReportModal({
             </div>
             
             {(climateData.sunshine_hours !== undefined || climateData.sunshine_percent !== undefined) && (
-              <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
+              <div className="mt-4 p-3 bg-primary/10 rounded border border-primary/30">
                 <div className="text-sm text-gray-600 mb-1">Average Daily Sunshine</div>
-                <div className="text-lg font-semibold text-amber-700">
+                <div className="text-lg font-semibold text-primary">
                   {climateData.sunshine_hours !== undefined 
                     ? `${climateData.sunshine_hours.toFixed(1)} hours per day`
                     : `${(climateData.sunshine_percent * 0.12).toFixed(1)} hours per day`}

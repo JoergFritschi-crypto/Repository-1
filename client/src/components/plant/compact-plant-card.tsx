@@ -151,7 +151,7 @@ function getSizeCategory(heightMaxCm: number | null | undefined): {
     return {
       category: 'medium',
       label: 'Medium Tree',
-      color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+      color: 'bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary',
       icon: '🌳'
     };
   } else if (heightM <= 20) {
@@ -466,7 +466,7 @@ export function CompactPlantCard({
               
               {/* Pending indicator for unapproved plants */}
               {plant.verificationStatus === 'pending' && (
-                <div className="absolute top-2 right-12 bg-yellow-500 text-white px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
+                <div className="absolute top-2 right-12 bg-accent text-primary px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
                   <span className="text-xs font-medium">Pending</span>
                 </div>

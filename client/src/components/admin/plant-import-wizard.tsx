@@ -1336,9 +1336,9 @@ export function PlantImportWizard() {
               </Alert>
             )}
             
-            <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-900/20">
-              <Shield className="w-4 h-4 text-amber-600" />
-              <AlertDescription className="text-amber-800 dark:text-amber-200">
+            <Alert className="border-primary/30 bg-primary/10 dark:bg-primary/20">
+              <Shield className="w-4 h-4 text-primary" />
+              <AlertDescription className="text-primary dark:text-primary/80">
                 Plants with only one source may need closer review. Multiple sources increase confidence.
               </AlertDescription>
             </Alert>
