@@ -33,12 +33,16 @@ export default function PlantLibrary() {
     },
   });
 
-  const { data: plants, isLoading: plantsLoading } = useQuery({
-    queryKey: ["/api/plants/search", { q: searchQuery, ...filters }],
+  const { data: plants, isLoading: plantsLoading, refetch: refetchPlants } = useQuery({
+    queryKey: ["/api/plants/search", { q: filters.search || searchQuery, ...filters }],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchQuery) params.append("q", searchQuery);
+      // Use search from filters first, fallback to searchQuery
+      const searchTerm = filters.search || searchQuery;
+      if (searchTerm) params.append("q", searchTerm);
+      
       Object.entries(filters).forEach(([key, value]) => {
+        if (key === 'search') return; // Skip search as we handle it above
         if (value !== undefined) {
           // Handle array values (like selectedColors) as comma-separated strings
           if (Array.isArray(value)) {
@@ -54,6 +58,7 @@ export default function PlantLibrary() {
       const response = await fetch(`/api/plants/search?${params}`);
       return response.json();
     },
+    enabled: true, // Enable auto-fetch when filters change
   });
 
   const { data: myCollectionRaw = [], isLoading: collectionLoading } = useQuery<any[]>({
