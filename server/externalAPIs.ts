@@ -574,7 +574,7 @@ export class FireCrawlAPI {
                   growthRate: plant.growth_rate,
                   droughtTolerant: plant.drought_tolerant,
                   saltTolerant: plant.salt_tolerant,
-                  verificationStatus: 'pending' as const
+                  verificationStatus: 'verified' as const
                 });
               }
               
@@ -1503,7 +1503,7 @@ Return format: [{plant1}, {plant2}, ...] as a JSON array.`
       growthRate: plant.growth_rate,
       droughtTolerant: plant.features?.includes('drought') || undefined,
       saltTolerant: plant.features?.includes('salt') || undefined,
-      verificationStatus: 'pending' as const
+      verificationStatus: 'verified' as const
     };
   }
   
