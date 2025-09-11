@@ -741,30 +741,35 @@ Extract the following information and respond in JSON format:
 {
   "common_name": "German common name from the page",
   "scientific_name": "Scientific/botanical Latin name (e.g., Acaena buchananii)",
-  "description": "Full plant description in German (NOT just the common name, the actual descriptive text)",
-  "price": "Price in euros if present",
-  "height": "Height range (e.g., 5-10 cm)",
-  "spread": "Width/spread range if mentioned",
-  "bloom_time": "Blooming period (e.g., Juni-August)",
-  "sunlight": "Sun requirements - translate to one of: full sun, partial shade, full shade",
-  "water": "Water requirements if mentioned",
-  "hardiness": "Hardiness zone if mentioned",
-  "soil": "Soil requirements if mentioned",
-  "flower_color": "Flower color if mentioned",
-  "foliage_color": "Foliage color if mentioned (e.g., blaugrün for blue-green)",
-  "growth_habit": "Growth habit (e.g., creeping, upright, etc.)"
+  "description": "Full plant description in German (the actual descriptive paragraph about the plant's appearance and characteristics, NOT the name)",
+  "price": "Price in euros if present (e.g., €12,90)",
+  "height": "Height range WITH UNITS (look for Wuchshöhe, Höhe, or height - e.g., '5-10 cm', '0.3-0.5 m', 'bis 50 cm')",
+  "spread": "Width/spread range WITH UNITS (look for Wuchsbreite, Breite, Pflanzabstand, or spread - e.g., '30-40 cm')",
+  "bloom_time": "Blooming period (e.g., Juni-August, Mai bis September)",
+  "sunlight": "Sun requirements - MUST be one of these exact values: 'full sun', 'partial shade', 'full shade', or 'sun to partial shade'",
+  "water": "Water requirements (trocken/dry, mäßig/moderate, feucht/moist)",
+  "hardiness": "Hardiness zone if mentioned (e.g., Z3, Zone 3-7, winterhart bis -30°C)",
+  "soil": "Soil requirements (e.g., durchlässig, humos, sandig)",
+  "flower_color": "Flower color in German (e.g., gelb, rot, violett)",
+  "foliage_color": "Foliage color in German (e.g., grün, blaugrün, silbrig)",
+  "growth_habit": "Growth habit in German (e.g., kriechend, aufrecht, polsterbildend, horstig)"
 }
 
-IMPORTANT:
-- For sunlight, look for terms like "sonnig" (sunny/full sun), "halbschattig" (partial shade), "schattig" (shade)
-- Do NOT confuse marketing text about roots (Wurzelware) with sun requirements
-- The description should be the actual descriptive paragraph about the plant, not just its name
-- Extract the real botanical characteristics, not shipping/delivery information`;
+CRITICAL EXTRACTION RULES:
+1. HEIGHT: Look for "Wuchshöhe", "Höhe", or height measurements. ALWAYS include units (cm, m).
+2. SPREAD: Look for "Wuchsbreite", "Breite", "Pflanzabstand", or width measurements. ALWAYS include units.
+3. SUNLIGHT: Must translate German terms to English:
+   - "sonnig" or "volle Sonne" → "full sun"
+   - "halbschattig" or "Halbschatten" → "partial shade"
+   - "schattig" or "Schatten" → "full shade"
+   - "sonnig bis halbschattig" → "sun to partial shade"
+4. DESCRIPTION: Extract the actual descriptive text about the plant's characteristics, NOT just its name or shipping info.
+5. Do NOT put descriptions in the sunlight field or common names in the description field.`;
 
       const response = await (this.anthropic as any).messages.create({
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 1500,
-        system: 'You are an expert at extracting structured botanical data from German nursery websites. Always respond with valid JSON.',
+        system: 'You are an expert at extracting structured botanical data from German nursery websites. Always respond with valid JSON. Be very careful to put the right data in the right fields.',
         messages: [
           {
             role: 'user',
@@ -775,17 +780,45 @@ IMPORTANT:
 
       const content = response.content[0].text;
       const extractedData = JSON.parse(content);
+      
+      // Import dimension parsing utilities
+      const { parsePlantDimensions, validatePlantData } = await import('./dimensionUtils.js');
+      
+      // Parse dimensions to get numeric values
+      const dimensions = parsePlantDimensions({
+        height: extractedData.height,
+        spread: extractedData.spread
+      });
+      
+      // Convert sunlight to array format if needed
+      let sunlightArray: string[] | undefined;
+      if (extractedData.sunlight) {
+        if (extractedData.sunlight === 'sun to partial shade') {
+          sunlightArray = ['full sun', 'partial shade'];
+        } else {
+          sunlightArray = [extractedData.sunlight];
+        }
+      }
 
-      // Convert extracted data to our format
-      return {
+      // Convert extracted data to our format with proper dimensions
+      const plant = {
         common_name: extractedData.common_name || extractedData.scientific_name,
         scientific_name: extractedData.scientific_name,
         description: extractedData.description,
         price: extractedData.price,
-        height: extractedData.height,
-        spread: extractedData.spread,
+        height: extractedData.height, // Keep original string for reference
+        spread: extractedData.spread, // Keep original string for reference
+        // Add parsed numeric dimensions
+        heightMinCm: dimensions.heightMinCm,
+        heightMaxCm: dimensions.heightMaxCm,
+        spreadMinCm: dimensions.spreadMinCm,
+        spreadMaxCm: dimensions.spreadMaxCm,
+        heightMinInches: dimensions.heightMinInches,
+        heightMaxInches: dimensions.heightMaxInches,
+        spreadMinInches: dimensions.spreadMinInches,
+        spreadMaxInches: dimensions.spreadMaxInches,
         bloom_time: extractedData.bloom_time,
-        sunlight: extractedData.sunlight,
+        sunlight: sunlightArray,
         water: extractedData.water,
         hardiness: extractedData.hardiness,
         soil: extractedData.soil,
@@ -796,6 +829,14 @@ IMPORTANT:
         product_slug: pageUrl.split('/').pop(),
         language: 'de' // Mark as German content
       };
+      
+      // Validate the extracted data
+      const validation = validatePlantData(plant);
+      if (!validation.isValid) {
+        console.warn(`Data validation warnings for ${plant.scientific_name}:`, validation.warnings);
+      }
+      
+      return plant;
     } catch (error) {
       console.error('AI extraction error:', error);
       throw error;

@@ -1007,6 +1007,66 @@ Rules:
     }
   });
 
+  // Test endpoint for enhanced validation pipeline
+  app.post('/api/admin/test-validation-pipeline', isAuthenticated, async (req: any, res) => {
+    try {
+      const { scientific_name, common_name, height, spread, sunlight, description } = req.body;
+      
+      // Create a test plant object
+      const testPlant = {
+        scientific_name: scientific_name || 'Acaena buchananii',
+        common_name: common_name || 'Blue Goose Leaf',
+        height: height || '5-10 cm',
+        spread: spread || '30-40 cm',
+        sunlight: sunlight || ['full sun', 'partial shade'],
+        description: description || 'A low-growing, mat-forming perennial with blue-green foliage'
+      };
+      
+      console.log('\n=== Testing Validation Pipeline ===');
+      console.log('Input plant:', testPlant);
+      
+      // Import the validation pipeline
+      const plantImportService = new PlantImportService();
+      
+      // Run the full validation pipeline
+      const enrichedPlant = await plantImportService.runFullValidationPipeline(testPlant);
+      
+      // Check results
+      const hasHeight = !!(enrichedPlant.heightMinCm && enrichedPlant.heightMaxCm);
+      const hasSpread = !!(enrichedPlant.spreadMinCm && enrichedPlant.spreadMaxCm);
+      
+      res.json({
+        success: true,
+        input: testPlant,
+        output: enrichedPlant,
+        improvements: {
+          heightAdded: hasHeight,
+          spreadAdded: hasSpread,
+          heightData: hasHeight ? {
+            min_cm: enrichedPlant.heightMinCm,
+            max_cm: enrichedPlant.heightMaxCm,
+            min_inches: enrichedPlant.heightMinInches,
+            max_inches: enrichedPlant.heightMaxInches
+          } : null,
+          spreadData: hasSpread ? {
+            min_cm: enrichedPlant.spreadMinCm,
+            max_cm: enrichedPlant.spreadMaxCm,
+            min_inches: enrichedPlant.spreadMinInches,
+            max_inches: enrichedPlant.spreadMaxInches
+          } : null,
+          familyAdded: !!enrichedPlant.family,
+          descriptionAdded: !!enrichedPlant.description
+        }
+      });
+    } catch (error) {
+      console.error('Validation pipeline test error:', error);
+      res.status(500).json({ 
+        error: 'Failed to test validation pipeline', 
+        details: error.message 
+      });
+    }
+  });
+
   // Admin plant routes
   app.post('/api/admin/plants', isAuthenticated, async (req: any, res) => {
     try {

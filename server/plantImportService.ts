@@ -685,6 +685,56 @@ export class PlantImportService {
     }
   }
   
+  // Enrich plant with height/spread data from Perenual
+  async enrichHeightSpreadFromPerenual(plant: any): Promise<any> {
+    if (!this.perenualApiKey) {
+      return plant;
+    }
+    
+    // Skip if we already have height/spread data
+    if (plant.heightMinCm && plant.heightMaxCm && plant.spreadMinCm && plant.spreadMaxCm) {
+      return plant;
+    }
+    
+    try {
+      // Search for the plant in Perenual
+      const searchResults = await this.searchPerenual(plant.scientific_name || plant.genus);
+      
+      if (searchResults.length > 0) {
+        // Find best match
+        const match = searchResults.find(p => 
+          p.scientific_name?.toLowerCase() === plant.scientific_name?.toLowerCase()
+        ) || searchResults[0];
+        
+        if (match.dimension) {
+          const { parsePlantDimensions } = await import('./dimensionUtils.js');
+          const dimensions = parsePlantDimensions({ dimension: match.dimension });
+          
+          // Update plant with dimension data if missing
+          if (!plant.heightMinCm && dimensions.heightMinCm) {
+            plant.heightMinCm = dimensions.heightMinCm;
+            plant.heightMaxCm = dimensions.heightMaxCm;
+            plant.heightMinInches = dimensions.heightMinInches;
+            plant.heightMaxInches = dimensions.heightMaxInches;
+            console.log(`Enriched height data for ${plant.scientific_name} from Perenual`);
+          }
+          
+          if (!plant.spreadMinCm && dimensions.spreadMinCm) {
+            plant.spreadMinCm = dimensions.spreadMinCm;
+            plant.spreadMaxCm = dimensions.spreadMaxCm;
+            plant.spreadMinInches = dimensions.spreadMinInches;
+            plant.spreadMaxInches = dimensions.spreadMaxInches;
+            console.log(`Enriched spread data for ${plant.scientific_name} from Perenual`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to enrich height/spread from Perenual for ${plant.scientific_name}:`, error);
+    }
+    
+    return plant;
+  }
+  
   // Validate plant data with Perplexity AI
   async validateWithPerplexity(plant: any): Promise<any> {
     const perplexityApiKey = process.env.PERPLEXITY_API_KEY;
@@ -707,7 +757,8 @@ export class PlantImportService {
       if (!plant.care_level) emptyFields.push('care level');
       if (!plant.growth_rate) emptyFields.push('growth rate');
       if (!plant.soil || plant.soil?.length === 0) emptyFields.push('soil requirements');
-      if (!plant.dimension) emptyFields.push('mature size dimensions');
+      // Check for height/spread data
+      if (!plant.heightMinCm && !plant.heightMaxCm && !plant.dimension) emptyFields.push('mature size dimensions');
       if (!plant.flowering_season) emptyFields.push('flowering season');
       if (!plant.flower_color || plant.flower_color?.length === 0) emptyFields.push('flower colors');
       if (!plant.maintenance) emptyFields.push('maintenance level');
@@ -726,7 +777,7 @@ export class PlantImportService {
       
       IMPORTANT RULES:
       1. For flower_color: provide SPECIFIC colors like "yellow", "orange", "red", "pink", "white", "purple", "blue". Never use "varies", "mixed", or "multiple" - list the actual colors instead. If the plant doesn't flower, use null.
-      2. For dimensions: ALWAYS use METRIC units (meters). Example: {"height": "0.6-1.2 m", "spread": "0.9-1.5 m"}. Never use feet or inches. 
+      2. For dimensions: Provide as {"height": "30-90 cm", "spread": "60-90 cm"} using CENTIMETERS (cm). Include both min and max range.
       
       Research thoroughly and return ONLY a JSON object with ALL these exact keys (use appropriate values or null if truly unknown):
       {
@@ -740,7 +791,7 @@ export class PlantImportService {
         "care_level": "low/moderate/high or null",
         "growth_rate": "slow/moderate/fast or null",
         "soil": ["well-drained", "moist", "sandy"] or similar array or null,
-        "dimension": {"height": "0.3-0.9 m", "spread": "0.6-0.9 m"} (always in meters) or null,
+        "dimension": {"height": "30-90 cm", "spread": "60-90 cm"} (always in centimeters with range) or null,
         "flowering_season": "spring/summer/fall/winter or months or null",
         "flower_color": ["yellow", "orange", "red"] (specific colors only, never "varies" or "mixed") or null if no flowers,
         "maintenance": "low/moderate/high or null",
@@ -846,8 +897,29 @@ export class PlantImportService {
         enrichedPlant.soil = validatedData.soil;
         fieldsUpdated++;
       }
-      if (validatedData.dimension && !plant.dimension) {
+      if (validatedData.dimension && (!plant.dimension || (!plant.heightMinCm && !plant.spreadMinCm))) {
+        // Parse dimension strings to numeric values
+        const { parsePlantDimensions } = await import('./dimensionUtils.js');
+        const dimensions = parsePlantDimensions({
+          dimension: validatedData.dimension,
+          height: validatedData.dimension?.height,
+          spread: validatedData.dimension?.spread
+        });
+        
+        // Update both legacy dimension field and new numeric fields
         enrichedPlant.dimension = validatedData.dimension;
+        if (!plant.heightMinCm && dimensions.heightMinCm) {
+          enrichedPlant.heightMinCm = dimensions.heightMinCm;
+          enrichedPlant.heightMaxCm = dimensions.heightMaxCm;
+          enrichedPlant.heightMinInches = dimensions.heightMinInches;
+          enrichedPlant.heightMaxInches = dimensions.heightMaxInches;
+        }
+        if (!plant.spreadMinCm && dimensions.spreadMinCm) {
+          enrichedPlant.spreadMinCm = dimensions.spreadMinCm;
+          enrichedPlant.spreadMaxCm = dimensions.spreadMaxCm;
+          enrichedPlant.spreadMinInches = dimensions.spreadMinInches;
+          enrichedPlant.spreadMaxInches = dimensions.spreadMaxInches;
+        }
         fieldsUpdated++;
       }
       if (validatedData.flowering_season && !plant.flowering_season) {
@@ -897,6 +969,74 @@ export class PlantImportService {
     }
   }
   
+  // Comprehensive validation and enrichment pipeline
+  async runFullValidationPipeline(plant: any): Promise<any> {
+    let enrichedPlant = { ...plant };
+    
+    console.log(`\nRunning full validation pipeline for: ${plant.scientific_name || plant.common_name}`);
+    
+    // Step 1: Parse any existing dimension data
+    const { parsePlantDimensions, validatePlantData } = await import('./dimensionUtils.js');
+    const parsedDimensions = parsePlantDimensions({
+      dimension: plant.dimension,
+      height: plant.height,
+      spread: plant.spread || plant.width,
+      heightMinCm: plant.heightMinCm,
+      heightMaxCm: plant.heightMaxCm,
+      spreadMinCm: plant.spreadMinCm,
+      spreadMaxCm: plant.spreadMaxCm
+    });
+    
+    // Apply parsed dimensions if available
+    if (parsedDimensions.heightMinCm && !enrichedPlant.heightMinCm) {
+      enrichedPlant = { ...enrichedPlant, ...parsedDimensions };
+      console.log(`  ✓ Parsed dimensions from existing data`);
+    }
+    
+    // Step 2: Validate data integrity
+    const validation = validatePlantData(enrichedPlant);
+    if (!validation.isValid) {
+      console.warn(`  ⚠ Data validation warnings:`, validation.warnings);
+    }
+    
+    // Step 3: Fix botanical nomenclature
+    enrichedPlant = this.fixBotanicalNomenclature(enrichedPlant);
+    console.log(`  ✓ Fixed botanical nomenclature`);
+    
+    // Step 4: Enrich with GBIF data
+    if (enrichedPlant.scientific_name) {
+      const gbifData = await this.enrichWithGBIF(enrichedPlant.scientific_name);
+      if (gbifData.family && !enrichedPlant.family) {
+        enrichedPlant.family = gbifData.family;
+        console.log(`  ✓ Added family from GBIF: ${gbifData.family}`);
+      }
+    }
+    
+    // Step 5: Enrich height/spread from Perenual if missing
+    if (!enrichedPlant.heightMinCm || !enrichedPlant.spreadMinCm) {
+      enrichedPlant = await this.enrichHeightSpreadFromPerenual(enrichedPlant);
+    }
+    
+    // Step 6: Validate with Perplexity AI for remaining missing fields
+    enrichedPlant = await this.validateWithPerplexity(enrichedPlant);
+    
+    // Step 7: Final dimension parsing in case Perplexity added dimension data
+    if (!enrichedPlant.heightMinCm && enrichedPlant.dimension) {
+      const finalDimensions = parsePlantDimensions({ dimension: enrichedPlant.dimension });
+      if (finalDimensions.heightMinCm) {
+        enrichedPlant = { ...enrichedPlant, ...finalDimensions };
+        console.log(`  ✓ Parsed dimensions from AI validation`);
+      }
+    }
+    
+    // Step 8: Log final status
+    const hasHeight = enrichedPlant.heightMinCm && enrichedPlant.heightMaxCm;
+    const hasSpread = enrichedPlant.spreadMinCm && enrichedPlant.spreadMaxCm;
+    console.log(`  Final status: Height=${hasHeight ? 'YES' : 'NO'}, Spread=${hasSpread ? 'YES' : 'NO'}`);
+    
+    return enrichedPlant;
+  }
+  
   // Import plants to database
   async importPlants(plantsData: any[]): Promise<{ imported: number; failed: number }> {
     let imported = 0;
@@ -904,19 +1044,34 @@ export class PlantImportService {
     
     for (const plantData of plantsData) {
       try {
+        // Run full validation pipeline before importing
+        const validatedPlantData = await this.runFullValidationPipeline(plantData);
+        
         // Check if plant already exists
         const existing = await db.select()
           .from(plants)
-          .where(eq(plants.scientificName, plantData.scientific_name))
+          .where(eq(plants.scientificName, validatedPlantData.scientific_name))
           .limit(1);
         
         if (existing.length > 0) {
-          console.log(`Plant already exists: ${plantData.scientific_name}`);
+          console.log(`Plant already exists: ${validatedPlantData.scientific_name}`);
           continue;
         }
         
         // Generate a unique ID
         const plantId = `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Parse dimensions if available
+        const { parsePlantDimensions } = await import('./dimensionUtils.js');
+        const dimensions = parsePlantDimensions({
+          dimension: plantData.dimension,
+          height: plantData.height,
+          spread: plantData.spread || plantData.width,
+          heightMinCm: plantData.heightMinCm,
+          heightMaxCm: plantData.heightMaxCm,
+          spreadMinCm: plantData.spreadMinCm,
+          spreadMaxCm: plantData.spreadMaxCm
+        });
         
         // Map the data to our database schema - using correct field names from schema
         const plantRecord = {
@@ -930,7 +1085,16 @@ export class PlantImportService {
           
           // Plant characteristics - use correct field names
           type: plantData.cycle || plantData.type || 'perennial', // Use 'type' not 'plantType'
-          dimension: plantData.dimension || null, // Keep as JSON
+          dimension: plantData.dimension || null, // Keep as JSON for backward compatibility
+          // Add numeric dimension fields
+          heightMinCm: dimensions.heightMinCm,
+          heightMaxCm: dimensions.heightMaxCm,
+          spreadMinCm: dimensions.spreadMinCm,
+          spreadMaxCm: dimensions.spreadMaxCm,
+          heightMinInches: dimensions.heightMinInches,
+          heightMaxInches: dimensions.heightMaxInches,
+          spreadMinInches: dimensions.spreadMinInches,
+          spreadMaxInches: dimensions.spreadMaxInches,
           cycle: plantData.cycle || null,
           foliage: plantData.foliage || null,
           
