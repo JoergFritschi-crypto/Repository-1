@@ -33,6 +33,7 @@ export default function Navigation() {
     { href: "/plant-library", label: "Plant Library" },
     { href: "/plant-doctor", label: "Plant Doctor" },
     { href: "/premium", label: "Premium" },
+    { href: "/icon-gallery", label: "Icon Gallery" },
   ];
 
   return (

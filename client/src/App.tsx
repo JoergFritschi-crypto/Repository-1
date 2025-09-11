@@ -17,6 +17,7 @@ import Admin from "@/pages/admin";
 import AdminTestVisualization from "@/pages/admin-test-visualization";
 import AdminSpriteTest from "@/pages/admin-sprite-test";
 import InpaintingComparison from "@/pages/inpainting-comparison";
+import IconGallery from "@/pages/icon-gallery";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -41,6 +42,7 @@ function Router() {
           <Route path="/admin/test-visualization" component={AdminTestVisualization} />
           <Route path="/admin/sprite-test" component={AdminSpriteTest} />
           <Route path="/admin/inpainting-comparison" component={InpaintingComparison} />
+          <Route path="/icon-gallery" component={IconGallery} />
         </>
       )}
       <Route component={NotFound} />
