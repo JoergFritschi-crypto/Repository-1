@@ -108,6 +108,10 @@ export class FireCrawlAPI {
         // Deduplicate URLs again in case both methods found some
         productUrls = Array.from(new Set(productUrls));
         
+        // Define constants for concurrent processing upfront
+        const CONCURRENT_LIMIT = 5; // Firecrawl allows 5 concurrent browsers
+        const batchSize = 25; // Larger batches since we're processing concurrently (5 concurrent x 5 chunks = 25)
+        
         console.log(`===== PRODUCT DISCOVERY COMPLETE =====`);
         console.log(`Total unique product URLs found: ${productUrls.length}`);
         console.log(`Expected: ~1010 products`);
@@ -160,14 +164,14 @@ export class FireCrawlAPI {
           await storage.updateScrapingProgress(progress.id, {
             status: 'in_progress',
             productUrls: productUrls,
-            totalBatches: Math.ceil(productUrls.length / 10)
+            totalBatches: Math.ceil(productUrls.length / batchSize)
           });
         } else {
           // Create new progress tracking
           progress = await storage.createScrapingProgress({
             url,
             status: 'in_progress',
-            totalBatches: Math.ceil(productUrls.length / 10),
+            totalBatches: Math.ceil(productUrls.length / batchSize),
             completedBatches: 0,
             totalPlants: 0,
             savedPlants: 0,
@@ -182,8 +186,6 @@ export class FireCrawlAPI {
         const allPlants: any[] = [];
         // OPTIMIZATION: Using 5 concurrent browsers (Firecrawl's limit) for 5x faster scraping
         // This reduces scraping time from ~1010 sequential requests to ~202 concurrent chunks
-        const CONCURRENT_LIMIT = 5; // Firecrawl allows 5 concurrent browsers
-        const batchSize = 25; // Larger batches since we're processing concurrently (5 concurrent x 5 chunks = 25)
         const batches = Math.ceil(productUrls.length / batchSize);
         let successfulBatches = 0;
         let failedBatches = 0;
@@ -223,7 +225,8 @@ export class FireCrawlAPI {
                   const externalId = `firecrawl-${productUrl}`;
                   const existingPlant = await storage.getPlantByExternalId(externalId);
                   
-                  if (existingPlant) {
+                  // Skip existing plants only if force flag is not set
+                  if (existingPlant && !force) {
                     console.log(`Skipping already scraped URL: ${productUrl}`);
                     skippedUrls++;
                     batchSkipped++;
