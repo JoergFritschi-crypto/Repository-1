@@ -358,7 +358,7 @@ export default function GardenSketch({
             cy={centerY}
             r={outerRadius}
             fill="none"
-            stroke="#004025"
+            stroke="hsl(var(--primary))"
             strokeWidth="2"
             opacity="0.3"
           />
@@ -377,7 +377,7 @@ export default function GardenSketch({
                   cx={x}
                   cy={y}
                   r={isMainDirection ? 12 : 8}
-                  fill={dir === 'N' ? '#dc2626' : dir === 'S' ? '#fbbf24' : '#004025'}
+                  fill={dir === 'N' ? 'hsl(var(--destructive))' : dir === 'S' ? 'hsl(var(--canary))' : 'hsl(var(--primary))'}
                   onMouseDown={(e) => handleMouseDown(e, 'cardinal')}
                   className="cursor-grab active:cursor-grabbing"
                 />
@@ -388,7 +388,7 @@ export default function GardenSketch({
                       cx={x}
                       cy={y}
                       r={4}
-                      fill="#fff"
+                      fill="hsl(var(--card))"
                     />
                     {/* Sun rays */}
                     {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
@@ -404,7 +404,7 @@ export default function GardenSketch({
                           y1={y1}
                           x2={x2}
                           y2={y2}
-                          stroke="#fff"
+                          stroke="hsl(var(--card))"
                           strokeWidth="1.5"
                         />
                       );
@@ -433,7 +433,7 @@ export default function GardenSketch({
             d={`M ${centerX - 30} ${centerY - outerRadius} 
                 Q ${centerX} ${centerY - outerRadius - 10} ${centerX + 30} ${centerY - outerRadius}`}
             fill="none"
-            stroke="#004025"
+            stroke="hsl(var(--primary))"
             strokeWidth="3"
             strokeDasharray="5,5"
             opacity="0.5"
@@ -449,7 +449,7 @@ export default function GardenSketch({
             cy={centerY}
             r={innerRadius}
             fill="none"
-            stroke="#1e88e5"
+            stroke="hsl(var(--accent))"
             strokeWidth="3"
             opacity="0.6"
           />
@@ -460,7 +460,7 @@ export default function GardenSketch({
               cx={centerX}
               cy={centerY - innerRadius}
               r={10}
-              fill="#0066cc"
+              fill="hsl(var(--primary))"
               onMouseDown={(e) => handleMouseDown(e, 'viewer')}
               className="cursor-grab active:cursor-grabbing"
             />
@@ -490,7 +490,7 @@ export default function GardenSketch({
                 L ${centerX + 3} ${centerY - innerRadius + 30}
                 L ${centerX + 3} ${centerY - innerRadius + 45}
                 L ${centerX + 8} ${centerY - innerRadius + 45} z`}
-            fill="#1e88e5"
+            fill="hsl(var(--accent))"
             opacity="0.9"
             pointerEvents="none"
           />
@@ -499,9 +499,9 @@ export default function GardenSketch({
         {/* Garden gradient */}
         <defs>
           <radialGradient id="gardenGradient" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#81c784" />
-            <stop offset="50%" stopColor="#66bb6a" />
-            <stop offset="100%" stopColor="#4caf50" />
+            <stop offset="0%" stopColor="hsl(var(--dark-pastel-green))" />
+            <stop offset="50%" stopColor="hsl(var(--dark-spring-green))" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" />
           </radialGradient>
         </defs>
         

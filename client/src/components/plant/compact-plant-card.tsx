@@ -96,10 +96,10 @@ function getHardinessCategory(hardiness: string | undefined): string | null {
 // Get badge color for hardiness category
 function getHardinessBadgeColor(category: string | null): string {
   switch (category) {
-    case "Very Hardy": return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
-    case "Hardy": return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
-    case "Half Hardy": return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
-    case "Tender": return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
+    case "Very Hardy": return "bg-accent/20 text-accent-foreground";
+    case "Hardy": return "bg-primary/20 text-primary";
+    case "Half Hardy": return "bg-canary/20 text-british-racing-green";
+    case "Tender": return "bg-destructive/20 text-destructive";
     default: return "bg-muted text-muted-foreground";
   }
 }
@@ -108,17 +108,17 @@ function getHardinessBadgeColor(category: string | null): string {
 function getFlowerColorClass(color: string): string {
   const colorLower = color?.toLowerCase() || '';
   
-  if (colorLower.includes('purple') || colorLower.includes('violet')) return 'bg-purple-500';
-  if (colorLower.includes('blue')) return 'bg-blue-500';
-  if (colorLower.includes('pink')) return 'bg-pink-500';
-  if (colorLower.includes('red')) return 'bg-red-500';
-  if (colorLower.includes('orange')) return 'bg-orange-500';
-  if (colorLower.includes('yellow') || colorLower.includes('gold')) return 'bg-yellow-500';
-  if (colorLower.includes('white')) return 'bg-white';
-  if (colorLower.includes('lavender')) return 'bg-purple-300';
-  if (colorLower.includes('green')) return 'bg-green-500';
+  if (colorLower.includes('purple') || colorLower.includes('violet')) return 'bg-primary';
+  if (colorLower.includes('blue')) return 'bg-accent';
+  if (colorLower.includes('pink')) return 'bg-secondary';
+  if (colorLower.includes('red')) return 'bg-destructive';
+  if (colorLower.includes('orange')) return 'bg-canary';
+  if (colorLower.includes('yellow') || colorLower.includes('gold')) return 'bg-canary';
+  if (colorLower.includes('white')) return 'bg-card';
+  if (colorLower.includes('lavender')) return 'bg-secondary';
+  if (colorLower.includes('green')) return 'bg-primary';
   
-  return 'bg-gray-400';
+  return 'bg-muted';
 }
 
 // Get plant size category based on maximum height

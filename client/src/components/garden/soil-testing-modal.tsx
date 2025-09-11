@@ -112,25 +112,25 @@ export default function SoilTestingModal({ open, onClose, location }: SoilTestin
 
   const getProviderTypeBadge = (type: string) => {
     const colors = {
-      commercial: "bg-blue-100 text-blue-800",
-      university: "bg-green-100 text-green-800",
-      government: "bg-purple-100 text-purple-800",
-      cooperative: "bg-orange-100 text-orange-800"
+      commercial: "bg-accent/20 text-accent-foreground",
+      university: "bg-primary/20 text-primary",
+      government: "bg-secondary/20 text-secondary-foreground",
+      cooperative: "bg-canary/20 text-british-racing-green"
     };
-    return colors[type as keyof typeof colors] || "bg-gray-100 text-gray-800";
+    return colors[type as keyof typeof colors] || "bg-muted text-muted-foreground";
   };
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden bg-white border-2 border-[#004025] shadow-xl">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden bg-card border-2 border-primary shadow-xl">
         <DialogHeader>
           <div className="flex justify-between items-start">
             <div>
-              <DialogTitle className="flex items-center gap-2 text-[#004025]">
-                <FlaskConical className="w-5 h-5 text-[#004025]" />
+              <DialogTitle className="flex items-center gap-2 text-primary">
+                <FlaskConical className="w-5 h-5 text-primary" />
                 Professional Soil Testing Services
               </DialogTitle>
-              <DialogDescription className="text-gray-600 mt-1">
+              <DialogDescription className="text-muted-foreground mt-1">
                 Find local soil testing laboratories and learn how to get your soil professionally analyzed in <strong>{location || 'your area'}</strong>
               </DialogDescription>
             </div>

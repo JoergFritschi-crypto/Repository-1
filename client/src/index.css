@@ -3,58 +3,68 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(60, 20%, 98%);
-  --foreground: hsl(155, 100%, 8%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(155, 100%, 8%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(155, 100%, 8%);
-  --primary: hsl(155, 100%, 8%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(145, 56%, 26%);
-  --secondary-foreground: hsl(0, 0%, 100%);
-  --muted: hsl(145, 20%, 94%);
-  --muted-foreground: hsl(145, 30%, 35%);
-  --accent: hsl(51, 100%, 57%);
-  --accent-foreground: hsl(155, 100%, 8%);
-  --destructive: hsl(0, 65%, 51%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --border: hsl(155, 100%, 8%);
-  --input: hsl(145, 20%, 95%);
-  --ring: hsl(45, 100%, 50%);
-  --canary: hsl(51, 100%, 57%);
-  --gold: hsl(45, 100%, 50%);
-  --british-racing-green: hsl(155, 100%, 8%);
-  --dark-spring-green: hsl(145, 56%, 26%);
-  --dark-pastel-green: hsl(131, 69%, 41%);
+  --background: 60 20% 98%;
+  --foreground: 151 100% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 151 100% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 151 100% 13%;
+  --primary: 151 100% 13%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 138 75% 26%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 145 20% 94%;
+  --muted-foreground: 138 75% 26%;
+  --accent: 51 100% 57%;
+  --accent-foreground: 151 100% 13%;
+  --destructive: 0 65% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 151 100% 13%;
+  --input: 145 20% 95%;
+  --ring: 45 100% 50%;
+  --canary: 51 100% 57%;
+  --gold: 45 100% 50%;
+  --british-racing-green: 151 100% 13%;
+  --dark-spring-green: 138 75% 26%;
+  --dark-pastel-green: 131 69% 41%;
+  --shadow: 151 100% 13%;
+  --overlay: 151 100% 13%;
+  --print-text: 151 100% 13%;
+  --print-background: 0 0% 100%;
+  --print-border: 151 100% 13%;
   --radius: 8px;
   --font-sans: 'Inter', sans-serif;
   --font-serif: 'Playfair Display', serif;
 }
 
 .dark {
-  --background: hsl(155, 100%, 8%);
-  --foreground: hsl(47, 20%, 95%);
-  --card: hsl(155, 50%, 12%);
-  --card-foreground: hsl(47, 20%, 95%);
-  --popover: hsl(155, 100%, 8%);
-  --popover-foreground: hsl(47, 20%, 95%);
-  --primary: hsl(131, 69%, 41%);
-  --primary-foreground: hsl(155, 100%, 8%);
-  --secondary: hsl(145, 56%, 26%);
-  --secondary-foreground: hsl(47, 20%, 95%);
-  --muted: hsl(155, 30%, 15%);
-  --muted-foreground: hsl(47, 20%, 65%);
-  --accent: hsl(51, 100%, 57%);
-  --accent-foreground: hsl(155, 100%, 8%);
-  --destructive: hsl(0, 62%, 52%);
-  --destructive-foreground: hsl(47, 20%, 95%);
-  --border: hsl(155, 100%, 12%);
-  --input: hsl(155, 30%, 20%);
-  --ring: hsl(45, 100%, 50%);
-  --british-racing-green: hsl(155, 100%, 8%);
-  --dark-spring-green: hsl(145, 56%, 26%);
-  --dark-pastel-green: hsl(131, 69%, 41%);
+  --background: 151 100% 13%;
+  --foreground: 47 20% 95%;
+  --card: 138 75% 16%;
+  --card-foreground: 47 20% 95%;
+  --popover: 151 100% 13%;
+  --popover-foreground: 47 20% 95%;
+  --primary: 131 69% 41%;
+  --primary-foreground: 47 20% 95%;
+  --secondary: 138 75% 26%;
+  --secondary-foreground: 47 20% 95%;
+  --muted: 138 75% 20%;
+  --muted-foreground: 47 20% 65%;
+  --accent: 51 100% 57%;
+  --accent-foreground: 151 100% 13%;
+  --destructive: 0 62% 52%;
+  --destructive-foreground: 47 20% 95%;
+  --border: 138 75% 20%;
+  --input: 138 75% 20%;
+  --ring: 45 100% 50%;
+  --british-racing-green: 151 100% 13%;
+  --dark-spring-green: 138 75% 26%;
+  --dark-pastel-green: 131 69% 41%;
+  --shadow: 47 20% 95%;
+  --overlay: 47 20% 95%;
+  --print-text: 151 100% 13%;
+  --print-background: 138 75% 16%;
+  --print-border: 138 75% 26%;
 }
 
 @layer base {
@@ -66,7 +76,7 @@
     @apply font-sans antialiased bg-background text-foreground text-sm;
   }
   
-  /* Print styles for plant cards */
+  /* Print styles for plant cards - using semantic tokens */
   @media print {
     body {
       margin: 0;
@@ -81,7 +91,7 @@
     #plant-detail-card {
       max-width: 100%;
       padding: 20px;
-      border: 1px solid #e5e5e5;
+      border: 1px solid hsl(var(--print-border));
     }
     
     #plant-detail-card img {
@@ -94,19 +104,19 @@
       page-break-inside: avoid;
     }
     
-    /* Ensure text is black for printing */
+    /* Ensure optimal print contrast */
     #plant-detail-card * {
-      color: black !important;
-      background: white !important;
+      color: hsl(var(--print-text)) !important;
+      background: hsl(var(--print-background)) !important;
     }
     
-    /* Preserve borders and badges */
+    /* Preserve borders and badges with semantic tokens */
     #plant-detail-card .border {
-      border-color: #d1d5db !important;
+      border-color: hsl(var(--print-border)) !important;
     }
     
     #plant-detail-card .badge {
-      border: 1px solid #d1d5db !important;
+      border: 1px solid hsl(var(--print-border)) !important;
       padding: 2px 8px !important;
     }
   }
@@ -161,7 +171,7 @@
   /* Default card borders in British racing green */
   .card {
     border-width: 2px;
-    border-color: #004025;
+    border-color: hsl(var(--british-racing-green));
   }
   
   /* Input borders */
@@ -183,35 +193,35 @@
   }
 
   .text-canary {
-    color: var(--canary);
+    color: hsl(var(--canary));
   }
 
   .text-gold {
-    color: var(--gold);
+    color: hsl(var(--gold));
   }
 
   .bg-canary {
-    background-color: var(--canary);
+    background-color: hsl(var(--canary));
   }
 
   .bg-gold {
-    background-color: var(--gold);
+    background-color: hsl(var(--gold));
   }
 
   .border-canary {
-    border-color: var(--canary);
+    border-color: hsl(var(--canary));
   }
 
   .border-gold {
-    border-color: var(--gold);
+    border-color: hsl(var(--gold));
   }
 }
 
 @layer components {
   .garden-pattern {
     background-image: 
-      radial-gradient(circle at 25% 25%, hsl(142, 70%, 97%) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, hsl(47, 100%, 96%) 0%, transparent 50%);
+      radial-gradient(circle at 25% 25%, hsl(var(--muted)) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(var(--canary) / 0.1) 0%, transparent 50%);
     background-size: 100px 100px;
     background-position: 0 0, 50px 50px;
   }
@@ -223,37 +233,37 @@
   
   button:hover svg {
     transform: scale(1.1);
-    filter: drop-shadow(0 2px 4px rgba(255, 213, 0, 0.4));
+    filter: drop-shadow(0 2px 4px hsl(var(--gold) / 0.4));
   }
   
   /* Logo hover animation */
   [data-testid="link-home"]:hover svg {
     transform: rotate(5deg) scale(1.1);
-    filter: drop-shadow(0 4px 8px rgba(255, 213, 0, 0.6));
+    filter: drop-shadow(0 4px 8px hsl(var(--gold) / 0.6));
   }
   
   [data-testid="link-home"]:hover span {
-    color: hsl(51, 100%, 57%) !important;
-    text-shadow: 0 2px 8px rgba(255, 213, 0, 0.3);
+    color: hsl(var(--canary)) !important;
+    text-shadow: 0 2px 8px hsl(var(--gold) / 0.3);
   }
   
   /* Input focus states with color */
   input:focus,
   textarea:focus,
   select:focus {
-    border-color: hsl(51, 100%, 57%) !important;
-    outline: 2px solid hsl(51, 100%, 57%, 0.2) !important;
+    border-color: hsl(var(--canary)) !important;
+    outline: 2px solid hsl(var(--canary) / 0.2) !important;
     outline-offset: 2px;
   }
   
   /* Badge hover effects */
   .badge:hover {
-    background-color: hsl(51, 100%, 57%) !important;
-    color: hsl(155, 100%, 8%) !important;
+    background-color: hsl(var(--canary)) !important;
+    color: hsl(var(--british-racing-green)) !important;
     transition: all 0.2s ease;
   }
   .garden-canvas {
-    background-image: radial-gradient(circle at 25px 25px, rgba(16, 120, 56, 0.1) 2px, transparent 0);
+    background-image: radial-gradient(circle at 25px 25px, hsl(var(--dark-spring-green) / 0.1) 2px, transparent 0);
     background-size: 50px 50px;
   }
 
@@ -263,12 +273,12 @@
 
   .plant-card-hover:hover {
     transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 64, 37, 0.15), 0 10px 10px -5px rgba(0, 64, 37, 0.08);
-    border-color: hsl(45, 100%, 50%);
+    box-shadow: 0 20px 25px -5px hsl(var(--british-racing-green) / 0.15), 0 10px 10px -5px hsl(var(--british-racing-green) / 0.08);
+    border-color: hsl(var(--gold));
   }
 
   .hero-gradient {
-    background: linear-gradient(135deg, hsl(155, 100%, 8%) 0%, hsl(145, 56%, 26%) 100%);
+    background: linear-gradient(135deg, hsl(var(--british-racing-green)) 0%, hsl(var(--dark-spring-green)) 100%);
   }
 
   .step-indicator {
@@ -284,17 +294,17 @@
   }
 
   .gold-accent {
-    background: linear-gradient(135deg, hsl(51, 100%, 57%) 0%, hsl(45, 100%, 50%) 100%);
+    background: linear-gradient(135deg, hsl(var(--canary)) 0%, hsl(var(--gold)) 100%);
   }
 
   .green-gradient {
-    background: linear-gradient(135deg, hsl(155, 100%, 8%) 0%, hsl(131, 69%, 41%) 100%);
+    background: linear-gradient(135deg, hsl(var(--british-racing-green)) 0%, hsl(var(--dark-pastel-green)) 100%);
   }
 
   .card-border-gold {
     border: 2px solid transparent;
-    background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, hsl(45, 100%, 50%), hsl(51, 100%, 57%)) border-box;
+    background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+                linear-gradient(135deg, hsl(var(--gold)), hsl(var(--canary))) border-box;
   }
 
   .step-indicator.pending {
@@ -327,7 +337,7 @@
 
   /* Sophisticated Garden Card Frames */
   .garden-card-frame {
-    border: 2px solid hsl(145, 20%, 88%);
+    border: 2px solid hsl(var(--muted));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
@@ -340,14 +350,14 @@
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(135deg, hsl(45, 100%, 50%), hsl(51, 100%, 57%));
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--canary)));
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: -1;
   }
 
   .garden-card-frame:hover {
-    border-color: hsl(45, 100%, 50%);
+    border-color: hsl(var(--gold));
     transform: translateY(-2px);
   }
 
@@ -363,7 +373,7 @@
 
   button:not(:disabled):hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 64, 37, 0.15);
+    box-shadow: 0 4px 12px hsl(var(--british-racing-green) / 0.15);
   }
 
   button:active {
@@ -372,33 +382,33 @@
   
   /* Primary button enhanced hover with glow */
   button[class*="bg-primary"]:not(:disabled):hover {
-    background: linear-gradient(135deg, hsl(131, 69%, 41%) 0%, hsl(145, 56%, 26%) 100%) !important;
+    background: linear-gradient(135deg, hsl(var(--dark-pastel-green)) 0%, hsl(var(--dark-spring-green)) 100%) !important;
     box-shadow: 
-      0 6px 20px rgba(0, 64, 37, 0.25),
-      0 0 20px rgba(255, 213, 0, 0.3);
-    border: 1px solid hsl(51, 100%, 57%, 0.5);
+      0 6px 20px hsl(var(--british-racing-green) / 0.25),
+      0 0 20px hsl(var(--gold) / 0.3);
+    border: 1px solid hsl(var(--canary) / 0.5);
   }
   
   /* Secondary button enhanced hover */
   button[class*="secondary"]:not(:disabled):hover {
-    background-color: hsl(51, 100%, 57%) !important;
-    color: hsl(155, 100%, 8%) !important;
-    border-color: hsl(45, 100%, 50%) !important;
-    box-shadow: 0 4px 16px rgba(255, 213, 0, 0.3);
+    background-color: hsl(var(--canary)) !important;
+    color: hsl(var(--british-racing-green)) !important;
+    border-color: hsl(var(--gold)) !important;
+    box-shadow: 0 4px 16px hsl(var(--gold) / 0.3);
   }
   
   /* Outline button enhanced hover */
   button[class*="outline"]:not(:disabled):hover {
-    background-color: hsl(51, 100%, 57%) !important;
-    color: hsl(155, 100%, 8%) !important;
-    border-color: hsl(45, 100%, 50%) !important;
-    box-shadow: 0 4px 12px rgba(255, 213, 0, 0.25);
+    background-color: hsl(var(--canary)) !important;
+    color: hsl(var(--british-racing-green)) !important;
+    border-color: hsl(var(--gold)) !important;
+    box-shadow: 0 4px 12px hsl(var(--gold) / 0.25);
   }
   
   /* Ghost button enhanced hover */
   button[class*="ghost"]:not(:disabled):hover {
-    background-color: hsl(51, 100%, 57%, 0.1) !important;
-    color: hsl(155, 100%, 8%) !important;
+    background-color: hsl(var(--canary) / 0.1) !important;
+    color: hsl(var(--british-racing-green)) !important;
   }
 
   button::after {
@@ -406,7 +416,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle, hsl(45, 100%, 50%) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--gold)) 0%, transparent 70%);
     opacity: 0;
     transform: scale(0);
     transition: transform 0.5s, opacity 0.5s;
@@ -421,38 +431,38 @@
 
   /* Enhanced Plant Card Hover */
   .plant-card-frame {
-    border: 2px solid hsl(145, 20%, 88%);
-    background: linear-gradient(to bottom right, white, hsl(60, 20%, 99%));
+    border: 2px solid hsl(var(--muted));
+    background: linear-gradient(to bottom right, hsl(var(--card)), hsl(var(--background)));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .plant-card-frame:hover {
-    border-color: hsl(45, 100%, 50%);
+    border-color: hsl(var(--gold));
     box-shadow: 
-      0 10px 30px -10px rgba(0, 64, 37, 0.2),
-      0 0 0 1px hsl(45, 100%, 50%),
-      inset 0 0 30px rgba(255, 213, 0, 0.05);
+      0 10px 30px -10px hsl(var(--british-racing-green) / 0.2),
+      0 0 0 1px hsl(var(--gold)),
+      inset 0 0 30px hsl(var(--gold) / 0.05);
     transform: translateY(-4px);
   }
 
   /* Gold Button Variant */
   .btn-gold {
-    background: linear-gradient(135deg, hsl(51, 100%, 57%) 0%, hsl(45, 100%, 50%) 100%);
-    color: hsl(155, 100%, 8%);
+    background: linear-gradient(135deg, hsl(var(--canary)) 0%, hsl(var(--gold)) 100%);
+    color: hsl(var(--british-racing-green));
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(255, 213, 0, 0.3);
+    box-shadow: 0 4px 12px hsl(var(--gold) / 0.3);
     transition: all 0.3s ease;
   }
 
   .btn-gold:hover {
-    background: linear-gradient(135deg, hsl(45, 100%, 50%) 0%, hsl(51, 100%, 60%) 100%);
-    box-shadow: 0 8px 25px rgba(255, 213, 0, 0.5);
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--canary)) 100%);
+    box-shadow: 0 8px 25px hsl(var(--gold) / 0.5);
     transform: translateY(-2px) scale(1.02);
   }
   
   /* Navigation link hover effects */
   a:not(.btn-gold):hover {
-    color: hsl(51, 100%, 57%);
+    color: hsl(var(--canary));
     transition: color 0.2s ease;
   }
   
@@ -466,19 +476,19 @@
   [data-state="open"][data-side],
   .SelectContent,
   div[data-radix-collection-item] {
-    background-color: white !important;
+    background-color: hsl(var(--card)) !important;
     backdrop-filter: none !important;
     opacity: 1 !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
-    border: 2px solid hsl(155, 100%, 8%) !important;
+    box-shadow: 0 10px 40px hsl(var(--shadow) / 0.2) !important;
+    border: 2px solid hsl(var(--british-racing-green)) !important;
   }
   
   .dark [role="listbox"],
   .dark [data-state="open"][data-side],
   .dark .SelectContent,
   .dark div[data-radix-collection-item] {
-    background-color: hsl(155, 50%, 12%) !important;
-    border: 2px solid hsl(145, 56%, 26%) !important;
+    background-color: hsl(var(--card)) !important;
+    border: 2px solid hsl(var(--dark-spring-green)) !important;
   }
   
   /* Make toast notifications properly visible */
@@ -487,11 +497,11 @@
   .toast,
   div[data-state="open"][data-swipe="end"],
   div[data-state="open"][data-swipe="move"] {
-    background-color: white !important;
+    background-color: hsl(var(--card)) !important;
     opacity: 1 !important;
     backdrop-filter: none !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
-    border: 2px solid hsl(155, 100%, 8%) !important;
+    box-shadow: 0 10px 40px hsl(var(--shadow) / 0.3) !important;
+    border: 2px solid hsl(var(--british-racing-green)) !important;
   }
   
   .dark [data-sonner-toaster],
@@ -499,58 +509,58 @@
   .dark .toast,
   .dark div[data-state="open"][data-swipe="end"],
   .dark div[data-state="open"][data-swipe="move"] {
-    background-color: hsl(155, 50%, 12%) !important;
-    border: 2px solid hsl(145, 56%, 26%) !important;
+    background-color: hsl(var(--card)) !important;
+    border: 2px solid hsl(var(--dark-spring-green)) !important;
   }
   
   /* Ensure select trigger buttons are visible */
   button[role="combobox"],
   button[aria-haspopup="listbox"] {
-    background-color: white !important;
+    background-color: hsl(var(--card)) !important;
     opacity: 1 !important;
   }
   
   .dark button[role="combobox"],
   .dark button[aria-haspopup="listbox"] {
-    background-color: hsl(155, 50%, 12%) !important;
+    background-color: hsl(var(--card)) !important;
   }
   
   /* Fix hardiness zone tabs visibility - make selected tab clearly visible */
   button[role="tab"] {
-    background-color: hsl(145, 20%, 94%) !important;
-    color: hsl(155, 100%, 8%) !important;
-    border: 1px solid hsl(145, 20%, 88%) !important;
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--british-racing-green)) !important;
+    border: 1px solid hsl(var(--border)) !important;
     transition: all 0.2s ease;
   }
   
   button[role="tab"][data-state="active"] {
-    background-color: hsl(51, 100%, 57%) !important;
-    color: hsl(155, 100%, 8%) !important;
-    border: 2px solid hsl(45, 100%, 50%) !important;
+    background-color: hsl(var(--canary)) !important;
+    color: hsl(var(--british-racing-green)) !important;
+    border: 2px solid hsl(var(--gold)) !important;
     font-weight: 600 !important;
-    box-shadow: 0 2px 8px rgba(255, 213, 0, 0.3) !important;
+    box-shadow: 0 2px 8px hsl(var(--gold) / 0.3) !important;
   }
   
   button[role="tab"]:hover:not([data-state="active"]) {
-    background-color: hsl(145, 20%, 88%) !important;
-    border-color: hsl(45, 100%, 50%) !important;
+    background-color: hsl(var(--muted-foreground) / 0.1) !important;
+    border-color: hsl(var(--gold)) !important;
   }
   
   .dark button[role="tab"] {
-    background-color: hsl(155, 30%, 15%) !important;
-    color: hsl(47, 20%, 95%) !important;
-    border: 1px solid hsl(155, 100%, 12%) !important;
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
   }
   
   .dark button[role="tab"][data-state="active"] {
-    background-color: hsl(51, 100%, 57%) !important;
-    color: hsl(155, 100%, 8%) !important;
-    border: 2px solid hsl(45, 100%, 50%) !important;
+    background-color: hsl(var(--canary)) !important;
+    color: hsl(var(--british-racing-green)) !important;
+    border: 2px solid hsl(var(--gold)) !important;
   }
   
   .dark button[role="tab"]:hover:not([data-state="active"]) {
-    background-color: hsl(155, 30%, 20%) !important;
-    border-color: hsl(45, 100%, 50%) !important;
+    background-color: hsl(var(--muted-foreground) / 0.1) !important;
+    border-color: hsl(var(--gold)) !important;
   }
   
   /* Photorealistic flower band - Spring yellow theme */
@@ -576,9 +586,9 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.15) 0%, 
-      rgba(0, 0, 0, 0.2) 50%, 
-      rgba(0, 0, 0, 0.15) 100%);
+      hsl(var(--overlay) / 0.15) 0%, 
+      hsl(var(--overlay) / 0.2) 50%, 
+      hsl(var(--overlay) / 0.15) 100%);
     z-index: 1;
     pointer-events: none;
   }
@@ -586,8 +596,8 @@
   .flower-band > * {
     position: relative;
     z-index: 2;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    color: hsl(var(--card));
+    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
     font-weight: 600;
   }
   
@@ -614,9 +624,9 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.15) 0%, 
-      rgba(0, 0, 0, 0.2) 50%, 
-      rgba(0, 0, 0, 0.15) 100%);
+      hsl(var(--overlay) / 0.15) 0%, 
+      hsl(var(--overlay) / 0.2) 50%, 
+      hsl(var(--overlay) / 0.15) 100%);
     z-index: 1;
     pointer-events: none;
   }
@@ -624,8 +634,8 @@
   .flower-band-studio > * {
     position: relative;
     z-index: 2;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    color: hsl(var(--card));
+    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
     font-weight: 600;
   }
   
@@ -652,9 +662,9 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.15) 0%, 
-      rgba(0, 0, 0, 0.2) 50%, 
-      rgba(0, 0, 0, 0.15) 100%);
+      hsl(var(--overlay) / 0.15) 0%, 
+      hsl(var(--overlay) / 0.2) 50%, 
+      hsl(var(--overlay) / 0.15) 100%);
     z-index: 1;
     pointer-events: none;
   }
@@ -662,8 +672,8 @@
   .flower-band-green > * {
     position: relative;
     z-index: 2;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    color: hsl(var(--card));
+    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
     font-weight: 600;
   }
   
@@ -690,9 +700,9 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.15) 0%, 
-      rgba(0, 0, 0, 0.2) 50%, 
-      rgba(0, 0, 0, 0.15) 100%);
+      hsl(var(--overlay) / 0.15) 0%, 
+      hsl(var(--overlay) / 0.2) 50%, 
+      hsl(var(--overlay) / 0.15) 100%);
     z-index: 1;
     pointer-events: none;
   }
@@ -700,8 +710,8 @@
   .flower-band-purple > * {
     position: relative;
     z-index: 2;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    color: hsl(var(--card));
+    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
     font-weight: 600;
   }
   
@@ -728,9 +738,9 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-      rgba(0, 0, 0, 0.15) 0%, 
-      rgba(0, 0, 0, 0.2) 50%, 
-      rgba(0, 0, 0, 0.15) 100%);
+      hsl(var(--overlay) / 0.15) 0%, 
+      hsl(var(--overlay) / 0.2) 50%, 
+      hsl(var(--overlay) / 0.15) 100%);
     z-index: 1;
     pointer-events: none;
   }
@@ -738,8 +748,8 @@
   .flower-band-sunset > * {
     position: relative;
     z-index: 2;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    color: hsl(var(--card));
+    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
     font-weight: 600;
   }
   
@@ -767,18 +777,18 @@
   }
   
   .card:hover {
-    border-color: hsl(51, 100%, 57%, 0.5);
+    border-color: hsl(var(--canary) / 0.5);
     box-shadow: 
-      0 10px 40px rgba(255, 213, 0, 0.15),
-      0 0 0 1px hsl(51, 100%, 57%, 0.2);
+      0 10px 40px hsl(var(--gold) / 0.15),
+      0 0 0 1px hsl(var(--canary) / 0.2);
     transform: translateY(-2px) rotate(-0.5deg);
   }
   
   /* Quick action cards special hover */
   [data-testid*="quick-actions"] .card:hover {
     background: linear-gradient(135deg, 
-      hsl(60, 20%, 98%) 0%, 
-      hsl(51, 100%, 97%) 100%);
+      hsl(var(--background)) 0%, 
+      hsl(var(--canary) / 0.1) 100%);
   }
   
   /* Interactive element hover */
@@ -791,13 +801,13 @@
   
   /* Navigation menu items enhanced hover */
   nav a:hover {
-    color: hsl(51, 100%, 57%) !important;
-    text-shadow: 0 0 8px rgba(255, 213, 0, 0.4);
+    color: hsl(var(--canary)) !important;
+    text-shadow: 0 0 8px hsl(var(--gold) / 0.4);
     transition: all 0.2s ease;
   }
   
   nav a.active {
-    color: hsl(45, 100%, 50%) !important;
+    color: hsl(var(--gold)) !important;
     font-weight: 600;
   }
 }
@@ -827,9 +837,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -837,8 +847,8 @@
 .flower-band-cottage > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -865,9 +875,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -875,8 +885,8 @@
 .flower-band-modern > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -903,9 +913,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -913,8 +923,8 @@
 .flower-band-natural-cottage > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -941,9 +951,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -951,8 +961,8 @@
 .flower-band-zen > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -981,9 +991,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -991,8 +1001,8 @@
 .flower-band-wildflower > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1019,9 +1029,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1029,8 +1039,8 @@
 .flower-band-tropical > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1057,9 +1067,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1067,8 +1077,8 @@
 .flower-band-desert > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1095,9 +1105,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1105,8 +1115,8 @@
 .flower-band-natural-cottage > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1133,9 +1143,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1143,8 +1153,8 @@
 .flower-band-formal > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1171,9 +1181,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1181,8 +1191,8 @@
 .flower-band-spring > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1209,9 +1219,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1219,8 +1229,8 @@
 .flower-band-summer > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1247,9 +1257,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1257,8 +1267,8 @@
 .flower-band-autumn > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }
 
@@ -1285,9 +1295,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, 
-    rgba(0, 0, 0, 0.15) 0%, 
-    rgba(0, 0, 0, 0.2) 50%, 
-    rgba(0, 0, 0, 0.15) 100%);
+    hsl(var(--shadow) / 0.15) 0%, 
+    hsl(var(--shadow) / 0.2) 50%, 
+    hsl(var(--shadow) / 0.15) 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1295,7 +1305,7 @@
 .flower-band-review > * {
   position: relative;
   z-index: 2;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+  color: hsl(var(--card));
+  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
   font-weight: 600;
 }

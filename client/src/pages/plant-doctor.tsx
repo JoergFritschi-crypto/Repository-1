@@ -119,8 +119,8 @@ export default function PlantDoctor() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header - Compact */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-serif font-semibold text-[#004025] mb-2" data-testid="text-plant-doctor-title">
-            <Stethoscope className="w-7 h-7 inline mr-2 text-[#004025]" />
+          <h1 className="text-2xl font-serif font-semibold text-primary mb-2" data-testid="text-plant-doctor-title">
+            <Stethoscope className="w-7 h-7 inline mr-2 text-primary" />
             Plant Doctor
           </h1>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto" data-testid="text-plant-doctor-subtitle">
@@ -131,7 +131,7 @@ export default function PlantDoctor() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Service Selection */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="border-2 border-[#004025]">
+            <Card className="border-2 border-primary">
               <CardHeader className="py-4">
                 <CardTitle className="text-lg">Select Service</CardTitle>
               </CardHeader>
@@ -143,22 +143,22 @@ export default function PlantDoctor() {
                       key={key}
                       className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                         activeService === key
-                          ? "border-[#004025] bg-[#004025]/10"
-                          : "border-[#004025]/30 hover:border-[#004025]"
+                          ? "border-primary bg-primary/10"
+                          : "border-primary/30 hover:border-primary"
                       }`}
                       onClick={() => setActiveService(key)}
                       data-testid={`service-${key}`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-[#004025]/10 rounded-full flex items-center justify-center border-2 border-[#004025]">
-                          <Icon className="w-5 h-5 text-[#004025]" />
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary">
+                          <Icon className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
                           <h3 className="font-medium text-sm">{config.title}</h3>
                           <p className="text-xs text-muted-foreground">{config.description}</p>
                         </div>
                         {activeService === key && (
-                          <CheckCircle className="w-4 h-4 text-[#004025]" />
+                          <CheckCircle className="w-4 h-4 text-primary" />
                         )}
                       </div>
                     </div>
@@ -168,26 +168,26 @@ export default function PlantDoctor() {
             </Card>
 
             {/* Premium Features */}
-            <Card className="border-2 border-[#004025] bg-[#004025]/5">
+            <Card className="border-2 border-primary bg-primary/5">
               <CardContent className="pt-4">
                 <div className="text-center">
-                  <Crown className="w-6 h-6 text-[#004025] mx-auto mb-2" />
+                  <Crown className="w-6 h-6 text-primary mx-auto mb-2" />
                   <h3 className="font-medium text-sm mb-2">Premium Plant Doctor</h3>
                   <div className="space-y-1 text-xs text-left mb-3">
                     <div className="flex items-center">
-                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
+                      <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
                       <span>Advanced disease diagnosis</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
+                      <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
                       <span>Treatment recommendations</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
+                      <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
                       <span>Seasonal care guides</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="w-3 h-3 text-[#004025] mr-1.5" />
+                      <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
                       <span>Expert consultation</span>
                     </div>
                   </div>
@@ -201,10 +201,10 @@ export default function PlantDoctor() {
 
           {/* Main Interface */}
           <div className="lg:col-span-2">
-            <Card className="border-2 border-[#004025]">
+            <Card className="border-2 border-primary">
               <CardHeader className="py-4">
                 <CardTitle className="flex items-center text-lg">
-                  <currentService.icon className="w-5 h-5 mr-2 text-[#004025]" />
+                  <currentService.icon className="w-5 h-5 mr-2 text-primary" />
                   {currentService.title}
                 </CardTitle>
               </CardHeader>
@@ -220,7 +220,7 @@ export default function PlantDoctor() {
                       {/* Image Upload */}
                       <div>
                         <label className="block text-xs font-medium mb-2">Plant Photo</label>
-                        <div className="border-2 border-dashed border-[#004025]/50 rounded-lg p-6 text-center hover:border-[#004025] transition-colors cursor-pointer">
+                        <div className="border-2 border-dashed border-primary/50 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
                           <input
                             type="file"
                             accept="image/*"
@@ -242,7 +242,7 @@ export default function PlantDoctor() {
                               </div>
                             ) : (
                               <div>
-                                <Upload className="w-10 h-10 text-[#004025]/50 mx-auto mb-3" />
+                                <Upload className="w-10 h-10 text-primary/50 mx-auto mb-3" />
                                 <h4 className="font-medium text-sm mb-1">Upload Plant Photo</h4>
                                 <p className="text-xs text-muted-foreground mb-3">
                                   Drag and drop or click to select a clear photo of your plant
@@ -308,7 +308,7 @@ export default function PlantDoctor() {
                       ) : sessions && (sessions as any[]).length > 0 ? (
                         <div className="space-y-4">
                           {sessions.slice(0, 5).map((session: any) => (
-                            <div key={session.id} className="border-2 border-[#004025]/30 rounded-lg p-3 hover:border-[#004025] transition-all" data-testid={`session-${session.id}`}>
+                            <div key={session.id} className="border-2 border-primary/30 rounded-lg p-3 hover:border-primary transition-all" data-testid={`session-${session.id}`}>
                               <div className="flex items-start space-x-4">
                                 <div className="w-16 h-16 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">
                                   {session.imageUrl ? (

@@ -365,7 +365,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               <CardContent>
                 <div className="space-y-4">
                   {/* Large Specimen Checkbox */}
-                  <div className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-between p-3 bg-card/60 rounded-lg border border-secondary">
                     <label htmlFor="large-specimens" className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -505,7 +505,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                     >
                       {filters.selectedColors.includes(color.value) && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center">
+                          <div className="w-5 h-5 bg-card rounded-full shadow-lg flex items-center justify-center">
                             <span className="text-xs">✓</span>
                           </div>
                         </div>

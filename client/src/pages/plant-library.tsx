@@ -294,7 +294,7 @@ export default function PlantLibrary() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header - Compact */}
         <div className="mb-6">
-          <Card className="border-2 border-[#004025] shadow-sm mb-2">
+          <Card className="border-2 border-primary shadow-sm mb-2">
             <CardHeader className="py-6 flower-band-purple rounded-t-lg">
               <CardTitle className="text-2xl font-serif" data-testid="text-plant-library-title">Plant Library</CardTitle>
             </CardHeader>

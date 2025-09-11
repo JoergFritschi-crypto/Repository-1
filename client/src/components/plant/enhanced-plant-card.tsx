@@ -99,14 +99,14 @@ export function EnhancedPlantCard({
   const getSunIcon = (sunRequirement?: string) => {
     switch (sunRequirement) {
       case "full_sun":
-        return <Sun className="w-4 h-4 text-yellow-500" />;
+        return <Sun className="w-4 h-4 text-canary" />;
       case "partial_sun":
       case "partial_shade":
-        return <CloudSun className="w-4 h-4 text-yellow-400" />;
+        return <CloudSun className="w-4 h-4 text-canary" />;
       case "full_shade":
-        return <Cloud className="w-4 h-4 text-gray-400" />;
+        return <Cloud className="w-4 h-4 text-muted-foreground" />;
       default:
-        return <Sun className="w-4 h-4 text-gray-300" />;
+        return <Sun className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -114,15 +114,15 @@ export function EnhancedPlantCard({
     // Determine care level based on various factors
     let difficulty = 0;
     
-    if (plant.water_requirements?.includes("high")) difficulty++;
-    if (plant.water_requirements?.includes("specific")) difficulty++;
-    if (!plant.drought_tolerant) difficulty++;
-    if (plant.toxic_to_children || plant.toxic_to_pets) difficulty++;
-    if (plant.care_notes?.includes("difficult")) difficulty += 2;
+    if (typeof plant.watering === 'string' && plant.watering.includes("high")) difficulty++;
+    if (typeof plant.watering === 'string' && plant.watering.includes("specific")) difficulty++;
+    if (!plant.droughtTolerant) difficulty++;
+    if (plant.poisonousToHumans || plant.poisonousToPets) difficulty++;
+    if (plant.description?.includes("difficult")) difficulty += 2;
     
-    if (difficulty <= 1) return { level: "Easy", color: "text-green-500", stars: 1 };
-    if (difficulty <= 3) return { level: "Moderate", color: "text-yellow-500", stars: 2 };
-    return { level: "Advanced", color: "text-red-500", stars: 3 };
+    if (difficulty <= 1) return { level: "Easy", color: "text-primary", stars: 1 };
+    if (difficulty <= 3) return { level: "Moderate", color: "text-canary", stars: 2 };
+    return { level: "Advanced", color: "text-destructive", stars: 3 };
   };
 
   const careLevel = getCareLevel(plant);
@@ -139,7 +139,7 @@ export function EnhancedPlantCard({
         data-testid={`enhanced-plant-card-${plant.id}`}
       >
         {/* Image Section with Overlay Info */}
-        <div className="relative h-64 bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
+        <div className="relative h-64 bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
           {primaryImage ? (
             <>
               <img 
@@ -152,14 +152,14 @@ export function EnhancedPlantCard({
               />
               {!imageLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Leaf className="w-12 h-12 text-green-300 animate-pulse" />
+                  <Leaf className="w-12 h-12 text-muted-foreground animate-pulse" />
                 </div>
               )}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
-                <Flower2 className="w-16 h-16 text-green-300 mx-auto mb-2" />
+                <Flower2 className="w-16 h-16 text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">No image available</p>
               </div>
             </div>
@@ -168,14 +168,14 @@ export function EnhancedPlantCard({
           {/* Top Badges */}
           <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
             <div className="flex gap-2">
-              {plant.pet_safe && (
-                <Badge className="bg-green-500/90 backdrop-blur-sm">
+              {plant.poisonousToHumans === 0 && plant.poisonousToPets === 0 && (
+                <Badge className="bg-primary/90 backdrop-blur-sm">
                   <Shield className="w-3 h-3 mr-1" />
                   Pet Safe
                 </Badge>
               )}
-              {plant.drought_tolerant && (
-                <Badge className="bg-blue-500/90 backdrop-blur-sm">
+              {plant.droughtTolerant && (
+                <Badge className="bg-secondary/90 backdrop-blur-sm">
                   <Droplets className="w-3 h-3 mr-1" />
                   Drought OK
                 </Badge>
@@ -190,11 +190,11 @@ export function EnhancedPlantCard({
           </div>
           
           {/* Bottom Gradient with Plant Name */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            <h3 className="text-white font-bold text-xl mb-1">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-overlay/70 to-transparent p-4">
+            <h3 className="text-card font-bold text-xl mb-1">
               {plant.commonName}
             </h3>
-            <p className="text-white/80 text-sm italic">
+            <p className="text-card/80 text-sm italic">
               {plant.scientificName}
             </p>
           </div>
@@ -205,18 +205,18 @@ export function EnhancedPlantCard({
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="space-y-1">
               <div className="flex justify-center">
-                {getSunIcon(plant.sun_requirements)}
+                {getSunIcon(Array.isArray(plant.sunlight) ? plant.sunlight[0] : plant.sunlight)}
               </div>
               <p className="text-xs text-muted-foreground">
-                {plant.sun_requirements?.replace(/_/g, ' ') || 'Any light'}
+                {Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight || 'Any light'}
               </p>
             </div>
             <div className="space-y-1">
-              <div className="flex justify-center text-blue-500">
+              <div className="flex justify-center text-primary">
                 <Droplets className="w-4 h-4" />
               </div>
               <p className="text-xs text-muted-foreground">
-                {plant.water_requirements || 'Moderate'}
+                {plant.watering || 'Moderate'}
               </p>
             </div>
             <div className="space-y-1">
@@ -239,49 +239,40 @@ export function EnhancedPlantCard({
                 {plant.type}
               </Badge>
             )}
-            {plant.hardiness_zones && (
+            {plant.hardiness && (
               <Badge variant="outline" className="text-xs">
                 <MapPin className="w-3 h-3 mr-1" />
-                Zone {plant.hardiness_zones}
+                Zone {plant.hardiness}
               </Badge>
             )}
-            {plant.mature_height && (
+            {(plant.heightMaxCm || plant.heightMaxInches) && (
               <Badge variant="outline" className="text-xs">
                 <Ruler className="w-3 h-3 mr-1" />
-                {plant.mature_height}
+                {plant.heightMaxCm ? `${plant.heightMaxCm}cm` : `${plant.heightMaxInches}in`}
               </Badge>
             )}
           </div>
 
           {/* Bloom Info if available */}
-          {(plant.bloom_time || plant.bloom_color) && (
+          {(plant.floweringSeason || plant.flowerColor) && (
             <div className="flex items-center gap-2 p-2 bg-accent/10 rounded-lg">
               <Flower2 className="w-4 h-4 text-accent" />
               <div className="text-xs">
-                {plant.bloom_color && <span className="font-medium">{plant.bloom_color} blooms</span>}
-                {plant.bloom_time && plant.bloom_color && " • "}
-                {plant.bloom_time && <span>{plant.bloom_time}</span>}
+                {plant.flowerColor && <span className="font-medium">{Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor} blooms</span>}
+                {plant.floweringSeason && plant.flowerColor && " • "}
+                {plant.floweringSeason && <span>{plant.floweringSeason}</span>}
               </div>
             </div>
           )}
 
           {/* Special Features */}
-          {(plant.fragrant || plant.attracts_pollinators || plant.deer_resistant) && (
+          {plant.attracts && (
             <div className="flex gap-1">
-              {plant.fragrant && (
-                <Badge variant="outline" className="text-xs bg-purple-50">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Fragrant
-                </Badge>
-              )}
-              {plant.attracts_pollinators && (
-                <Badge variant="outline" className="text-xs bg-yellow-50">
+              {Array.isArray(plant.attracts) && plant.attracts.some((attr: any) => 
+                typeof attr === 'string' && attr.toLowerCase().includes('pollinator')
+              ) && (
+                <Badge variant="outline" className="text-xs bg-accent/20">
                   🐝 Pollinators
-                </Badge>
-              )}
-              {plant.deer_resistant && (
-                <Badge variant="outline" className="text-xs bg-amber-50">
-                  🦌 Deer Resistant
                 </Badge>
               )}
             </div>
@@ -300,11 +291,11 @@ export function EnhancedPlantCard({
                   View Details
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-white text-gray-900">
+              <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-card text-foreground">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl text-gray-900">
+                  <DialogTitle className="text-2xl text-foreground">
                     {plant.commonName}
-                    <span className="text-base text-gray-600 italic block">
+                    <span className="text-base text-muted-foreground italic block">
                       {plant.scientificName}
                     </span>
                   </DialogTitle>
@@ -335,11 +326,11 @@ export function EnhancedPlantCard({
                     Add to Garden
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-white text-gray-900">
+                <DialogContent className="bg-card text-foreground">
                   <DialogHeader>
-                    <DialogTitle className="text-gray-900">Add to Your Garden</DialogTitle>
+                    <DialogTitle className="text-foreground">Add to Your Garden</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4 text-gray-900">
+                  <div className="space-y-4 text-foreground">
                     <div className="flex items-center gap-3">
                       {primaryImage && (
                         <img 
@@ -404,7 +395,7 @@ function PlantDetailsView({ plant }: { plant: Plant }) {
       {/* Image Gallery */}
       {images.length > 0 && (
         <div className="space-y-3">
-          <div className="relative h-96 rounded-lg overflow-hidden bg-gradient-to-br from-green-50 to-emerald-50">
+          <div className="relative h-96 rounded-lg overflow-hidden bg-gradient-to-br from-muted to-muted/50">
             <img 
               src={images[selectedImage]}
               alt={plant.commonName}
@@ -475,22 +466,22 @@ function PlantDetailsView({ plant }: { plant: Plant }) {
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Sun:</dt>
-                <dd className="font-medium">{plant.sun_requirements?.replace(/_/g, ' ')}</dd>
+                <dd className="font-medium">{Array.isArray(plant.sunlight) ? plant.sunlight.join(', ') : plant.sunlight}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Water:</dt>
-                <dd className="font-medium">{plant.water_requirements || 'Moderate'}</dd>
+                <dd className="font-medium">{plant.watering || 'Moderate'}</dd>
               </div>
-              {plant.hardiness_zones && (
+              {plant.hardiness && (
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Hardiness Zones:</dt>
-                  <dd className="font-medium">{plant.hardiness_zones}</dd>
+                  <dd className="font-medium">{plant.hardiness}</dd>
                 </div>
               )}
-              {plant.mature_height && (
+              {(plant.heightMaxCm || plant.heightMaxInches) && (
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Mature Height:</dt>
-                  <dd className="font-medium">{plant.mature_height}</dd>
+                  <dd className="font-medium">{plant.heightMaxCm ? `${plant.heightMaxCm}cm` : `${plant.heightMaxInches}in`}</dd>
                 </div>
               )}
             </dl>
@@ -504,22 +495,22 @@ function PlantDetailsView({ plant }: { plant: Plant }) {
               Ornamental Features
             </h3>
             <dl className="space-y-2 text-sm">
-              {plant.bloom_time && (
+              {plant.floweringSeason && (
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Bloom Time:</dt>
-                  <dd className="font-medium">{plant.bloom_time}</dd>
+                  <dd className="font-medium">{plant.floweringSeason}</dd>
                 </div>
               )}
-              {plant.bloom_color && (
+              {plant.flowerColor && (
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Flower Color:</dt>
-                  <dd className="font-medium">{plant.bloom_color}</dd>
+                  <dd className="font-medium">{Array.isArray(plant.flowerColor) ? plant.flowerColor.join(', ') : plant.flowerColor}</dd>
                 </div>
               )}
-              {plant.foliage && (
+              {plant.leaf && (
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Foliage Type:</dt>
-                  <dd className="font-medium">{plant.foliage}</dd>
+                  <dd className="font-medium">{typeof plant.leaf === 'object' ? 'Varied' : plant.leaf}</dd>
                 </div>
               )}
             </dl>
@@ -531,23 +522,16 @@ function PlantDetailsView({ plant }: { plant: Plant }) {
               Special Characteristics
             </h3>
             <div className="flex flex-wrap gap-2">
-              {plant.pet_safe && (
-                <Badge className="bg-green-100 text-green-700">Pet Safe</Badge>
+              {plant.poisonousToHumans === 0 && plant.poisonousToPets === 0 && (
+                <Badge className="bg-primary/20 text-primary">Pet Safe</Badge>
               )}
-              {plant.drought_tolerant && (
-                <Badge className="bg-blue-100 text-blue-700">Drought Tolerant</Badge>
+              {plant.droughtTolerant && (
+                <Badge className="bg-secondary/20 text-secondary">Drought Tolerant</Badge>
               )}
-              {plant.deer_resistant && (
-                <Badge className="bg-amber-100 text-amber-700">Deer Resistant</Badge>
-              )}
-              {plant.fragrant && (
-                <Badge className="bg-purple-100 text-purple-700">Fragrant</Badge>
-              )}
-              {plant.attracts_pollinators && (
-                <Badge className="bg-yellow-100 text-yellow-700">Attracts Pollinators</Badge>
-              )}
-              {plant.native_origin && (
-                <Badge className="bg-emerald-100 text-emerald-700">Native: {plant.native_origin}</Badge>
+              {Array.isArray(plant.attracts) && plant.attracts.some((attr: any) => 
+                typeof attr === 'string' && attr.toLowerCase().includes('pollinator')
+              ) && (
+                <Badge className="bg-accent/20 text-accent">Attracts Pollinators</Badge>
               )}
             </div>
           </div>
@@ -555,21 +539,23 @@ function PlantDetailsView({ plant }: { plant: Plant }) {
       </div>
       
       {/* Care Instructions */}
-      {(plant.care_notes || plant.planting_instructions) && (
+      {(plant.description || plant.careGuides) && (
         <div className="space-y-4 pt-4 border-t">
-          {plant.care_notes && (
+          {plant.description && (
             <div>
               <h3 className="font-semibold text-lg mb-2">Care Instructions</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {plant.care_notes}
+                {plant.description}
               </p>
             </div>
           )}
-          {plant.planting_instructions && (
+          {plant.careGuides && (
             <div>
-              <h3 className="font-semibold text-lg mb-2">Planting Guide</h3>
+              <h3 className="font-semibold text-lg mb-2">Care Guide</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {plant.planting_instructions}
+                <a href={plant.careGuides} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  View detailed care instructions
+                </a>
               </p>
             </div>
           )}
