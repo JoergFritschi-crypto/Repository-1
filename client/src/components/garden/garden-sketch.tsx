@@ -519,10 +519,10 @@ export default function GardenSketch({
           <div className="mt-3 space-y-2">
             {(!hasUserSetNorth || !hasUserSetViewer) && (
               <div className="bg-[#FFD500]/10 border border-accent rounded-lg p-2">
-                <p className="text-xs font-semibold text-accent mb-1">
+                <p className="text-xs font-semibold text-primary mb-1">
                   ⚠️ Important: Set your garden's actual orientation
                 </p>
-                <p className="text-xs text-accent/80">
+                <p className="text-xs text-primary/80">
                   The default orientation is likely incorrect. Please adjust both controls below for accurate design:
                 </p>
               </div>
