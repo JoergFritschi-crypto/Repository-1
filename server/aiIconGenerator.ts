@@ -28,12 +28,12 @@ STYLE REQUIREMENTS:
 
 TOOL DETAILS: ${description}
 
-COLOR SCHEME (MANDATORY):
-- British Racing Green (#004025) - for metal parts and main construction
-- Dark Spring Green (#107838) - for secondary metal elements  
-- Dark Pastel Green (#1DB233) - for accent details
-- Bright Gold (#FFD500) - for brass fittings, handles, decorative elements
-- Canary Yellow (#FFE523) - for highlights and metallic reflections
+COLOR SCHEME (MANDATORY - use these EXACT hex colors):
+- VERY DARK GREEN #004025 (main metal parts) - NOT bright green, this is almost black-green
+- MEDIUM DARK GREEN #107838 (secondary metal elements) - darker forest green  
+- ACCENT GREEN #1DB233 (accent details only) - limited use
+- WARM GOLD #FFD500 (brass fittings, handles, decorative elements)
+- BRIGHT YELLOW #FFE523 (highlights and metallic reflections only)
 
 MATERIAL SPECIFICATIONS:
 - Wooden handles: Natural ash wood with visible grain, golden honey color with brass ferrules
