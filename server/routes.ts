@@ -70,7 +70,7 @@ if (process.env.RUNWARE_API_KEY) {
 
 let fireCrawlAPI: FireCrawlAPI | null = null;
 if (process.env.FIRECRAWL_API_KEY) {
-  fireCrawlAPI = new FireCrawlAPI(process.env.FIRECRAWL_API_KEY);
+  fireCrawlAPI = new FireCrawlAPI(process.env.FIRECRAWL_API_KEY, process.env.ANTHROPIC_API_KEY);
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {

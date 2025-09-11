@@ -4,13 +4,18 @@ import FirecrawlApp from '@mendable/firecrawl-js';
 import { storage } from './storage';
 import { type InsertPlant } from '@shared/schema';
 import { extractBotanicalParts } from '@shared/botanicalUtils';
+import AnthropicAI from './anthropicAI';
 
 // FireCrawl Web Scraping API
 export class FireCrawlAPI {
   private app: FirecrawlApp;
+  private anthropic: AnthropicAI | null = null;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, anthropicApiKey?: string) {
     this.app = new FirecrawlApp({ apiKey });
+    if (anthropicApiKey) {
+      this.anthropic = new AnthropicAI(anthropicApiKey);
+    }
   }
 
   async scrapePlantData(url: string, saveToDatabase: boolean = false, force: boolean = false): Promise<any> {
@@ -241,7 +246,7 @@ export class FireCrawlAPI {
                   });
                   
                   if (result.success && result.markdown) {
-                    const plants = this.extractPlantsFromEcommercePage(result.markdown, productUrl);
+                    const plants = await this.extractPlantsFromEcommercePage(result.markdown, productUrl);
                     processedUrls++;
                     batchProcessed++;
                     return plants; // Return plants for successful scrapes
@@ -641,7 +646,7 @@ export class FireCrawlAPI {
     return Array.from(new Set(urls));
   }
   
-  private extractPlantsFromEcommercePage(markdown: string, pageUrl: string): any[] {
+  private async extractPlantsFromEcommercePage(markdown: string, pageUrl: string): Promise<any[]> {
     const plants: any[] = [];
     
     // Check if this is a product detail page or a collection page
@@ -649,7 +654,7 @@ export class FireCrawlAPI {
     
     if (isProductPage) {
       // Extract data from product detail page
-      const plant = this.extractProductDetails(markdown, pageUrl);
+      const plant = await this.extractProductDetails(markdown, pageUrl);
       if (plant) {
         plants.push(plant);
       }
@@ -720,7 +725,102 @@ export class FireCrawlAPI {
     return plants;
   }
   
-  private extractProductDetails(markdown: string, pageUrl: string): any {
+  private async extractWithAI(markdown: string, pageUrl: string): Promise<any> {
+    if (!this.anthropic) {
+      throw new Error('Anthropic AI not configured');
+    }
+
+    try {
+      const prompt = `You are a botanical data extraction expert. Analyze this German nursery product page and extract structured plant data.
+
+Page URL: ${pageUrl}
+Content:
+${markdown.substring(0, 5000)}
+
+Extract the following information and respond in JSON format:
+{
+  "common_name": "German common name from the page",
+  "scientific_name": "Scientific/botanical Latin name (e.g., Acaena buchananii)",
+  "description": "Full plant description in German (NOT just the common name, the actual descriptive text)",
+  "price": "Price in euros if present",
+  "height": "Height range (e.g., 5-10 cm)",
+  "spread": "Width/spread range if mentioned",
+  "bloom_time": "Blooming period (e.g., Juni-August)",
+  "sunlight": "Sun requirements - translate to one of: full sun, partial shade, full shade",
+  "water": "Water requirements if mentioned",
+  "hardiness": "Hardiness zone if mentioned",
+  "soil": "Soil requirements if mentioned",
+  "flower_color": "Flower color if mentioned",
+  "foliage_color": "Foliage color if mentioned (e.g., blaugrün for blue-green)",
+  "growth_habit": "Growth habit (e.g., creeping, upright, etc.)"
+}
+
+IMPORTANT:
+- For sunlight, look for terms like "sonnig" (sunny/full sun), "halbschattig" (partial shade), "schattig" (shade)
+- Do NOT confuse marketing text about roots (Wurzelware) with sun requirements
+- The description should be the actual descriptive paragraph about the plant, not just its name
+- Extract the real botanical characteristics, not shipping/delivery information`;
+
+      const response = await (this.anthropic as any).messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1500,
+        system: 'You are an expert at extracting structured botanical data from German nursery websites. Always respond with valid JSON.',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      });
+
+      const content = response.content[0].text;
+      const extractedData = JSON.parse(content);
+
+      // Convert extracted data to our format
+      return {
+        common_name: extractedData.common_name || extractedData.scientific_name,
+        scientific_name: extractedData.scientific_name,
+        description: extractedData.description,
+        price: extractedData.price,
+        height: extractedData.height,
+        spread: extractedData.spread,
+        bloom_time: extractedData.bloom_time,
+        sunlight: extractedData.sunlight,
+        water: extractedData.water,
+        hardiness: extractedData.hardiness,
+        soil: extractedData.soil,
+        flower_color: extractedData.flower_color,
+        foliage_color: extractedData.foliage_color,
+        growth_habit: extractedData.growth_habit,
+        product_url: pageUrl,
+        product_slug: pageUrl.split('/').pop(),
+        language: 'de' // Mark as German content
+      };
+    } catch (error) {
+      console.error('AI extraction error:', error);
+      throw error;
+    }
+  }
+  
+  private async extractProductDetails(markdown: string, pageUrl: string): Promise<any> {
+    // Check if this is a German nursery page
+    const isGermanContent = pageUrl.includes('graefin-von-zeppelin.de') || 
+                           markdown.includes('Wuchshöhe') || 
+                           markdown.includes('Blütezeit') ||
+                           markdown.includes('Standort');
+    
+    // Use AI extraction for German content if available
+    if (isGermanContent && this.anthropic) {
+      try {
+        console.log('Using AI extraction for German content from:', pageUrl);
+        return await this.extractWithAI(markdown, pageUrl);
+      } catch (error) {
+        console.error('AI extraction failed, falling back to regex:', error);
+        // Fall back to regex extraction if AI fails
+      }
+    }
+    
+    // Original regex-based extraction for non-German content or fallback
     // Extract product title (usually h1 or first header)
     const titleMatch = markdown.match(/^#\s+(.+)/m) || markdown.match(/\*\*(.+?)\*\*/);  
     const title = titleMatch ? titleMatch[1].trim() : '';
