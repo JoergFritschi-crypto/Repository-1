@@ -89,13 +89,19 @@ export default function PlantLibrary() {
     
     if (!hasActiveFilters) return filtered;
     
-    // Apply search filter
+    // Apply search filter - search across all name fields for flexibility
     if (collectionFilters.search) {
       const searchLower = collectionFilters.search.toLowerCase();
-      filtered = filtered.filter((item: any) => 
-        item.plant.commonName?.toLowerCase().includes(searchLower) ||
-        item.plant.scientificName?.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter((item: any) => {
+        const plant = item.plant;
+        return (
+          plant.commonName?.toLowerCase().includes(searchLower) ||
+          plant.scientificName?.toLowerCase().includes(searchLower) ||
+          plant.genus?.toLowerCase().includes(searchLower) ||
+          plant.species?.toLowerCase().includes(searchLower) ||
+          plant.cultivar?.toLowerCase().includes(searchLower)
+        );
+      });
     }
 
     // Apply plant type filters (multi-select)
