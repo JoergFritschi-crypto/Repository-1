@@ -67,20 +67,20 @@ export default function Landing() {
             <div className="flex items-center space-x-4">
               {!isAuthenticated ? (
                 <>
-                  <a href="/api/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <a href="/api/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" title="Already have an account? Sign in here">
                     Sign In
                   </a>
-                  <Button asChild data-testid="button-get-started">
-                    <a href="/api/login">Get Started</a>
+                  <Button asChild data-testid="button-get-started" title="New to GardenScape? Start your free account">
+                    <a href="/api/login">Get Started Free</a>
                   </Button>
                 </>
               ) : (
                 <>
-                  <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" title="View your gardens, stats, and recent activity">
                     Dashboard
                   </Link>
-                  <Button asChild data-testid="button-go-to-dashboard">
-                    <Link href="/garden-properties">New Garden</Link>
+                  <Button asChild data-testid="button-go-to-dashboard" title="Start creating a new garden design">
+                    <Link href="/garden-properties">+ New Garden</Link>
                   </Button>
                 </>
               )}
