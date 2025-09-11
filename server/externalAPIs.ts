@@ -728,10 +728,10 @@ export class FireCrawlAPI {
           timeout: 30000,
           extract: {
             schema: {
-              _type: 'object' as const,
+              type: 'object',
               properties: {
                 products: {
-                  _type: 'array' as const,
+                  type: 'array',
                   items: {
                     type: 'object',
                     properties: {
