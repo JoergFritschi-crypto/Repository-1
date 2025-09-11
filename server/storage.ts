@@ -246,10 +246,44 @@ export class DatabaseStorage implements IStorage {
   async advancedSearchPlants(filters: any): Promise<Plant[]> {
     const conditions = [];
     
-    // Text fields
-    if (filters.genus) conditions.push(ilike(plants.genus, `%${filters.genus}%`));
-    if (filters.species) conditions.push(ilike(plants.species, `%${filters.species}%`));
-    if (filters.cultivar) conditions.push(ilike(plants.cultivar, `%${filters.cultivar}%`));
+    // Text fields - Modified to search across ALL name fields for flexibility
+    // This allows users to find plants even if they type in the "wrong" field
+    if (filters.genus) {
+      // When searching for genus, also search in all name-related fields
+      conditions.push(
+        or(
+          ilike(plants.genus, `%${filters.genus}%`),
+          ilike(plants.species, `%${filters.genus}%`),
+          ilike(plants.cultivar, `%${filters.genus}%`),
+          ilike(plants.commonName, `%${filters.genus}%`),
+          ilike(plants.scientificName, `%${filters.genus}%`)
+        )
+      );
+    }
+    if (filters.species) {
+      // When searching for species, also search in all name-related fields
+      conditions.push(
+        or(
+          ilike(plants.species, `%${filters.species}%`),
+          ilike(plants.genus, `%${filters.species}%`),
+          ilike(plants.cultivar, `%${filters.species}%`),
+          ilike(plants.commonName, `%${filters.species}%`),
+          ilike(plants.scientificName, `%${filters.species}%`)
+        )
+      );
+    }
+    if (filters.cultivar) {
+      // When searching for cultivar, also search in all name-related fields
+      conditions.push(
+        or(
+          ilike(plants.cultivar, `%${filters.cultivar}%`),
+          ilike(plants.genus, `%${filters.cultivar}%`),
+          ilike(plants.species, `%${filters.cultivar}%`),
+          ilike(plants.commonName, `%${filters.cultivar}%`),
+          ilike(plants.scientificName, `%${filters.cultivar}%`)
+        )
+      );
+    }
     
     // Single selection fields
     if (filters.plantType) conditions.push(eq(plants.type, filters.plantType));
