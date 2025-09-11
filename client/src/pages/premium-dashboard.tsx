@@ -349,7 +349,7 @@ export default function PremiumDashboard() {
                     <Sprout className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">No plants in collection</p>
                     <Button variant="ghost" size="sm" asChild className="mt-2" data-testid="button-browse-plants">
-                      <a href="/plant-library">Browse Plants</a>
+                      <a href="/plant-library" className="link-reset">Browse Plants</a>
                     </Button>
                   </div>
                 )}
@@ -363,13 +363,13 @@ export default function PremiumDashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button asChild className="w-full justify-start" data-testid="button-plant-doctor">
-                  <a href="/plant-doctor">
+                  <a href="/plant-doctor" className="link-reset">
                     <Stethoscope className="w-4 h-4 mr-2" />
                     Plant Doctor
                   </a>
                 </Button>
                 <Button asChild variant="secondary" className="w-full justify-start" data-testid="button-3d-visualizer">
-                  <a href="/garden-design">
+                  <a href="/garden-design" className="link-reset">
                     <BarChart3 className="w-4 h-4 mr-2" />
                     3D Visualizer
                   </a>

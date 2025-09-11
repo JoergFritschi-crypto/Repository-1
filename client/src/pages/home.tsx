@@ -47,7 +47,7 @@ export default function Home() {
                   </Link>
                 </Button>
                 <Button size="default" variant="outline" className="bg-white/90 hover:bg-white text-primary border shadow-lg hover:shadow-xl transition-all duration-300" asChild>
-                  <Link href="/plant-library">
+                  <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-4 h-4 mr-2" />
                     Browse Plants
                   </Link>
@@ -206,19 +206,19 @@ export default function Home() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button size="sm" asChild className="w-full justify-start" data-testid="button-plant-doctor">
-                  <Link href="/plant-doctor">
+                  <Link href="/plant-doctor" className="link-reset">
                     <PlantDoctorIcon className="w-4 h-4 mr-2" />
                     Plant Doctor
                   </Link>
                 </Button>
                 <Button size="sm" asChild variant="secondary" className="w-full justify-start" data-testid="button-browse-plants">
-                  <Link href="/plant-library">
+                  <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-4 h-4 mr-2" />
                     Browse Plants
                   </Link>
                 </Button>
                 <Button size="sm" asChild variant="outline" className="w-full justify-start" data-testid="button-premium-features">
-                  <Link href="/premium">
+                  <Link href="/premium" className="link-reset">
                     <PremiumIcon className="w-4 h-4 mr-2" />
                     Premium Features
                   </Link>
@@ -264,7 +264,7 @@ export default function Home() {
                     <PlantLibraryIcon className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
                     <p className="text-xs text-muted-foreground">No plants in collection</p>
                     <Button variant="ghost" size="sm" asChild className="mt-2" data-testid="button-browse-to-add">
-                      <Link href="/plant-library">Browse Plants</Link>
+                      <Link href="/plant-library" className="link-reset">Browse Plants</Link>
                     </Button>
                   </div>
                 )}

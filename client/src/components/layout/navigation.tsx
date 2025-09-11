@@ -91,10 +91,10 @@ export default function Navigation() {
           
           <div className="hidden md:flex items-center space-x-2">
             <Button size="sm" className="h-8 text-xs bg-[#004025] hover:bg-[#004025]/90 border-2 border-[#004025]" asChild data-testid="button-new-garden">
-              <Link href="/garden-properties">New Garden</Link>
+              <Link href="/garden-properties" className="link-reset">New Garden</Link>
             </Button>
             <Button size="sm" variant="outline" className="h-8 text-xs border-2 border-[#004025] text-[#004025] hover:bg-[#004025]/10" asChild data-testid="button-logout">
-              <a href="/api/logout">Sign Out</a>
+              <a href="/api/logout" className="link-reset">Sign Out</a>
             </Button>
           </div>
 
@@ -133,10 +133,10 @@ export default function Navigation() {
               ))}
               <div className="border-t-2 border-[#004025] pt-3 mt-3 space-y-2">
                 <Button asChild className="w-full" onClick={() => setMobileMenuOpen(false)} data-testid="mobile-button-new-garden">
-                  <Link href="/garden-properties">New Garden</Link>
+                  <Link href="/garden-properties" className="link-reset">New Garden</Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full" data-testid="mobile-button-logout">
-                  <a href="/api/logout">Sign Out</a>
+                  <a href="/api/logout" className="link-reset">Sign Out</a>
                 </Button>
               </div>
             </div>
