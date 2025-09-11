@@ -16,6 +16,7 @@ import { imageGenerationService } from "./imageGenerationService";
 import { runwareImageGenerator } from "./runwareImageGenerator";
 import { aiInpaintingService } from "./aiInpaintingService";
 import { PlantImportService } from "./plantImportService";
+import { generateAllGardenToolIcons, generateGardenToolIcon } from "./aiIconGenerator";
 import path from "path";
 
 // Initialize Stripe if API key is available
@@ -1105,6 +1106,64 @@ Rules:
     } catch (error) {
       console.error("Error deleting plant:", error);
       res.status(500).json({ message: "Failed to delete plant" });
+    }
+  });
+
+  // AI-Generated Garden Tool Icons API
+  app.post('/api/admin/generate-garden-tool-icons', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      console.log('Starting AI garden tool icon generation...');
+      const generatedPaths = await generateAllGardenToolIcons();
+      
+      res.json({ 
+        success: true, 
+        message: `Generated ${generatedPaths.length} garden tool icons`,
+        paths: generatedPaths 
+      });
+    } catch (error) {
+      console.error('Error generating garden tool icons:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to generate garden tool icons',
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/admin/generate-single-icon', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const { toolName, description } = req.body;
+      if (!toolName || !description) {
+        return res.status(400).json({ message: 'toolName and description are required' });
+      }
+
+      const filename = toolName.toLowerCase().replace(/\s+/g, '-') + '.png';
+      const outputPath = `client/public/generated-icons/${filename}`;
+      
+      await generateGardenToolIcon(toolName, description, outputPath);
+      
+      res.json({ 
+        success: true, 
+        message: `Generated ${toolName} icon`,
+        path: `/generated-icons/${filename}`
+      });
+    } catch (error) {
+      console.error('Error generating single icon:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to generate icon',
+        error: error.message 
+      });
     }
   });
 
@@ -3754,6 +3813,44 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
+  // Generate photorealistic garden tool icons using Gemini AI
+  app.post("/api/admin/generate-garden-icons", isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      console.log("Starting AI-powered garden tool icon generation...");
+      
+      const { generateGardenToolIconSet } = await import("./geminiImageGen.js");
+      const result = await generateGardenToolIconSet();
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `Successfully generated ${result.generatedIcons.length} photorealistic garden tool icons`,
+          generatedIcons: result.generatedIcons,
+          errors: result.errors
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "Failed to generate any icons",
+          errors: result.errors
+        });
+      }
+    } catch (error) {
+      console.error("Error generating garden tool icons:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error generating garden tool icons",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Stripe payment routes (if Stripe is configured)
   if (stripe) {
     app.post("/api/create-payment-intent", async (req, res) => {
@@ -4559,3 +4656,4 @@ function processMonthlyData(days: any[]): any {
   
   return monthlyData;
 }
+
