@@ -75,11 +75,11 @@ export function APIMonitoring() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'healthy':
-        return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" /> Healthy</Badge>;
+        return <Badge className="bg-[#004025] text-white"><CheckCircle className="h-3 w-3 mr-1" /> Healthy</Badge>;
       case 'degraded':
-        return <Badge className="bg-yellow-500"><AlertTriangle className="h-3 w-3 mr-1" /> Degraded</Badge>;
+        return <Badge className="bg-[#FFD500] text-[#004025]"><AlertTriangle className="h-3 w-3 mr-1" /> Degraded</Badge>;
       case 'down':
-        return <Badge className="bg-red-500"><XCircle className="h-3 w-3 mr-1" /> Down</Badge>;
+        return <Badge className="bg-[#004025]/80 text-white"><XCircle className="h-3 w-3 mr-1" /> Down</Badge>;
       default:
         return <Badge variant="outline"><AlertCircle className="h-3 w-3 mr-1" /> Unknown</Badge>;
     }
@@ -330,9 +330,9 @@ export function APIMonitoring() {
                   <div className="flex items-center gap-2">
                     <div 
                       className={`w-3 h-3 rounded-full animate-pulse ${
-                        isHealthy ? 'bg-green-500' : 
-                        isDegraded ? 'bg-yellow-500' : 
-                        'bg-red-500'
+                        isHealthy ? 'bg-[#004025]' : 
+                        isDegraded ? 'bg-[#FFD500]' : 
+                        'bg-[#004025]/60'
                       }`}
                       title={isHealthy ? 'Connected' : isDegraded ? 'Degraded' : 'Disconnected'}
                     />
@@ -346,7 +346,7 @@ export function APIMonitoring() {
                     )}
                     <Badge 
                       variant={isHealthy ? "default" : isDegraded ? "outline" : "destructive"}
-                      className={isHealthy ? "bg-green-500" : ""}
+                      className={isHealthy ? "bg-[#004025] text-white" : ""}
                     >
                       {isHealthy ? "Live" : isDegraded ? "Slow" : "Down"}
                     </Badge>

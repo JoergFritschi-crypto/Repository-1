@@ -33,13 +33,13 @@ export function TestingModeIndicator() {
   const getTierColor = () => {
     switch (testingTier) {
       case 'free':
-        return 'bg-gray-500';
+        return 'bg-[#004025]/60';
       case 'pay_per_design':
-        return 'bg-blue-500';
+        return 'bg-[#004025]';
       case 'premium':
-        return 'bg-purple-500';
+        return 'bg-[#FFD500]';
       default:
-        return 'bg-pink-500';
+        return 'bg-[#004025]/80';
     }
   };
   
@@ -59,7 +59,7 @@ export function TestingModeIndicator() {
   }
   
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-white border-2 border-purple-300 rounded-lg shadow-xl p-4 max-w-sm animate-in slide-in-from-bottom-5">
+    <div className="fixed bottom-4 right-4 z-50 bg-white border-2 border-[#004025] rounded-lg shadow-xl p-4 max-w-sm animate-in slide-in-from-bottom-5">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 ${getTierColor()} rounded-full flex items-center justify-center text-white`}>

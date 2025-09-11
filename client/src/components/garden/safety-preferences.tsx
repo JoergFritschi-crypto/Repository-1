@@ -12,10 +12,10 @@ interface SafetyPreferencesProps {
 
 export default function SafetyPreferences({ form, showAvailabilityPreference = true }: SafetyPreferencesProps) {
   return (
-    <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="safety-preferences">
+    <Card className="border-2 border-[#004025] bg-[#004025]/5 shadow-sm" data-testid="safety-preferences">
       <CardHeader className="py-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Shield className="w-4 h-4 text-purple-600" />
+          <Shield className="w-4 h-4 text-[#004025]" />
           Safety & Plant Selection Preferences
         </CardTitle>
       </CardHeader>
@@ -51,12 +51,12 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-blue-200 bg-blue-50/50 hover:bg-blue-50">
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#004025]/30 bg-[#004025]/10 hover:bg-[#004025]/15">
                       <RadioGroupItem value="low" id="low" />
                       <div className="flex-1">
                         <Label htmlFor="low" className="font-medium text-sm cursor-pointer flex items-center gap-2">
                           Low Risk Only
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Safest Option</span>
+                          <span className="text-xs bg-[#FFD500] text-[#004025] px-2 py-0.5 rounded">Safest Option</span>
                         </Label>
                         <p className="text-xs text-muted-foreground mt-1">
                           Only plants with minimal toxicity risk. Suitable for households with small children and pets.
@@ -64,7 +64,7 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-yellow-200 bg-yellow-50/50 hover:bg-yellow-50">
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#FFD500]/50 bg-[#FFD500]/20 hover:bg-[#FFD500]/30">
                       <RadioGroupItem value="moderate" id="moderate" />
                       <div className="flex-1">
                         <Label htmlFor="moderate" className="font-medium text-sm cursor-pointer">
@@ -76,7 +76,7 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-orange-200 bg-orange-50/50 hover:bg-orange-50">
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#004025]/50 bg-[#004025]/20 hover:bg-[#004025]/30">
                       <RadioGroupItem value="all" id="all" />
                       <div className="flex-1">
                         <Label htmlFor="all" className="font-medium text-sm cursor-pointer">
@@ -95,8 +95,8 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
         </div>
 
         {/* Important Safety Disclaimer */}
-        <Alert className="border-amber-200 bg-amber-50">
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <Alert className="border-[#FFD500]/50 bg-[#FFD500]/20">
+          <AlertTriangle className="h-4 w-4 text-[#004025]" />
           <AlertDescription className="text-xs">
             <strong>Important Safety Notice:</strong> There is never zero risk with plants. Even "low risk" plants may cause reactions in sensitive individuals or specific pets. 
             For example, lilies are extremely toxic to cats despite being generally considered safe. Always research plants for your specific pets and family members. 
@@ -125,12 +125,12 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                       onValueChange={field.onChange}
                       className="space-y-2"
                     >
-                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-green-200 bg-green-50/50 hover:bg-green-50">
+                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#004025]/30 bg-[#004025]/10 hover:bg-[#004025]/15">
                         <RadioGroupItem value="common" id="common" />
                         <div className="flex-1">
                           <Label htmlFor="common" className="font-medium text-sm cursor-pointer flex items-center gap-2">
                             Common & Easy to Find
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Recommended</span>
+                            <span className="text-xs bg-[#FFD500] text-[#004025] px-2 py-0.5 rounded">Recommended</span>
                           </Label>
                           <p className="text-xs text-muted-foreground mt-1">
                             Popular plants readily available at most garden centers and nurseries. Easier to source and typically more affordable.
@@ -138,7 +138,7 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-purple-200 bg-purple-50/50 hover:bg-purple-50">
+                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#004025]/40 bg-[#004025]/15 hover:bg-[#004025]/20">
                         <RadioGroupItem value="mixed" id="mixed" />
                         <div className="flex-1">
                           <Label htmlFor="mixed" className="font-medium text-sm cursor-pointer">
@@ -150,12 +150,12 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50">
+                      <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#FFD500]/40 bg-[#FFD500]/15 hover:bg-[#FFD500]/20">
                         <RadioGroupItem value="exotic" id="exotic" />
                         <div className="flex-1">
                           <Label htmlFor="exotic" className="font-medium text-sm cursor-pointer flex items-center gap-2">
                             Include Exotic & Rare
-                            <Globe className="w-3 h-3 text-indigo-600" />
+                            <Globe className="w-3 h-3 text-[#004025]" />
                           </Label>
                           <p className="text-xs text-muted-foreground mt-1">
                             Include unusual and hard-to-find plants. May require specialty suppliers or online ordering.
@@ -169,8 +169,8 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
             />
 
             {/* Location-based availability note */}
-            <Alert className="border-blue-200 bg-blue-50">
-              <Info className="h-4 w-4 text-blue-600" />
+            <Alert className="border-[#004025]/30 bg-[#004025]/10">
+              <Info className="h-4 w-4 text-[#004025]" />
               <AlertDescription className="text-xs">
                 <strong>Regional Note:</strong> Plant availability varies by location. What's common in one region may be exotic in another. 
                 We'll try to account for your location when suggesting plants, but local availability should always be verified.
