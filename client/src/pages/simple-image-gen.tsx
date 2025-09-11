@@ -14,7 +14,7 @@ export default function SimpleImageGen() {
     
     setIsGenerating(true);
     try {
-      const response = await apiRequest('/api/generate-simple-image', 'POST', { prompt });
+      const response = await apiRequest('POST', '/api/generate-simple-image', { prompt });
       const data = await response.json();
       setImageUrl(data.imageUrl);
     } catch (error) {
