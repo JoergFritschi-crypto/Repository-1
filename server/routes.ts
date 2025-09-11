@@ -3721,6 +3721,14 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       // Get real-time progress from FireCrawlAPI
       const progress = FireCrawlAPI.getProgress();
       
+      // Disable caching to ensure real-time updates
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'ETag': `"${Date.now()}-${progress.lastUpdateTime?.getTime() || 0}"`
+      });
+      
       res.json({
         isActive: progress.isActive,
         total: progress.totalUrls,
@@ -3734,7 +3742,8 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         estimatedTimeRemaining: progress.estimatedTimeRemaining,
         averageTimePerUrl: progress.averageTimePerUrl,
         startTime: progress.startTime,
-        lastUpdateTime: progress.lastUpdateTime
+        lastUpdateTime: progress.lastUpdateTime,
+        _timestamp: Date.now() // Force frontend cache invalidation
       });
     } catch (error) {
       console.error("Error getting real-time scraping progress:", error);
