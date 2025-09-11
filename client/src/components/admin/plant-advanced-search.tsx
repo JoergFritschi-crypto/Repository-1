@@ -255,15 +255,27 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
   };
 
   const handleSearch = () => {
+    // Numeric range fields that should allow zero values
+    const numericRangeFields = ['minHeight', 'maxHeight', 'minSpread', 'maxSpread'];
+    
     // Filter out empty values
     const activeFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-      if (value !== '' && value !== undefined && value !== false && value !== 0 &&
-          (Array.isArray(value) ? value.length > 0 : true)) {
-        // Don't include "Any" selections in search
-        if (typeof value === 'string' && value === 'Any') {
-          return acc;
+      // For numeric range fields, allow zero values
+      if (numericRangeFields.includes(key)) {
+        if (value !== '' && value !== undefined && value !== false &&
+            (Array.isArray(value) ? value.length > 0 : true)) {
+          acc[key] = value;
         }
-        acc[key] = value;
+      } else {
+        // For other fields, use the original logic including excluding zero
+        if (value !== '' && value !== undefined && value !== false && value !== 0 &&
+            (Array.isArray(value) ? value.length > 0 : true)) {
+          // Don't include "Any" selections in search
+          if (typeof value === 'string' && value === 'Any') {
+            return acc;
+          }
+          acc[key] = value;
+        }
       }
       return acc;
     }, {} as any);
@@ -293,9 +305,9 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       watering: '',
       maintenance: '',
       minHeight: 0,
-      maxHeight: 500,
+      maxHeight: 400,
       minSpread: 0,
-      maxSpread: 300,
+      maxSpread: 200,
       specialFeatures: [],
       attractsWildlife: [],
       isSafe: false,
