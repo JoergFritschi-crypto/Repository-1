@@ -111,12 +111,12 @@ export default function Landing() {
                     <Button asChild size="lg" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto" data-testid="button-start-designing">
                       {!isAuthenticated ? (
                         <a href="/api/login" className="flex items-center gap-2">
-                          <GardenDesignIcon className="w-4 h-4" />
+                          <GardenDesignIcon className="w-4 h-4 brightness-0 invert" />
                           Create Your Garden
                         </a>
                       ) : (
                         <Link href="/garden-properties" className="flex items-center gap-2">
-                          <GardenDesignIcon className="w-4 h-4" />
+                          <GardenDesignIcon className="w-4 h-4 brightness-0 invert" />
                           Create Your Garden
                         </Link>
                       )}
