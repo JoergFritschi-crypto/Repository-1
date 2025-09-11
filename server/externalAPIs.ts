@@ -944,6 +944,52 @@ export class FireCrawlAPI {
       }
     } catch (error) {
       console.error('FireCrawl scraping error:', error);
+      
+      // Don't throw if we're in saveToDatabase mode and this might be a partial success
+      // Return whatever progress we've made so far
+      if (saveToDatabase) {
+        console.log('Error occurred during saveToDatabase mode, but returning partial results...');
+        
+        // Try to get the current progress to return partial success stats
+        try {
+          const baseUrl = url.split('#')[0];
+          const progress = await storage.getScrapingProgress(baseUrl);
+          
+          if (progress && progress.savedPlants > 0) {
+            console.log(`Returning partial success: ${progress.savedPlants} plants were saved despite the error`);
+            
+            // Mark as completed with error
+            await storage.updateScrapingProgress(progress.id, {
+              status: 'completed_with_errors',
+              completedAt: new Date(),
+              errors: [...(progress.errors as any[] || []), {
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                phase: 'final_processing'
+              }]
+            });
+            
+            return {
+              plants: [],
+              metadata: {
+                url,
+                scrapedAt: new Date().toISOString(),
+                extractionMethod: 'partial_success_with_errors',
+                saved: progress.savedPlants,
+                duplicates: progress.duplicatePlants,
+                errors: progress.failedPlants,
+                totalPlantsFound: progress.totalPlants,
+                hasErrors: true,
+                errorMessage: (error as Error).message
+              }
+            };
+          }
+        } catch (progressError) {
+          console.error('Failed to get progress for partial results:', progressError);
+        }
+      }
+      
+      // Only throw if this is a complete failure (no plants saved)
       throw error;
     }
   }

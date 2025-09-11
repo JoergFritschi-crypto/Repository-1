@@ -786,17 +786,65 @@ export function PlantImportWizard() {
         setProgressPollInterval(null);
       }
 
-      toast({
-        title: "✓ Scraping Complete",
-        description: `Successfully scraped ${result.stats?.savedToDatabase || 0} plants from the website`,
-      });
+      // Handle both full success and partial success scenarios
+      const savedCount = result.stats?.savedToDatabase || result.metadata?.saved || 0;
+      const hasErrors = result.metadata?.hasErrors || result.stats?.errors > 0;
+      
+      if (savedCount > 0) {
+        toast({
+          title: hasErrors ? "⚠️ Scraping Completed with Issues" : "✓ Scraping Complete",
+          description: hasErrors 
+            ? `Successfully saved ${savedCount} plants to database, but encountered some errors during processing`
+            : `Successfully scraped ${savedCount} plants from the website`,
+          variant: hasErrors ? "default" : "default"
+        });
+      } else {
+        toast({
+          title: "⚠️ Scraping Completed",
+          description: "No new plants were found or saved from this website",
+          variant: "default"
+        });
+      }
     } catch (error) {
       console.error('Scraping error:', error);
-      toast({
-        title: "Scraping Failed",
-        description: "Failed to scrape the website. Please check the URL and try again.",
-        variant: "destructive"
-      });
+      
+      // Check if there might be partial success by checking recent plants
+      // This helps show success even when the response parsing failed
+      try {
+        const checkResponse = await fetch('/api/plants/search?limit=5&verification_status=verified', {
+          credentials: 'include'
+        });
+        if (checkResponse.ok) {
+          const recentPlants = await checkResponse.json();
+          const recentCount = recentPlants?.length || 0;
+          
+          if (recentCount > 0) {
+            toast({
+              title: "⚠️ Import May Have Partially Succeeded",
+              description: `Check the plant database - some plants may have been imported despite the error. See ${recentCount} recent verified plants.`,
+              variant: "default"
+            });
+          } else {
+            toast({
+              title: "Scraping Failed",
+              description: "Failed to scrape the website. Please check the URL and try again.",
+              variant: "destructive"
+            });
+          }
+        } else {
+          toast({
+            title: "Scraping Failed",
+            description: "Failed to scrape the website. Please check the URL and try again.",
+            variant: "destructive"
+          });
+        }
+      } catch (checkError) {
+        toast({
+          title: "Scraping Failed",
+          description: "Failed to scrape the website. Please check the URL and try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsScrapingUrl(false);
     }
