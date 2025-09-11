@@ -118,10 +118,14 @@ export default function Landing() {
                     <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Start designing with AI guidance</p>
                   </div>
                   <div className="flex-1">
-                    <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto" data-testid="button-watch-demo">
-                      🏡 Browse Gallery
+                    <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto" data-testid="button-watch-demo" asChild>
+                      {!isAuthenticated ? (
+                        <a href="/api/login">🌿 Browse Plants</a>
+                      ) : (
+                        <Link href="/plant-library">🌿 Browse Plants</Link>
+                      )}
                     </Button>
-                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">See inspiring garden designs</p>
+                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Explore our plant library</p>
                   </div>
                 </div>
                 <div className="text-center">
