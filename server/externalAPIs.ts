@@ -722,114 +722,219 @@ export class FireCrawlAPI {
           }
         };
       } else {
-        // Standard single-page scraping for other sites
-        const scrapeResult = await this.app.scrapeUrl(url, {
-          formats: ['extract', 'markdown'],
+        // Universal scraping approach for non-German sites
+        console.log('Using universal scraping approach for:', url);
+        
+        // Step 1: Scrape the page first to get content
+        const scrapedData = await this.app.scrapeUrl(url, {
+          formats: ['markdown'],
           timeout: 30000,
-          extract: {
-            schema: {
-              type: 'object',
-              properties: {
-                products: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      name: {
-                        type: 'string',
-                        description: 'Product name or plant name'
-                      },
-                      scientificName: {
-                        type: 'string',
-                        description: 'Scientific/botanical name if present'
-                      },
-                      price: {
-                        type: 'string',
-                        description: 'Price of the product'
-                      },
-                      description: {
-                        type: 'string',
-                        description: 'Product description or details'
-                      },
-                      imageUrl: {
-                        type: 'string',
-                        description: 'Product image URL'
-                      },
-                      link: {
-                        type: 'string',
-                        description: 'Link to product page'
-                      },
-                      characteristics: {
-                        type: 'object',
-                        properties: {
-                          height: { type: 'string' },
-                          spread: { type: 'string' },
-                          bloomTime: { type: 'string' },
-                          sunlight: { type: 'string' },
-                          water: { type: 'string' },
-                          hardiness: { type: 'string' }
-                        }
-                      }
+          waitFor: 2000
+        });
+        
+        if (!scrapedData.success || !scrapedData.markdown) {
+          throw new Error(scrapedData.error || 'Failed to scrape page');
+        }
+        
+        console.log(`FireCrawl: Successfully scraped ${url}`);
+        console.log(`FireCrawl: Content length: ${scrapedData.markdown.length} characters`);
+        
+        // Step 2: Check if it's a catalog page (list of products) or single product
+        const isCatalogPage = this.detectCatalogPage(url, scrapedData.markdown || '')
+        
+        let plants = [];
+        let metadata: any = {
+          url,
+          scrapedAt: new Date().toISOString(),
+          creditsUsed: 1,
+          rawContentLength: scrapedData.markdown?.length || 0
+        };
+        
+        // Initialize progress tracking for non-German sites
+        this.resetProgress();
+        this.updateProgress({
+          isActive: true,
+          startTime: new Date(),
+          totalUrls: 1, // Will be updated if catalog page
+          processedUrls: 0,
+          savedPlants: 0,
+          duplicatePlants: 0,
+          failedPlants: 0,
+          currentBatch: 1,
+          totalBatches: 1
+        });
+        
+        if (!isCatalogPage) {
+          // Single product page - extract directly
+          console.log('FireCrawl: Using universal extraction for single product page');
+          if (this.perplexity) {
+            const plantsArray = await this.perplexity.extractPlantDataUniversal(scrapedData.markdown, url);
+            console.log(`FireCrawl: AI extraction found ${plantsArray?.length || 0} plant(s)`);
+            
+            if (plantsArray && plantsArray.length > 0) {
+              plants = plantsArray;
+            }
+          }
+          
+          // Fallback to basic extraction if AI fails or no plants found
+          if (plants.length === 0) {
+            console.log('FireCrawl: AI extraction failed or found no plants, trying basic pattern matching...');
+            plants = this.extractPlantsFromContent(scrapedData.markdown);
+            console.log(`FireCrawl: Basic extraction found ${plants.length} plant(s)`);
+          }
+          
+          // Update progress
+          this.updateProgress({
+            processedUrls: 1,
+            totalUrls: 1
+          });
+          
+          metadata.extractionMethod = plants.length > 0 ? 'single-product-ai' : 'single-product-fallback';
+        } else {
+          // Catalog page - extract product URLs first
+          console.log('FireCrawl: Detected catalog/collection page, attempting to extract product links...');
+          
+          // Extract all product URLs from the catalog
+          const productUrls = await this.extractUniversalProductUrls(scrapedData.markdown, url)
+          console.log(`FireCrawl: Found ${productUrls.length} potential product URLs`);
+          
+          // Update progress with total URLs
+          this.updateProgress({
+            totalUrls: productUrls.length || 1,
+            totalBatches: productUrls.length > 0 ? Math.ceil(productUrls.length / 10) : 1
+          });
+          
+          if (productUrls.length > 0) {
+            // Process products in batches
+            const batchSize = 10;
+            const maxProducts = Math.min(productUrls.length, saveToDatabase ? 100 : 20); // Limit for testing
+            metadata.creditsUsed += maxProducts; // Each product URL costs 1 credit
+            
+            for (let i = 0; i < maxProducts; i += batchSize) {
+              const batch = productUrls.slice(i, Math.min(i + batchSize, maxProducts));
+              const batchNum = Math.floor(i/batchSize) + 1;
+              console.log(`FireCrawl: Processing batch ${batchNum} (${batch.length} products)...`);
+              
+              // Update batch progress
+              this.updateProgress({
+                currentBatch: batchNum,
+                currentBatchUrl: batch[0]
+              });
+              
+              const batchPromises = batch.map(async (productUrl) => {
+                try {
+                  // Scrape individual product page
+                  const productResult = await this.app.scrapeUrl(productUrl, {
+                    formats: ['markdown'],
+                    timeout: 15000,
+                    waitFor: 1000
+                  });
+                  
+                  if (productResult.success && productResult.markdown && this.perplexity) {
+                    // Use AI to extract plant data
+                    const plantsArray = await this.perplexity.extractPlantDataUniversal(
+                      productResult.markdown, 
+                      productUrl
+                    );
+                    
+                    // Since extractPlantDataUniversal returns an array, handle it properly
+                    if (plantsArray && plantsArray.length > 0) {
+                      // Update progress
+                      this.updateProgress({
+                        processedUrls: this.getProgress().processedUrls + 1
+                      });
+                      
+                      // Return the first plant if multiple found (for product pages)
+                      return {
+                        ...plantsArray[0],
+                        product_url: productUrl,
+                        sources: { firecrawl: true, ai_extracted: true }
+                      };
                     }
                   }
+                } catch (error) {
+                  console.error(`Failed to process ${productUrl}:`, error);
                 }
-              }
-            },
-            prompt: `Extract all plant/perennial products from this nursery catalog page. For each product, capture:
-              - Product name (common name and/or scientific name)
-              - Price if listed
-              - Any description or details
-              - Product image URL if available
-              - Link to the product detail page
-              - Any growing characteristics mentioned (height, spread, bloom time, sun requirements, etc.)
+                return null;
+              });
               
-              Focus ONLY on actual plant products, not accessories, tools, gift cards, or other non-plant items.
-              Look for product cards, listings, or grid items that represent individual plants for sale.`
+              const batchResults = await Promise.all(batchPromises);
+              const validPlants = batchResults.filter(p => p !== null);
+              plants.push(...validPlants);
+              
+              console.log(`FireCrawl: Batch complete: extracted ${validPlants.length} plants`);
+              
+              // Small delay between batches
+              if (i + batchSize < maxProducts) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+            }
+            metadata.extractionMethod = 'catalog-products';
+          } else {
+            // No product URLs found, use AI to extract directly from catalog page
+            console.log('FireCrawl: No product URLs found, using AI extraction on catalog page...');
+            if (this.perplexity) {
+              try {
+                const catalogPlants = await this.perplexity.extractPlantDataUniversal(scrapedData.markdown, url);
+                plants = catalogPlants || [];
+                console.log(`FireCrawl: AI catalog extraction found ${plants.length} plants`);
+                
+                // Update progress
+                this.updateProgress({
+                  processedUrls: 1,
+                  totalUrls: 1
+                });
+              } catch (error) {
+                console.error('FireCrawl: AI extraction from catalog failed:', error);
+              }
+            }
+            
+            // Fallback to basic extraction if AI fails
+            if (plants.length === 0) {
+              console.log('FireCrawl: AI failed, trying basic extraction from catalog...');
+              plants = this.extractPlantsFromContent(scrapedData.markdown);
+              console.log(`FireCrawl: Basic extraction found ${plants.length} plants`);
+            }
+            
+            metadata.extractionMethod = plants.length > 0 ? 'catalog-ai' : 'catalog-fallback'
           }
+        }
+        
+        // Save to database if enabled
+        if (saveToDatabase && plants.length > 0) {
+          console.log(`FireCrawl: Saving ${plants.length} plants to database...`);
+          const results = await this.savePlantsToDatabase(plants, force, url);
+          
+          // Update progress with save results
+          this.updateProgress({
+            savedPlants: results.savedPlants,
+            duplicatePlants: results.duplicatePlants,
+            failedPlants: results.failedPlants
+          });
+          
+          metadata = {
+            ...metadata,
+            savedToDatabase: true,
+            plantsFound: plants.length,
+            plantsSaved: results.savedPlants,
+            duplicates: results.duplicatePlants,
+            errors: results.failedPlants
+          };
+          
+          console.log(`FireCrawl: Save results: ${results.savedPlants} saved, ${results.duplicatePlants} duplicates, ${results.failedPlants} errors`);
+        } else {
+          metadata.savedToDatabase = false;
+          metadata.plantsFound = plants.length;
+        }
+        
+        // Mark progress as complete
+        this.updateProgress({
+          isActive: false
         });
-
-        if (!scrapeResult.success) {
-          throw new Error(scrapeResult.error || 'Scraping failed');
-        }
-
-        console.log('FireCrawl extraction result:', JSON.stringify(scrapeResult.extract, null, 2));
-
-        // Convert extracted products to plant format
-        let plants = [];
-        
-        if (scrapeResult.extract?.products) {
-          plants = scrapeResult.extract.products.map((product: any) => ({
-            common_name: product.name || 'Unknown',
-            scientific_name: product.scientificName || this.extractScientificFromName(product.name),
-            description: product.description || '',
-            price: product.price,
-            image_url: product.imageUrl,
-            product_url: product.link,
-            height: product.characteristics?.height,
-            spread: product.characteristics?.spread,
-            bloom_time: product.characteristics?.bloomTime,
-            sunlight: product.characteristics?.sunlight ? [product.characteristics.sunlight] : undefined,
-            watering: product.characteristics?.water,
-            hardiness_zones: product.characteristics?.hardiness ? [product.characteristics.hardiness] : undefined,
-            sources: { firecrawl: true }
-          }));
-        }
-        
-        // If structured extraction didn't work, fall back to content parsing
-        if (plants.length === 0 && scrapeResult.markdown) {
-          console.log('No products found via extraction, trying content parsing...');
-          plants = this.extractPlantsFromContent(scrapeResult.markdown);
-        }
 
         return {
           plants,
-          metadata: {
-            url,
-            scrapedAt: new Date().toISOString(),
-            creditsUsed: 1,
-            rawContentLength: scrapeResult.markdown?.length || 0,
-            extractionMethod: plants.length > 0 ? (scrapeResult.extract?.products ? 'structured' : 'content-parsing') : 'failed'
-          }
+          metadata
         };
       }
     } catch (error) {
@@ -1110,6 +1215,284 @@ export class FireCrawlAPI {
     return match ? match[1] : undefined;
   }
 
+  // Extract product URLs from any catalog page (universal approach)
+  private extractUniversalProductUrls(markdown: string, baseUrl: string): string[] {
+    const urls = new Set<string>();
+    const domain = new URL(baseUrl).origin;
+    const basePath = new URL(baseUrl).pathname;
+    
+    // Common product URL patterns
+    const patterns = [
+      // Markdown links
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      // HTML links
+      /href=["']([^"']+)["']/gi,
+      // Direct URLs in text
+      /https?:\/\/[^\s<>"]+/g
+    ];
+    
+    // Keywords that indicate product pages
+    const productKeywords = [
+      '/product/', '/products/', '/plant/', '/plants/',
+      '/item/', '/items/', '/perennial/', '/perennials/',
+      '/flower/', '/flowers/', '/shop/', '/detail/',
+      '/p/', '/pd/', '/i/'
+    ];
+    
+    // Keywords to exclude (not product pages)
+    const excludeKeywords = [
+      '/category/', '/collection/', '/cart/', '/checkout/',
+      '/account/', '/login/', '/about/', '/contact/',
+      '/blog/', '/page/', '/search/', '/filter/',
+      '.jpg', '.png', '.gif', '.pdf', '.css', '.js',
+      'facebook.', 'twitter.', 'instagram.', 'pinterest.',
+      'youtube.', 'linkedin.'
+    ];
+    
+    patterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(markdown)) !== null) {
+        let url = pattern === patterns[0] ? match[2] : match[1] || match[0];
+        
+        // Skip empty or invalid URLs
+        if (!url || url === '#' || url.startsWith('javascript:')) continue;
+        
+        // Make relative URLs absolute
+        if (url.startsWith('/')) {
+          url = domain + url;
+        } else if (!url.startsWith('http')) {
+          // Relative path
+          const baseDir = basePath.substring(0, basePath.lastIndexOf('/') + 1);
+          url = domain + baseDir + url;
+        }
+        
+        // Check if URL looks like a product page
+        const urlLower = url.toLowerCase();
+        const hasProductKeyword = productKeywords.some(kw => urlLower.includes(kw));
+        const hasExcludeKeyword = excludeKeywords.some(kw => urlLower.includes(kw));
+        
+        // Include if it has product keywords or if it's a path-style product URL
+        if ((hasProductKeyword && !hasExcludeKeyword) || 
+            (url.startsWith(domain) && url !== baseUrl && !hasExcludeKeyword &&
+             url.match(/\/[a-z0-9-]+\/?$/i))) {
+          urls.add(url.split('?')[0].split('#')[0]); // Remove query params and anchors
+        }
+      }
+    });
+    
+    return Array.from(urls);
+  }
+  
+  // Extract plants from catalog page using AI
+  private async extractPlantsFromCatalogWithAI(markdown: string, pageUrl: string): Promise<any[]> {
+    if (!this.perplexity) {
+      return [];
+    }
+    
+    try {
+      console.log('Using AI to extract multiple plants from catalog page...');
+      
+      const messages = [
+        {
+          role: 'system' as const,
+          content: 'You are an expert at extracting plant product listings from nursery catalog pages. Extract ALL plants/products you can find.'
+        },
+        {
+          role: 'user' as const,
+          content: `Extract ALL plant products from this nursery catalog page. Return a JSON array where each item has available fields like:
+          - common_name
+          - scientific_name  
+          - price
+          - description
+          - height
+          - spread
+          - bloom_time
+          - sunlight
+          - water
+          - etc.
+
+Page URL: ${pageUrl}
+Content:
+${markdown.substring(0, 8000)}
+
+Return format: [{plant1}, {plant2}, ...] as a JSON array.`
+        }
+      ];
+      
+      const response = await this.perplexity.makeRequest(messages, {
+        model: 'sonar-pro',
+        maxTokens: 3000,
+        temperature: 0.3
+      });
+      
+      const content = response.choices[0].message.content;
+      let plants = [];
+      
+      try {
+        // Try to parse as JSON array
+        plants = JSON.parse(content);
+        if (!Array.isArray(plants)) {
+          plants = [plants]; // Convert single object to array
+        }
+      } catch (e) {
+        // Try to extract JSON from markdown
+        const jsonMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/); 
+        if (jsonMatch) {
+          plants = JSON.parse(jsonMatch[0]);
+        }
+      }
+      
+      return plants.map(plant => ({
+        ...plant,
+        product_url: pageUrl,
+        sources: { firecrawl: true, ai_extracted: true }
+      }));
+      
+    } catch (error) {
+      console.error('Failed to extract plants from catalog with AI:', error);
+      return [];
+    }
+  }
+  
+  // Convert extracted plant data to database insert format
+  private convertToInsertPlant(plant: any, sourceUrl: string): InsertPlant {
+    // Extract botanical parts from scientific name
+    const botanicalParts = plant.scientific_name ? 
+      extractBotanicalParts(plant.scientific_name) : 
+      { genus: null, species: null, cultivar: null };
+    
+    // Generate scientific name if missing
+    let scientificName = plant.scientific_name;
+    if (!scientificName && plant.common_name) {
+      // Try to extract from common name
+      const parts = extractBotanicalParts(plant.common_name);
+      if (parts.genus) {
+        scientificName = parts.genus;
+        if (parts.species) scientificName += ` ${parts.species}`;
+        if (parts.cultivar) scientificName += ` '${parts.cultivar}'`;
+      } else {
+        // Fallback: use common name as genus
+        scientificName = plant.common_name.split(' ')[0] + ' sp.';
+      }
+    }
+    
+    // Parse dimensions if present
+    let dimensions = {
+      heightMinCm: null as number | null,
+      heightMaxCm: null as number | null,
+      spreadMinCm: null as number | null,
+      spreadMaxCm: null as number | null
+    };
+    
+    if (plant.height || plant.mature_size) {
+      const heightStr = plant.height || plant.mature_size;
+      const heightMatch = heightStr.match(/(\d+)\s*-?\s*(\d*)\s*(cm|m|ft|in|'|"|inches)?/i);
+      if (heightMatch) {
+        const min = parseFloat(heightMatch[1]);
+        const max = heightMatch[2] ? parseFloat(heightMatch[2]) : min;
+        const unit = heightMatch[3]?.toLowerCase() || 'cm';
+        
+        // Convert to cm
+        let multiplier = 1;
+        if (unit === 'm') multiplier = 100;
+        else if (unit === 'ft' || unit === "'") multiplier = 30.48;
+        else if (unit === 'in' || unit === '"' || unit === 'inches') multiplier = 2.54;
+        
+        dimensions.heightMinCm = Math.round(min * multiplier);
+        dimensions.heightMaxCm = Math.round(max * multiplier);
+      }
+    }
+    
+    if (plant.spread) {
+      const spreadMatch = plant.spread.match(/(\d+)\s*-?\s*(\d*)\s*(cm|m|ft|in|'|"|inches)?/i);
+      if (spreadMatch) {
+        const min = parseFloat(spreadMatch[1]);
+        const max = spreadMatch[2] ? parseFloat(spreadMatch[2]) : min;
+        const unit = spreadMatch[3]?.toLowerCase() || 'cm';
+        
+        let multiplier = 1;
+        if (unit === 'm') multiplier = 100;
+        else if (unit === 'ft' || unit === "'") multiplier = 30.48;
+        else if (unit === 'in' || unit === '"' || unit === 'inches') multiplier = 2.54;
+        
+        dimensions.spreadMinCm = Math.round(min * multiplier);
+        dimensions.spreadMaxCm = Math.round(max * multiplier);
+      }
+    }
+    
+    // Normalize sunlight values
+    let sunlight = plant.sunlight;
+    if (typeof sunlight === 'string') {
+      sunlight = [sunlight];
+    }
+    
+    return {
+      scientificName: scientificName || 'Unknown sp.',
+      commonName: plant.common_name || '',
+      family: plant.family,
+      genus: botanicalParts.genus || plant.genus,
+      species: botanicalParts.species || plant.species,
+      cultivar: botanicalParts.cultivar || plant.cultivar,
+      type: plant.type || 'perennial',
+      externalId: plant.product_url ? `firecrawl-${plant.product_url}` : undefined,
+      sourceUrl: plant.product_url || sourceUrl,
+      description: plant.description,
+      heightMinCm: dimensions.heightMinCm,
+      heightMaxCm: dimensions.heightMaxCm,
+      spreadMinCm: dimensions.spreadMinCm,
+      spreadMaxCm: dimensions.spreadMaxCm,
+      bloomStartMonth: this.parseMonth(plant.bloom_time, true),
+      bloomEndMonth: this.parseMonth(plant.bloom_time, false),
+      flowerColor: plant.flower_color,
+      sunlight: sunlight,
+      watering: plant.water || plant.watering,
+      soil: plant.soil,
+      hardiness: plant.hardiness,
+      maintenance: plant.care_level || plant.maintenance,
+      growthRate: plant.growth_rate,
+      droughtTolerant: plant.features?.includes('drought') || undefined,
+      saltTolerant: plant.features?.includes('salt') || undefined,
+      verificationStatus: 'pending' as const
+    };
+  }
+  
+  // Parse month from bloom time string
+  private parseMonth(bloomTime: string | undefined, isStart: boolean): number | undefined {
+    if (!bloomTime) return undefined;
+    
+    const months = {
+      'january': 1, 'jan': 1, 'januar': 1,
+      'february': 2, 'feb': 2, 'februar': 2,
+      'march': 3, 'mar': 3, 'märz': 3, 'maerz': 3,
+      'april': 4, 'apr': 4,
+      'may': 5, 'mai': 5,
+      'june': 6, 'jun': 6, 'juni': 6,
+      'july': 7, 'jul': 7, 'juli': 7,
+      'august': 8, 'aug': 8,
+      'september': 9, 'sep': 9, 'sept': 9,
+      'october': 10, 'oct': 10, 'oktober': 10,
+      'november': 11, 'nov': 11,
+      'december': 12, 'dec': 12, 'dezember': 12,
+      'spring': 4, 'summer': 7, 'fall': 10, 'autumn': 10, 'winter': 12
+    };
+    
+    const bloomLower = bloomTime.toLowerCase();
+    const monthNames = Object.keys(months);
+    const foundMonths: number[] = [];
+    
+    monthNames.forEach(month => {
+      if (bloomLower.includes(month)) {
+        foundMonths.push(months[month as keyof typeof months]);
+      }
+    });
+    
+    if (foundMonths.length > 0) {
+      return isStart ? Math.min(...foundMonths) : Math.max(...foundMonths);
+    }
+    
+    return undefined;
+  }
+
   private extractPlantsFromContent(content: string): any[] {
     const plants: any[] = [];
     
@@ -1154,6 +1537,192 @@ export class FireCrawlAPI {
     // If no structured data found, try to extract from paragraphs
     if (plants.length === 0) {
       plants.push(...this.extractFromParagraphs(content));
+    }
+    
+    return plants;
+  }
+
+  // Detect if a page is a catalog/collection vs single product page
+  private detectCatalogPage(url: string, content: string): boolean {
+    // URL-based detection
+    const catalogUrlPatterns = [
+      '/collections/', '/catalog/', '/shop/', '/category/',
+      '/products', '/plants', '/perennials', '/flowers',
+      '/browse/', '/listing/', '/all-plants/', '/our-plants/'
+    ];
+    
+    const singleProductUrlPatterns = [
+      '/product/', '/p/', '/pd/', '/item/', '/detail/',
+      // Common single product URL format: /something/product-name
+      /\/[a-z0-9-]+\/[a-z0-9-]+\/?$/i
+    ];
+    
+    const urlLower = url.toLowerCase();
+    
+    // Check URL patterns
+    const hasCatalogPattern = catalogUrlPatterns.some(pattern => urlLower.includes(pattern));
+    const hasSinglePattern = singleProductUrlPatterns.some(pattern => 
+      typeof pattern === 'string' ? urlLower.includes(pattern) : pattern.test(url)
+    );
+    
+    // If URL strongly indicates single product, return false
+    if (hasSinglePattern && !hasCatalogPattern) {
+      return false;
+    }
+    
+    // Content-based detection
+    const contentLower = content.toLowerCase().substring(0, 5000); // Check first 5000 chars
+    
+    // Indicators of catalog pages
+    const catalogIndicators = [
+      'showing', 'products found', 'sort by', 'filter by',
+      'page 1', 'pagination', 'results', 'items',
+      'view all', 'load more', 'categories', 'collections'
+    ];
+    
+    // Indicators of single product pages
+    const singleIndicators = [
+      'add to cart', 'buy now', 'quantity:', 'in stock',
+      'out of stock', 'product description', 'specifications',
+      'shipping information', 'reviews', 'related products'
+    ];
+    
+    const catalogScore = catalogIndicators.filter(ind => contentLower.includes(ind)).length;
+    const singleScore = singleIndicators.filter(ind => contentLower.includes(ind)).length;
+    
+    // Count number of product links/items
+    const productLinkCount = (content.match(/\/product[s]?\//gi) || []).length;
+    const priceCount = (content.match(/[£$€]\s*\d+/g) || []).length;
+    
+    // Decision logic
+    if (productLinkCount > 5 || priceCount > 5) {
+      return true; // Multiple products = catalog
+    }
+    
+    if (catalogScore > singleScore) {
+      return true;
+    }
+    
+    if (singleScore > catalogScore) {
+      return false;
+    }
+    
+    // Default: if URL suggests catalog, trust it
+    return hasCatalogPattern;
+  }
+
+  // Prepare plant data for database insertion
+  private async preparePlantData(plantData: any, sourceUrl: string): Promise<InsertPlant> {
+    // Use the existing convertToInsertPlant method
+    return this.convertToInsertPlant(plantData, sourceUrl);
+  }
+
+  // Save multiple plants to database with deduplication
+  private async savePlantsToDatabase(plants: any[], force: boolean, sourceUrl: string): Promise<{
+    savedPlants: number;
+    duplicatePlants: number;
+    failedPlants: number;
+  }> {
+    let savedPlants = 0;
+    let duplicatePlants = 0;
+    let failedPlants = 0;
+    
+    for (const plant of plants) {
+      try {
+        const prepared = await this.preparePlantData(plant, sourceUrl);
+        
+        // Check for existing plant
+        const existingPlant = await storage.getPlantByScientificName(
+          prepared.scientificName || prepared.commonName
+        );
+        
+        if (existingPlant && !force) {
+          console.log(`Plant already exists: ${prepared.commonName || prepared.scientificName}`);
+          duplicatePlants++;
+        } else {
+          const saved = await storage.createPlant(prepared);
+          if (saved) {
+            console.log(`Saved plant: ${prepared.commonName || prepared.scientificName}`);
+            savedPlants++;
+          } else {
+            failedPlants++;
+          }
+        }
+      } catch (error) {
+        console.error(`Failed to save plant:`, error);
+        failedPlants++;
+      }
+    }
+    
+    return { savedPlants, duplicatePlants, failedPlants };
+  }
+
+  // Extract care information from text
+  private extractCareInfo(text: string, plant: any): void {
+    // Extract sun requirements
+    if (text.match(/full sun/i)) {
+      plant.sunlight = 'Full Sun';
+    } else if (text.match(/partial (sun|shade)/i)) {
+      plant.sunlight = 'Partial Shade';
+    } else if (text.match(/full shade/i)) {
+      plant.sunlight = 'Full Shade';
+    }
+    
+    // Extract water needs
+    if (text.match(/drought tolerant/i) || text.match(/low water/i)) {
+      plant.water = 'Low';
+    } else if (text.match(/moderate water/i) || text.match(/regular water/i)) {
+      plant.water = 'Moderate';
+    } else if (text.match(/high water/i) || text.match(/moist/i)) {
+      plant.water = 'High';
+    }
+    
+    // Extract height if mentioned
+    const heightMatch = text.match(/(\d+)\s*(?:to|-)?\s*(\d*)\s*(ft|feet|m|meter|cm|inch|in|'|")[\s.]?(?:tall|height)?/i);
+    if (heightMatch && !plant.height) {
+      plant.height = heightMatch[0];
+    }
+    
+    // Extract bloom time
+    const months = ['january', 'february', 'march', 'april', 'may', 'june',
+                   'july', 'august', 'september', 'october', 'november', 'december'];
+    const seasons = ['spring', 'summer', 'fall', 'autumn', 'winter'];
+    const bloomTerms = [...months, ...seasons];
+    
+    bloomTerms.forEach(term => {
+      if (text.toLowerCase().includes(term) && !plant.bloom_time) {
+        plant.bloom_time = term;
+      }
+    });
+  }
+
+  // Extract plants from unstructured paragraphs
+  private extractFromParagraphs(content: string): any[] {
+    const plants: any[] = [];
+    const paragraphs = content.split(/\n{2,}/);
+    
+    for (const para of paragraphs) {
+      // Look for plant-like content
+      const scientificMatch = para.match(/([A-Z][a-z]+ [a-z]+(?:\s+[''][^'']+[''])?)/g);
+      const priceMatch = para.match(/[£$€]\s*\d+(?:\.\d{2})?/);
+      
+      if (scientificMatch && scientificMatch.length > 0) {
+        const plant: any = {
+          scientific_name: scientificMatch[0],
+          common_name: '',
+          description: para.substring(0, 200),
+          sources: { firecrawl: true }
+        };
+        
+        if (priceMatch) {
+          plant.price = priceMatch[0];
+        }
+        
+        // Extract care info from paragraph
+        this.extractCareInfo(para, plant);
+        
+        plants.push(plant);
+      }
     }
     
     return plants;

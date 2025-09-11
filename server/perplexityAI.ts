@@ -560,7 +560,296 @@ class PerplexityAI {
     }
   }
 
+  // New universal plant data extraction with better AI capabilities
+  async extractPlantDataUniversal(content: string, url?: string): Promise<any> {
+    const messages: PerplexityMessage[] = [
+      {
+        role: 'system',
+        content: `You are an expert botanist and horticulturist specializing in extracting plant data from various sources.
+          Extract detailed plant information from any content format (e-commerce pages, nursery catalogs, blog posts, etc.).
+          Be flexible with the format - work with whatever information is available.
+          
+          Output your response as a JSON array of plant objects. Each plant should have:
+          {
+            "common_name": "Common name of the plant",
+            "scientific_name": "Botanical/Latin name (if available)",
+            "description": "Detailed description combining all available info",
+            "price": "Price if mentioned (as string with currency)",
+            "size": "Size/pot size if mentioned",
+            "height": "Height range or mature height",
+            "spread": "Width/spread if mentioned",
+            "sun_exposure": "Full sun/partial shade/shade etc",
+            "water_needs": "Watering requirements",
+            "soil_type": "Soil preferences",
+            "hardiness_zone": "USDA zones or temperature range",
+            "bloom_time": "When it flowers",
+            "flower_color": "Flower colors",
+            "foliage_color": "Leaf colors",
+            "growth_rate": "Fast/moderate/slow",
+            "maintenance": "Low/moderate/high",
+            "attracts": "Wildlife it attracts",
+            "deer_resistant": "Yes/no/unknown",
+            "native_to": "Native regions",
+            "cultivar": "Specific cultivar name if mentioned",
+            "availability": "In stock/out of stock/limited",
+            "special_features": "Any notable features",
+            "care_instructions": "Care tips if provided",
+            "url": "Product URL if detectable"
+          }
+          
+          IMPORTANT RULES:
+          1. Extract ALL plants found in the content
+          2. Use null for missing fields, don't make up data
+          3. If content appears to be a catalog/list, extract each plant separately
+          4. If content is a single plant page, extract just that one plant
+          5. Preserve prices and sizes exactly as shown
+          6. For scientific names, use proper botanical formatting
+          7. If no plants are found, return an empty array []`
+      },
+      {
+        role: 'user',
+        content: `Extract plant data from this content:
+          
+          Source URL: ${url || 'Unknown'}
+          
+          Content:
+          ${content.substring(0, 30000)} ${content.length > 30000 ? '...[truncated]' : ''}
+          
+          Please extract all plant information found in this content. Return as a JSON array.`
+      }
+    ];
+
+    try {
+      const response = await this.makeRequest(messages, {
+        maxTokens: 4000,
+        temperature: 0.3, // Lower temperature for more consistent extraction
+        searchRecencyFilter: 'month'
+      });
+
+      const responseContent = response.choices[0].message.content;
+      
+      // Try to parse the JSON response
+      try {
+        // Clean up the response - sometimes AI adds markdown formatting
+        const cleanedContent = responseContent
+          .replace(/```json\n?/g, '')
+          .replace(/```\n?/g, '')
+          .trim();
+        
+        const plants = JSON.parse(cleanedContent);
+        
+        // Ensure it's an array
+        if (!Array.isArray(plants)) {
+          console.warn('AI returned non-array, wrapping in array');
+          return [plants];
+        }
+        
+        // Post-process plants to ensure data quality
+        return plants.map(plant => ({
+          ...plant,
+          // Ensure common_name exists
+          common_name: plant.common_name || plant.name || 'Unknown Plant',
+          // Clean up scientific name
+          scientific_name: plant.scientific_name?.replace(/['"]/g, '').trim() || null,
+          // Ensure description exists
+          description: plant.description || `${plant.common_name || 'Plant'} available from nursery`,
+          // Normalize sun exposure
+          sun_exposure: this.normalizeSunExposure(plant.sun_exposure),
+          // Add source URL if not present
+          url: plant.url || url || null
+        }));
+        
+      } catch (parseError) {
+        console.error('Failed to parse AI response as JSON:', parseError);
+        console.log('Raw AI response:', responseContent);
+        
+        // Fallback: Try to extract basic info with regex
+        return this.fallbackExtraction(content, url);
+      }
+      
+    } catch (error) {
+      console.error('Error extracting plant data with AI:', error);
+      // Fallback to basic extraction
+      return this.fallbackExtraction(content, url);
+    }
+  }
+
+  private normalizeSunExposure(exposure: string | null): string | null {
+    if (!exposure) return null;
+    
+    const normalized = exposure.toLowerCase();
+    if (normalized.includes('full sun')) return 'Full Sun';
+    if (normalized.includes('partial') || normalized.includes('part shade')) return 'Partial Shade';
+    if (normalized.includes('full shade') || normalized.includes('deep shade')) return 'Full Shade';
+    if (normalized.includes('sun')) return 'Full to Partial Sun';
+    if (normalized.includes('shade')) return 'Partial to Full Shade';
+    
+    return exposure; // Return original if no match
+  }
+
+  private fallbackExtraction(content: string, url?: string): any[] {
+    console.log('Using fallback extraction method...');
+    
+    const plants: any[] = [];
+    
+    // Try to find plant names with basic patterns
+    // Look for patterns like "Name - Scientific Name" or "Name (Scientific Name)"
+    const plantPatterns = [
+      /^##\s*([A-Z][^-\n]+?)(?:\s*[-–]\s*|\s*\()?([A-Z][a-z]+ [a-z]+(?:\s+['"][^'"]+['"])?)/gm,
+      /^###\s*([A-Z][^-\n]+?)(?:\s*[-–]\s*|\s*\()?([A-Z][a-z]+ [a-z]+)/gm,
+      /\*\*([A-Z][^*]+?)\*\*(?:\s*[-–]\s*|\s*\()?([A-Z][a-z]+ [a-z]+)/g
+    ];
+    
+    for (const pattern of plantPatterns) {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        const [_, commonName, scientificName] = match;
+        
+        // Extract price if nearby (within 200 chars)
+        const nearbyContent = content.substring(match.index, Math.min(match.index + 500, content.length));
+        const priceMatch = nearbyContent.match(/[£$€]\s*\d+(?:\.\d{2})?/);
+        
+        plants.push({
+          common_name: commonName.trim(),
+          scientific_name: scientificName.trim(),
+          description: `${commonName} - ${scientificName}`,
+          price: priceMatch ? priceMatch[0] : null,
+          url: url || null
+        });
+      }
+    }
+    
+    // If no plants found with patterns, try a very basic approach
+    if (plants.length === 0) {
+      // Look for any heading that might be a plant name
+      const headingPattern = /^###?\s*([A-Z][A-Za-z\s'-]+)$/gm;
+      let match;
+      let count = 0;
+      
+      while ((match = headingPattern.exec(content)) !== null && count < 10) {
+        const name = match[1].trim();
+        // Filter out obvious non-plant headings
+        if (!name.match(/^(Shop|Cart|Menu|Contact|About|Home|Products?|Categories|Footer|Header|Navigation)/i)) {
+          plants.push({
+            common_name: name,
+            scientific_name: null,
+            description: `${name} from catalog`,
+            url: url || null
+          });
+          count++;
+        }
+      }
+    }
+    
+    console.log(`Fallback extraction found ${plants.length} potential plants`);
+    return plants;
+  }
+
+  // Old universal plant data extraction (legacy method)
+  async extractPlantDataUniversalLegacy(markdown: string, pageUrl: string): Promise<any> {
+    const messages: PerplexityMessage[] = [
+      {
+        role: 'system',
+        content: `You are an expert botanist and web data extraction specialist. 
+          Extract plant/product information from any nursery or garden website regardless of language or structure.
+          Always respond with valid JSON. Be thorough but flexible in extraction.`
+      },
+      {
+        role: 'user',
+        content: `Analyze this nursery/garden website page and extract ALL plant-related information you can find.
+
+Page URL: ${pageUrl}
+Content:
+${markdown.substring(0, 6000)}
+
+Extract any available plant information and respond in JSON format:
+{
+  "common_name": "Common name in original language or English",
+  "scientific_name": "Scientific/botanical Latin name if present (e.g., Genus species 'Cultivar')",
+  "description": "Full plant description if available",
+  "price": "Price with currency symbol if present",
+  "height": "Height/size information WITH UNITS (e.g., '30-40 cm', '2-3 ft', '1 m')",
+  "spread": "Width/spread information WITH UNITS",
+  "bloom_time": "Blooming period or season",
+  "sunlight": "Sun requirements - normalize to: 'full sun', 'partial shade', 'full shade', or 'sun to partial shade'",
+  "water": "Water requirements (e.g., low, moderate, high, drought tolerant)",
+  "hardiness": "Hardiness zone or temperature tolerance",
+  "soil": "Soil requirements or preferences",
+  "flower_color": "Flower color if mentioned",
+  "foliage_color": "Leaf/foliage color if mentioned",
+  "growth_habit": "Growth form (e.g., upright, spreading, climbing, mounding)",
+  "type": "Plant type (e.g., perennial, annual, shrub, tree, grass)",
+  "native_to": "Native region if mentioned",
+  "mature_size": "Mature dimensions if different from height/spread",
+  "features": "Special features (e.g., attracts butterflies, deer resistant, fragrant)",
+  "care_level": "Maintenance level (e.g., easy, moderate, high)",
+  "availability": "Stock status if mentioned",
+  "sku": "Product code or SKU if present"
+}
+
+EXTRACTION GUIDELINES:
+1. Extract whatever information is available - not all fields will be present
+2. Keep original language for names/descriptions but normalize technical terms
+3. ALWAYS include units for measurements (cm, m, ft, inches, etc.)
+4. For sunlight, translate/normalize to the standard terms listed
+5. Return null for fields with no data rather than guessing
+6. Look for information in product titles, descriptions, specifications, tables, or lists
+7. If multiple plants are on the page, focus on the main/first product`
+      }
+    ];
+
+    try {
+      const response = await this.makeRequest(messages, {
+        model: 'sonar-pro',
+        maxTokens: 2000,
+        temperature: 0.3,
+        searchRecencyFilter: 'month'
+      });
+
+      const content = response.choices[0].message.content;
+      
+      // Parse the JSON response
+      let parsedContent;
+      try {
+        parsedContent = JSON.parse(content);
+      } catch (parseError) {
+        // Try to extract JSON from markdown code block if present
+        const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
+          parsedContent = JSON.parse(codeBlockMatch[1]);
+        } else {
+          console.error('Failed to parse AI response:', content);
+          throw parseError;
+        }
+      }
+
+      // Clean up and validate the extracted data
+      const cleanedData: any = {};
+      for (const [key, value] of Object.entries(parsedContent)) {
+        if (value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== 'Not specified') {
+          cleanedData[key] = value;
+        }
+      }
+
+      return cleanedData;
+    } catch (error) {
+      console.error('Error extracting plant data with Perplexity:', error);
+      throw new Error('Failed to extract plant data using Perplexity AI');
+    }
+  }
+
+  // German-specific plant data extraction (legacy method for compatibility)
   async extractPlantData(markdown: string, pageUrl: string): Promise<any> {
+    // Check if this is German content
+    const isGermanContent = pageUrl.includes('.de') || 
+                          markdown.includes('Wuchshöhe') || 
+                          markdown.includes('Blütezeit');
+    
+    // Use universal method for non-German content
+    if (!isGermanContent) {
+      return this.extractPlantDataUniversal(markdown, pageUrl);
+    }
+
     const messages: PerplexityMessage[] = [
       {
         role: 'system',
