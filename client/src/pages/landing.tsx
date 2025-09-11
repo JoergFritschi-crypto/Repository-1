@@ -108,15 +108,15 @@ export default function Landing() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
                   <div className="flex-1">
-                    <Button asChild size="lg" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300 w-full h-12" data-testid="button-start-designing">
+                    <Button asChild size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full h-12" data-testid="button-start-designing">
                       {!isAuthenticated ? (
                         <a href="/api/login" className="flex items-center justify-center gap-2 h-full">
-                          <GardenDesignIcon className="w-4 h-4 brightness-0 invert" />
+                          <GardenDesignIcon className="w-4 h-4" />
                           Create Your Garden
                         </a>
                       ) : (
                         <Link href="/garden-properties" className="flex items-center justify-center gap-2 h-full">
-                          <GardenDesignIcon className="w-4 h-4 brightness-0 invert" />
+                          <GardenDesignIcon className="w-4 h-4" />
                           Create Your Garden
                         </Link>
                       )}
