@@ -505,7 +505,7 @@ class PerplexityAI {
             try {
               parsedContent = JSON.parse(jsonStr);
             } catch (e) {
-              console.error('Could not parse extracted JSON:', e.message);
+              console.error('Could not parse extracted JSON:', e instanceof Error ? e.message : String(e));
               throw new Error('Unable to parse response from Perplexity API');
             }
           }
