@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, Check, MoreVertical, Shield } from "lucide-react";
-import { GardenScapeIcon, GardenDesignIcon, SeasonIcon, PlantDoctorIcon } from "@/components/ui/brand-icons";
+import { GardenScapeIcon, GardenDesignIcon, SeasonIcon, PlantDoctorIcon, PlantLibraryIcon } from "@/components/ui/brand-icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
@@ -110,9 +110,15 @@ export default function Landing() {
                   <div className="flex-1">
                     <Button asChild size="lg" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto" data-testid="button-start-designing">
                       {!isAuthenticated ? (
-                        <a href="/api/login">🌱 Create Your Garden</a>
+                        <a href="/api/login" className="flex items-center gap-2">
+                          <GardenDesignIcon className="w-4 h-4" />
+                          Create Your Garden
+                        </a>
                       ) : (
-                        <Link href="/garden-properties">🌱 Create Your Garden</Link>
+                        <Link href="/garden-properties" className="flex items-center gap-2">
+                          <GardenDesignIcon className="w-4 h-4" />
+                          Create Your Garden
+                        </Link>
                       )}
                     </Button>
                     <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Start designing with AI guidance</p>
@@ -120,9 +126,15 @@ export default function Landing() {
                   <div className="flex-1">
                     <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto" data-testid="button-watch-demo" asChild>
                       {!isAuthenticated ? (
-                        <a href="/api/login">🌿 Browse Plants</a>
+                        <a href="/api/login" className="flex items-center gap-2">
+                          <PlantLibraryIcon className="w-4 h-4" />
+                          Browse Plants
+                        </a>
                       ) : (
-                        <Link href="/plant-library">🌿 Browse Plants</Link>
+                        <Link href="/plant-library" className="flex items-center gap-2">
+                          <PlantLibraryIcon className="w-4 h-4" />
+                          Browse Plants
+                        </Link>
                       )}
                     </Button>
                     <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Explore our plant library</p>
