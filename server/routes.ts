@@ -3070,7 +3070,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  // Set user as admin (one-time setup route - should be removed in production)
+  // Set user as admin - secured endpoint for bootstrap only
   app.post('/api/admin/make-admin', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -3080,14 +3080,34 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Only allow first user to become admin
-      const allUsers = await storage.getAllUsers();
-      if (allUsers.length > 1 && !user.isAdmin) {
-        return res.status(403).json({ message: "Admin already exists" });
+      // Check if user is already admin
+      if (user.isAdmin) {
+        return res.json({ message: "User is already an admin" });
       }
 
-      await storage.updateUser(userId, { isAdmin: true });
-      res.json({ message: "Admin privileges granted" });
+      // Get all users to check if any admin exists
+      const allUsers = await storage.getAllUsers();
+      const adminCount = allUsers.filter(u => u.isAdmin).length;
+      
+      // Option 1: Allow first user to become admin (bootstrap scenario)
+      if (adminCount === 0 && allUsers.length === 1) {
+        await storage.updateUser(userId, { isAdmin: true });
+        console.log(`First user ${userId} granted admin privileges (bootstrap)`);
+        return res.json({ message: "Admin privileges granted (first user)" });
+      }
+      
+      // Option 2: Allow admin creation only with special environment variable
+      if (process.env.ALLOW_ADMIN_CREATION === 'true') {
+        await storage.updateUser(userId, { isAdmin: true });
+        console.log(`User ${userId} granted admin privileges via environment variable`);
+        return res.json({ message: "Admin privileges granted" });
+      }
+      
+      // Otherwise, deny access
+      console.warn(`Unauthorized attempt to become admin by user ${userId}`);
+      return res.status(403).json({ 
+        message: "Access denied. Admin creation is not allowed." 
+      });
     } catch (error) {
       console.error("Error setting admin:", error);
       res.status(500).json({ message: "Failed to set admin" });

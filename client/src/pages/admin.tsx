@@ -79,7 +79,7 @@ export default function Admin() {
     }
   }, [testingTier]);
 
-  // Admin access check and make admin
+  // Admin access check
   useEffect(() => {
     if (!authLoading && !user) {
       toast({
@@ -93,18 +93,17 @@ export default function Admin() {
       return;
     }
     
-    // Make yourself admin on first access
+    // Check if user has admin privileges
     if (user && !(user as any).isAdmin) {
-      apiRequest("POST", "/api/admin/make-admin")
-        .then(response => response.json())
-        .then(() => {
-          toast({
-            title: "Admin Access Granted",
-            description: "You now have admin privileges",
-          });
-          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        })
-        .catch(error => console.log("Admin setup:", error));
+      toast({
+        title: "Access Denied",
+        description: "You need admin privileges to access this page",
+        variant: "destructive",
+      });
+      // Redirect to home page after showing the message
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 2000);
     }
   }, [user, authLoading, toast]);
 
