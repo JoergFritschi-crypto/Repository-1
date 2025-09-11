@@ -559,6 +559,82 @@ class PerplexityAI {
       throw new Error('Failed to find soil testing services');
     }
   }
+
+  async extractPlantData(markdown: string, pageUrl: string): Promise<any> {
+    const messages: PerplexityMessage[] = [
+      {
+        role: 'system',
+        content: 'You are an expert at extracting structured botanical data from German nursery websites. Always respond with valid JSON. Be very careful to put the right data in the right fields.'
+      },
+      {
+        role: 'user',
+        content: `You are a botanical data extraction expert. Analyze this German nursery product page and extract structured plant data.
+
+Page URL: ${pageUrl}
+Content:
+${markdown.substring(0, 5000)}
+
+Extract the following information and respond in JSON format:
+{
+  "common_name": "German common name from the page",
+  "scientific_name": "Scientific/botanical Latin name (e.g., Acaena buchananii)",
+  "description": "Full plant description in German (the actual descriptive paragraph about the plant's appearance and characteristics, NOT the name)",
+  "price": "Price in euros if present (e.g., €12,90)",
+  "height": "Height range WITH UNITS (look for Wuchshöhe, Höhe, or height - e.g., '5-10 cm', '0.3-0.5 m', 'bis 50 cm')",
+  "spread": "Width/spread range WITH UNITS (look for Wuchsbreite, Breite, Pflanzabstand, or spread - e.g., '30-40 cm')",
+  "bloom_time": "Blooming period (e.g., Juni-August, Mai bis September)",
+  "sunlight": "Sun requirements - MUST be one of these exact values: 'full sun', 'partial shade', 'full shade', or 'sun to partial shade'",
+  "water": "Water requirements (trocken/dry, mäßig/moderate, feucht/moist)",
+  "hardiness": "Hardiness zone if mentioned (e.g., Z3, Zone 3-7, winterhart bis -30°C)",
+  "soil": "Soil requirements (e.g., durchlässig, humos, sandig)",
+  "flower_color": "Flower color in German (e.g., gelb, rot, violett)",
+  "foliage_color": "Foliage color in German (e.g., grün, blaugrün, silbrig)",
+  "growth_habit": "Growth habit in German (e.g., kriechend, aufrecht, polsterbildend, horstig)"
+}
+
+CRITICAL EXTRACTION RULES:
+1. HEIGHT: Look for "Wuchshöhe", "Höhe", or height measurements. ALWAYS include units (cm, m).
+2. SPREAD: Look for "Wuchsbreite", "Breite", "Pflanzabstand", or width measurements. ALWAYS include units.
+3. SUNLIGHT: Must translate German terms to English:
+   - "sonnig" or "volle Sonne" → "full sun"
+   - "halbschattig" or "Halbschatten" → "partial shade"
+   - "schattig" or "Schatten" → "full shade"
+   - "sonnig bis halbschattig" → "sun to partial shade"
+4. DESCRIPTION: Extract the actual descriptive text about the plant's characteristics, NOT just its name or shipping info.
+5. Do NOT put descriptions in the sunlight field or common names in the description field.`
+      }
+    ];
+
+    try {
+      const response = await this.makeRequest(messages, {
+        model: 'llama-3.1-sonar-small-128k-online', // Use specific model for better extraction
+        maxTokens: 1500,
+        temperature: 0.3, // Lower temperature for more consistent extraction
+        searchRecencyFilter: 'month'
+      });
+
+      const content = response.choices[0].message.content;
+      
+      // Try to parse the JSON response
+      let parsedContent;
+      try {
+        parsedContent = JSON.parse(content);
+      } catch (parseError) {
+        // Try to extract JSON from markdown code block if present
+        const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
+          parsedContent = JSON.parse(codeBlockMatch[1]);
+        } else {
+          throw parseError;
+        }
+      }
+
+      return parsedContent;
+    } catch (error) {
+      console.error('Error extracting plant data with Perplexity:', error);
+      throw new Error('Failed to extract plant data using Perplexity AI');
+    }
+  }
 }
 
 export default PerplexityAI;

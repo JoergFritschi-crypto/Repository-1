@@ -4,7 +4,7 @@ import FirecrawlApp from '@mendable/firecrawl-js';
 import { storage } from './storage';
 import { type InsertPlant } from '@shared/schema';
 import { extractBotanicalParts } from '@shared/botanicalUtils';
-import AnthropicAI from './anthropicAI';
+import PerplexityAI from './perplexityAI';
 
 // Rate limiter class for API calls
 class RateLimiter {
@@ -89,17 +89,17 @@ class RateLimiter {
 // FireCrawl Web Scraping API
 export class FireCrawlAPI {
   private app: FirecrawlApp;
-  private anthropic: AnthropicAI | null = null;
+  private perplexity: PerplexityAI | null = null;
   private rateLimiter: RateLimiter;
   private aiExtractionEnabled: boolean = true;
 
-  constructor(apiKey: string, anthropicApiKey?: string) {
+  constructor(apiKey: string, perplexityApiKey?: string) {
     this.app = new FirecrawlApp({ apiKey });
-    if (anthropicApiKey) {
-      this.anthropic = new AnthropicAI(anthropicApiKey);
+    if (perplexityApiKey) {
+      this.perplexity = new PerplexityAI(perplexityApiKey);
     }
-    // Initialize rate limiter for Anthropic API (5 requests per minute)
-    this.rateLimiter = new RateLimiter(5, 60000);
+    // Initialize rate limiter for Perplexity API (100 requests per minute - much more generous)
+    this.rateLimiter = new RateLimiter(100, 60000);
   }
 
   async scrapePlantData(url: string, saveToDatabase: boolean = false, force: boolean = false): Promise<any> {
@@ -198,15 +198,15 @@ export class FireCrawlAPI {
         productUrls = Array.from(new Set(productUrls));
         
         // Define constants for concurrent processing upfront
-        // REDUCED from 5 to 2 to prevent overwhelming Anthropic API with German content
-        const CONCURRENT_LIMIT = 2; // Reduced to stay within AI rate limits
-        const batchSize = 10; // Smaller batches for more controlled processing
+        // Perplexity has much higher rate limits (100+/min) so we can use full concurrency
+        const CONCURRENT_LIMIT = 5; // Full concurrent browsers for maximum speed
+        const batchSize = 25; // Larger batches for efficient processing
         
         console.log(`===== PRODUCT DISCOVERY COMPLETE =====`);
         console.log(`Total unique product URLs found: ${productUrls.length}`);
         console.log(`Expected: ~1010 products`);
-        console.log(`Using ${CONCURRENT_LIMIT} concurrent browsers (reduced for AI rate limits)`);
-        console.log(`AI extraction rate limit: ${this.rateLimiter.getRemainingCapacity()}/5 requests available`);
+        console.log(`Using ${CONCURRENT_LIMIT} concurrent browsers for optimal performance`);
+        console.log(`AI extraction rate limit: ${this.rateLimiter.getRemainingCapacity()}/100 requests available`);
         console.log(`=======================================`);
         
         if (productUrls.length === 0) {
@@ -296,7 +296,7 @@ export class FireCrawlAPI {
           const batchStartTime = Date.now(); // Track timing for performance metrics
           
           try {
-            // Process batch in chunks of 2 concurrent requests (reduced for AI rate limits)
+            // Process batch in chunks of 5 concurrent requests (Perplexity supports high concurrency)
             const chunkSize = CONCURRENT_LIMIT;
             const chunks = [];
             for (let j = 0; j < batch.length; j += chunkSize) {
@@ -304,7 +304,7 @@ export class FireCrawlAPI {
             }
             
             console.log(`\nBatch ${i + 1}/${batches}: Processing ${batch.length} URLs in ${chunks.length} concurrent chunks (${CONCURRENT_LIMIT} browsers)`);
-            console.log(`AI rate limit capacity: ${this.rateLimiter.getRemainingCapacity()}/5 available`);
+            console.log(`AI rate limit capacity: ${this.rateLimiter.getRemainingCapacity()}/100 available`);
             
             // Process each chunk of 5 URLs concurrently
             for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
@@ -357,10 +357,10 @@ export class FireCrawlAPI {
                 }
               }
               
-              // Add delay between chunks to help with rate limiting
-              // Increased delay since we're using AI extraction more frequently
+              // Add small delay between chunks for API stability
+              // Perplexity has high rate limits so we can use minimal delay
               if (chunkIndex < chunks.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 500)); // Increased from 100ms to 500ms
+                await new Promise(resolve => setTimeout(resolve, 100)); // Minimal delay for stability
               }
               
               // Progress reporting per chunk
@@ -814,8 +814,8 @@ export class FireCrawlAPI {
   }
   
   private async extractWithAI(markdown: string, pageUrl: string): Promise<any> {
-    if (!this.anthropic) {
-      throw new Error('Anthropic AI not configured');
+    if (!this.perplexity) {
+      throw new Error('Perplexity AI not configured');
     }
 
     if (!this.aiExtractionEnabled) {
@@ -825,7 +825,7 @@ export class FireCrawlAPI {
     try {
       // Use rate limiter to execute AI extraction with proper throttling
       const extractedData = await this.rateLimiter.executeWithRetry(
-        () => this.anthropic!.extractPlantData(markdown, pageUrl),
+        () => this.perplexity!.extractPlantData(markdown, pageUrl),
         `ai-extract-${pageUrl}`,
         3 // Max 3 retries with exponential backoff
       );
@@ -906,7 +906,7 @@ export class FireCrawlAPI {
                            markdown.includes('Standort');
     
     // Use AI extraction for German content if available
-    if (isGermanContent && this.anthropic) {
+    if (isGermanContent && this.perplexity) {
       try {
         console.log('Using AI extraction for German content from:', pageUrl);
         return await this.extractWithAI(markdown, pageUrl);
