@@ -840,9 +840,12 @@ export class FireCrawlAPI {
                     // Since extractPlantDataUniversal returns an array, handle it properly
                     if (plantsArray && plantsArray.length > 0) {
                       // Update progress
-                      this.updateProgress({
-                        processedUrls: this.getProgress().processedUrls + 1
-                      });
+                      const currentProgress = await this.storage.getScrapingProgress();
+                      if (currentProgress) {
+                        this.updateProgress({
+                          processedUrls: currentProgress.processedUrls + 1
+                        });
+                      }
                       
                       // Return the first plant if multiple found (for product pages)
                       return {

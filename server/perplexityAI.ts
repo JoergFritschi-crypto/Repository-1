@@ -636,7 +636,39 @@ class PerplexityAI {
           .replace(/```\n?/g, '')
           .trim();
         
-        const plants = JSON.parse(cleanedContent);
+        let plants;
+        try {
+          plants = JSON.parse(cleanedContent);
+        } catch (parseError) {
+          // If JSON is truncated, try to salvage what we can
+          console.log('JSON parsing failed, attempting to salvage partial data...');
+          
+          // Try to fix common truncation issues
+          let fixedContent = cleanedContent;
+          
+          // Count brackets to see if we're missing closing brackets
+          const openBrackets = (fixedContent.match(/\[/g) || []).length;
+          const closeBrackets = (fixedContent.match(/\]/g) || []).length;
+          const openBraces = (fixedContent.match(/\{/g) || []).length;
+          const closeBraces = (fixedContent.match(/\}/g) || []).length;
+          
+          // Add missing closing brackets/braces
+          if (openBraces > closeBraces) {
+            fixedContent += '}'.repeat(openBraces - closeBraces);
+          }
+          if (openBrackets > closeBrackets) {
+            fixedContent += ']'.repeat(openBrackets - closeBrackets);
+          }
+          
+          // Try parsing again
+          try {
+            plants = JSON.parse(fixedContent);
+          } catch (secondError) {
+            // If still failing, return empty array
+            console.log('Could not fix JSON, falling back to regex extraction');
+            throw parseError; // Re-throw to trigger fallback
+          }
+        }
         
         // Ensure it's an array
         if (!Array.isArray(plants)) {
