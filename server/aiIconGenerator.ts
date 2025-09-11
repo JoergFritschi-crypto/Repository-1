@@ -29,9 +29,9 @@ STYLE REQUIREMENTS:
 TOOL DETAILS: ${description}
 
 COLOR SCHEME (MANDATORY - use these EXACT hex colors):
-- VERY DARK GREEN #004025 (main metal parts) - NOT bright green, this is almost black-green
-- MEDIUM DARK GREEN #107838 (secondary metal elements) - darker forest green  
-- ACCENT GREEN #1DB233 (accent details only) - limited use
+- DARK GREEN #2D5D3D (main metal parts) - dark forest green, not black-green
+- DEEPER GREEN #0A5A2A (secondary metal elements) - deeper forest green  
+- ACCENT GREEN #138A28 (accent details only) - limited use, darker accent
 - WARM GOLD #FFD500 (brass fittings, handles, decorative elements)
 - BRIGHT YELLOW #FFE523 (highlights and metallic reflections only)
 
