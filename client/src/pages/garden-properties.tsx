@@ -388,7 +388,7 @@ export default function GardenProperties() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-white to-primary/5">
       <Navigation />
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
@@ -458,7 +458,7 @@ export default function GardenProperties() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Step 1: Welcome & Location */}
             {currentStep === 1 && (
-              <Card className="border-2 border-primary shadow-sm" data-testid="step-welcome-location">
+              <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="step-welcome-location">
                 <CardHeader className="py-7 flower-band-spring rounded-t-lg">
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
@@ -495,12 +495,12 @@ export default function GardenProperties() {
                   
                   {/* Auto-save info for paid users */}
                   {isPaidUser && (
-                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <div className="bg-primary/10 p-3 rounded-lg border border-primary/30">
                       <div className="flex items-center space-x-2">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        <p className="text-sm font-medium text-green-800">
+                        <p className="text-sm font-medium text-primary">
                           {user?.userTier === 'premium' ? 'Premium' : 'Pay-Per-Design'} Member - All data automatically saved
                         </p>
                       </div>
@@ -1973,12 +1973,12 @@ export default function GardenProperties() {
                     
                     {/* Generate Design Button when style was selected from AI analysis */}
                     {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
-                      <Card className="border-2 border-green-500 bg-green-50 shadow-sm">
+                      <Card className="border-2 border-primary bg-primary/10 shadow-sm">
                         <CardContent className="py-6">
                           <div className="text-center space-y-3">
                             <div className="flex items-center justify-center gap-2 mb-2">
-                              <Sparkles className="w-5 h-5 text-green-600" />
-                              <h3 className="text-lg font-semibold text-green-800">
+                              <Sparkles className="w-5 h-5 text-primary" />
+                              <h3 className="text-lg font-semibold text-primary">
                                 Ready to Generate Your Garden Design!
                               </h3>
                             </div>
@@ -1989,7 +1989,7 @@ export default function GardenProperties() {
                             <Button
                               type="button"
                               size="lg"
-                              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                              className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
                               onClick={() => {
                                 // Advance to Step 4 where the design will be generated
                                 setCurrentStep(4);
@@ -2095,12 +2095,12 @@ export default function GardenProperties() {
                   
                   {/* Generate Design Button - Manual trigger to proceed to Step 4 */}
                   {selectedGardenStyle && (
-                    <Card className="border-2 border-green-500 bg-green-50 shadow-sm">
+                    <Card className="border-2 border-primary bg-primary/10 shadow-sm">
                       <CardContent className="py-6">
                         <div className="text-center space-y-3">
                           <div className="flex items-center justify-center gap-2 mb-2">
-                            <Sparkles className="w-5 h-5 text-green-600" />
-                            <h3 className="text-lg font-semibold text-green-800">
+                            <Sparkles className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-semibold text-primary">
                               Ready to Generate Your Garden Design!
                             </h3>
                           </div>
@@ -2111,7 +2111,7 @@ export default function GardenProperties() {
                           <Button
                             type="button"
                             size="lg"
-                            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                            className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
                             onClick={() => {
                               // Advance to Step 4 where the design will be generated
                               setCurrentStep(4);
@@ -2231,12 +2231,12 @@ export default function GardenProperties() {
                   </Card>
                   
                   {/* Generate Design Button for Manual approach */}
-                  <Card className="border-2 border-green-500 bg-green-50 shadow-sm">
+                  <Card className="border-2 border-primary bg-primary/10 shadow-sm">
                     <CardContent className="py-6">
                       <div className="text-center space-y-3">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                          <Palette className="w-5 h-5 text-green-600" />
-                          <h3 className="text-lg font-semibold text-green-800">
+                          <Palette className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold text-primary">
                             Ready to Design Your Garden!
                           </h3>
                         </div>
@@ -2247,7 +2247,7 @@ export default function GardenProperties() {
                         <Button
                           type="button"
                           size="lg"
-                          className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                          className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
                           onClick={() => {
                             // Advance to Step 4 for manual design
                             setCurrentStep(4);
@@ -2273,10 +2273,10 @@ export default function GardenProperties() {
               <div className="space-y-3">
                 {/* Generate Design Button for AI approach */}
                 {watchedDesignApproach === "ai" && selectedGardenStyle && (
-                  <Card className="border-2 border-green-500 bg-green-50 shadow-sm" data-testid="generate-ai-design-card">
+                  <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="generate-ai-design-card">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-green-600" />
+                        <Sparkles className="w-4 h-4 text-primary" />
                         Ready to Generate AI Design
                       </CardTitle>
                     </CardHeader>
@@ -2377,7 +2377,7 @@ export default function GardenProperties() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="p-3 bg-white rounded-lg border">
                           <h4 className="font-semibold text-sm mb-2">Plant Count</h4>
-                          <p className="text-2xl font-bold text-green-600">
+                          <p className="text-2xl font-bold text-primary">
                             {completeDesign.plantPlacements.length} plants
                           </p>
                         </div>
@@ -2418,12 +2418,12 @@ export default function GardenProperties() {
 
             {/* Step 5: Finale - Blueprint & Download */}
             {currentStep === 5 && (
-              <Card className="border-2 border-primary shadow-sm" data-testid="step-finale-blueprint">
+              <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="step-finale-blueprint">
                 <CardHeader className="py-7 flower-band-review rounded-t-lg">
                   <CardTitle className="text-base">Review & Generate Blueprint</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
-                  <div className="bg-green-50 p-4 rounded-lg">
+                  <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
                     <h3 className="font-semibold mb-3">Your Garden Summary</h3>
                     <div className="space-y-2 text-sm">
                       <p><strong>Name:</strong> {watchedName || "Not set"}</p>
