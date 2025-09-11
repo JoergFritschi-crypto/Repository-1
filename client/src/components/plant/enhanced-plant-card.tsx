@@ -26,7 +26,6 @@ import {
   Info,
   Check,
   Star,
-  Sparkles,
   Leaf
 } from "lucide-react";
 import type { Plant } from "@/types/plant";

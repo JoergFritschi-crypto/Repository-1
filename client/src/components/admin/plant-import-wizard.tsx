@@ -24,8 +24,8 @@ import {
   Search, 
   ChevronRight, 
   ChevronLeft,
-  CheckCircle,
-  AlertCircle,
+  Flower2,
+  TreePine,
   Loader2,
   Database,
   Globe,
@@ -39,7 +39,8 @@ import {
   Info,
   BarChart3,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 
 interface PlantImportData {
@@ -1137,7 +1138,7 @@ export function PlantImportWizard() {
             )}
             
             <Alert>
-              <AlertCircle className="w-4 h-4" />
+              <TreePine className="w-4 h-4" />
               <AlertDescription>
                 Enter a search term to begin progressive enrichment through Perenual → GBIF → iNaturalist
               </AlertDescription>
@@ -1176,7 +1177,7 @@ export function PlantImportWizard() {
             
             {sourceFilter !== 'all' && (
               <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
-                <AlertCircle className="w-4 h-4 text-blue-600" />
+                <TreePine className="w-4 h-4 text-blue-600" />
                 <AlertDescription className="text-blue-800 dark:text-blue-200">
                   Filtering: Showing plants with {sourceFilter} source{sourceFilter !== '1' ? 's' : ''} only
                 </AlertDescription>
@@ -1254,7 +1255,7 @@ export function PlantImportWizard() {
             
             {sourceFilter !== 'all' && (
               <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
-                <AlertCircle className="w-4 h-4 text-blue-600" />
+                <TreePine className="w-4 h-4 text-blue-600" />
                 <AlertDescription className="text-blue-800 dark:text-blue-200">
                   Filtering: Showing plants with {sourceFilter} source{sourceFilter !== '1' ? 's' : ''} only
                 </AlertDescription>
@@ -1327,7 +1328,7 @@ export function PlantImportWizard() {
             
             {sourceFilter !== 'all' && (
               <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
-                <AlertCircle className="w-4 h-4 text-blue-600" />
+                <TreePine className="w-4 h-4 text-blue-600" />
                 <AlertDescription className="text-blue-800 dark:text-blue-200">
                   Showing plants with {sourceFilter} source{sourceFilter !== '1' ? 's' : ''} only. 
                   Click the Total badge or click the active filter again to show all plants.
@@ -1379,7 +1380,7 @@ export function PlantImportWizard() {
                     </>
                   ) : (
                     <>
-                      <Brain className="w-4 h-4 mr-2" />
+                      <Leaf className="w-4 h-4 mr-2" />
                       Validate Empty Fields
                     </>
                   )}
@@ -1417,7 +1418,7 @@ export function PlantImportWizard() {
             </div>
             
             <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
-              <CheckCircle className="w-4 h-4 text-green-600" />
+              <Flower2 className="w-4 h-4 text-green-600" />
               <AlertDescription className="text-green-800 dark:text-green-200">
                 Ready to import {selectedPlants.length} plants to your database.
                 This will create new plant entries with all collected data.
@@ -1465,7 +1466,7 @@ export function PlantImportWizard() {
           <TabsContent value="scraper" className="space-y-4">
             <div className="space-y-4">
               <Alert>
-                <Sparkles className="w-4 h-4" />
+                <Flower2 className="w-4 h-4" />
                 <AlertDescription>
                   <strong>FireCrawl Web Scraper with Validation</strong>
                   <br />
@@ -1731,7 +1732,7 @@ export function PlantImportWizard() {
                             </>
                           ) : (
                             <>
-                              <CheckCircle className="w-4 h-4 mr-2" />
+                              <Flower2 className="w-4 h-4 mr-2" />
                               Validate {selectedScrapedPlants.length || 0} Plants
                             </>
                           )}
@@ -1758,7 +1759,7 @@ export function PlantImportWizard() {
                     </>
                   ) : (
                     <Alert>
-                      <AlertCircle className="w-4 h-4" />
+                      <TreePine className="w-4 h-4" />
                       <AlertDescription>
                         No plants found on this page. Try a different URL or check if the page contains plant information.
                       </AlertDescription>

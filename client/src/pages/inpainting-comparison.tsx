@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Image as ImageIcon, Sparkles, Layers, GitCompareArrows } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Flower2, Layers, GitCompareArrows } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -82,7 +82,7 @@ export default function InpaintingComparison() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="mr-2 h-4 w-4" />
+                    <Flower2 className="mr-2 h-4 w-4" />
                     Run Comparison Test
                   </>
                 )}
@@ -139,7 +139,7 @@ export default function InpaintingComparison() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5" />
+                        <Flower2 className="h-5 w-5" />
                         AI Inpainting (Batch)
                       </span>
                       <Badge>New Approach</Badge>
@@ -201,7 +201,7 @@ export default function InpaintingComparison() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5" />
+                      <Flower2 className="h-5 w-5" />
                       AI Inpainting (Sequential)
                     </CardTitle>
                     <CardDescription>

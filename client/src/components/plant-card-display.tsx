@@ -6,7 +6,6 @@ import {
   Sun,
   Droplets,
   TreePine,
-  AlertTriangle,
   Heart,
   Info,
   ChefHat,

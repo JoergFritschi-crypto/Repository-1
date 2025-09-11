@@ -7,7 +7,7 @@ import {
   Droplets, 
   Sun, 
   Snowflake, 
-  Brain,
+  Leaf,
   MapPin,
   Loader2
 } from "lucide-react";
@@ -399,7 +399,7 @@ export default function ClimateReport({ location, climateData, isLoading }: Clim
       <Card className="border-accent bg-accent/5">
         <CardHeader>
           <CardTitle className="flex items-center" data-testid="text-ai-plants-title">
-            <Brain className="w-5 h-5 mr-2 text-accent" />
+            <Leaf className="w-5 h-5 mr-2 text-accent" />
             AI Recommended Plants
           </CardTitle>
         </CardHeader>

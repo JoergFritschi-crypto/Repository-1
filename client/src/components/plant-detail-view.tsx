@@ -10,7 +10,6 @@ import {
   Sun,
   Droplets,
   TreePine,
-  AlertTriangle,
   Heart,
   ChefHat,
   Pill,

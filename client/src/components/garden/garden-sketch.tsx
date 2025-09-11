@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, TrendingUp, Brain, Sparkles } from 'lucide-react';
+import { Lightbulb, TrendingUp, Leaf, Flower2 } from 'lucide-react';
 
 interface GardenSketchProps {
   shape: string;
@@ -542,9 +542,9 @@ export default function GardenSketch({
           {/* AI Assessment Button - Prominent Feature */}
           <div className="mt-4 p-3 bg-gradient-to-r from-[#004025]/10 to-[#FFD500]/10 rounded-lg border-2 border-primary">
             <div className="flex items-center gap-2 mb-2">
-              <Brain className="w-5 h-5 text-primary" />
+              <Leaf className="w-5 h-5 text-primary" />
               <span className="text-sm font-semibold text-primary">AI Garden Analysis</span>
-              <Sparkles className="w-4 h-4 text-accent" />
+              <Flower2 className="w-4 h-4 text-accent" />
             </div>
             <p className="text-xs text-gray-600 mb-2">
               Let AI analyze your garden's unique conditions for personalized insights
@@ -555,9 +555,9 @@ export default function GardenSketch({
               size="default"
               data-testid="button-assess-garden"
             >
-              <Brain className="w-5 h-5 mr-2" />
+              <Leaf className="w-5 h-5 mr-2" />
               Analyze My Garden with AI
-              <Sparkles className="w-4 h-4 ml-2" />
+              <Flower2 className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
@@ -567,7 +567,7 @@ export default function GardenSketch({
           <Card className="border-green-300 bg-green-50/50">
             <CardHeader className="py-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Brain className="w-4 h-4 text-green-600" />
+                <Leaf className="w-4 h-4 text-green-600" />
                 AI Garden Assessment
               </CardTitle>
             </CardHeader>

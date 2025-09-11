@@ -14,7 +14,7 @@ import {
   Pause,
   Play,
   RefreshCw,
-  Sparkles,
+  Flower2,
   Trash2
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -193,7 +193,7 @@ export function ImageGenerationMonitor() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 mr-1" />
+                    <Flower2 className="w-4 h-4 mr-1" />
                     Generate All Missing
                   </>
                 )}

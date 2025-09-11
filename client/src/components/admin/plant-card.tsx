@@ -9,8 +9,8 @@ import {
   AlertTriangle,
   Heart,
   Info,
-  Edit,
-  Trash,
+  Scissors,
+  Shovel,
   Check,
   X,
   ChefHat,
@@ -19,7 +19,6 @@ import {
   Sprout,
   Calendar,
   Bug,
-  Scissors,
   ImageIcon,
   Loader2
 } from "lucide-react";
@@ -312,7 +311,7 @@ export function PlantCard({
                   onClick={onEdit}
                   className="flex-1"
                 >
-                  <Edit className="w-4 h-4 mr-1" />
+                  <Scissors className="w-4 h-4 mr-1" />
                   Edit
                 </Button>
                 {isAdmin && (
@@ -335,7 +334,7 @@ export function PlantCard({
                   variant="ghost"
                   onClick={onDelete}
                 >
-                  <Trash className="w-4 h-4" />
+                  <Shovel className="w-4 h-4" />
                 </Button>
               </>
             )}

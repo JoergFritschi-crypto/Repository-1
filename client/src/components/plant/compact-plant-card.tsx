@@ -11,11 +11,11 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { 
   Eye,
-  Plus,
+  Sprout,
   Heart,
   Settings,
-  Edit,
-  Trash,
+  Scissors,
+  Shovel,
   ImageIcon,
   Check,
   X,
@@ -28,7 +28,7 @@ import {
   Shield,
   AlertTriangle,
   RefreshCw,
-  Sparkles,
+  Flower2,
   Printer,
   Share2,
   Download
@@ -614,7 +614,7 @@ export function CompactPlantCard({
                     className="flex-1 h-6 text-[10px] px-2"
                     onClick={() => setShowAddDialog(true)}
                   >
-                    <Plus className="w-3 h-3 mr-0.5" />
+                    <Sprout className="w-3 h-3 mr-0.5" />
                     Add
                   </Button>
                 ) : (
@@ -672,7 +672,7 @@ export function CompactPlantCard({
                 {plant.verificationStatus === 'verified' && (
                   <>
                     <Button onClick={onEdit} variant="outline" className="w-full">
-                      <Edit className="w-4 h-4 mr-1" />
+                      <Scissors className="w-4 h-4 mr-1" />
                       Edit
                     </Button>
                   </>
@@ -704,13 +704,13 @@ export function CompactPlantCard({
                   {isGeneratingImages ? (
                     <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating</>
                   ) : (
-                    <><Sparkles className="w-4 h-4 mr-1" /> Generate Images</>
+                    <><Flower2 className="w-4 h-4 mr-1" /> Generate Images</>
                   )}
                 </Button>
               </div>
               
               <Button onClick={onDelete} variant="destructive" className="w-full">
-                <Trash className="w-4 h-4 mr-1" />
+                <Shovel className="w-4 h-4 mr-1" />
                 Delete Plant
               </Button>
 

@@ -18,12 +18,11 @@ import {
   RefreshCw,
   CreditCard,
   Globe,
-  Brain,
-  Map,
   Leaf,
+  Map,
   Cloud,
   Image,
-  Sparkles,
+  Flower2,
   Eye,
   FileSearch
 } from "lucide-react";
@@ -48,7 +47,7 @@ const SERVICE_INFO: Record<string, Partial<APIKeyInfo>> = {
   anthropic: {
     description: "Claude AI for plant identification and gardening advice",
     documentationUrl: "https://console.anthropic.com/api-keys",
-    icon: <Brain className="w-5 h-5" />,
+    icon: <Leaf className="w-5 h-5" />,
     requiredKeys: ["ANTHROPIC_API_KEY"]
   },
   stripe: {
@@ -78,7 +77,7 @@ const SERVICE_INFO: Record<string, Partial<APIKeyInfo>> = {
   huggingface: {
     description: "FLUX.1-schnell for plant image generation",
     documentationUrl: "https://huggingface.co/settings/tokens",
-    icon: <Sparkles className="w-5 h-5" />,
+    icon: <Flower2 className="w-5 h-5" />,
     requiredKeys: ["HUGGINGFACE_API_KEY"]
   },
   runware: {
@@ -96,7 +95,7 @@ const SERVICE_INFO: Record<string, Partial<APIKeyInfo>> = {
   gemini: {
     description: "Google's multimodal AI for plant analysis",
     documentationUrl: "https://makersuite.google.com/app/apikey",
-    icon: <Sparkles className="w-5 h-5" />,
+    icon: <Flower2 className="w-5 h-5" />,
     requiredKeys: ["GEMINI_API_KEY"]
   },
   gbif: {

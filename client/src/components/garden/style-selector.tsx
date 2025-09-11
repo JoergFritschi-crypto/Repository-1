@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Sparkles, Wand2, Lock, CheckCircle2, AlertCircle, Star } from 'lucide-react';
+import { Flower2, Wand2, Lock, CheckCircle2, AlertCircle, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -364,7 +364,7 @@ export default function StyleSelector({
       {/* Upgrade Prompt for Free/Pay-per-design users */}
       {userTier !== 'premium' && (
         <Alert className="border-primary bg-primary/10">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Flower2 className="h-4 w-4 text-primary" />
           <AlertDescription>
             <strong>Want unlimited designs?</strong> Upgrade to Premium for unlimited iterations on all styles, 
             plus exclusive features like advanced plant recommendations and seasonal planning.

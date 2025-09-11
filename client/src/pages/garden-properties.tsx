@@ -16,7 +16,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Sparkles, Shield, Wand2, Palette, AlertCircle } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import PlantSearchModal from '@/components/plant/plant-search-modal';
@@ -1887,7 +1887,7 @@ export default function GardenProperties() {
                     <Card className="border-2 border-indigo-500 bg-indigo-50/30 shadow-sm" data-testid="selected-ai-style">
                       <CardHeader className="py-3">
                         <CardTitle className="text-base flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-indigo-600" />
+                          <Flower2 className="w-4 h-4 text-indigo-600" />
                           Your Selected Design Style
                         </CardTitle>
                       </CardHeader>
@@ -1977,7 +1977,7 @@ export default function GardenProperties() {
                         <CardContent className="py-6">
                           <div className="text-center space-y-3">
                             <div className="flex items-center justify-center gap-2 mb-2">
-                              <Sparkles className="w-5 h-5 text-primary" />
+                              <Flower2 className="w-5 h-5 text-primary" />
                               <h3 className="text-lg font-semibold text-primary">
                                 Ready to Generate Your Garden Design!
                               </h3>
@@ -2070,7 +2070,7 @@ export default function GardenProperties() {
                     <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="ai-style-selection">
                       <CardHeader className="py-3">
                         <CardTitle className="text-base flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-primary" />
+                          <Flower2 className="w-4 h-4 text-primary" />
                           Select Your Garden Style
                         </CardTitle>
                       </CardHeader>
@@ -2099,7 +2099,7 @@ export default function GardenProperties() {
                       <CardContent className="py-6">
                         <div className="text-center space-y-3">
                           <div className="flex items-center justify-center gap-2 mb-2">
-                            <Sparkles className="w-5 h-5 text-primary" />
+                            <Flower2 className="w-5 h-5 text-primary" />
                             <h3 className="text-lg font-semibold text-primary">
                               Ready to Generate Your Garden Design!
                             </h3>
@@ -2276,7 +2276,7 @@ export default function GardenProperties() {
                   <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="generate-ai-design-card">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-primary" />
+                        <Flower2 className="w-4 h-4 text-primary" />
                         Ready to Generate AI Design
                       </CardTitle>
                     </CardHeader>
@@ -2324,12 +2324,12 @@ export default function GardenProperties() {
                       >
                         {isGeneratingDesign ? (
                           <>
-                            <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                            <Flower2 className="w-4 h-4 mr-2 animate-spin" />
                             Generating Design...
                           </>
                         ) : (
                           <>
-                            <Sparkles className="w-4 h-4 mr-2" />
+                            <Flower2 className="w-4 h-4 mr-2" />
                             Generate Complete Garden Design
                           </>
                         )}

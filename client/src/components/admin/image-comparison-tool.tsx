@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, RefreshCw, Download, Sparkles } from "lucide-react";
+import { Loader2, RefreshCw, Download, Flower2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -134,7 +134,7 @@ export function ImageComparisonTool() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 mr-1" />
+                    <Flower2 className="w-4 h-4 mr-1" />
                     Generate Test Set
                   </>
                 )}
