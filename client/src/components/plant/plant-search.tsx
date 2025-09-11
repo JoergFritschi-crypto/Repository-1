@@ -54,6 +54,18 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
     setSearchQuery("");
   };
 
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Force a search by slightly modifying then resetting the query to trigger useQuery
+      if (searchQuery.trim()) {
+        const input = event.target as HTMLInputElement;
+        input.blur(); // Remove focus to give visual feedback that search was triggered
+        setTimeout(() => input.focus(), 100); // Refocus after brief delay
+      }
+    }
+  };
+
   const activeFiltersCount = Object.values(filters).filter(v => v !== undefined && v !== null && v !== "").length;
 
   // Notify parent of results
@@ -93,6 +105,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
                 placeholder="Search by common name, scientific name, or family..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyPress}
                 className="pl-10"
                 data-testid="input-advanced-search"
               />

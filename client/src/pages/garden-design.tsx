@@ -294,7 +294,7 @@ export default function GardenDesign() {
                         }
                       });
                       
-                      const response = await apiRequest('GET', `/api/plants/advanced-search?${queryParams}`);
+                      const response = await apiRequest('POST', '/api/plants/advanced-search', filters);
                       const results = await response.json();
                       setSearchResults(results);
                       
