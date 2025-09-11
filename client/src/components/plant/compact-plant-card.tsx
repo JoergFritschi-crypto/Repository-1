@@ -414,8 +414,8 @@ export function CompactPlantCard({
     const sunlight = Array.isArray(plant.sunlight) ? plant.sunlight[0] : plant.sunlight;
     if (!sunlight) return null;
     
-    if (sunlight.includes('full sun')) return <Sun className="w-3 h-3 text-yellow-500" />;
-    if (sunlight.includes('partial')) return <CloudSun className="w-3 h-3 text-yellow-400" />;
+    if (sunlight.includes('full sun')) return <Sun className="w-3 h-3 text-amber-600" />;
+    if (sunlight.includes('partial')) return <CloudSun className="w-3 h-3 text-amber-500" />;
     if (sunlight.includes('shade')) return <Cloud className="w-3 h-3 text-gray-400" />;
     return null;
   };
@@ -548,8 +548,8 @@ export function CompactPlantCard({
                   </>
                 ) : plant.poisonousToPets === 1 ? (
                   <>
-                    <AlertTriangle className="w-3 h-3 text-yellow-500" />
-                    <span className="text-[10px] text-yellow-600 font-medium">B</span>
+                    <AlertTriangle className="w-3 h-3 text-amber-600" />
+                    <span className="text-[10px] text-orange-600 font-medium">B</span>
                   </>
                 ) : plant.poisonousToPets === 2 ? (
                   <>

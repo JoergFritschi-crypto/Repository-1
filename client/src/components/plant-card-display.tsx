@@ -95,7 +95,7 @@ export function PlantCardDisplay({
   // Get toxicity level
   const getToxicityLevel = (level: number | undefined) => {
     if (!level || level === 0) return { text: "Safe", color: "text-green-600" };
-    if (level <= 2) return { text: "Mild", color: "text-yellow-600" };
+    if (level <= 2) return { text: "Mild", color: "text-amber-600" };
     if (level <= 4) return { text: "Moderate", color: "text-orange-600" };
     return { text: "Toxic", color: "text-red-600" };
   };

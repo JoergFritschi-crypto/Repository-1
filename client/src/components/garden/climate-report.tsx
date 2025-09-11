@@ -40,7 +40,7 @@ const hardinessCategories = [
     minTemp: "-5 to 0°C", 
     zones: "8-9",
     description: "Survives light frost",
-    color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+    color: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
   },
   { 
     name: "Tender", 

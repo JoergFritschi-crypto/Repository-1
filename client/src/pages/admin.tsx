@@ -604,7 +604,7 @@ export default function Admin() {
                       {/* Testing Tools Section */}
                       <div className="border-t pt-6" data-testid="testing-tools-section">
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-yellow-500" />
+                          <Zap className="w-4 h-4 text-primary" />
                           Quick Actions
                         </h3>
                         

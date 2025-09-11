@@ -963,13 +963,13 @@ export default function GardenProperties() {
                           <SelectContent>
                             <SelectItem value="full_sun">
                               <div className="flex items-center">
-                                <Sun className="w-4 h-4 mr-2 text-yellow-500" />
+                                <Sun className="w-4 h-4 mr-2 text-amber-600" />
                                 Full Sun (6+ hours)
                               </div>
                             </SelectItem>
                             <SelectItem value="partial_sun">
                               <div className="flex items-center">
-                                <Sun className="w-4 h-4 mr-2 text-yellow-300" />
+                                <Sun className="w-4 h-4 mr-2 text-amber-500" />
                                 Partial Sun (4-6 hours)
                               </div>
                             </SelectItem>

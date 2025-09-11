@@ -51,7 +51,7 @@ export function PlantCard({
     if (level === undefined || level === 0) {
       return <Badge variant="default" className="bg-green-500">Safe</Badge>;
     } else if (level <= 2) {
-      return <Badge variant="outline" className="text-yellow-600">Mild {type}</Badge>;
+      return <Badge variant="outline" className="text-amber-600">Mild {type}</Badge>;
     } else if (level <= 4) {
       return <Badge variant="outline" className="text-orange-600">Moderate {type}</Badge>;
     } else {
@@ -141,7 +141,7 @@ export function PlantCard({
           <div className="grid grid-cols-2 gap-2 text-sm">
             {plant.sunlight && (
               <div className="flex items-center gap-1">
-                <Sun className="w-4 h-4 text-yellow-500" />
+                <Sun className="w-4 h-4 text-amber-600" />
                 <span>{formatSunlight(plant.sunlight)}</span>
               </div>
             )}

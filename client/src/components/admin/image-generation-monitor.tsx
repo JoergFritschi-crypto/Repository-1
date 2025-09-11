@@ -234,7 +234,7 @@ export function ImageGenerationMonitor() {
               <p className="text-sm text-muted-foreground">Generating</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-500">{status?.queued || 0}</p>
+              <p className="text-2xl font-bold text-primary">{status?.queued || 0}</p>
               <p className="text-sm text-muted-foreground">In Queue</p>
             </div>
           </div>

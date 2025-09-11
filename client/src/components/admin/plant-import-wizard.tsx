@@ -1549,7 +1549,7 @@ export function PlantImportWizard() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Duplicates:</span>
-                            <span className="text-yellow-600">{scrapingProgress.duplicates}</span>
+                            <span className="text-orange-600">{scrapingProgress.duplicates}</span>
                           </div>
                         </div>
                         <div className="space-y-1">
@@ -1841,7 +1841,7 @@ export function PlantImportWizard() {
                     {validationSummary.dataQuality?.averageScore || 0}%
                     {validationSummary.dataQuality?.averageScore >= 70 ? 
                       <TrendingUp className="w-4 h-4 ml-2 text-green-500" /> :
-                      <AlertTriangle className="w-4 h-4 ml-2 text-yellow-500" />
+                      <AlertTriangle className="w-4 h-4 ml-2 text-amber-600" />
                     }
                   </p>
                 </CardContent>
@@ -1959,7 +1959,7 @@ export function PlantImportWizard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                     Most Commonly Missing Fields
                   </CardTitle>
                 </CardHeader>

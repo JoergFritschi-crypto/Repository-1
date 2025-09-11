@@ -84,8 +84,8 @@ export function PlantDetailView({ plant, onClose }: PlantDetailViewProps) {
   // Get toxicity level
   const getToxicityInfo = (level: number | undefined, type: string) => {
     if (!level || level === 0) return { text: `Safe for ${type}`, color: "text-green-600", badge: "default" };
-    if (level === 1) return { text: `Very mild toxicity to ${type}`, color: "text-yellow-500", badge: "outline" };
-    if (level === 2) return { text: `Mild toxicity to ${type}`, color: "text-yellow-600", badge: "outline" };
+    if (level === 1) return { text: `Very mild toxicity to ${type}`, color: "text-amber-600", badge: "outline" };
+    if (level === 2) return { text: `Mild toxicity to ${type}`, color: "text-orange-600", badge: "outline" };
     if (level === 3) return { text: `Moderate toxicity to ${type}`, color: "text-orange-500", badge: "secondary" };
     if (level === 4) return { text: `High toxicity to ${type}`, color: "text-orange-600", badge: "destructive" };
     return { text: `Severe toxicity to ${type}`, color: "text-red-600", badge: "destructive" };

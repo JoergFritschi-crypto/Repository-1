@@ -172,14 +172,14 @@ export default function GardenDesign() {
         {isAdmin && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+              <h3 className="text-sm font-semibold text-primary">
                 Admin Testing Mode
               </h3>
               <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/40">
                 Garden ID: {id || 'None'}
               </Badge>
             </div>
-            <p className="text-xs text-yellow-700 dark:text-yellow-300 mb-3">
+            <p className="text-xs text-muted-foreground mb-3">
               Testing environment with admin privileges. Load any saved design for testing.
             </p>
             <Button
