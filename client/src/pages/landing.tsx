@@ -108,14 +108,14 @@ export default function Landing() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
                   <div className="flex-1">
-                    <Button asChild size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full h-16" data-testid="button-start-designing">
+                    <Button asChild size="lg" className="bg-white/90 hover:bg-white text-primary hover:text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full h-16" data-testid="button-start-designing">
                       {!isAuthenticated ? (
-                        <a href="/api/login" className="flex items-center justify-center gap-2 h-full">
+                        <a href="/api/login" className="flex items-center justify-center gap-2 h-full hover:text-primary">
                           <GardenDesignIcon className="w-5 h-5" />
                           Create Your Garden
                         </a>
                       ) : (
-                        <Link href="/garden-properties" className="flex items-center justify-center gap-2 h-full">
+                        <Link href="/garden-properties" className="flex items-center justify-center gap-2 h-full hover:text-primary">
                           <GardenDesignIcon className="w-5 h-5" />
                           Create Your Garden
                         </Link>
@@ -124,14 +124,14 @@ export default function Landing() {
                     <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Start designing with AI guidance</p>
                   </div>
                   <div className="flex-1">
-                    <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full h-16" data-testid="button-watch-demo" asChild>
+                    <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary hover:text-primary border-0 shadow-lg hover:shadow-xl transition-all duration-300 w-full h-16" data-testid="button-watch-demo" asChild>
                       {!isAuthenticated ? (
-                        <a href="/api/login" className="flex items-center justify-center gap-2 h-full">
+                        <a href="/api/login" className="flex items-center justify-center gap-2 h-full hover:text-primary">
                           <PlantLibraryIcon className="w-5 h-5" />
                           Browse Plants
                         </a>
                       ) : (
-                        <Link href="/plant-library" className="flex items-center justify-center gap-2 h-full">
+                        <Link href="/plant-library" className="flex items-center justify-center gap-2 h-full hover:text-primary">
                           <PlantLibraryIcon className="w-5 h-5" />
                           Browse Plants
                         </Link>
