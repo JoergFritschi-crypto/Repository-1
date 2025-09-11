@@ -127,11 +127,11 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     
     // Height range (in cm)
     minHeight: 0,
-    maxHeight: 500,
+    maxHeight: 400,
     
     // Spread/Width range (in cm)
     minSpread: 0,
-    maxSpread: 300,
+    maxSpread: 200,
     
     // Special features (multiple selections)
     specialFeatures: [],
@@ -470,8 +470,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   value={[filters.minHeight]}
                   onValueChange={(value) => updateFilter('minHeight', value[0])}
                   min={0}
-                  max={500}
-                  step={10}
+                  max={400}
+                  step={5}
                   className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
                 />
               </div>
@@ -483,8 +483,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   value={[filters.maxHeight]}
                   onValueChange={(value) => updateFilter('maxHeight', value[0])}
                   min={0}
-                  max={500}
-                  step={10}
+                  max={400}
+                  step={5}
                   className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
                 />
               </div>
@@ -513,8 +513,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   value={[filters.minSpread]}
                   onValueChange={(value) => updateFilter('minSpread', value[0])}
                   min={0}
-                  max={300}
-                  step={10}
+                  max={200}
+                  step={5}
                   className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
                 />
               </div>
@@ -526,8 +526,8 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   value={[filters.maxSpread]}
                   onValueChange={(value) => updateFilter('maxSpread', value[0])}
                   min={0}
-                  max={300}
-                  step={10}
+                  max={200}
+                  step={5}
                   className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
                 />
               </div>
