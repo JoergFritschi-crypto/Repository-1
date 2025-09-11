@@ -680,6 +680,72 @@ export function PlantImportWizard() {
   });
   const [validationSummary, setValidationSummary] = useState<any>(null);
   const [showValidationSummary, setShowValidationSummary] = useState(false);
+  
+  // Progress tracking state
+  const [scrapingProgress, setScrapingProgress] = useState<{
+    isActive: boolean;
+    total: number;
+    scraped: number;
+    saved: number;
+    duplicates: number;
+    failed: number;
+    currentBatch: number;
+    totalBatches: number;
+    currentBatchUrl?: string;
+    estimatedTimeRemaining?: number;
+    averageTimePerUrl?: number;
+    startTime?: Date;
+    lastUpdateTime?: Date;
+  } | null>(null);
+  const [progressPollInterval, setProgressPollInterval] = useState<NodeJS.Timeout | null>(null);
+
+  // Poll for scraping progress
+  const pollScrapingProgress = async () => {
+    try {
+      const response = await fetch('/api/admin/scraping-progress-realtime', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) return;
+      
+      const progress = await response.json();
+      setScrapingProgress(progress);
+      
+      // If scraping is complete, stop polling
+      if (!progress.isActive && progressPollInterval) {
+        clearInterval(progressPollInterval);
+        setProgressPollInterval(null);
+        
+        // Show completion toast
+        toast({
+          title: "✓ Scraping Complete",
+          description: `Successfully saved ${progress.saved} plants to database`,
+        });
+      }
+    } catch (error) {
+      console.error('Error polling progress:', error);
+    }
+  };
+  
+  // Start polling for progress
+  const startProgressPolling = () => {
+    // Poll immediately
+    pollScrapingProgress();
+    
+    // Then poll every 2 seconds for more responsive updates
+    const interval = setInterval(pollScrapingProgress, 2000);
+    setProgressPollInterval(interval);
+  };
+  
+  // Clean up polling on unmount
+  useEffect(() => {
+    return () => {
+      if (progressPollInterval) {
+        clearInterval(progressPollInterval);
+      }
+    };
+  }, [progressPollInterval]);
 
   // Scrape website using FireCrawl
   const scrapeWebsite = async () => {
@@ -694,23 +760,35 @@ export function PlantImportWizard() {
 
     setIsScrapingUrl(true);
     setScrapingResults(null);
+    
+    // Start progress polling
+    startProgressPolling();
 
     try {
       const response = await fetch('/api/admin/scrape-plant-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ url: scrapingUrl })
+        body: JSON.stringify({ 
+          url: scrapingUrl,
+          saveToDatabase: true  // Save directly to database
+        })
       });
 
       if (!response.ok) throw new Error('Scraping failed');
 
       const result = await response.json();
       setScrapingResults(result);
+      
+      // Stop polling
+      if (progressPollInterval) {
+        clearInterval(progressPollInterval);
+        setProgressPollInterval(null);
+      }
 
       toast({
         title: "✓ Scraping Complete",
-        description: `Successfully scraped ${result.plants?.length || 0} plants from the website`,
+        description: `Successfully scraped ${result.stats?.savedToDatabase || 0} plants from the website`,
       });
     } catch (error) {
       console.error('Scraping error:', error);
@@ -1389,8 +1467,79 @@ export function PlantImportWizard() {
                 </p>
               </div>
 
+              {/* Scraping Progress Bar */}
+              {scrapingProgress && scrapingProgress.isActive && (
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                          <span className="font-medium">
+                            Scraping: {scrapingProgress.scraped} of {scrapingProgress.total} plants
+                          </span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {Math.round((scrapingProgress.scraped / scrapingProgress.total) * 100)}% complete
+                        </span>
+                      </div>
+                      
+                      <Progress 
+                        value={(scrapingProgress.scraped / scrapingProgress.total) * 100} 
+                        className="h-2"
+                      />
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Batch:</span>
+                            <span>{scrapingProgress.currentBatch} of {scrapingProgress.totalBatches}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Saved:</span>
+                            <span className="text-green-600">{scrapingProgress.saved}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Duplicates:</span>
+                            <span className="text-yellow-600">{scrapingProgress.duplicates}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Failed:</span>
+                            <span className="text-red-600">{scrapingProgress.failed}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Time remaining:</span>
+                            <span>
+                              {scrapingProgress.estimatedTimeRemaining 
+                                ? `~${Math.ceil(scrapingProgress.estimatedTimeRemaining / 60)} min`
+                                : 'Calculating...'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Speed:</span>
+                            <span>
+                              {scrapingProgress.averageTimePerUrl 
+                                ? `${(scrapingProgress.averageTimePerUrl / 1000).toFixed(1)}s/URL`
+                                : 'Measuring...'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {scrapingProgress.currentBatchUrl && (
+                        <div className="mt-2 p-2 bg-muted rounded text-xs truncate">
+                          Processing: {scrapingProgress.currentBatchUrl}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Scraping Results */}
-              {scrapingResults && (
+              {scrapingResults && !scrapingProgress?.isActive && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium">Scraped Plants</h3>

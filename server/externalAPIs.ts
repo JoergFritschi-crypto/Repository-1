@@ -86,12 +86,46 @@ class RateLimiter {
   }
 }
 
+// Progress tracking interface
+interface ScrapingProgress {
+  isActive: boolean;
+  startTime: Date | null;
+  lastUpdateTime: Date | null;
+  totalUrls: number;
+  processedUrls: number;
+  savedPlants: number;
+  duplicatePlants: number;
+  failedPlants: number;
+  currentBatch: number;
+  totalBatches: number;
+  currentBatchUrl?: string;
+  estimatedTimeRemaining?: number;
+  averageTimePerUrl?: number;
+}
+
 // FireCrawl Web Scraping API
 export class FireCrawlAPI {
   private app: FirecrawlApp;
   private perplexity: PerplexityAI | null = null;
   private rateLimiter: RateLimiter;
   private aiExtractionEnabled: boolean = true;
+  
+  // Static progress tracking for real-time monitoring
+  private static scrapingProgress: ScrapingProgress = {
+    isActive: false,
+    startTime: null,
+    lastUpdateTime: null,
+    totalUrls: 0,
+    processedUrls: 0,
+    savedPlants: 0,
+    duplicatePlants: 0,
+    failedPlants: 0,
+    currentBatch: 0,
+    totalBatches: 0,
+    currentBatchUrl: undefined,
+    estimatedTimeRemaining: undefined,
+    averageTimePerUrl: undefined
+  };
 
   constructor(apiKey: string, perplexityApiKey?: string) {
     this.app = new FirecrawlApp({ apiKey });
@@ -100,6 +134,56 @@ export class FireCrawlAPI {
     }
     // Initialize rate limiter for Perplexity API (100 requests per minute - much more generous)
     this.rateLimiter = new RateLimiter(100, 60000);
+  }
+  
+  // Static getter for progress (accessible without instance)
+  static getProgress(): ScrapingProgress {
+    // Calculate estimated time remaining if scraping is active
+    if (FireCrawlAPI.scrapingProgress.isActive && 
+        FireCrawlAPI.scrapingProgress.startTime && 
+        FireCrawlAPI.scrapingProgress.processedUrls > 0) {
+      
+      const elapsedMs = Date.now() - FireCrawlAPI.scrapingProgress.startTime.getTime();
+      const avgTimePerUrl = elapsedMs / FireCrawlAPI.scrapingProgress.processedUrls;
+      const remainingUrls = FireCrawlAPI.scrapingProgress.totalUrls - FireCrawlAPI.scrapingProgress.processedUrls;
+      const estimatedTimeRemaining = Math.round((avgTimePerUrl * remainingUrls) / 1000); // in seconds
+      
+      return {
+        ...FireCrawlAPI.scrapingProgress,
+        averageTimePerUrl: avgTimePerUrl,
+        estimatedTimeRemaining
+      };
+    }
+    
+    return FireCrawlAPI.scrapingProgress;
+  }
+  
+  // Instance method to update progress
+  private updateProgress(updates: Partial<ScrapingProgress>) {
+    FireCrawlAPI.scrapingProgress = {
+      ...FireCrawlAPI.scrapingProgress,
+      ...updates,
+      lastUpdateTime: new Date()
+    };
+  }
+  
+  // Reset progress for new scraping session
+  private resetProgress() {
+    FireCrawlAPI.scrapingProgress = {
+      isActive: false,
+      startTime: null,
+      lastUpdateTime: null,
+      totalUrls: 0,
+      processedUrls: 0,
+      savedPlants: 0,
+      duplicatePlants: 0,
+      failedPlants: 0,
+      currentBatch: 0,
+      totalBatches: 0,
+      currentBatchUrl: undefined,
+      estimatedTimeRemaining: undefined,
+      averageTimePerUrl: undefined
+    };
   }
 
   async scrapePlantData(url: string, saveToDatabase: boolean = false, force: boolean = false): Promise<any> {
@@ -213,6 +297,20 @@ export class FireCrawlAPI {
           throw new Error('No product URLs found');
         }
         
+        // Initialize progress tracking for real-time monitoring
+        this.resetProgress();
+        this.updateProgress({
+          isActive: true,
+          startTime: new Date(),
+          totalUrls: productUrls.length,
+          totalBatches: Math.ceil(productUrls.length / batchSize),
+          processedUrls: 0,
+          savedPlants: 0,
+          duplicatePlants: 0,
+          failedPlants: 0,
+          currentBatch: 0
+        });
+        
         // Check if we have existing progress for this URL
         let progress = await storage.getScrapingProgress(url);
         let startBatchIndex = 0;
@@ -290,6 +388,12 @@ export class FireCrawlAPI {
           
           console.log(`Processing batch ${i + 1}/${batches} (${batch.length} products)...`);
           
+          // Update current batch progress
+          this.updateProgress({
+            currentBatch: i + 1,
+            currentBatchUrl: batch[0]
+          });
+          
           const batchPlants: any[] = [];
           let batchSkipped = 0;
           let batchProcessed = 0;
@@ -322,6 +426,11 @@ export class FireCrawlAPI {
                     console.log(`Skipping already scraped URL: ${productUrl}`);
                     skippedUrls++;
                     batchSkipped++;
+                    // Update progress for skipped URL
+                    this.updateProgress({
+                      processedUrls: FireCrawlAPI.scrapingProgress.processedUrls + 1,
+                      duplicatePlants: FireCrawlAPI.scrapingProgress.duplicatePlants + 1
+                    });
                     return null; // Return null for skipped URLs
                   }
                   
@@ -336,12 +445,21 @@ export class FireCrawlAPI {
                     const plants = await this.extractPlantsFromEcommercePage(result.markdown, productUrl);
                     processedUrls++;
                     batchProcessed++;
+                    // Update progress for processed URL
+                    this.updateProgress({
+                      processedUrls: FireCrawlAPI.scrapingProgress.processedUrls + 1
+                    });
                     return plants; // Return plants for successful scrapes
                   }
                   
                   return null;
                 } catch (e) {
                   console.error(`Failed to scrape ${productUrl}:`, e);
+                  // Update progress for failed URL
+                  this.updateProgress({
+                    processedUrls: FireCrawlAPI.scrapingProgress.processedUrls + 1,
+                    failedPlants: FireCrawlAPI.scrapingProgress.failedPlants + 1
+                  });
                   return null; // Return null for failed URLs
                 }
               });
@@ -469,6 +587,13 @@ export class FireCrawlAPI {
                 console.log(`Batch ${i + 1} save results: ${saveResult.saved} saved, ${saveResult.duplicates} duplicates, ${saveResult.errors} errors`);
               }
               
+              // Update real-time progress tracking
+              this.updateProgress({
+                savedPlants: FireCrawlAPI.scrapingProgress.savedPlants + saveResult.saved,
+                duplicatePlants: FireCrawlAPI.scrapingProgress.duplicatePlants + saveResult.duplicates,
+                failedPlants: FireCrawlAPI.scrapingProgress.failedPlants + saveResult.errors + skippedInvalid
+              });
+              
               // Update progress with ACTUAL save results, not planned counts
               if (progress) {
                 await storage.updateScrapingProgress(progress.id, {
@@ -555,13 +680,19 @@ export class FireCrawlAPI {
         console.log(`Final AI rate limit status: ${this.rateLimiter.getRemainingCapacity()}/5 available`);
         console.log(`========================================\n`);
         
-        // Mark scraping as completed
+        // Mark scraping as completed and update real-time tracking
         if (saveToDatabase && progress) {
           await storage.updateScrapingProgress(progress.id, {
             status: 'completed',
             completedAt: new Date()
           });
         }
+        
+        // Update real-time progress to mark as complete
+        this.updateProgress({
+          isActive: false,
+          estimatedTimeRemaining: 0
+        });
         
         // Deduplicate plants
         const uniquePlants = this.deduplicatePlants(allPlants);

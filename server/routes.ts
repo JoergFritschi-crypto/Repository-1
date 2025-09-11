@@ -3591,7 +3591,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
   
-  // Get scraping progress endpoint
+  // Get scraping progress endpoint (database)
   app.get('/api/admin/scraping-progress', isAuthenticated, async (req: any, res) => {
     try {
       // Check if user is admin
@@ -3617,6 +3617,42 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       console.error("Error getting scraping progress:", error);
       res.status(500).json({ 
         message: "Failed to get scraping progress", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Get real-time scraping progress endpoint
+  app.get('/api/admin/scraping-progress-realtime', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Get real-time progress from FireCrawlAPI
+      const progress = FireCrawlAPI.getProgress();
+      
+      res.json({
+        isActive: progress.isActive,
+        total: progress.totalUrls,
+        scraped: progress.processedUrls,
+        saved: progress.savedPlants,
+        duplicates: progress.duplicatePlants,
+        failed: progress.failedPlants,
+        currentBatch: progress.currentBatch,
+        totalBatches: progress.totalBatches,
+        currentBatchUrl: progress.currentBatchUrl,
+        estimatedTimeRemaining: progress.estimatedTimeRemaining,
+        averageTimePerUrl: progress.averageTimePerUrl,
+        startTime: progress.startTime,
+        lastUpdateTime: progress.lastUpdateTime
+      });
+    } catch (error) {
+      console.error("Error getting real-time scraping progress:", error);
+      res.status(500).json({ 
+        message: "Failed to get real-time scraping progress", 
         error: (error as Error).message 
       });
     }
