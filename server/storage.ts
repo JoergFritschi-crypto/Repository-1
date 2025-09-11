@@ -393,12 +393,12 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
-    // Only return verified plants
-    conditions.push(eq(plants.verificationStatus, 'verified'));
+    // Return all plants (including pending ones for admin validation)
+    // No verification status filter applied
     
     const result = conditions.length > 0
       ? await db.select().from(plants).where(and(...conditions)).limit(100)
-      : await db.select().from(plants).where(eq(plants.verificationStatus, 'verified')).limit(100);
+      : await db.select().from(plants).limit(100);
       
     return result;
   }
