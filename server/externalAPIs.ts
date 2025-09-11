@@ -6,16 +6,100 @@ import { type InsertPlant } from '@shared/schema';
 import { extractBotanicalParts } from '@shared/botanicalUtils';
 import AnthropicAI from './anthropicAI';
 
+// Rate limiter class for API calls
+class RateLimiter {
+  private timestamps: number[] = [];
+  private readonly maxRequests: number;
+  private readonly windowMs: number;
+  private retryCount: Map<string, number> = new Map();
+
+  constructor(maxRequests: number = 5, windowMs: number = 60000) {
+    this.maxRequests = maxRequests;
+    this.windowMs = windowMs;
+  }
+
+  async waitIfNeeded(requestId?: string): Promise<void> {
+    const now = Date.now();
+    
+    // Remove timestamps outside the window
+    this.timestamps = this.timestamps.filter(ts => now - ts < this.windowMs);
+    
+    // If we're at the limit, calculate wait time
+    if (this.timestamps.length >= this.maxRequests) {
+      const oldestTimestamp = this.timestamps[0];
+      const waitTime = this.windowMs - (now - oldestTimestamp) + 1000; // Add 1 second buffer
+      
+      if (waitTime > 0) {
+        console.log(`Rate limit reached. Waiting ${Math.ceil(waitTime / 1000)} seconds before next AI extraction...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        
+        // Clean up after waiting
+        const newNow = Date.now();
+        this.timestamps = this.timestamps.filter(ts => newNow - ts < this.windowMs);
+      }
+    }
+    
+    // Record this request
+    this.timestamps.push(Date.now());
+  }
+
+  async executeWithRetry<T>(
+    fn: () => Promise<T>,
+    requestId: string,
+    maxRetries: number = 3
+  ): Promise<T> {
+    const retries = this.retryCount.get(requestId) || 0;
+    
+    try {
+      await this.waitIfNeeded(requestId);
+      const result = await fn();
+      this.retryCount.delete(requestId); // Clear on success
+      return result;
+    } catch (error: any) {
+      // Check if it's a rate limit error
+      const isRateLimit = error?.status === 429 || 
+                         error?.statusCode === 429 || 
+                         error?.message?.includes('rate limit') ||
+                         error?.message?.includes('429');
+      
+      if (isRateLimit && retries < maxRetries) {
+        const retryDelay = Math.min(60000, Math.pow(2, retries) * 5000); // Exponential backoff: 5s, 10s, 20s, max 60s
+        console.log(`Rate limit error. Retry ${retries + 1}/${maxRetries} after ${retryDelay / 1000} seconds...`);
+        
+        this.retryCount.set(requestId, retries + 1);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        
+        // Recursive retry
+        return this.executeWithRetry(fn, requestId, maxRetries);
+      }
+      
+      // Clear retry count on non-retryable error or max retries reached
+      this.retryCount.delete(requestId);
+      throw error;
+    }
+  }
+
+  getRemainingCapacity(): number {
+    const now = Date.now();
+    this.timestamps = this.timestamps.filter(ts => now - ts < this.windowMs);
+    return Math.max(0, this.maxRequests - this.timestamps.length);
+  }
+}
+
 // FireCrawl Web Scraping API
 export class FireCrawlAPI {
   private app: FirecrawlApp;
   private anthropic: AnthropicAI | null = null;
+  private rateLimiter: RateLimiter;
+  private aiExtractionEnabled: boolean = true;
 
   constructor(apiKey: string, anthropicApiKey?: string) {
     this.app = new FirecrawlApp({ apiKey });
     if (anthropicApiKey) {
       this.anthropic = new AnthropicAI(anthropicApiKey);
     }
+    // Initialize rate limiter for Anthropic API (5 requests per minute)
+    this.rateLimiter = new RateLimiter(5, 60000);
   }
 
   async scrapePlantData(url: string, saveToDatabase: boolean = false, force: boolean = false): Promise<any> {
@@ -114,13 +198,15 @@ export class FireCrawlAPI {
         productUrls = Array.from(new Set(productUrls));
         
         // Define constants for concurrent processing upfront
-        const CONCURRENT_LIMIT = 5; // Firecrawl allows 5 concurrent browsers
-        const batchSize = 25; // Larger batches since we're processing concurrently (5 concurrent x 5 chunks = 25)
+        // REDUCED from 5 to 2 to prevent overwhelming Anthropic API with German content
+        const CONCURRENT_LIMIT = 2; // Reduced to stay within AI rate limits
+        const batchSize = 10; // Smaller batches for more controlled processing
         
         console.log(`===== PRODUCT DISCOVERY COMPLETE =====`);
         console.log(`Total unique product URLs found: ${productUrls.length}`);
         console.log(`Expected: ~1010 products`);
-        console.log(`Using ${CONCURRENT_LIMIT} concurrent browsers for 5x faster scraping`);
+        console.log(`Using ${CONCURRENT_LIMIT} concurrent browsers (reduced for AI rate limits)`);
+        console.log(`AI extraction rate limit: ${this.rateLimiter.getRemainingCapacity()}/5 requests available`);
         console.log(`=======================================`);
         
         if (productUrls.length === 0) {
@@ -210,7 +296,7 @@ export class FireCrawlAPI {
           const batchStartTime = Date.now(); // Track timing for performance metrics
           
           try {
-            // Process batch in chunks of 5 concurrent requests
+            // Process batch in chunks of 2 concurrent requests (reduced for AI rate limits)
             const chunkSize = CONCURRENT_LIMIT;
             const chunks = [];
             for (let j = 0; j < batch.length; j += chunkSize) {
@@ -218,6 +304,7 @@ export class FireCrawlAPI {
             }
             
             console.log(`\nBatch ${i + 1}/${batches}: Processing ${batch.length} URLs in ${chunks.length} concurrent chunks (${CONCURRENT_LIMIT} browsers)`);
+            console.log(`AI rate limit capacity: ${this.rateLimiter.getRemainingCapacity()}/5 available`);
             
             // Process each chunk of 5 URLs concurrently
             for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
@@ -270,10 +357,10 @@ export class FireCrawlAPI {
                 }
               }
               
-              // Only add delay between chunks, not individual requests
-              // Small delay to avoid overwhelming the API (100ms between chunks of 5)
+              // Add delay between chunks to help with rate limiting
+              // Increased delay since we're using AI extraction more frequently
               if (chunkIndex < chunks.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 500)); // Increased from 100ms to 500ms
               }
               
               // Progress reporting per chunk
@@ -464,7 +551,8 @@ export class FireCrawlAPI {
         console.log(`Failed batches: ${failedBatches}`);
         console.log(`URLs processed: ${processedUrls} new, ${skippedUrls} skipped`);
         console.log(`Total new plants extracted: ${allPlants.length}`);
-        console.log(`Performance: ${CONCURRENT_LIMIT}x concurrent browsers used`);
+        console.log(`Performance: ${CONCURRENT_LIMIT}x concurrent browsers (rate-limited for AI)`);
+        console.log(`Final AI rate limit status: ${this.rateLimiter.getRemainingCapacity()}/5 available`);
         console.log(`========================================\n`);
         
         // Mark scraping as completed
@@ -730,9 +818,17 @@ export class FireCrawlAPI {
       throw new Error('Anthropic AI not configured');
     }
 
+    if (!this.aiExtractionEnabled) {
+      throw new Error('AI extraction temporarily disabled due to rate limits');
+    }
+
     try {
-      // Use the new extractPlantData method from AnthropicAI class
-      const extractedData = await this.anthropic.extractPlantData(markdown, pageUrl);
+      // Use rate limiter to execute AI extraction with proper throttling
+      const extractedData = await this.rateLimiter.executeWithRetry(
+        () => this.anthropic!.extractPlantData(markdown, pageUrl),
+        `ai-extract-${pageUrl}`,
+        3 // Max 3 retries with exponential backoff
+      );
       
       // Import dimension parsing utilities
       const { parsePlantDimensions, validatePlantData } = await import('./dimensionUtils.js');
@@ -790,8 +886,14 @@ export class FireCrawlAPI {
       }
       
       return plant;
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI extraction error:', error);
+      
+      // If we get consistent rate limit errors, temporarily disable AI extraction
+      if (error?.status === 429 || error?.message?.includes('rate limit')) {
+        console.warn('Multiple rate limit errors detected. Consider reducing concurrent processing.');
+      }
+      
       throw error;
     }
   }
