@@ -460,10 +460,16 @@
     transform: translateY(-2px) scale(1.02);
   }
   
-  /* Navigation link hover effects */
-  a:not(.btn-gold):hover {
+  /* Navigation link hover effects - only for text links */
+  .text-link:hover, .prose a:hover, .content a:hover {
     color: hsl(var(--canary));
     transition: color 0.2s ease;
+  }
+  
+  /* Reset link styles for button-like anchors */
+  .link-reset, .link-reset:hover {
+    color: inherit !important;
+    text-decoration: inherit !important;
   }
   
   /* Fix dropdown and toast transparency issues */
