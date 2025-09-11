@@ -3472,7 +3472,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(503).json({ message: "FireCrawl API not configured. Please add FIRECRAWL_API_KEY to environment variables." });
       }
 
-      const { url, saveToDatabase = true } = req.body; // Default to saving to database
+      const { url, saveToDatabase = true, force = false } = req.body; // Default to saving to database
       
       if (!url) {
         return res.status(400).json({ message: "URL is required" });
@@ -3480,9 +3480,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
 
       console.log('Starting plant data scraping for URL:', url);
       console.log('Save to database:', saveToDatabase);
+      console.log('Force re-scrape:', force);
 
       // Scrape the website with incremental saving
-      const scrapingResult = await fireCrawlAPI.scrapePlantData(url, saveToDatabase);
+      const scrapingResult = await fireCrawlAPI.scrapePlantData(url, saveToDatabase, force);
       
       if (saveToDatabase) {
         // When saving to database, return progress stats

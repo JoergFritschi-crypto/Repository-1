@@ -13,7 +13,7 @@ export class FireCrawlAPI {
     this.app = new FirecrawlApp({ apiKey });
   }
 
-  async scrapePlantData(url: string, saveToDatabase: boolean = false): Promise<any> {
+  async scrapePlantData(url: string, saveToDatabase: boolean = false, force: boolean = false): Promise<any> {
     try {
       console.log('FireCrawl: Starting to scrape URL:', url);
       
@@ -26,6 +26,8 @@ export class FireCrawlAPI {
         // Clean URL - remove hash fragments
         const baseUrl = url.split('#')[0];
         const domain = new URL(baseUrl).origin;
+        const urlParts = new URL(baseUrl);
+        const pathParts = urlParts.pathname.split('/');
         
         // Stage 1: Get all product URLs
         let productUrls: string[] = [];
@@ -33,35 +35,48 @@ export class FireCrawlAPI {
         // Try Shopify JSON endpoint first
         try {
           console.log('Attempting Shopify JSON API...');
-          for (let page = 1; page <= 10; page++) {
-            const jsonUrl = `${domain}/collections/stauden/products.json?limit=250&page=${page}`;
+          
+          // Extract collection name from URL (e.g., /collections/stauden -> stauden)
+          let collectionName = 'stauden'; // default
+          if (pathParts.includes('collections') && pathParts.indexOf('collections') < pathParts.length - 1) {
+            collectionName = pathParts[pathParts.indexOf('collections') + 1];
+          }
+          console.log(`Using collection: ${collectionName}`);
+          
+          // Try to get all products via JSON API (increased pages to handle 1010 products)
+          for (let page = 1; page <= 50; page++) {
+            const jsonUrl = `${domain}/collections/${collectionName}/products.json?limit=250&page=${page}`;
             const response = await fetch(jsonUrl);
             if (response.ok) {
               const data = await response.json();
               if (data.products && data.products.length > 0) {
                 const pageUrls = data.products.map((p: any) => `${domain}/products/${p.handle}`);
                 productUrls.push(...pageUrls);
-                console.log(`Page ${page}: Found ${data.products.length} products`);
+                console.log(`JSON API Page ${page}: Found ${data.products.length} products`);
               } else {
+                console.log(`JSON API: No more products at page ${page}`);
                 break; // No more products
               }
             } else {
+              console.log(`JSON API failed at page ${page}: ${response.status}`);
               break;
             }
           }
         } catch (e) {
-          console.log('JSON API failed, using page scraping...');
+          console.log('JSON API failed:', e);
         }
         
         // Fallback: Scrape collection pages
         if (productUrls.length === 0) {
-          console.log('Scraping collection pages for product URLs...');
-          const maxPages = 30; // Estimate ~35 products per page = 1050 products
+          console.log('JSON API returned no products, falling back to HTML scraping...');
+          const maxPages = 50; // Increased to handle 1010 products (~20-30 per page)
           
           for (let page = 1; page <= maxPages; page++) {
             try {
-              const pageUrl = `${baseUrl}?page=${page}`;
-              console.log(`Scraping page ${page}...`);
+              // Properly append page parameter
+              const separator = baseUrl.includes('?') ? '&' : '?';
+              const pageUrl = `${baseUrl}${separator}page=${page}`;
+              console.log(`Scraping HTML page ${page}: ${pageUrl}`);
               
               const pageResult = await this.app.scrapeUrl(pageUrl, {
                 formats: ['markdown'],
@@ -76,7 +91,7 @@ export class FireCrawlAPI {
                   break;
                 }
                 productUrls.push(...pageProductUrls);
-                console.log(`Page ${page}: Found ${pageProductUrls.length} product URLs`);
+                console.log(`HTML Page ${page}: Found ${pageProductUrls.length} product URLs`);
               }
               
               // Small delay between pages
@@ -90,7 +105,13 @@ export class FireCrawlAPI {
           productUrls = Array.from(new Set(productUrls));
         }
         
+        // Deduplicate URLs again in case both methods found some
+        productUrls = Array.from(new Set(productUrls));
+        
+        console.log(`===== PRODUCT DISCOVERY COMPLETE =====`);
         console.log(`Total unique product URLs found: ${productUrls.length}`);
+        console.log(`Expected: ~1010 products`);
+        console.log(`=======================================`);
         
         if (productUrls.length === 0) {
           throw new Error('No product URLs found');
@@ -101,9 +122,9 @@ export class FireCrawlAPI {
         let startBatchIndex = 0;
         
         if (progress) {
-          // Resume from where we left off
-          if (progress.status === 'completed') {
-            console.log('Scraping already completed for this URL');
+          // Resume from where we left off or reset if force is true
+          if (progress.status === 'completed' && !force) {
+            console.log('Scraping already completed for this URL. Use force=true to re-scrape.');
             return {
               plants: [],
               metadata: {
@@ -116,8 +137,23 @@ export class FireCrawlAPI {
             };
           }
           
-          console.log(`Resuming scraping from batch ${progress.completedBatches}`);
-          startBatchIndex = progress.completedBatches || 0;
+          // Reset progress if force is true
+          if (force) {
+            console.log('Force re-scraping enabled, resetting progress...');
+            await storage.updateScrapingProgress(progress.id, {
+              status: 'in_progress',
+              completedBatches: 0,
+              totalPlants: 0,
+              savedPlants: 0,
+              duplicatePlants: 0,
+              failedPlants: 0,
+              errors: []
+            });
+            startBatchIndex = 0;
+          } else {
+            console.log(`Resuming scraping from batch ${progress.completedBatches}`);
+            startBatchIndex = progress.completedBatches || 0;
+          }
           
           // Update progress with current run
           await storage.updateScrapingProgress(progress.id, {

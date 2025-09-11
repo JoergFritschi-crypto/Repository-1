@@ -739,62 +739,59 @@ export class DatabaseStorage implements IStorage {
             continue;
           }
           
-          let isNew = true;
-          let wasUpdated = false;
-          
-          // If we have an externalId, try to upsert based on that first
-          if (processedPlant.externalId) {
-            try {
-              // Check if plant exists with this externalId
-              const existingByExternalId = await this.getPlantByExternalId(processedPlant.externalId);
-              
-              if (existingByExternalId) {
-                // Update existing plant by externalId
-                const [updated] = await db
-                  .update(plants)
-                  .set({
+          // Use upsert with onConflictDoUpdate for better efficiency
+          try {
+            if (processedPlant.externalId) {
+              // Use onConflictDoUpdate on externalId for atomic upsert
+              const result = await db
+                .insert(plants)
+                .values(processedPlant)
+                .onConflictDoUpdate({
+                  target: plants.externalId,
+                  set: {
+                    // Update all fields except id and externalId
                     scientificName: processedPlant.scientificName,
                     commonName: processedPlant.commonName,
                     genus: processedPlant.genus,
                     species: processedPlant.species,
                     cultivar: processedPlant.cultivar,
-                    description: processedPlant.description || existingByExternalId.description,
-                    heightMinCm: processedPlant.heightMinCm || existingByExternalId.heightMinCm,
-                    heightMaxCm: processedPlant.heightMaxCm || existingByExternalId.heightMaxCm,
-                    spreadMinCm: processedPlant.spreadMinCm || existingByExternalId.spreadMinCm,
-                    spreadMaxCm: processedPlant.spreadMaxCm || existingByExternalId.spreadMaxCm,
-                    bloomStartMonth: processedPlant.bloomStartMonth || existingByExternalId.bloomStartMonth,
-                    bloomEndMonth: processedPlant.bloomEndMonth || existingByExternalId.bloomEndMonth,
-                    flowerColor: processedPlant.flowerColor || existingByExternalId.flowerColor,
-                    sunlight: processedPlant.sunlight || existingByExternalId.sunlight,
-                    watering: processedPlant.watering || existingByExternalId.watering,
-                    soil: processedPlant.soil || existingByExternalId.soil,
-                    hardiness: processedPlant.hardiness || existingByExternalId.hardiness,
-                    maintenance: processedPlant.maintenance || existingByExternalId.maintenance,
-                    growthRate: processedPlant.growthRate || existingByExternalId.growthRate,
-                    droughtTolerant: processedPlant.droughtTolerant ?? existingByExternalId.droughtTolerant,
-                    saltTolerant: processedPlant.saltTolerant ?? existingByExternalId.saltTolerant,
+                    // For optional fields, update only if new value is provided
+                    ...(processedPlant.description && { description: processedPlant.description }),
+                    ...(processedPlant.heightMinCm && { heightMinCm: processedPlant.heightMinCm }),
+                    ...(processedPlant.heightMaxCm && { heightMaxCm: processedPlant.heightMaxCm }),
+                    ...(processedPlant.spreadMinCm && { spreadMinCm: processedPlant.spreadMinCm }),
+                    ...(processedPlant.spreadMaxCm && { spreadMaxCm: processedPlant.spreadMaxCm }),
+                    ...(processedPlant.bloomStartMonth && { bloomStartMonth: processedPlant.bloomStartMonth }),
+                    ...(processedPlant.bloomEndMonth && { bloomEndMonth: processedPlant.bloomEndMonth }),
+                    ...(processedPlant.flowerColor && { flowerColor: processedPlant.flowerColor }),
+                    ...(processedPlant.sunlight && { sunlight: processedPlant.sunlight }),
+                    ...(processedPlant.watering && { watering: processedPlant.watering }),
+                    ...(processedPlant.soil && { soil: processedPlant.soil }),
+                    ...(processedPlant.hardiness && { hardiness: processedPlant.hardiness }),
+                    ...(processedPlant.maintenance && { maintenance: processedPlant.maintenance }),
+                    ...(processedPlant.growthRate && { growthRate: processedPlant.growthRate }),
+                    ...(processedPlant.droughtTolerant !== undefined && { droughtTolerant: processedPlant.droughtTolerant }),
+                    ...(processedPlant.saltTolerant !== undefined && { saltTolerant: processedPlant.saltTolerant }),
                     sourceUrl: processedPlant.sourceUrl,
                     updatedAt: new Date()
-                  })
-                  .where(eq(plants.id, existingByExternalId.id))
-                  .returning();
-                
-                if (updated) {
+                  }
+                })
+                .returning();
+              
+              if (result && result.length > 0) {
+                const plant = result[0];
+                // Check if it was an insert or update by comparing created/updated times
+                const timeDiff = Math.abs(plant.createdAt.getTime() - plant.updatedAt.getTime());
+                if (timeDiff < 1000) { // Created and updated at same time = new insert
+                  saved++;
+                  console.log(`Saved new plant: ${processedPlant.scientificName} (externalId: ${processedPlant.externalId})`);
+                } else {
                   duplicates++;
-                  isNew = false;
-                  wasUpdated = true;
-                  console.log(`Updated existing plant via externalId: ${processedPlant.externalId} -> ${processedPlant.scientificName}`);
+                  console.log(`Updated existing plant: ${processedPlant.scientificName} (externalId: ${processedPlant.externalId})`);
                 }
               }
-            } catch (e) {
-              console.error(`Error checking/updating by externalId:`, e);
-            }
-          }
-          
-          // If plant is new (not updated via externalId), try to insert
-          if (isNew) {
-            try {
+            } else {
+              // No externalId, use regular insert (may fail on scientificName unique constraint)
               const [insertedPlant] = await db
                 .insert(plants)
                 .values(processedPlant)
@@ -804,46 +801,15 @@ export class DatabaseStorage implements IStorage {
                 saved++;
                 console.log(`Saved new plant: ${processedPlant.scientificName} (${processedPlant.commonName})`);
               }
-            } catch (insertError: any) {
-              // Handle unique constraint violations
-              if (insertError.code === '23505') {
-                if (insertError.detail?.includes('scientific_name')) {
-                  // Scientific name already exists - try to update
-                  try {
-                    const [updated] = await db
-                      .update(plants)
-                      .set({
-                        commonName: processedPlant.commonName || sql`common_name`,
-                        externalId: processedPlant.externalId || sql`external_id`,
-                        sourceUrl: processedPlant.sourceUrl || sql`source_url`,
-                        description: processedPlant.description || sql`description`,
-                        updatedAt: new Date()
-                      })
-                      .where(eq(plants.scientificName, processedPlant.scientificName))
-                      .returning();
-                    
-                    if (updated) {
-                      duplicates++;
-                      console.log(`Updated plant with duplicate scientificName: ${processedPlant.scientificName}`);
-                    }
-                  } catch (updateError) {
-                    console.error(`Failed to update duplicate scientificName:`, updateError);
-                    errors++;
-                  }
-                } else if (insertError.detail?.includes('external_id')) {
-                  // This shouldn't happen if our check above worked
-                  duplicates++;
-                  console.log(`Duplicate external ID (race condition?): ${processedPlant.externalId}`);
-                } else {
-                  // Other unique constraint violation
-                  duplicates++;
-                  console.log(`Duplicate constraint violation: ${insertError.detail}`);
-                }
-              } else {
-                // Other database error
-                errors++;
-                console.error(`Database error saving plant ${processedPlant.scientificName}:`, insertError.message);
-              }
+            }
+          } catch (insertError: any) {
+            // Handle unique constraint violations
+            if (insertError.code === '23505') {  // PostgreSQL unique violation
+              duplicates++;
+              console.log(`Duplicate plant skipped: ${processedPlant.scientificName} (${insertError.detail})`);
+            } else {
+              console.error(`Error processing plant ${processedPlant.scientificName}:`, insertError.message);
+              errors++;
             }
           }
         } catch (error: any) {
