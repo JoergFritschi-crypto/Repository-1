@@ -471,7 +471,7 @@ export default function GardenProperties() {
                         <Checkbox
                           id="auto-save"
                           checked={autoSaveEnabled}
-                          onCheckedChange={setAutoSaveEnabled}
+                          onCheckedChange={(checked) => setAutoSaveEnabled(checked === true)}
                           className="mt-1"
                           data-testid="checkbox-auto-save"
                         />

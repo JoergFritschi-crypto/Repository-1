@@ -157,11 +157,11 @@ export default function StyleSelector({
 
   const getMaintenanceColor = (level: string) => {
     switch(level.toLowerCase()) {
-      case 'low': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low-medium': return 'bg-lime-100 text-lime-800';
-      case 'medium-high': return 'bg-orange-100 text-orange-800';
-      case 'high': return 'bg-red-100 text-red-800';
+      case 'low': return 'bg-primary/20 text-primary';
+      case 'medium': return 'bg-accent/20 text-accent';
+      case 'low-medium': return 'bg-secondary/20 text-secondary';
+      case 'medium-high': return 'bg-accent/30 text-accent';
+      case 'high': return 'bg-destructive/20 text-destructive';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -195,7 +195,7 @@ export default function StyleSelector({
   return (
     <div className="space-y-4">
       {/* Tier Information */}
-      <Alert className={userTier === 'premium' ? 'border-purple-500' : 'border-blue-500'}>
+      <Alert className="border-primary">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription className="text-sm">
           <strong className="capitalize">{userTier} Tier:</strong> {
@@ -247,9 +247,9 @@ export default function StyleSelector({
               key={style.id}
               className={`relative transition-all ${
                 isSelected 
-                  ? 'border-2 border-purple-500 shadow-lg' 
+                  ? 'border-2 border-primary shadow-lg' 
                   : allowed
-                  ? 'hover:border-purple-300 hover:shadow-md cursor-pointer'
+                  ? 'hover:border-accent hover:shadow-md cursor-pointer'
                   : 'opacity-60 cursor-not-allowed'
               }`}
               onClick={() => allowed && handleStyleSelect(style.id)}
@@ -258,7 +258,7 @@ export default function StyleSelector({
               {/* AI Recommendation Badge */}
               {recommendation && (
                 <div className="absolute -top-2 -right-2 z-10">
-                  <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center gap-1">
+                  <Badge className="bg-gradient-to-r from-primary to-accent text-white flex items-center gap-1">
                     <Star className="w-3 h-3" />
                     {recommendation.matchScore}/10 Match
                   </Badge>
@@ -294,8 +294,8 @@ export default function StyleSelector({
 
                 {/* AI Reasoning if available */}
                 {recommendation && (
-                  <div className="p-2 bg-purple-50 rounded-lg border border-purple-200">
-                    <p className="text-xs font-medium text-purple-800 mb-1">
+                  <div className="p-2 bg-primary/10 rounded-lg border border-primary/30">
+                    <p className="text-xs font-medium text-primary mb-1">
                       Why AI Recommends This:
                     </p>
                     <p className="text-xs text-purple-700">
@@ -341,7 +341,7 @@ export default function StyleSelector({
                   <Button
                     className={`w-full ${
                       isSelected 
-                        ? 'bg-purple-600 hover:bg-purple-700' 
+                        ? 'bg-primary hover:bg-primary/90' 
                         : ''
                     }`}
                     variant={isSelected ? "default" : "outline"}
@@ -363,8 +363,8 @@ export default function StyleSelector({
 
       {/* Upgrade Prompt for Free/Pay-per-design users */}
       {userTier !== 'premium' && (
-        <Alert className="border-purple-500 bg-purple-50">
-          <Sparkles className="h-4 w-4 text-purple-600" />
+        <Alert className="border-primary bg-primary/10">
+          <Sparkles className="h-4 w-4 text-primary" />
           <AlertDescription>
             <strong>Want unlimited designs?</strong> Upgrade to Premium for unlimited iterations on all styles, 
             plus exclusive features like advanced plant recommendations and seasonal planning.
