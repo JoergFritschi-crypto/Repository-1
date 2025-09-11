@@ -1844,10 +1844,10 @@ export default function GardenProperties() {
                       <div className="flex items-start gap-2">
                         <AlertCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
                         <div className="space-y-1">
-                          <p className="text-sm font-semibold text-accent">
+                          <p className="text-sm font-semibold text-primary">
                             Garden Orientation Not Set
                           </p>
-                          <p className="text-sm text-accent/80">
+                          <p className="text-sm text-primary/80">
                             Please set your garden's actual north direction and viewing point above. 
                             These are critical for accurate sun exposure calculations and proper plant placement in your design.
                           </p>
