@@ -6,26 +6,11 @@ interface IconProps {
 
 export function GardenScapeIcon({ className }: IconProps) {
   return (
-    <svg
-      className={cn("w-6 h-6", className)}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle cx="12" cy="12" r="11" fill="hsl(var(--british-racing-green))" stroke="hsl(var(--gold))" strokeWidth="1"/>
-      <path
-        d="M12 6C12 6 9 8 9 11C9 11 9 13 11 15C11 15 12 16 12 17C12 16 13 15 13 15C15 13 15 11 15 11C15 8 12 6 12 6Z"
-        fill="hsl(var(--gold))"
-      />
-      <path
-        d="M8 14C8 14 7 15 7 16C7 17 8 18 8 18C8 18 9 17 9 16C9 15 8 14 8 14Z"
-        fill="hsl(var(--gold))"
-      />
-      <path
-        d="M16 14C16 14 17 15 17 16C17 17 16 18 16 18C16 18 15 17 15 16C15 15 16 14 16 14Z"
-        fill="hsl(var(--gold))"
-      />
-    </svg>
+    <img
+      src="/generated-icons/watering-can.png"
+      alt="GardenScape Pro"
+      className={cn("w-6 h-6 object-contain", className)}
+    />
   );
 }
 
