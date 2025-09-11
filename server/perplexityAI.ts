@@ -630,10 +630,20 @@ class PerplexityAI {
       
       // Try to parse the JSON response
       try {
-        // Clean up the response - sometimes AI adds markdown formatting
+        // Clean up the response - sometimes AI adds markdown formatting and weird quotes
         const cleanedContent = responseContent
           .replace(/```json\n?/g, '')
           .replace(/```\n?/g, '')
+          // Fix various quote issues
+          .replace(/[""''„"]/g, '"')  // Replace smart quotes
+          .replace(/[：]/g, ':')       // Replace Chinese colon
+          .replace(/，/g, ',')         // Replace Chinese comma
+          .replace(/\bnull\b/gi, 'null')  // Normalize null values
+          .replace(/\bnil\b/gi, 'null')   // Convert nil to null
+          .replace(/\bnone\b/gi, 'null')  // Convert none to null
+          .replace(/\bNULL\b/g, 'null')   // Convert NULL to null
+          .replace(/\bNULl\b/g, 'null')   // Fix mixed case
+          .replace(/\bNull\b/g, 'null')   // Fix capitalized
           .trim();
         
         let plants;
