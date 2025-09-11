@@ -147,6 +147,8 @@ export class FireCrawlAPI {
         const batches = Math.ceil(productUrls.length / batchSize);
         let successfulBatches = 0;
         let failedBatches = 0;
+        let skippedUrls = 0;
+        let processedUrls = 0;
         
         for (let i = startBatchIndex; i < batches; i++) {
           const start = i * batchSize;
@@ -156,11 +158,25 @@ export class FireCrawlAPI {
           console.log(`Processing batch ${i + 1}/${batches} (${batch.length} products)...`);
           
           const batchPlants: any[] = [];
+          let batchSkipped = 0;
+          let batchProcessed = 0;
           
           try {
             // Process each product in the batch
             for (const productUrl of batch) {
               try {
+                // Check if this URL has already been scraped
+                const externalId = `firecrawl-${productUrl}`;
+                const existingPlant = await storage.getPlantByExternalId(externalId);
+                
+                if (existingPlant) {
+                  console.log(`Skipping already scraped URL: ${productUrl}`);
+                  skippedUrls++;
+                  batchSkipped++;
+                  continue; // Skip to next URL
+                }
+                
+                // URL not yet scraped, process it
                 const result = await this.app.scrapeUrl(productUrl, {
                   formats: ['markdown'],
                   waitFor: 500,
@@ -171,6 +187,8 @@ export class FireCrawlAPI {
                   const plants = this.extractPlantsFromEcommercePage(result.markdown, productUrl);
                   batchPlants.push(...plants);
                   allPlants.push(...plants);
+                  processedUrls++;
+                  batchProcessed++;
                 }
                 
                 // Rate limiting - wait between products
@@ -179,6 +197,9 @@ export class FireCrawlAPI {
                 console.error(`Failed to scrape ${productUrl}`);
               }
             }
+            
+            // Log batch results
+            console.log(`Batch ${i + 1}: Processed ${batchProcessed}, Skipped ${batchSkipped} (already scraped)`);
             
             // Save batch to database if enabled
             if (saveToDatabase && batchPlants.length > 0) {
@@ -223,13 +244,13 @@ export class FireCrawlAPI {
               
               const saveResult = await storage.bulkCreatePlants(plantsToSave);
               
-              // Update progress
+              // Update progress including skipped URLs
               if (progress) {
                 await storage.updateScrapingProgress(progress.id, {
                   completedBatches: i + 1,
                   totalPlants: progress.totalPlants + batchPlants.length,
                   savedPlants: progress.savedPlants + saveResult.saved,
-                  duplicatePlants: progress.duplicatePlants + saveResult.duplicates,
+                  duplicatePlants: progress.duplicatePlants + saveResult.duplicates + batchSkipped, // Include skipped as duplicates
                   failedPlants: progress.failedPlants + saveResult.errors,
                   lastProductUrl: batch[batch.length - 1]
                 });
@@ -237,20 +258,33 @@ export class FireCrawlAPI {
                 // Update local progress object
                 progress.totalPlants += batchPlants.length;
                 progress.savedPlants += saveResult.saved;
-                progress.duplicatePlants += saveResult.duplicates;
+                progress.duplicatePlants += saveResult.duplicates + batchSkipped;
                 progress.failedPlants += saveResult.errors;
               }
               
-              console.log(`Batch ${i + 1} results: Saved: ${saveResult.saved}, Duplicates: ${saveResult.duplicates}, Errors: ${saveResult.errors}`);
+              console.log(`Batch ${i + 1} results: Saved: ${saveResult.saved}, Duplicates: ${saveResult.duplicates}, Skipped: ${batchSkipped}, Errors: ${saveResult.errors}`);
             } else if (!saveToDatabase) {
               // Even when not saving, update the batch progress
               if (progress) {
                 await storage.updateScrapingProgress(progress.id, {
                   completedBatches: i + 1,
                   totalPlants: progress.totalPlants + batchPlants.length,
+                  duplicatePlants: progress.duplicatePlants + batchSkipped,
                   lastProductUrl: batch[batch.length - 1]
                 });
               }
+            } else if (batchSkipped > 0 && saveToDatabase) {
+              // Batch had only skipped URLs, still update progress
+              if (progress) {
+                await storage.updateScrapingProgress(progress.id, {
+                  completedBatches: i + 1,
+                  duplicatePlants: progress.duplicatePlants + batchSkipped,
+                  lastProductUrl: batch[batch.length - 1]
+                });
+                
+                progress.duplicatePlants += batchSkipped;
+              }
+              console.log(`Batch ${i + 1}: All ${batchSkipped} URLs already scraped, skipping.`);
             }
             
             successfulBatches++;
@@ -278,15 +312,16 @@ export class FireCrawlAPI {
           
           // Progress update
           if ((i + 1) % 10 === 0) {
-            console.log(`Progress: ${allPlants.length} plants scraped so far...`);
+            console.log(`Progress: ${allPlants.length} new plants scraped, ${skippedUrls} URLs skipped (already in DB)`);
             if (saveToDatabase) {
-              console.log(`Database stats: Saved: ${progress!.savedPlants}, Duplicates: ${progress!.duplicatePlants}, Errors: ${progress!.failedPlants}`);
+              console.log(`Database stats: Saved: ${progress!.savedPlants}, Previously scraped: ${skippedUrls}, Duplicates: ${progress!.duplicatePlants - skippedUrls}, Errors: ${progress!.failedPlants}`);
             }
           }
         }
         
-        console.log(`Batches completed: ${successfulBatches} successful, ${failedBatches} failed`);
-        console.log(`Total plants scraped: ${allPlants.length}`);
+        console.log(`Scraping completed: ${successfulBatches} successful batches, ${failedBatches} failed batches`);
+        console.log(`URLs processed: ${processedUrls} new, ${skippedUrls} skipped (already in database)`);
+        console.log(`Total new plants extracted: ${allPlants.length}`);
         
         // Mark scraping as completed
         if (saveToDatabase && progress) {
@@ -312,12 +347,14 @@ export class FireCrawlAPI {
           metadata: {
             url,
             scrapedAt: new Date().toISOString(),
-            creditsUsed: productUrls.length,
-            pagesCrawled: productUrls.length,
+            creditsUsed: processedUrls, // Only count newly processed URLs
+            pagesCrawled: processedUrls,
             totalPlantsFound: saveToDatabase && progress ? progress.totalPlants : plantsWithType.length,
             extractionMethod: 'two-stage-batch',
             saved: saveToDatabase && progress ? progress.savedPlants : 0,
             duplicates: saveToDatabase && progress ? progress.duplicatePlants : 0,
+            skippedUrls: skippedUrls,
+            processedUrls: processedUrls,
             errors: saveToDatabase && progress ? progress.failedPlants : 0
           }
         };
