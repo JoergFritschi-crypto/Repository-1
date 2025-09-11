@@ -97,7 +97,7 @@ export default function IconGallery() {
   const generateIconsMutation = useMutation({
     mutationFn: async () => {
       setIsGenerating(true);
-      const response = await apiRequest('/api/admin/generate-garden-tool-icons', 'POST');
+      const response = await apiRequest('POST', '/api/admin/generate-garden-tool-icons');
       return response;
     },
     onSuccess: (data: any) => {
