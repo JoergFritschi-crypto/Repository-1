@@ -853,6 +853,12 @@ Rules:
   // Seed plants endpoint (temporary for testing)
   app.post('/api/admin/plants/seed', isAuthenticated, async (req, res, next) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser((req as any).user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const samplePlants = [
         {
           id: 'lavender-' + Date.now(),
@@ -1010,6 +1016,12 @@ Rules:
   // Test endpoint for enhanced validation pipeline
   app.post('/api/admin/test-validation-pipeline', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const { scientific_name, common_name, height, spread, sunlight, description } = req.body;
       
       // Create a test plant object
@@ -1070,7 +1082,12 @@ Rules:
   // Admin plant routes
   app.post('/api/admin/plants', isAuthenticated, async (req: any, res) => {
     try {
-      // TODO: Add admin role check
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const plantData = insertPlantSchema.parse(req.body);
       const plant = await storage.createPlant(plantData);
       res.status(201).json(plant);
@@ -1082,7 +1099,12 @@ Rules:
 
   app.get('/api/admin/plants/pending', isAuthenticated, async (req: any, res) => {
     try {
-      // TODO: Add admin role check
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const plants = await storage.getPendingPlants();
       res.json(plants);
     } catch (error) {
@@ -1093,7 +1115,12 @@ Rules:
 
   app.put('/api/admin/plants/:id/verify', isAuthenticated, async (req: any, res) => {
     try {
-      // TODO: Add admin role check
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const plant = await storage.verifyPlant(req.params.id);
       res.json(plant);
     } catch (error) {
@@ -1104,7 +1131,12 @@ Rules:
 
   app.delete('/api/admin/plants/:id', isAuthenticated, async (req: any, res) => {
     try {
-      // TODO: Add admin role check
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       await storage.deletePlant(req.params.id);
       res.json({ message: "Plant deleted successfully" });
     } catch (error) {
@@ -1116,6 +1148,12 @@ Rules:
   // Validate plant data with Perplexity
   app.post('/api/admin/plants/:id/validate', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const plantId = req.params.id;
       const plant = await storage.getPlant(plantId);
       
@@ -1264,6 +1302,12 @@ Rules:
   // Image generation endpoints
   app.post('/api/admin/plants/:id/generate-images', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const plantId = req.params.id;
       const plant = await storage.getPlant(plantId);
       
@@ -1291,6 +1335,12 @@ Rules:
   // Bulk generate images for all plants without images
   app.post('/api/admin/plants/generate-all-images', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const allPlants = await storage.getAllPlants();
       const plantsWithoutImages = allPlants.filter(plant => 
         !plant.thumbnailImage && !plant.fullImage && !plant.detailImage
@@ -1332,6 +1382,12 @@ Rules:
 
   app.get('/api/admin/image-generation/status', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const status = await imageGenerationService.getGenerationStatus();
       res.json(status);
     } catch (error) {
@@ -1345,6 +1401,12 @@ Rules:
 
   app.get('/api/admin/image-generation/queue', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const queue = await imageGenerationService.getQueueStatus();
       
       // Check if there are pending items and nothing is processing
@@ -1370,6 +1432,12 @@ Rules:
   // Clear completed and failed items from the queue
   app.post('/api/admin/image-generation/clear-queue', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const clearedCount = await imageGenerationService.clearCompletedAndFailed();
       res.json({ 
         message: `Cleared ${clearedCount} items from the queue`,
@@ -1387,6 +1455,12 @@ Rules:
   // Plant Import Wizard endpoints
   app.get('/api/admin/import/search-perenual', isAuthenticated, async (req, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser((req as any).user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const { q } = req.query;
       if (!q || typeof q !== 'string') {
         return res.status(400).json({ error: 'Search query required' });
@@ -1405,6 +1479,12 @@ Rules:
   // Plant Import Wizard - Search GBIF with same rigorous standards
   app.get('/api/admin/import/search-gbif', isAuthenticated, async (req, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser((req as any).user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const { q } = req.query;
       if (!q || typeof q !== 'string') {
         return res.status(400).json({ error: 'Search query required' });
@@ -1422,6 +1502,12 @@ Rules:
   
   app.post('/api/admin/import/enrich-gbif', isAuthenticated, async (req, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser((req as any).user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const { scientific_name } = req.body;
       if (!scientific_name) {
         return res.status(400).json({ error: 'Scientific name required' });
@@ -1492,6 +1578,12 @@ Rules:
   
   app.post('/api/admin/import/plants', isAuthenticated, async (req, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser((req as any).user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const { plants } = req.body;
       if (!plants || !Array.isArray(plants)) {
         return res.status(400).json({ error: 'Plants array required' });
@@ -1510,6 +1602,12 @@ Rules:
   // Reset stuck items back to pending
   app.post('/api/admin/image-generation/reset-stuck', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const resetCount = await imageGenerationService.retryStuckImages();
       res.json({ 
         message: `Reset ${resetCount} stuck items`,
@@ -2999,6 +3097,12 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   // Create test garden for quick testing
   app.post('/api/admin/create-test-garden', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const userId = req.user.claims.sub;
       
       // Count existing test gardens to generate a simple incremental name
@@ -3723,6 +3827,12 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   // Populate Test Garden 1 with sample plants
   app.post('/api/admin/populate-test-garden', isAuthenticated, async (req: any, res) => {
     try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const testGardenId = "1";
       
       // Sample canvas design with plants
