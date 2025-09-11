@@ -57,6 +57,7 @@ export interface Plant {
 }
 
 export interface PlantSearchFilters {
+  search?: string;
   type?: string;
   hardiness_zone?: string;
   sun_requirements?: string;

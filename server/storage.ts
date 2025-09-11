@@ -237,7 +237,7 @@ export class DatabaseStorage implements IStorage {
     let queryBuilder = db.select().from(plants);
     
     if (conditions.length > 0) {
-      queryBuilder = queryBuilder.where(and(...conditions));
+      queryBuilder = queryBuilder.where(and(...conditions)) as any;
     }
     
     return await queryBuilder.orderBy(plants.commonName);
@@ -754,7 +754,7 @@ export class DatabaseStorage implements IStorage {
             const scientificName = processedPlant.scientificName || '';
             const botanicalParts = extractBotanicalParts(scientificName);
             
-            processedPlant.genus = botanicalParts.genus || null;
+            processedPlant.genus = botanicalParts.genus || 'Unknown';
             processedPlant.species = processedPlant.species || botanicalParts.species;
             processedPlant.cultivar = processedPlant.cultivar || botanicalParts.cultivar;
           }
@@ -797,16 +797,16 @@ export class DatabaseStorage implements IStorage {
                     ...(processedPlant.spreadMaxCm && { spreadMaxCm: processedPlant.spreadMaxCm }),
                     ...(processedPlant.bloomStartMonth && { bloomStartMonth: processedPlant.bloomStartMonth }),
                     ...(processedPlant.bloomEndMonth && { bloomEndMonth: processedPlant.bloomEndMonth }),
-                    ...(processedPlant.flowerColor && { flowerColor: processedPlant.flowerColor }),
-                    ...(processedPlant.sunlight && { sunlight: processedPlant.sunlight }),
-                    ...(processedPlant.watering && { watering: processedPlant.watering }),
-                    ...(processedPlant.soil && { soil: processedPlant.soil }),
+                    ...(processedPlant.flowerColor ? { flowerColor: processedPlant.flowerColor } : {}),
+                    ...(processedPlant.sunlight ? { sunlight: processedPlant.sunlight } : {}),
+                    ...(processedPlant.watering ? { watering: processedPlant.watering } : {}),
+                    ...(processedPlant.soil ? { soil: processedPlant.soil } : {}),
                     ...(processedPlant.hardiness && { hardiness: processedPlant.hardiness }),
                     ...(processedPlant.maintenance && { maintenance: processedPlant.maintenance }),
                     ...(processedPlant.growthRate && { growthRate: processedPlant.growthRate }),
                     ...(processedPlant.droughtTolerant !== undefined && { droughtTolerant: processedPlant.droughtTolerant }),
                     ...(processedPlant.saltTolerant !== undefined && { saltTolerant: processedPlant.saltTolerant }),
-                    sourceUrl: processedPlant.sourceUrl,
+                    dataSource: processedPlant.dataSource,
                     updatedAt: new Date()
                   }
                 })
@@ -815,7 +815,9 @@ export class DatabaseStorage implements IStorage {
               if (result && result.length > 0) {
                 const plant = result[0];
                 // Check if it was an insert or update by comparing created/updated times
-                const timeDiff = Math.abs(plant.createdAt.getTime() - plant.updatedAt.getTime());
+                const timeDiff = plant.createdAt && plant.updatedAt 
+                  ? Math.abs(plant.createdAt.getTime() - plant.updatedAt.getTime())
+                  : 0;
                 if (timeDiff < 1000) { // Created and updated at same time = new insert
                   saved++;
                   console.log(`Saved new plant: ${processedPlant.scientificName} (externalId: ${processedPlant.externalId})`);

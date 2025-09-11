@@ -15,6 +15,8 @@ import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { GardenVisualization } from "@/components/garden/garden-visualization";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
+import type { Garden } from "@/types/garden";
+import type { Plant } from "@/types/plant";
 import { 
   Save, 
   Download, 
@@ -59,23 +61,23 @@ export default function GardenDesign() {
     }
   }, []);
 
-  const { data: garden, isLoading: gardenLoading } = useQuery({
+  const { data: garden, isLoading: gardenLoading } = useQuery<Garden>({
     queryKey: ["/api/gardens", id],
     enabled: !!id,
   });
 
-  const { data: gardenPlants } = useQuery({
+  const { data: gardenPlants } = useQuery<any[]>({
     queryKey: ["/api/gardens", id, "plants"],
     enabled: !!id,
   });
 
-  const { data: myCollection } = useQuery({
+  const { data: myCollection } = useQuery<any[]>({
     queryKey: ["/api/my-collection"],
     enabled: user?.userTier === 'premium',
   });
 
   // Fetch all gardens for the load design dialog
-  const { data: allGardens, isLoading: gardensLoading } = useQuery({
+  const { data: allGardens, isLoading: gardensLoading } = useQuery<Garden[]>({
     queryKey: ["/api/gardens"],
     enabled: showLoadDesignDialog,
   });
@@ -260,12 +262,12 @@ export default function GardenDesign() {
             <TabsContent value="canvas" className="mt-0">
               <GardenLayoutCanvas
                 shape={garden.shape}
-                dimensions={garden.dimensions}
+                dimensions={garden.dimensions as Record<string, number>}
                 units={garden.units}
                 gardenId={garden.id}
                 gardenName={garden.name}
                 aiDesign={garden.layout_data}
-                gardenPlants={gardenPlants}
+                gardenPlants={gardenPlants || []}
                 inventoryPlants={inventoryPlants}
                 onOpenPlantSearch={() => setViewMode('advanced-search')}
                 onPlacedPlantsChange={setCanvasPlacedPlants}
@@ -381,8 +383,7 @@ export default function GardenDesign() {
             {/* Seasonal Visualization */}
             <TabsContent value="visualization" className="mt-0">
               <GardenVisualization 
-                gardenId={id!}
-                userTier={user?.subscription || 'free'}
+                gardenId={id || ''}
                 onReturn={() => setViewMode('canvas')}
               />
             </TabsContent>
@@ -464,11 +465,10 @@ export default function GardenDesign() {
 
       {/* Plant Search Modal */}
       <PlantSearchModal
-        open={showPlantSearch}
+        isOpen={showPlantSearch}
         onClose={() => setShowPlantSearch(false)}
-        onAddPlants={handleAddPlantsToInventory}
+        onSelectPlant={handleAddPlantToInventory}
         userTier={user?.userTier || 'free'}
-        existingCollection={myCollection || []}
       />
 
       {/* Load Design Dialog */}
