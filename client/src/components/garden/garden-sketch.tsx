@@ -518,21 +518,21 @@ export default function GardenSketch({
           {/* Orientation Instructions and Warnings */}
           <div className="mt-3 space-y-2">
             {(!hasUserSetNorth || !hasUserSetViewer) && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
-                <p className="text-xs font-semibold text-yellow-800 mb-1">
+              <div className="bg-[#FFD500]/10 border border-accent rounded-lg p-2">
+                <p className="text-xs font-semibold text-accent mb-1">
                   ⚠️ Important: Set your garden's actual orientation
                 </p>
-                <p className="text-xs text-yellow-700">
+                <p className="text-xs text-accent/80">
                   The default orientation is likely incorrect. Please adjust both controls below for accurate design:
                 </p>
               </div>
             )}
             <div className="text-xs text-muted-foreground space-y-1">
-              <p className={`${!hasUserSetNorth ? 'font-semibold text-red-600' : ''}`}>
+              <p className={`${!hasUserSetNorth ? 'font-semibold text-primary' : ''}`}>
                 🔴 {!hasUserSetNorth ? '(Required)' : ''} Drag the red N marker to orient North to your property
                 {hasUserSetNorth && ' ✓'}
               </p>
-              <p className={`${!hasUserSetViewer ? 'font-semibold text-blue-600' : ''}`}>
+              <p className={`${!hasUserSetViewer ? 'font-semibold text-primary' : ''}`}>
                 👁️ {!hasUserSetViewer ? '(Required)' : ''} Drag the blue eye to set your main viewing angle
                 {hasUserSetViewer && ' ✓'}
               </p>
@@ -540,18 +540,18 @@ export default function GardenSketch({
           </div>
           
           {/* AI Assessment Button - Prominent Feature */}
-          <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border-2 border-purple-200">
+          <div className="mt-4 p-3 bg-gradient-to-r from-[#004025]/10 to-[#FFD500]/10 rounded-lg border-2 border-primary">
             <div className="flex items-center gap-2 mb-2">
-              <Brain className="w-5 h-5 text-purple-600" />
-              <span className="text-sm font-semibold text-purple-800">AI Garden Analysis</span>
-              <Sparkles className="w-4 h-4 text-purple-500" />
+              <Brain className="w-5 h-5 text-primary" />
+              <span className="text-sm font-semibold text-primary">AI Garden Analysis</span>
+              <Sparkles className="w-4 h-4 text-accent" />
             </div>
             <p className="text-xs text-gray-600 mb-2">
               Let AI analyze your garden's unique conditions for personalized insights
             </p>
             <Button 
               onClick={generateAssessment}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md"
+              className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-md"
               size="default"
               data-testid="button-assess-garden"
             >

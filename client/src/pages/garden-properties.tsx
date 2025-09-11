@@ -2067,10 +2067,10 @@ export default function GardenProperties() {
                 {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && !selectedStyleFromAI && (
                   <>
                     {/* Garden Style Selection using StyleSelector component */}
-                    <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="ai-style-selection">
+                    <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="ai-style-selection">
                       <CardHeader className="py-3">
                         <CardTitle className="text-base flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-purple-600" />
+                          <Sparkles className="w-4 h-4 text-primary" />
                           Select Your Garden Style
                         </CardTitle>
                       </CardHeader>
@@ -2286,7 +2286,7 @@ export default function GardenProperties() {
                       </p>
                       <Button 
                         type="button"
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
+                        className="w-full bg-gradient-to-r from-primary to-secondary"
                         onClick={async () => {
                           setIsGeneratingDesign(true);
                           try {
@@ -2366,10 +2366,10 @@ export default function GardenProperties() {
 
                 {/* Show Design Details if AI design is generated */}
                 {completeDesign && (
-                  <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="design-details">
+                  <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="design-details">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
-                        <TreePine className="w-4 h-4 text-purple-600" />
+                        <TreePine className="w-4 h-4 text-primary" />
                         Your {completeDesign.styleName} Garden Design
                       </CardTitle>
                     </CardHeader>
@@ -2403,7 +2403,7 @@ export default function GardenProperties() {
                         <p className="text-xs">{completeDesign.maintenanceNotes}</p>
                       </div>
 
-                      <div className="p-3 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg border border-purple-300">
+                      <div className="p-3 bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg border border-primary">
                         <h4 className="font-semibold text-sm mb-2">Next Steps</h4>
                         <p className="text-xs">
                           Your design is now on the canvas above. You can proceed to Step 5 to generate 
