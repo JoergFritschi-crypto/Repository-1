@@ -715,87 +715,145 @@ export class DatabaseStorage implements IStorage {
           // Ensure genus is extracted if not provided
           let processedPlant = { ...plant };
           
-          if (!processedPlant.genus || processedPlant.genus === 'Unknown') {
+          if (!processedPlant.genus) {
             // Extract genus from scientific name (first word)
             const scientificName = processedPlant.scientificName || '';
             const botanicalParts = extractBotanicalParts(scientificName);
             
-            processedPlant.genus = botanicalParts.genus || 'Unknown';
+            processedPlant.genus = botanicalParts.genus || null;
             processedPlant.species = processedPlant.species || botanicalParts.species;
             processedPlant.cultivar = processedPlant.cultivar || botanicalParts.cultivar;
           }
           
-          // Validate required fields
+          // Validate required fields - NEVER save without valid botanical data
           if (!processedPlant.scientificName || !processedPlant.genus) {
-            console.error(`Skipping invalid plant: Missing required fields (scientificName: ${processedPlant.scientificName}, genus: ${processedPlant.genus})`);
+            console.error(`Rejected invalid plant: Missing required fields (scientificName: "${processedPlant.scientificName}", genus: "${processedPlant.genus}", commonName: "${processedPlant.commonName}")`);
             errors++;
             continue;
           }
           
-          // Try to upsert the plant
-          const [upsertedPlant] = await db
-            .insert(plants)
-            .values(processedPlant)
-            .onConflictDoUpdate({
-              target: plants.scientificName,
-              set: {
-                commonName: processedPlant.commonName,
-                genus: processedPlant.genus,
-                species: processedPlant.species,
-                cultivar: processedPlant.cultivar,
-                description: processedPlant.description,
-                sourceUrl: processedPlant.sourceUrl,
-                updatedAt: new Date()
-              }
-            })
-            .returning();
-          
-          if (upsertedPlant) {
-            saved++;
-            console.log(`Saved/Updated plant: ${processedPlant.scientificName}`);
+          // Check if genus is still "Unknown" (should never happen with new logic)
+          if (processedPlant.genus === 'Unknown') {
+            console.error(`Rejected plant with genus="Unknown": ${processedPlant.scientificName}`);
+            errors++;
+            continue;
           }
-        } catch (error: any) {
-          // Check if it's a duplicate key error for externalId
-          if (error.code === '23505' && error.detail?.includes('external_id')) {
-            duplicates++;
-            console.log(`Duplicate external ID found: ${plant.externalId}`);
-            
-            // Try to update by external ID instead
-            if (plant.externalId) {
-              try {
+          
+          let isNew = true;
+          let wasUpdated = false;
+          
+          // If we have an externalId, try to upsert based on that first
+          if (processedPlant.externalId) {
+            try {
+              // Check if plant exists with this externalId
+              const existingByExternalId = await this.getPlantByExternalId(processedPlant.externalId);
+              
+              if (existingByExternalId) {
+                // Update existing plant by externalId
                 const [updated] = await db
                   .update(plants)
                   .set({
-                    scientificName: plant.scientificName,
-                    commonName: plant.commonName,
-                    genus: plant.genus || 'Unknown',
-                    species: plant.species,
-                    cultivar: plant.cultivar,
-                    description: plant.description,
-                    sourceUrl: plant.sourceUrl,
+                    scientificName: processedPlant.scientificName,
+                    commonName: processedPlant.commonName,
+                    genus: processedPlant.genus,
+                    species: processedPlant.species,
+                    cultivar: processedPlant.cultivar,
+                    description: processedPlant.description || existingByExternalId.description,
+                    heightMinCm: processedPlant.heightMinCm || existingByExternalId.heightMinCm,
+                    heightMaxCm: processedPlant.heightMaxCm || existingByExternalId.heightMaxCm,
+                    spreadMinCm: processedPlant.spreadMinCm || existingByExternalId.spreadMinCm,
+                    spreadMaxCm: processedPlant.spreadMaxCm || existingByExternalId.spreadMaxCm,
+                    bloomStartMonth: processedPlant.bloomStartMonth || existingByExternalId.bloomStartMonth,
+                    bloomEndMonth: processedPlant.bloomEndMonth || existingByExternalId.bloomEndMonth,
+                    flowerColor: processedPlant.flowerColor || existingByExternalId.flowerColor,
+                    sunlight: processedPlant.sunlight || existingByExternalId.sunlight,
+                    watering: processedPlant.watering || existingByExternalId.watering,
+                    soil: processedPlant.soil || existingByExternalId.soil,
+                    hardiness: processedPlant.hardiness || existingByExternalId.hardiness,
+                    maintenance: processedPlant.maintenance || existingByExternalId.maintenance,
+                    growthRate: processedPlant.growthRate || existingByExternalId.growthRate,
+                    droughtTolerant: processedPlant.droughtTolerant ?? existingByExternalId.droughtTolerant,
+                    saltTolerant: processedPlant.saltTolerant ?? existingByExternalId.saltTolerant,
+                    sourceUrl: processedPlant.sourceUrl,
                     updatedAt: new Date()
                   })
-                  .where(eq(plants.externalId, plant.externalId))
+                  .where(eq(plants.id, existingByExternalId.id))
                   .returning();
                 
                 if (updated) {
-                  saved++;
-                  duplicates--; // It was actually an update, not a duplicate
-                  console.log(`Updated plant by external ID: ${plant.scientificName}`);
+                  duplicates++;
+                  isNew = false;
+                  wasUpdated = true;
+                  console.log(`Updated existing plant via externalId: ${processedPlant.externalId} -> ${processedPlant.scientificName}`);
                 }
-              } catch (updateError) {
-                console.error(`Error updating plant by external ID ${plant.externalId}:`, updateError);
+              }
+            } catch (e) {
+              console.error(`Error checking/updating by externalId:`, e);
+            }
+          }
+          
+          // If plant is new (not updated via externalId), try to insert
+          if (isNew) {
+            try {
+              const [insertedPlant] = await db
+                .insert(plants)
+                .values(processedPlant)
+                .returning();
+              
+              if (insertedPlant) {
+                saved++;
+                console.log(`Saved new plant: ${processedPlant.scientificName} (${processedPlant.commonName})`);
+              }
+            } catch (insertError: any) {
+              // Handle unique constraint violations
+              if (insertError.code === '23505') {
+                if (insertError.detail?.includes('scientific_name')) {
+                  // Scientific name already exists - try to update
+                  try {
+                    const [updated] = await db
+                      .update(plants)
+                      .set({
+                        commonName: processedPlant.commonName || sql`common_name`,
+                        externalId: processedPlant.externalId || sql`external_id`,
+                        sourceUrl: processedPlant.sourceUrl || sql`source_url`,
+                        description: processedPlant.description || sql`description`,
+                        updatedAt: new Date()
+                      })
+                      .where(eq(plants.scientificName, processedPlant.scientificName))
+                      .returning();
+                    
+                    if (updated) {
+                      duplicates++;
+                      console.log(`Updated plant with duplicate scientificName: ${processedPlant.scientificName}`);
+                    }
+                  } catch (updateError) {
+                    console.error(`Failed to update duplicate scientificName:`, updateError);
+                    errors++;
+                  }
+                } else if (insertError.detail?.includes('external_id')) {
+                  // This shouldn't happen if our check above worked
+                  duplicates++;
+                  console.log(`Duplicate external ID (race condition?): ${processedPlant.externalId}`);
+                } else {
+                  // Other unique constraint violation
+                  duplicates++;
+                  console.log(`Duplicate constraint violation: ${insertError.detail}`);
+                }
+              } else {
+                // Other database error
                 errors++;
+                console.error(`Database error saving plant ${processedPlant.scientificName}:`, insertError.message);
               }
             }
-          } else {
-            errors++;
-            console.error(`Error saving plant ${plant.scientificName}:`, error.message || error);
           }
+        } catch (error: any) {
+          errors++;
+          console.error(`Unexpected error processing plant:`, error.message);
         }
       }
     }
     
+    console.log(`Bulk create complete: ${saved} new, ${duplicates} updated/duplicate, ${errors} errors`);
     return { saved, duplicates, errors };
   }
 }

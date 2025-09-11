@@ -206,17 +206,62 @@ export class FireCrawlAPI {
               console.log(`Saving batch ${i + 1} with ${batchPlants.length} plants to database...`);
               
               // Prepare plants for database insertion
-              const plantsToSave: InsertPlant[] = batchPlants.map(plant => {
-                const scientificName = plant.scientific_name || plant.common_name || 'Unknown';
+              const plantsToSave: InsertPlant[] = [];
+              let skippedInvalid = 0;
+              
+              for (const plant of batchPlants) {
+                // Generate a proper scientific name
+                let scientificName = plant.scientific_name;
+                let botanicalParts = { genus: null, species: null, cultivar: null };
                 
-                // Extract botanical parts from scientific name
-                const botanicalParts = extractBotanicalParts(scientificName);
+                // First try to extract from existing scientific name
+                if (scientificName) {
+                  botanicalParts = extractBotanicalParts(scientificName);
+                }
                 
-                return {
+                // If no valid botanical parts, try to create from common name
+                if (!botanicalParts.genus && plant.common_name) {
+                  // Try to extract botanical parts from common name
+                  botanicalParts = extractBotanicalParts(plant.common_name);
+                  
+                  // If still no genus, try to generate from title
+                  if (!botanicalParts.genus) {
+                    // Create a unique identifier from common name and URL
+                    const urlSlug = plant.product_url ? plant.product_url.split('/').pop() : '';
+                    const cleanName = plant.common_name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+                    
+                    if (cleanName) {
+                      // Generate a pseudo-scientific name for uniqueness
+                      // Use the first word as genus and add URL slug for uniqueness
+                      const nameParts = cleanName.split(' ');
+                      botanicalParts.genus = nameParts[0];
+                      botanicalParts.species = urlSlug || nameParts.slice(1).join('-').toLowerCase() || 'sp';
+                      scientificName = `${botanicalParts.genus} ${botanicalParts.species}`;
+                    }
+                  } else {
+                    // We have botanical parts, construct the scientific name
+                    scientificName = botanicalParts.genus;
+                    if (botanicalParts.species) {
+                      scientificName += ` ${botanicalParts.species}`;
+                    }
+                    if (botanicalParts.cultivar) {
+                      scientificName += ` '${botanicalParts.cultivar}'`;
+                    }
+                  }
+                }
+                
+                // Skip if we still don't have valid data
+                if (!scientificName || !botanicalParts.genus) {
+                  console.error(`Skipping plant with invalid botanical data: ${plant.common_name || 'Unknown'} from ${plant.product_url}`);
+                  skippedInvalid++;
+                  continue;
+                }
+                
+                plantsToSave.push({
                   scientificName,
                   commonName: plant.common_name || '',
                   family: plant.family,
-                  genus: plant.genus || botanicalParts.genus || 'Unknown', // Use extracted genus if not provided
+                  genus: plant.genus || botanicalParts.genus,
                   species: plant.species || botanicalParts.species,
                   cultivar: plant.cultivar || botanicalParts.cultivar,
                   type: plant.type || 'herbaceous perennials',
@@ -239,30 +284,37 @@ export class FireCrawlAPI {
                   droughtTolerant: plant.drought_tolerant,
                   saltTolerant: plant.salt_tolerant,
                   verificationStatus: 'pending' as const
-                };
-              });
+                });
+              }
               
-              const saveResult = await storage.bulkCreatePlants(plantsToSave);
+              console.log(`Batch ${i + 1}: ${plantsToSave.length} valid plants to save (${skippedInvalid} invalid skipped)`);
               
-              // Update progress including skipped URLs
+              // Only save if we have valid plants
+              let saveResult = { saved: 0, duplicates: 0, errors: 0 };
+              if (plantsToSave.length > 0) {
+                saveResult = await storage.bulkCreatePlants(plantsToSave);
+                console.log(`Batch ${i + 1} save results: ${saveResult.saved} saved, ${saveResult.duplicates} duplicates, ${saveResult.errors} errors`);
+              }
+              
+              // Update progress with ACTUAL save results, not planned counts
               if (progress) {
                 await storage.updateScrapingProgress(progress.id, {
                   completedBatches: i + 1,
-                  totalPlants: progress.totalPlants + batchPlants.length,
-                  savedPlants: progress.savedPlants + saveResult.saved,
-                  duplicatePlants: progress.duplicatePlants + saveResult.duplicates + batchSkipped, // Include skipped as duplicates
-                  failedPlants: progress.failedPlants + saveResult.errors,
+                  totalPlants: progress.totalPlants + plantsToSave.length, // Only count valid plants
+                  savedPlants: progress.savedPlants + saveResult.saved, // Use actual saved count
+                  duplicatePlants: progress.duplicatePlants + saveResult.duplicates + batchSkipped, // Include skipped URLs
+                  failedPlants: progress.failedPlants + saveResult.errors + skippedInvalid, // Include invalid plants
                   lastProductUrl: batch[batch.length - 1]
                 });
                 
-                // Update local progress object
-                progress.totalPlants += batchPlants.length;
+                // Update local progress object with actual counts
+                progress.totalPlants += plantsToSave.length;
                 progress.savedPlants += saveResult.saved;
                 progress.duplicatePlants += saveResult.duplicates + batchSkipped;
-                progress.failedPlants += saveResult.errors;
+                progress.failedPlants += saveResult.errors + skippedInvalid;
               }
               
-              console.log(`Batch ${i + 1} results: Saved: ${saveResult.saved}, Duplicates: ${saveResult.duplicates}, Skipped: ${batchSkipped}, Errors: ${saveResult.errors}`);
+              console.log(`Batch ${i + 1} cumulative totals: Total: ${progress?.totalPlants}, Saved: ${progress?.savedPlants}, Duplicates: ${progress?.duplicatePlants}, Failed: ${progress?.failedPlants}`);
             } else if (!saveToDatabase) {
               // Even when not saving, update the batch progress
               if (progress) {
