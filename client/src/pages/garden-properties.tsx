@@ -463,24 +463,10 @@ export default function GardenProperties() {
                   <CardTitle className="text-base">Welcome to Your Garden Journey</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
-                  {/* Admin mode indicator */}
-                  {user?.isAdmin && (
-                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                      <div className="flex items-center space-x-2">
-                        <Shield className="w-5 h-5 text-purple-600" />
-                        <p className="text-sm font-medium text-purple-800">
-                          Admin Mode - All validation bypassed
-                        </p>
-                      </div>
-                      <p className="text-xs text-purple-700 mt-1 ml-7">
-                        You can navigate freely through all steps without field requirements.
-                      </p>
-                    </div>
-                  )}
                   
                   {/* Auto-save preference - only shown for free users */}
                   {!isPaidUser && (
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="bg-[#004025]/10 p-4 rounded-lg border border-[#004025]/30">
                       <div className="flex items-start space-x-3">
                         <input
                           type="checkbox"
