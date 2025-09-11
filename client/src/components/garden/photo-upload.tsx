@@ -198,10 +198,10 @@ export default function PhotoUpload({
   return (
     <div className="space-y-3">
       {/* Photo Upload Section */}
-      <Card className="border-2 border-purple-300 bg-purple-50/30 shadow-sm" data-testid="photo-upload">
+      <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="photo-upload">
         <CardHeader className="py-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Camera className="w-4 h-4 text-purple-600" />
+            <Camera className="w-4 h-4 text-primary" />
             Garden Photos (Optional but Recommended)
           </CardTitle>
         </CardHeader>
@@ -214,8 +214,8 @@ export default function PhotoUpload({
           <div
             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
               isDragging 
-                ? 'border-purple-500 bg-purple-50' 
-                : 'border-gray-300 hover:border-purple-400'
+                ? 'border-primary bg-primary/10' 
+                : 'border-gray-300 hover:border-accent'
             } ${photos.length >= maxPhotos ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}

@@ -1842,12 +1842,12 @@ export default function GardenProperties() {
                   <Card className="border-2 border-orange-400 bg-orange-50 shadow-sm">
                     <CardContent className="py-4">
                       <div className="flex items-start gap-2">
-                        <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                        <AlertCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
                         <div className="space-y-1">
-                          <p className="text-sm font-semibold text-orange-800">
+                          <p className="text-sm font-semibold text-accent">
                             Garden Orientation Not Set
                           </p>
-                          <p className="text-sm text-orange-700">
+                          <p className="text-sm text-accent/80">
                             Please set your garden's actual north direction and viewing point above. 
                             These are critical for accurate sun exposure calculations and proper plant placement in your design.
                           </p>
