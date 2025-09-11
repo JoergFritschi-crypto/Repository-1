@@ -271,6 +271,13 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     onSearch(activeFilters);
   };
 
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSearch();
+    }
+  };
+
   const handleReset = () => {
     setFilters({
       genus: '',
@@ -390,7 +397,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
   };
 
   return (
-    <Card className="w-full border-2 border-green-500">
+    <Card className="w-full border-2 border-green-500" onKeyDown={handleKeyPress}>
       <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
         <CardTitle className="flex items-center gap-2">
           <Search className="w-5 h-5 text-green-700" />
@@ -417,6 +424,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   placeholder="e.g., Rosa"
                   value={filters.genus}
                   onChange={(e) => updateFilter('genus', e.target.value)}
+                  onKeyDown={handleKeyPress}
                   className="h-8 text-sm"
                 />
               </div>
@@ -426,6 +434,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   placeholder="e.g., rugosa"
                   value={filters.species}
                   onChange={(e) => updateFilter('species', e.target.value)}
+                  onKeyDown={handleKeyPress}
                   className="h-8 text-sm"
                 />
               </div>
@@ -435,6 +444,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                   placeholder="e.g., Alba"
                   value={filters.cultivar}
                   onChange={(e) => updateFilter('cultivar', e.target.value)}
+                  onKeyDown={handleKeyPress}
                   className="h-8 text-sm"
                 />
               </div>

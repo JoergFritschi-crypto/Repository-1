@@ -31,7 +31,7 @@ import {
   type InsertScrapingProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, ilike, and, or, desc, isNotNull, lte, sql, gte } from "drizzle-orm";
+import { eq, ilike, and, or, desc, isNotNull, isNull, lte, sql, gte } from "drizzle-orm";
 import { extractBotanicalParts } from "@shared/botanicalUtils";
 
 // Interface for storage operations
@@ -310,10 +310,20 @@ export class DatabaseStorage implements IStorage {
       conditions.push(lte(plants.heightMinCm, filters.maxHeight));
     }
     if (filters.minSpread) {
-      conditions.push(gte(plants.spreadMaxCm, filters.minSpread));
+      conditions.push(
+        or(
+          gte(plants.spreadMaxCm, filters.minSpread),
+          isNull(plants.spreadMaxCm) // Include plants with no spread data
+        )
+      );
     }
     if (filters.maxSpread) {
-      conditions.push(lte(plants.spreadMinCm, filters.maxSpread));
+      conditions.push(
+        or(
+          lte(plants.spreadMinCm, filters.maxSpread),
+          isNull(plants.spreadMinCm) // Include plants with no spread data
+        )
+      );
     }
     
     // Boolean fields
