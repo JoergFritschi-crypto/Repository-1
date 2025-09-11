@@ -111,6 +111,7 @@ export class FireCrawlAPI {
         console.log(`===== PRODUCT DISCOVERY COMPLETE =====`);
         console.log(`Total unique product URLs found: ${productUrls.length}`);
         console.log(`Expected: ~1010 products`);
+        console.log(`Using ${CONCURRENT_LIMIT} concurrent browsers for 5x faster scraping`);
         console.log(`=======================================`);
         
         if (productUrls.length === 0) {
@@ -177,9 +178,12 @@ export class FireCrawlAPI {
           });
         }
         
-        // Stage 2: Scrape products in small batches
+        // Stage 2: Scrape products with concurrent processing (5 browsers)
         const allPlants: any[] = [];
-        const batchSize = 10; // Very small batches to avoid 502
+        // OPTIMIZATION: Using 5 concurrent browsers (Firecrawl's limit) for 5x faster scraping
+        // This reduces scraping time from ~1010 sequential requests to ~202 concurrent chunks
+        const CONCURRENT_LIMIT = 5; // Firecrawl allows 5 concurrent browsers
+        const batchSize = 25; // Larger batches since we're processing concurrently (5 concurrent x 5 chunks = 25)
         const batches = Math.ceil(productUrls.length / batchSize);
         let successfulBatches = 0;
         let failedBatches = 0;
@@ -196,46 +200,84 @@ export class FireCrawlAPI {
           const batchPlants: any[] = [];
           let batchSkipped = 0;
           let batchProcessed = 0;
+          const batchStartTime = Date.now(); // Track timing for performance metrics
           
           try {
-            // Process each product in the batch
-            for (const productUrl of batch) {
-              try {
-                // Check if this URL has already been scraped
-                const externalId = `firecrawl-${productUrl}`;
-                const existingPlant = await storage.getPlantByExternalId(externalId);
-                
-                if (existingPlant) {
-                  console.log(`Skipping already scraped URL: ${productUrl}`);
-                  skippedUrls++;
-                  batchSkipped++;
-                  continue; // Skip to next URL
+            // Process batch in chunks of 5 concurrent requests
+            const chunkSize = CONCURRENT_LIMIT;
+            const chunks = [];
+            for (let j = 0; j < batch.length; j += chunkSize) {
+              chunks.push(batch.slice(j, Math.min(j + chunkSize, batch.length)));
+            }
+            
+            console.log(`\nBatch ${i + 1}/${batches}: Processing ${batch.length} URLs in ${chunks.length} concurrent chunks (${CONCURRENT_LIMIT} browsers)`);
+            
+            // Process each chunk of 5 URLs concurrently
+            for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+              const chunk = chunks[chunkIndex];
+              
+              // Process all URLs in the chunk concurrently
+              const chunkPromises = chunk.map(async (productUrl) => {
+                try {
+                  // Check if this URL has already been scraped
+                  const externalId = `firecrawl-${productUrl}`;
+                  const existingPlant = await storage.getPlantByExternalId(externalId);
+                  
+                  if (existingPlant) {
+                    console.log(`Skipping already scraped URL: ${productUrl}`);
+                    skippedUrls++;
+                    batchSkipped++;
+                    return null; // Return null for skipped URLs
+                  }
+                  
+                  // URL not yet scraped, process it
+                  const result = await this.app.scrapeUrl(productUrl, {
+                    formats: ['markdown'],
+                    waitFor: 500,
+                    timeout: 10000
+                  });
+                  
+                  if (result.success && result.markdown) {
+                    const plants = this.extractPlantsFromEcommercePage(result.markdown, productUrl);
+                    processedUrls++;
+                    batchProcessed++;
+                    return plants; // Return plants for successful scrapes
+                  }
+                  
+                  return null;
+                } catch (e) {
+                  console.error(`Failed to scrape ${productUrl}:`, e);
+                  return null; // Return null for failed URLs
                 }
-                
-                // URL not yet scraped, process it
-                const result = await this.app.scrapeUrl(productUrl, {
-                  formats: ['markdown'],
-                  waitFor: 500,
-                  timeout: 10000
-                });
-                
-                if (result.success && result.markdown) {
-                  const plants = this.extractPlantsFromEcommercePage(result.markdown, productUrl);
+              });
+              
+              // Wait for all URLs in the chunk to complete
+              const chunkResults = await Promise.all(chunkPromises);
+              
+              // Collect plants from successful scrapes
+              for (const plants of chunkResults) {
+                if (plants && plants.length > 0) {
                   batchPlants.push(...plants);
                   allPlants.push(...plants);
-                  processedUrls++;
-                  batchProcessed++;
                 }
-                
-                // Rate limiting - wait between products
-                await new Promise(resolve => setTimeout(resolve, 300));
-              } catch (e) {
-                console.error(`Failed to scrape ${productUrl}`);
+              }
+              
+              // Only add delay between chunks, not individual requests
+              // Small delay to avoid overwhelming the API (100ms between chunks of 5)
+              if (chunkIndex < chunks.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+              
+              // Progress reporting per chunk
+              if ((chunkIndex + 1) % 5 === 0 || chunkIndex === chunks.length - 1) {
+                console.log(`  Chunk ${chunkIndex + 1}/${chunks.length} completed - Processed: ${batchProcessed}, Skipped: ${batchSkipped}`);
               }
             }
             
-            // Log batch results
-            console.log(`Batch ${i + 1}: Processed ${batchProcessed}, Skipped ${batchSkipped} (already scraped)`);
+            // Log batch results with timing
+            const batchTime = ((Date.now() - batchStartTime) / 1000).toFixed(1);
+            const avgTimePerUrl = (batchTime / batch.length).toFixed(2);
+            console.log(`Batch ${i + 1} completed in ${batchTime}s (${avgTimePerUrl}s/URL avg): Processed ${batchProcessed}, Skipped ${batchSkipped}`);
             
             // Save batch to database if enabled
             if (saveToDatabase && batchPlants.length > 0) {
@@ -391,25 +433,31 @@ export class FireCrawlAPI {
               await storage.updateScrapingProgress(progress.id, { errors });
             }
             
-            // If we get 502 errors, wait longer before retrying
+            // If we get 502 errors, wait before retrying but less time since we're more efficient
             if ((error as any).toString().includes('502')) {
-              console.log('Got 502 error, waiting 30 seconds...');
-              await new Promise(resolve => setTimeout(resolve, 30000));
+              console.log('Got 502 error, waiting 10 seconds before retrying...');
+              await new Promise(resolve => setTimeout(resolve, 10000));
             }
           }
           
-          // Progress update
-          if ((i + 1) % 10 === 0) {
-            console.log(`Progress: ${allPlants.length} new plants scraped, ${skippedUrls} URLs skipped (already in DB)`);
+          // Progress update - more frequent for concurrent processing
+          if ((i + 1) % 5 === 0 || i === batches - 1) {
+            const percentComplete = Math.round(((i + 1) / batches) * 100);
+            console.log(`\n📊 Overall Progress: ${percentComplete}% (${i + 1}/${batches} batches)`);
+            console.log(`   New plants: ${allPlants.length}, Skipped: ${skippedUrls}, Processed: ${processedUrls}`);
             if (saveToDatabase) {
-              console.log(`Database stats: Saved: ${progress!.savedPlants}, Previously scraped: ${skippedUrls}, Duplicates: ${progress!.duplicatePlants - skippedUrls}, Errors: ${progress!.failedPlants}`);
+              console.log(`   DB Stats - Saved: ${progress!.savedPlants}, Duplicates: ${progress!.duplicatePlants}, Errors: ${progress!.failedPlants}`);
             }
           }
         }
         
-        console.log(`Scraping completed: ${successfulBatches} successful batches, ${failedBatches} failed batches`);
-        console.log(`URLs processed: ${processedUrls} new, ${skippedUrls} skipped (already in database)`);
+        console.log(`\n========== SCRAPING COMPLETED ==========`);
+        console.log(`Successful batches: ${successfulBatches}/${batches}`);
+        console.log(`Failed batches: ${failedBatches}`);
+        console.log(`URLs processed: ${processedUrls} new, ${skippedUrls} skipped`);
         console.log(`Total new plants extracted: ${allPlants.length}`);
+        console.log(`Performance: ${CONCURRENT_LIMIT}x concurrent browsers used`);
+        console.log(`========================================\n`);
         
         // Mark scraping as completed
         if (saveToDatabase && progress) {
