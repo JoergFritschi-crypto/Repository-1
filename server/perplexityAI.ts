@@ -607,7 +607,7 @@ CRITICAL EXTRACTION RULES:
 
     try {
       const response = await this.makeRequest(messages, {
-        model: 'llama-3.1-sonar-small-128k-online', // Use specific model for better extraction
+        model: 'sonar', // Use sonar model for extraction
         maxTokens: 1500,
         temperature: 0.3, // Lower temperature for more consistent extraction
         searchRecencyFilter: 'month'
