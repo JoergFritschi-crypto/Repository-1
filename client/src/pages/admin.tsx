@@ -58,6 +58,9 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [testingTier, setTestingTier] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<any>(null);
   const { toast } = useToast();
 
   // Handle tier testing
@@ -112,13 +115,16 @@ export default function Admin() {
 
   const { data: plants, isLoading: plantsLoading, refetch: refetchPlants } = useQuery({
     queryKey: [`/api/plants/search?q=${searchQuery || ''}`],
-    enabled: !!user,
+    enabled: !!user && !searchResults,
     // Auto-refresh every 5 seconds if there are plants generating images
     refetchInterval: (data) => {
       if (!data || !Array.isArray(data)) return false;
       return data.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') ? 5000 : false;
     },
   });
+
+  // Display either search results or default plants
+  const displayedPlants = searchResults || plants;
 
   const verifyPlantMutation = useMutation({
     mutationFn: async (plantId: string) => {
@@ -285,26 +291,26 @@ export default function Admin() {
                       <div className="flex flex-wrap gap-8 items-center">
                         <div>
                           <p className="text-sm text-muted-foreground">Total Plants</p>
-                          <p className="text-2xl font-bold" data-testid="text-total-plants">{(plants as any)?.length || 0}</p>
+                          <p className="text-2xl font-bold" data-testid="text-total-plants">{displayedPlants?.length || 0}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Verified</p>
                           <p className="text-xl font-semibold text-accent" data-testid="text-verified-plants">
-                            {(plants as any)?.filter((p: any) => p.verification_status === 'verified').length || 0}
+                            {displayedPlants?.filter((p: any) => p.verification_status === 'verified').length || 0}
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Pending</p>
                           <p className="text-xl font-semibold text-canary" data-testid="text-pending-plants">
-                            {(plants as any)?.filter((p: any) => p.verification_status === 'pending').length || 0}
+                            {displayedPlants?.filter((p: any) => p.verification_status === 'pending').length || 0}
                           </p>
                         </div>
-                        {(plants as any)?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') && (
+                        {displayedPlants?.some((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued') && (
                           <div>
                             <p className="text-sm text-muted-foreground">Generating</p>
                             <p className="text-xl font-semibold text-blue-500 flex items-center gap-1">
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              {(plants as any)?.filter((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued').length || 0}
+                              {displayedPlants?.filter((p: any) => p.imageGenerationStatus === 'generating' || p.imageGenerationStatus === 'queued').length || 0}
                             </p>
                           </div>
                         )}
@@ -325,6 +331,8 @@ export default function Admin() {
                             variant="outline"
                             data-testid="button-refresh-plants"
                             onClick={() => {
+                              setSearchResults(null);
+                              setSearchFilters(null);
                               refetchPlants();
                               queryClient.invalidateQueries({ queryKey: ['/api/admin/plants/pending'] });
                               toast({
@@ -352,18 +360,75 @@ export default function Admin() {
 
                   {/* Advanced Search */}
                   <PlantAdvancedSearch 
-                    onSearch={(filters) => {
-                      console.log('Searching with filters:', filters);
-                      // TODO: Implement search with filters
+                    onSearch={async (filters) => {
+                      // If filters are empty, reset to default view
+                      if (Object.keys(filters).length === 0) {
+                        setSearchResults(null);
+                        setSearchFilters(null);
+                        refetchPlants();
+                        return;
+                      }
+
+                      setIsSearching(true);
+                      setSearchFilters(filters);
+                      
+                      try {
+                        const response = await apiRequest('POST', '/api/plants/advanced-search', filters);
+                        const data = await response.json();
+                        
+                        setSearchResults(data);
+                        
+                        toast({
+                          title: "Search Complete",
+                          description: `Found ${data.length} plant${data.length !== 1 ? 's' : ''} matching your criteria`,
+                        });
+                      } catch (error) {
+                        toast({
+                          title: "Search Error",
+                          description: "Failed to search plants. Please try again.",
+                          variant: "destructive",
+                        });
+                        setSearchResults(null);
+                      } finally {
+                        setIsSearching(false);
+                      }
                     }}
-                    totalResults={(plants as any)?.length || 0}
+                    totalResults={displayedPlants?.length || 0}
                   />
 
                   {/* Plant Cards Grid */}
                   <Card>
                     <CardHeader>
                       <div className="flex justify-between items-center">
-                        <CardTitle>Plant Database</CardTitle>
+                        <CardTitle>
+                          Plant Database
+                          {searchFilters && (
+                            <Badge variant="secondary" className="ml-2">
+                              <Search className="w-3 h-3 mr-1" />
+                              Filtered Results
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        {searchFilters && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setSearchResults(null);
+                              setSearchFilters(null);
+                              refetchPlants();
+                              toast({
+                                title: "Search Cleared",
+                                description: "Showing all plants",
+                              });
+                            }}
+                            className="mr-2"
+                            data-testid="button-clear-search"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Clear Search
+                          </Button>
+                        )}
                         <Button 
                           size="sm" 
                           variant="outline"
@@ -386,12 +451,21 @@ export default function Admin() {
                     <CardContent>
 
                         {/* Plants Display */}
-                        {(!(plants as any) || (plants as any).length === 0) ? (
+                        {isSearching ? (
+                          <div className="flex items-center justify-center py-12">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            <span className="ml-2 text-muted-foreground">Searching plants...</span>
+                          </div>
+                        ) : (!displayedPlants || displayedPlants.length === 0) ? (
                           <div className="text-center py-12">
                             <Leaf className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold mb-2">No Plants Yet</h3>
+                            <h3 className="text-xl font-semibold mb-2">
+                              {searchFilters ? 'No Matching Plants' : 'No Plants Yet'}
+                            </h3>
                             <p className="text-muted-foreground mb-4">
-                              Start by importing plants from Perenual or adding them manually
+                              {searchFilters 
+                                ? 'Try adjusting your search criteria to find plants' 
+                                : 'Start by importing plants from Perenual or adding them manually'}
                             </p>
                             <Button>
                               <Plus className="w-4 h-4 mr-2" />
@@ -401,7 +475,7 @@ export default function Admin() {
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {/* Render all plants once with their verification status shown on the card */}
-                            {(plants as any) && (plants as any).map((plant: any) => (
+                            {displayedPlants && displayedPlants.map((plant: any) => (
                               <CompactPlantCard
                                 key={plant.id}
                                 plant={plant}
