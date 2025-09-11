@@ -183,14 +183,14 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            <Card>
-              <CardContent className="pt-4 pb-4 px-4">
+          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto items-start">
+            <Card className="h-full relative">
+              <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
                 <h3 className="text-base font-semibold mb-1" data-testid="text-plan-free-title">Free</h3>
                 <p className="text-xl font-bold mb-3" data-testid="text-plan-free-price">
                   $0<span className="text-sm font-normal text-muted-foreground">/month</span>
                 </p>
-                <ul className="space-y-1 mb-3">
+                <ul className="space-y-1 mb-4 flex-1">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
                     <span className="text-xs">Basic plant library access</span>
@@ -204,7 +204,7 @@ export default function Landing() {
                     <span className="text-xs">Community support</span>
                   </li>
                 </ul>
-                <Button size="sm" variant="outline" className="w-full" asChild data-testid="button-plan-free">
+                <Button size="sm" variant="outline" className="w-full mt-auto" asChild data-testid="button-plan-free">
                   {!isAuthenticated ? (
                     <a href="/api/login">Get Started</a>
                   ) : (
@@ -214,16 +214,16 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-primary relative">
+            <Card className="h-full relative">
               <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-primary text-xs">
                 Most Popular
               </Badge>
-              <CardContent className="pt-6 pb-4 px-4">
+              <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
                 <h3 className="text-base font-semibold mb-1" data-testid="text-plan-design-title">Pay-per-Design</h3>
                 <p className="text-xl font-bold mb-3" data-testid="text-plan-design-price">
                   $6<span className="text-sm font-normal text-muted-foreground">/design</span>
                 </p>
-                <ul className="space-y-1 mb-3">
+                <ul className="space-y-1 mb-4 flex-1">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
                     <span className="text-xs">Complete garden design</span>
@@ -241,7 +241,7 @@ export default function Landing() {
                     <span className="text-xs">Priority support</span>
                   </li>
                 </ul>
-                <Button size="sm" className="w-full" asChild data-testid="button-plan-design">
+                <Button size="sm" className="w-full mt-auto bg-primary hover:bg-primary/90" asChild data-testid="button-plan-design">
                   {!isAuthenticated ? (
                     <a href="/api/login">Create Design</a>
                   ) : (
@@ -251,13 +251,13 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-4 pb-4 px-4">
+            <Card className="h-full relative">
+              <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
                 <h3 className="text-base font-semibold mb-1" data-testid="text-plan-premium-title">Premium</h3>
                 <p className="text-xl font-bold mb-3" data-testid="text-plan-premium-price">
                   $12<span className="text-sm font-normal text-muted-foreground">/month</span>
                 </p>
-                <ul className="space-y-1 mb-3">
+                <ul className="space-y-1 mb-4 flex-1">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
                     <span className="text-xs">Unlimited designs</span>
@@ -279,7 +279,7 @@ export default function Landing() {
                     <span className="text-xs">Premium dashboard</span>
                   </li>
                 </ul>
-                <Button size="sm" variant="secondary" className="w-full" asChild data-testid="button-plan-premium">
+                <Button size="sm" variant="secondary" className="w-full mt-auto" asChild data-testid="button-plan-premium">
                   {!isAuthenticated ? (
                     <a href="/api/login">Start Premium</a>
                   ) : (
