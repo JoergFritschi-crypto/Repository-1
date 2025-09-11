@@ -2080,7 +2080,7 @@ export default function GardenProperties() {
                           selectedStyle={selectedGardenStyle}
                           onStyleSelect={(styleId) => {
                             setSelectedGardenStyle(styleId);
-                            form.setValue('style', styleId);
+                            form.setValue('preferences.style' as any, styleId);
                           }}
                           analysisData={analysis}
                           showAIRecommendations={hasUploadedPhotos}

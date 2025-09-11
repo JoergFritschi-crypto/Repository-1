@@ -596,9 +596,13 @@
   .flower-band > * {
     position: relative;
     z-index: 2;
-    color: hsl(var(--card));
-    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+    color: #004025;
     font-weight: 600;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
   /* Photorealistic flower band - Garden Design Studio header */
@@ -634,9 +638,13 @@
   .flower-band-studio > * {
     position: relative;
     z-index: 2;
-    color: hsl(var(--card));
-    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+    color: #004025;
     font-weight: 600;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
   /* Photorealistic flower band - Green garden theme */
@@ -672,9 +680,13 @@
   .flower-band-green > * {
     position: relative;
     z-index: 2;
-    color: hsl(var(--card));
-    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+    color: #004025;
     font-weight: 600;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
   /* Photorealistic flower band - Summer cottage garden theme */
@@ -710,9 +722,13 @@
   .flower-band-purple > * {
     position: relative;
     z-index: 2;
-    color: hsl(var(--card));
-    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+    color: #004025;
     font-weight: 600;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
   /* Photorealistic flower band - Autumn garden theme */
@@ -748,9 +764,13 @@
   .flower-band-sunset > * {
     position: relative;
     z-index: 2;
-    color: hsl(var(--card));
-    text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+    color: #004025;
     font-weight: 600;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
   @keyframes subtle-shift {
@@ -847,8 +867,13 @@
 .flower-band-cottage > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -885,8 +910,13 @@
 .flower-band-modern > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -923,8 +953,13 @@
 .flower-band-natural-cottage > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -961,8 +996,13 @@
 .flower-band-zen > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1001,8 +1041,13 @@
 .flower-band-wildflower > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1039,8 +1084,13 @@
 .flower-band-tropical > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1077,8 +1127,13 @@
 .flower-band-desert > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1115,8 +1170,13 @@
 .flower-band-natural-cottage > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1153,8 +1213,13 @@
 .flower-band-formal > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1191,8 +1256,13 @@
 .flower-band-spring > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1229,8 +1299,13 @@
 .flower-band-summer > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1267,8 +1342,13 @@
 .flower-band-autumn > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
 
@@ -1305,7 +1385,12 @@
 .flower-band-review > * {
   position: relative;
   z-index: 2;
-  color: hsl(var(--card));
-  text-shadow: 0 2px 4px hsl(var(--shadow) / 0.95), 0 1px 3px hsl(var(--shadow) / 0.9);
+  color: #004025;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   font-weight: 600;
 }
