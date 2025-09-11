@@ -498,27 +498,18 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             <div className="space-y-4">
               <div className="bg-white/70 rounded-lg p-3">
                 <div className="flex justify-between text-sm mb-2">
-                  <Label className="text-xs font-medium text-green-700">Min Spread: <span className="text-green-600 font-bold">{filters.minSpread} cm</span></Label>
+                  <Label className="text-xs font-medium text-green-700">Spread: <span className="text-green-600 font-bold">{filters.minSpread}-{filters.maxSpread} cm</span></Label>
                 </div>
                 <Slider
-                  value={[filters.minSpread]}
-                  onValueChange={(value) => updateFilter('minSpread', value[0])}
+                  value={[filters.minSpread, filters.maxSpread]}
+                  onValueChange={(v) => {
+                    updateFilter('minSpread', v[0]);
+                    updateFilter('maxSpread', v[1]);
+                  }}
                   min={0}
                   max={200}
                   step={5}
-                  className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
-                />
-              </div>
-              <div className="bg-white/70 rounded-lg p-3">
-                <div className="flex justify-between text-sm mb-2">
-                  <Label className="text-xs font-medium text-green-700">Max Spread: <span className="text-green-600 font-bold">{filters.maxSpread} cm</span></Label>
-                </div>
-                <Slider
-                  value={[filters.maxSpread]}
-                  onValueChange={(value) => updateFilter('maxSpread', value[0])}
-                  min={0}
-                  max={200}
-                  step={5}
+                  data-testid="slider-spread"
                   className="w-full [&_[role=slider]]:bg-green-800 [&_[role=slider]]:border-green-800 [&_[role=slider]]:focus:ring-green-700 [&_.bg-primary]:bg-green-700"
                 />
               </div>
