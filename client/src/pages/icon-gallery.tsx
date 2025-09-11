@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery, useMutation, queryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { RotateCcw, Download } from "lucide-react";
@@ -97,16 +97,14 @@ export default function IconGallery() {
   const generateIconsMutation = useMutation({
     mutationFn: async () => {
       setIsGenerating(true);
-      const response = await apiRequest('/api/admin/generate-garden-tool-icons', {
-        method: 'POST',
-      });
+      const response = await apiRequest('/api/admin/generate-garden-tool-icons', 'POST');
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setIsGenerating(false);
       toast({
         title: "Success! 🎨",
-        description: `Generated ${data.paths.length} photorealistic garden tool icons using Gemini AI`,
+        description: `Generated ${data.paths?.length || 0} photorealistic garden tool icons using Gemini AI`,
       });
       refetch();
     },
