@@ -473,7 +473,7 @@ export default function GardenProperties() {
                           id="auto-save"
                           checked={autoSaveEnabled}
                           onChange={(e) => setAutoSaveEnabled(e.target.checked)}
-                          className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          className="mt-1 h-4 w-4 rounded border-primary text-primary focus:ring-primary"
                           data-testid="checkbox-auto-save"
                         />
                         <label htmlFor="auto-save" className="text-sm text-gray-700 cursor-pointer">
