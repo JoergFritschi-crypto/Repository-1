@@ -1167,6 +1167,30 @@ Rules:
     }
   });
 
+  // Simple image generation
+  app.post('/api/generate-simple-image', isAuthenticated, async (req: any, res) => {
+    try {
+      const { prompt } = req.body;
+      if (!prompt) {
+        return res.status(400).json({ error: 'Prompt required' });
+      }
+
+      const timestamp = Date.now();
+      const filename = `generated-${timestamp}.png`;
+      const outputPath = `client/public/temp/${filename}`;
+      
+      await generateGardenToolIcon("Custom Image", prompt, outputPath);
+      
+      res.json({ 
+        imageUrl: `/temp/${filename}`,
+        message: 'Image generated successfully'
+      });
+    } catch (error) {
+      console.error('Simple image generation error:', error);
+      res.status(500).json({ error: 'Failed to generate image' });
+    }
+  });
+
   // Validate plant data with Perplexity
   app.post('/api/admin/plants/:id/validate', isAuthenticated, async (req: any, res) => {
     try {
