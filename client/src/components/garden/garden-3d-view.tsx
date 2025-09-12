@@ -944,7 +944,7 @@ export default function Garden3DView({
       // Set initial fixed position for viewer marker (only once)
       if (!viewerMarkerRef.current.userData.positionSet) {
         const fixedAngle = renderSettings.viewerRotation * Math.PI / 180;
-        const fixedDistance = 8; // Fixed viewing distance
+        const fixedDistance = compassDistance * 0.7; // Same distance as compass
         const fixedX = gardenBoundsRef.current.center.x + Math.cos(fixedAngle) * fixedDistance;
         const fixedZ = gardenBoundsRef.current.center.y + Math.sin(fixedAngle) * fixedDistance;
         
