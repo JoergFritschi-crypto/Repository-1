@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -102,6 +103,8 @@ export default function Garden3DView({
   const gardenBoundsRef = useRef<GardenBounds | null>(null);
   const plantMeshesRef = useRef<THREE.Group>(new THREE.Group());
   const viewerMarkerRef = useRef<THREE.Group | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const compassRef = useRef<THREE.Group | null>(null);
   
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [scene3D, setScene3D] = useState<GardenScene3D | null>(null);
@@ -205,6 +208,18 @@ export default function Garden3DView({
     // Set initial camera position
     camera.position.set(10, 10, 10);
     camera.lookAt(0, 0, 0);
+    
+    // Add OrbitControls for pan/zoom/rotate
+    const controls = new OrbitControls(camera, canvasRef.current);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = true; // Allow panning parallel to screen
+    controls.minDistance = 2;
+    controls.maxDistance = 50;
+    controls.maxPolarAngle = Math.PI / 2; // Prevent camera from going below ground
+    controls.target.set(0, 0, 0);
+    controls.update();
+    controlsRef.current = controls;
     
     // Store references
     sceneRef.current = scene;
@@ -338,6 +353,10 @@ export default function Garden3DView({
     if (existingCompass) {
       sceneRef.current.remove(existingCompass);
     }
+    if (compassRef.current) {
+      sceneRef.current.remove(compassRef.current);
+      compassRef.current = null;
+    }
     
     const compassGroup = new THREE.Group();
     compassGroup.name = 'compass';
@@ -379,9 +398,9 @@ export default function Garden3DView({
     labelMesh.position.x = arrowLength / 2 + 0.5;
     labelMesh.rotation.x = -Math.PI / 2; // Face up
     
-    // Position entire compass at edge of garden
-    const compassDistance = Math.max(width, depth) / 2 + 2;
-    compassGroup.position.set(0, 0.5, -compassDistance);
+    // Position compass in top-right corner of garden
+    const compassDistance = Math.max(width, depth) / 2 + 1.5;
+    compassGroup.position.set(compassDistance * 0.7, 2, -compassDistance * 0.7);
     
     // Add all parts to compass group
     compassGroup.add(arrowBody);
@@ -392,6 +411,7 @@ export default function Garden3DView({
     compassGroup.rotation.y = -cardinalRotation * Math.PI / 180;
     compassGroup.visible = renderSettings.showCompass;
     
+    compassRef.current = compassGroup;
     sceneRef.current.add(compassGroup);
   }, [renderSettings, cardinalRotation]);
 
@@ -556,9 +576,9 @@ export default function Garden3DView({
     const rotatedZ = sunX * Math.sin(rotationRad) + sunZ * Math.cos(rotationRad);
     sunLight.position.set(rotatedX, sunHeight, rotatedZ);
     
-    // Adjust intensity based on sun elevation - keep it brighter
+    // Adjust intensity based on sun elevation - make shadows stronger
     const elevationFactor = Math.sin(sunAngle);
-    sunLight.intensity = lighting.sun.intensity * Math.max(0.6, elevationFactor * 1.2); // Higher minimum and multiplier
+    sunLight.intensity = lighting.sun.intensity * Math.max(0.8, elevationFactor * 1.5); // Increased for stronger shadows
     
     // Warm colors at dawn/dusk
     if (hour < 8 || hour > 18) {
@@ -570,10 +590,12 @@ export default function Garden3DView({
     }
     
     sunLight.castShadow = renderSettings.shadowsEnabled;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.mapSize.width = 4096; // Higher resolution shadows
+    sunLight.shadow.mapSize.height = 4096;
+    sunLight.shadow.camera.near = 0.1;
     sunLight.shadow.camera.far = 50;
+    sunLight.shadow.bias = -0.0005; // Reduce shadow acne
+    sunLight.shadow.normalBias = 0.02; // Improve shadow quality
     
     const shadowSize = gardenSize * 1.5;
     sunLight.shadow.camera.left = -shadowSize;
@@ -660,7 +682,7 @@ export default function Garden3DView({
 
   // Update camera position
   const updateCamera = useCallback(() => {
-    if (!cameraRef.current || !gardenBoundsRef.current || !sceneRef.current) return;
+    if (!cameraRef.current || !gardenBoundsRef.current || !sceneRef.current || !controlsRef.current) return;
     
     const camera = createCameraParameters(
       cardinalRotation,
@@ -690,12 +712,13 @@ export default function Garden3DView({
       cameraZ
     );
     
-    // Always look at garden center for stable framing
-    cameraRef.current.lookAt(
+    // Update orbit controls target to garden center
+    controlsRef.current.target.set(
       gardenBoundsRef.current.center.x,
       0,
       gardenBoundsRef.current.center.y
     );
+    controlsRef.current.update();
     
     cameraRef.current.fov = camera.fov;
     cameraRef.current.updateProjectionMatrix();
@@ -742,23 +765,27 @@ export default function Garden3DView({
       sceneRef.current.add(viewerGroup);
     }
     
-    // Update viewer marker position to match camera
+    // Update viewer marker - keep it at a FIXED position
     if (viewerMarkerRef.current) {
-      // Place marker at camera position projected on ground
-      viewerMarkerRef.current.position.set(
-        camera.position.x,
-        0.5, // Keep marker at fixed height above ground
-        camera.position.y  // Z in Three.js
-      );
+      // Set initial fixed position for viewer marker (only once)
+      if (!viewerMarkerRef.current.userData.positionSet) {
+        const fixedAngle = renderSettings.viewerRotation * Math.PI / 180;
+        const fixedDistance = 8; // Fixed viewing distance
+        const fixedX = gardenBoundsRef.current.center.x + Math.cos(fixedAngle) * fixedDistance;
+        const fixedZ = gardenBoundsRef.current.center.y + Math.sin(fixedAngle) * fixedDistance;
+        
+        viewerMarkerRef.current.position.set(fixedX, 0.5, fixedZ);
+        
+        // Point towards garden center
+        const lookDirection = Math.atan2(
+          gardenBoundsRef.current.center.y - fixedZ,
+          gardenBoundsRef.current.center.x - fixedX
+        );
+        viewerMarkerRef.current.rotation.y = -lookDirection;
+        viewerMarkerRef.current.userData.positionSet = true;
+      }
       
-      // Rotate marker to point towards garden center
-      const lookDirection = Math.atan2(
-        camera.target.y - camera.position.y,
-        camera.target.x - camera.position.x
-      );
-      viewerMarkerRef.current.rotation.y = -lookDirection;
-      
-      // Set visibility based on settings
+      // Only update visibility, not position
       viewerMarkerRef.current.visible = renderSettings.showViewerMarker;
     }
   }, [renderSettings, cardinalRotation]);
@@ -791,6 +818,11 @@ export default function Garden3DView({
           }
         }
       }
+    }
+    
+    // Update controls if they exist
+    if (controlsRef.current) {
+      controlsRef.current.update();
     }
     
     // Render the scene
@@ -1121,21 +1153,7 @@ export default function Garden3DView({
             data-testid="3d-canvas"
           />
           
-          {/* Status indicators */}
-          <div className="absolute top-4 left-4 space-y-2">
-            {gardenData.northOrientation && (
-              <Badge variant="secondary" className="bg-white/90">
-                <Compass className="w-3 h-3 mr-1" />
-                North: {gardenData.northOrientation}
-              </Badge>
-            )}
-            {gardenData.slopePercentage && gardenData.slopePercentage > 0 && (
-              <Badge variant="secondary" className="bg-white/90">
-                <Mountain className="w-3 h-3 mr-1" />
-                Slope: {gardenData.slopePercentage}% {gardenData.slopeDirection}
-              </Badge>
-            )}
-          </div>
+          {/* Removed status indicators to clean up UI */}
           
           {/* Loading state */}
           {!isSceneReady && (
