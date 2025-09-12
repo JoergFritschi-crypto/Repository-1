@@ -96,7 +96,7 @@ export default function Landing() {
           alt="Beautiful perennial garden with yarrow, daylilies, catmint and more" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div className="max-w-2xl">
               <h1 className="text-2xl md:text-3xl font-serif font-bold mb-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" data-testid="text-hero-title">
