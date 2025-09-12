@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
-import { PlusCircle, Palette, Download } from "lucide-react";
+import { PlusCircle, Download } from "lucide-react";
 import { GardenDesignIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
 import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
 
@@ -80,7 +80,7 @@ export default function Home() {
                   </p>
                   <p className="text-xs text-muted-foreground">Garden Designs</p>
                 </div>
-                <Palette className="w-6 h-6 text-accent" />
+                <GardenDesignIcon className="w-6 h-6" />
               </div>
             </CardContent>
           </Card>
