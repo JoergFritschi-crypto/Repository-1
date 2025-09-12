@@ -403,11 +403,10 @@ export default function GardenProperties() {
                   style={{
                     background: 'rgba(255, 255, 255, 0.3)',
                     backdropFilter: 'blur(2px)',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                    mixBlendMode: 'multiply'
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
                   }}
                 >
-                  <GardenDesignIcon className="w-6 h-6" />
+                  <GardenDesignIcon className="w-6 h-6 brightness-0 saturate-0" style={{filter: 'invert(17%) sepia(25%) saturate(2348%) hue-rotate(130deg) brightness(95%) contrast(101%)'}} />
                 </div>
               </CardTitle>
             </CardHeader>
