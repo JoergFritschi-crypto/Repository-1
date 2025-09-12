@@ -9,6 +9,7 @@ import {
   climateData,
   fileVault,
   scrapingProgress,
+  todoTasks,
   type User,
   type UpsertUser,
   type Garden,
@@ -29,6 +30,8 @@ import {
   type InsertFileVault,
   type ScrapingProgress,
   type InsertScrapingProgress,
+  type TodoTask,
+  type InsertTodoTask,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, or, desc, isNotNull, isNull, lte, sql, gte } from "drizzle-orm";
@@ -112,7 +115,12 @@ export interface IStorage {
   finalizeScrapingProgress(id: string, stats: { totalPlants: number; savedPlants: number; duplicatePlants: number; failedPlants: number }): Promise<ScrapingProgress>;
   getPlantByScientificName(scientificName: string): Promise<Plant | undefined>;
   getPlantByExternalId(externalId: string): Promise<Plant | undefined>;
-  bulkCreatePlants(plants: InsertPlant[]): Promise<{ saved: number; duplicates: number; errors: number }>;  
+  bulkCreatePlants(plants: InsertPlant[]): Promise<{ saved: number; duplicates: number; errors: number }>;
+  
+  // Todo task operations
+  getAllTodoTasks(): Promise<TodoTask[]>;
+  createTodoTask(task: InsertTodoTask): Promise<TodoTask>;
+  deleteTodoTask(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -867,6 +875,20 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Bulk create complete: ${saved} new, ${duplicates} updated/duplicate, ${errors} errors`);
     return { saved, duplicates, errors };
+  }
+
+  // Todo task operations
+  async getAllTodoTasks(): Promise<TodoTask[]> {
+    return await db.select().from(todoTasks).orderBy(desc(todoTasks.createdAt));
+  }
+
+  async createTodoTask(task: InsertTodoTask): Promise<TodoTask> {
+    const [newTask] = await db.insert(todoTasks).values(task).returning();
+    return newTask;
+  }
+
+  async deleteTodoTask(id: string): Promise<void> {
+    await db.delete(todoTasks).where(eq(todoTasks.id, id));
   }
 }
 

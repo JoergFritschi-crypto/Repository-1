@@ -1498,6 +1498,169 @@ Rules:
     }
   });
 
+  // Admin route for photorealizing garden images
+  app.post('/api/admin/photorealize-garden', isAuthenticated, async (req: any, res) => {
+    try {
+      const {
+        referenceImage,
+        prompt,
+        negativePrompt,
+        width,
+        height,
+        strength = 0.4,
+        cfgScale = 7.5,
+        seed = 42,
+        gardenId,
+        season,
+        timeOfDay
+      } = req.body;
+      
+      if (!referenceImage || !prompt) {
+        return res.status(400).json({ message: "Reference image and prompt are required" });
+      }
+      
+      if (!runwareAPI) {
+        console.warn('Runware API not configured - photorealization skipped');
+        return res.status(503).json({ message: "Runware API not configured" });
+      }
+      
+      console.log('📸 Starting photorealization for garden', gardenId);
+      
+      // Use Runware img2img to photorealize the Three.js render
+      const response = await runwareAPI.generateImage({
+        positivePrompt: prompt,
+        negativePrompt: negativePrompt || '',
+        model: "civitai:4201@130072", // Realistic Vision V6.0
+        height: height || 1088,
+        width: width || 1920,
+        numberResults: 1,
+        outputType: "URL",
+        outputFormat: "PNG",
+        seedImage: referenceImage, // Base64 image from Three.js
+        strength: strength, // Conservative strength to preserve geometry
+        steps: 25,
+        CFGScale: cfgScale,
+        seed: seed
+      });
+      
+      console.log('✨ Runware photorealization response:', response);
+      
+      if (response && response.imageUrl) {
+        // Save the photorealized image to file vault if needed
+        if (gardenId) {
+          const fileName = `photorealized_${gardenId}_${season}_${timeOfDay}_${Date.now()}.png`;
+          await fileVaultService.saveFile('garden_images', fileName, response.imageUrl, 'url');
+          
+          console.log('💾 Saved photorealized image:', fileName);
+        }
+        
+        res.json({
+          success: true,
+          imageUrl: response.imageUrl,
+          message: 'Garden successfully photorealized'
+        });
+      } else {
+        throw new Error('No image generated from Runware');
+      }
+    } catch (error) {
+      console.error('Photorealization error:', error);
+      res.status(500).json({ 
+        message: "Failed to photorealize garden", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Generate seasonal variations using Gemini 2.5 "nano banana"
+  app.post('/api/admin/generate-seasonal-variations', isAuthenticated, async (req: any, res) => {
+    try {
+      const {
+        referenceImage, // Base64 image from photorealization
+        gardenId,
+        plants = [],
+        gardenSize = "10x10m",
+        style = "Natural photorealistic garden"
+      } = req.body;
+      
+      if (!referenceImage) {
+        return res.status(400).json({ message: "Reference image is required" });
+      }
+      
+      if (!geminiAI) {
+        console.warn('Gemini API not configured');
+        return res.status(503).json({ message: "Gemini API not configured" });
+      }
+      
+      console.log('🌸 Starting seasonal variations generation with Gemini 2.5 nano banana');
+      
+      const seasons = ['spring', 'summer', 'autumn', 'winter'];
+      const seasonalImages: { [key: string]: string } = {};
+      const seasonalPrompts: { [key: string]: string } = {
+        spring: `Transform to early spring garden: fresh green foliage, spring bulbs blooming (tulips, daffodils, crocuses), cherry blossoms, bright green new growth, soft morning light, dewy atmosphere. ${style}. Keep exact same viewpoint and composition.`,
+        summer: `Transform to peak summer garden: lush full foliage, abundant colorful flowers in full bloom, roses, lavender, deep green mature leaves, warm golden afternoon light, vibrant colors. ${style}. Keep exact same viewpoint and composition.`,
+        autumn: `Transform to autumn garden: golden, orange and red foliage, autumn flowers (asters, chrysanthemums), falling leaves, warm amber light, harvest atmosphere. ${style}. Keep exact same viewpoint and composition.`,
+        winter: `Transform to winter garden: bare deciduous branches, evergreen structure visible, frost on plants, possibly light snow, cool blue-gray light, serene atmosphere. ${style}. Keep exact same viewpoint and composition.`
+      };
+      
+      // Generate each seasonal variation
+      for (const season of seasons) {
+        try {
+          console.log(`🌿 Generating ${season} variation...`);
+          
+          const result = await geminiAI.generateImageWithReference(
+            seasonalPrompts[season],
+            referenceImage.replace(/^data:image\/[a-z]+;base64,/, '') // Strip data URL prefix if present
+          );
+          
+          if (result.imageData) {
+            // Save to file vault
+            const timestamp = Date.now();
+            const fileName = `seasonal_${gardenId}_${season}_${timestamp}.png`;
+            
+            // Convert base64 to buffer and save
+            const base64Data = result.imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+            const buffer = Buffer.from(base64Data, 'base64');
+            
+            // Save to public/generated-images for serving
+            const fs = await import('fs/promises');
+            const path = await import('path');
+            const publicPath = path.join('public', 'generated-images', fileName);
+            await fs.writeFile(publicPath, buffer);
+            
+            // Also save to file vault for persistence
+            await fileVaultService.saveFile('garden_images', fileName, result.imageData, 'base64');
+            
+            seasonalImages[season] = `/generated-images/${fileName}`;
+            console.log(`✅ Generated ${season} variation: ${fileName}`);
+          } else {
+            console.error(`Failed to generate ${season} variation`);
+          }
+        } catch (seasonError) {
+          console.error(`Error generating ${season}:`, seasonError);
+          // Continue with other seasons even if one fails
+        }
+      }
+      
+      if (Object.keys(seasonalImages).length === 0) {
+        throw new Error('Failed to generate any seasonal variations');
+      }
+      
+      res.json({
+        success: true,
+        seasonalImages,
+        message: `Successfully generated ${Object.keys(seasonalImages).length} seasonal variations`,
+        generatedSeasons: Object.keys(seasonalImages)
+      });
+      
+    } catch (error) {
+      console.error('Seasonal generation error:', error);
+      res.status(500).json({ 
+        message: "Failed to generate seasonal variations", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // Plant Import Wizard endpoints
   app.get('/api/admin/import/search-perenual', isAuthenticated, async (req, res) => {
     try {
@@ -3936,6 +4099,60 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       }
     });
   }
+
+  // Todo task routes for admin dashboard
+  app.get('/api/admin/todo-tasks', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const tasks = await storage.getAllTodoTasks();
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching todo tasks:", error);
+      res.status(500).json({ message: "Failed to fetch todo tasks" });
+    }
+  });
+
+  app.post('/api/admin/todo-tasks', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { task } = req.body;
+      if (!task || task.trim().length === 0) {
+        return res.status(400).json({ message: "Task text is required" });
+      }
+      
+      const newTask = await storage.createTodoTask({ task: task.trim() });
+      res.json(newTask);
+    } catch (error) {
+      console.error("Error creating todo task:", error);
+      res.status(500).json({ message: "Failed to create todo task" });
+    }
+  });
+
+  app.delete('/api/admin/todo-tasks/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      await storage.deleteTodoTask(req.params.id);
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting todo task:", error);
+      res.status(500).json({ message: "Failed to delete todo task" });
+    }
+  });
 
   // Populate Test Garden 1 with sample plants
   app.post('/api/admin/populate-test-garden', isAuthenticated, async (req: any, res) => {

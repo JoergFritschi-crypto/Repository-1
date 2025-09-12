@@ -404,6 +404,13 @@ export const apiAlerts = pgTable("api_alerts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Simple todo tasks table for admin dashboard
+export const todoTasks = pgTable("todo_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  task: text("task").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Type exports
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -433,6 +440,8 @@ export type FileVault = typeof fileVault.$inferSelect;
 export type InsertFileVault = typeof fileVault.$inferInsert;
 export type ScrapingProgress = typeof scrapingProgress.$inferSelect;
 export type InsertScrapingProgress = typeof scrapingProgress.$inferInsert;
+export type TodoTask = typeof todoTasks.$inferSelect;
+export type InsertTodoTask = typeof todoTasks.$inferInsert;
 
 // Schema exports for validation
 export const insertGardenSchema = createInsertSchema(gardens);
@@ -448,6 +457,7 @@ export const insertApiAlertSchema = createInsertSchema(apiAlerts);
 export const insertImageGenerationQueueSchema = createInsertSchema(imageGenerationQueue);
 export const insertFileVaultSchema = createInsertSchema(fileVault);
 export const insertScrapingProgressSchema = createInsertSchema(scrapingProgress);
+export const insertTodoTaskSchema = createInsertSchema(todoTasks);
 
 // ===========================
 // 3D GARDEN SCENE SCHEMA

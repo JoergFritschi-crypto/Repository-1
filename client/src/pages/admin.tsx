@@ -20,6 +20,7 @@ import { ImageGenerationMonitor } from "@/components/admin/image-generation-moni
 import { ImageComparisonTool } from "@/components/admin/image-comparison-tool";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { PlantImportWizard } from "@/components/admin/plant-import-wizard";
+import { TodoList } from "@/components/admin/todo-list";
 import { useLocation } from "wouter";
 import { 
   Settings, 
@@ -49,7 +50,8 @@ import {
   Zap,
   Trash2,
   Lock,
-  Map
+  Map,
+  ListTodo
 } from "lucide-react";
 
 export default function Admin() {
@@ -206,6 +208,7 @@ export default function Admin() {
   });
 
   const adminTabs = [
+    { id: "todo", label: "To-Do List", icon: ListTodo },
     { id: "plants", label: "Plant Database", icon: Database },
     { id: "image-gen", label: "Image Generation", icon: ImageIcon },
     { id: "image-test", label: "Image Testing", icon: FlaskConical },
@@ -280,6 +283,11 @@ export default function Admin() {
                   );
                 })}
               </TabsList>
+
+              {/* To-Do List */}
+              <TabsContent value="todo" className="mt-8">
+                <TodoList />
+              </TabsContent>
 
               {/* Plant Database Management */}
               <TabsContent value="plants" className="mt-8">

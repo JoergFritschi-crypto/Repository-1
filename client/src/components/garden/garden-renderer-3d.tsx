@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Download, RotateCcw, Settings, Camera, Sun, Eye } from 'lucide-react';
+import { Download, RotateCcw, Settings, Camera, Sun, Eye, Sparkles, ImageIcon, Loader2, Flower2, TreePine, Leaf, Snowflake } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   createGardenScene3D, 
   type GardenScene3D, 
@@ -62,6 +65,19 @@ export default function GardenRenderer3D({
     shadowsEnabled: true,
     levelOfDetail: 'medium' as 'low' | 'medium' | 'high' | 'ultra'
   });
+  
+  // Photorealization state
+  const [photorealizeEnabled, setPhotorealizeEnabled] = useState(false);
+  const [isPhotorealizing, setIsPhotorealizing] = useState(false);
+  const [photorealizedImage, setPhotorealizedImage] = useState<string | null>(null);
+  const [showComparisonDialog, setShowComparisonDialog] = useState(false);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  
+  // Seasonal variations state
+  const [isGeneratingSeasons, setIsGeneratingSeasons] = useState(false);
+  const [seasonalImages, setSeasonalImages] = useState<{ [key: string]: string }>({});
+  const [showSeasonalDialog, setShowSeasonalDialog] = useState(false);
+  const [currentSeasonGenerating, setCurrentSeasonGenerating] = useState<string | null>(null);
   
   const { toast } = useToast();
 
@@ -1101,15 +1117,15 @@ export default function GardenRenderer3D({
     }
   }, [gardenData, placedPlants, inventoryPlants, orientationSettings, renderSettings, initializeScene, animate, createPlantBillboards, applyGardenGeometry, toast, resetScene, manageTextureCache]);
 
-  // Export PNG at specified resolution
-  const exportPNG = useCallback(async (width: number = 1920, height: number = 1088) => {
+  // Export PNG at specified resolution with optional photorealization
+  const exportPNG = useCallback(async (width: number = 1920, height: number = 1088, skipDownload: boolean = false) => {
     if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
       toast({
         title: "Export Failed",
         description: "3D scene not ready for export.",
         variant: "destructive"
       });
-      return;
+      return null;
     }
 
     try {
@@ -1129,24 +1145,35 @@ export default function GardenRenderer3D({
       const canvas = rendererRef.current.domElement;
       const dataURL = canvas.toDataURL('image/png');
       
-      // Create download link
-      const link = document.createElement('a');
-      link.download = `garden-3d-${gardenData.gardenName}-${Date.now()}.png`;
-      link.href = dataURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Store original for comparison
+      setOriginalImage(dataURL);
+      
+      // Download original if not skipping
+      if (!skipDownload) {
+        const link = document.createElement('a');
+        link.download = `garden-3d-${gardenData.gardenName}-${Date.now()}.png`;
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
       
       // Restore original settings
       rendererRef.current.setSize(originalSize.x, originalSize.y);
       cameraRef.current.aspect = originalAspect;
       cameraRef.current.updateProjectionMatrix();
       
-      toast({
-        title: "Export Successful",
-        description: `Garden exported as PNG (${width}x${height})`,
-      });
+      // Apply photorealization if enabled
+      if (photorealizeEnabled && !skipDownload) {
+        await photorealizeImage(dataURL, width, height);
+      } else if (!skipDownload) {
+        toast({
+          title: "Export Successful",
+          description: `Garden exported as PNG (${width}x${height})`,
+        });
+      }
       
+      return dataURL;
     } catch (error) {
       console.error('Export error:', error);
       toast({
@@ -1154,8 +1181,174 @@ export default function GardenRenderer3D({
         description: "Failed to export 3D scene.",
         variant: "destructive"
       });
+      return null;
     }
-  }, [gardenData.gardenName, toast]);
+  }, [gardenData.gardenName, photorealizeEnabled, toast]);
+
+  // Photorealize the exported image using Runware img2img
+  const photorealizeImage = useCallback(async (baseImage: string, width: number, height: number) => {
+    setIsPhotorealizing(true);
+    
+    try {
+      // Generate prompt based on garden data and render settings
+      const seasonDescriptions = {
+        spring: 'fresh spring garden with budding plants, bright green foliage',
+        summer: 'lush summer garden in full bloom, vibrant colors, deep greens',
+        autumn: 'autumn garden with warm colors, falling leaves, golden tones',
+        winter: 'winter garden with frost, muted colors, dormant plants'
+      };
+      
+      const timeDescriptions = {
+        morning: 'morning light, soft shadows, dewy atmosphere',
+        midday: 'bright midday sun, sharp shadows, clear visibility',
+        afternoon: 'warm afternoon light, longer shadows, golden hour approaching',
+        evening: 'evening light, sunset colors, long dramatic shadows'
+      };
+      
+      const timeOfDayCategory = renderSettings.timeOfDay < 10 ? 'morning' :
+                                renderSettings.timeOfDay < 14 ? 'midday' :
+                                renderSettings.timeOfDay < 18 ? 'afternoon' : 'evening';
+      
+      const plantNames = placedPlants.map(p => {
+        const plant = inventoryPlants.find(ip => ip.id === p.plantId);
+        return plant?.name || '';
+      }).filter(Boolean).slice(0, 5).join(', '); // Include up to 5 plant names
+      
+      const prompt = `photorealistic garden photograph, ${seasonDescriptions[renderSettings.season]}, ${timeDescriptions[timeOfDayCategory]}, ${gardenData.shape} shaped garden, ${plantNames}, professional landscape photography, ultra detailed, high resolution, natural lighting`;
+      
+      const negativePrompt = 'cartoon, anime, illustration, painting, watercolor, sketch, blurry, distorted, oversaturated, artificial, plastic, fake, cgi render, video game graphics';
+      
+      // Send to server for photorealization
+      const response = await fetch('/api/admin/photorealize-garden', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          referenceImage: baseImage,
+          prompt,
+          negativePrompt,
+          width,
+          height,
+          strength: 0.4, // Conservative strength to preserve geometry
+          cfgScale: 7.5,
+          seed: 42, // Fixed seed for consistency
+          gardenId: gardenData.gardenId,
+          season: renderSettings.season,
+          timeOfDay: renderSettings.timeOfDay
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Photorealization failed');
+      }
+      
+      const result = await response.json();
+      
+      if (result.imageUrl) {
+        setPhotorealizedImage(result.imageUrl);
+        setShowComparisonDialog(true);
+        
+        toast({
+          title: "Photorealization Complete",
+          description: "Your garden has been photorealized with AI enhancement.",
+        });
+      }
+    } catch (error) {
+      console.error('Photorealization error:', error);
+      toast({
+        title: "Photorealization Failed",
+        description: "Failed to enhance image with AI. Original image was exported.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsPhotorealizing(false);
+    }
+  }, [gardenData, placedPlants, inventoryPlants, renderSettings, toast]);
+
+  // Generate seasonal variations using Gemini 2.5 "nano banana"
+  const generateSeasonalVariations = useCallback(async () => {
+    if (!photorealizedImage) {
+      toast({
+        title: "No Photorealized Image",
+        description: "Please photorealize the garden first before generating seasonal variations.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsGeneratingSeasons(true);
+    setShowSeasonalDialog(true);
+    setSeasonalImages({}); // Clear previous seasonal images
+    
+    try {
+      // Convert image URL to base64 if needed
+      let base64Image = photorealizedImage;
+      if (photorealizedImage.startsWith('http') || photorealizedImage.startsWith('/')) {
+        // Fetch and convert to base64
+        const response = await fetch(photorealizedImage);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        base64Image = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      }
+      
+      // Prepare plant data for the API
+      const plantData = placedPlants.map(plant => {
+        const plantInfo = inventoryPlants.find(p => p.id === plant.plantId);
+        return {
+          plantName: plantInfo?.name || 'Unknown Plant',
+          x: plant.position.x,
+          y: plant.position.y,
+          size: plantInfo?.matureSize?.includes('tree') || 
+                (plantInfo?.heightMax && plantInfo.heightMax > 300) ? 'large' : 
+                (plantInfo?.heightMax && plantInfo.heightMax < 50) ? 'small' : 'medium'
+        };
+      });
+      
+      // Call the seasonal generation API
+      const response = await fetch('/api/admin/generate-seasonal-variations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          referenceImage: base64Image,
+          gardenId: gardenData.gardenId,
+          plants: plantData,
+          gardenSize: `${gardenData.dimensions.width || 10}x${gardenData.dimensions.length || 10}m`,
+          style: "Natural photorealistic garden photography"
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Seasonal generation failed');
+      }
+      
+      const result = await response.json();
+      
+      if (result.seasonalImages) {
+        setSeasonalImages(result.seasonalImages);
+        
+        toast({
+          title: "Seasonal Variations Generated",
+          description: `Successfully generated ${result.generatedSeasons.length} seasonal variations using Gemini 2.5.`,
+        });
+      }
+    } catch (error) {
+      console.error('Seasonal generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate seasonal variations. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingSeasons(false);
+      setCurrentSeasonGenerating(null);
+    }
+  }, [photorealizedImage, placedPlants, inventoryPlants, gardenData, toast]);
 
   // Cleanup on unmount with comprehensive resource disposal
   useEffect(() => {
@@ -1301,7 +1494,7 @@ export default function GardenRenderer3D({
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             <Button 
               onClick={generateScene3D} 
               disabled={isGenerating}
@@ -1325,20 +1518,56 @@ export default function GardenRenderer3D({
                 <Button 
                   variant="outline" 
                   onClick={() => exportPNG(1920, 1088)}
+                  disabled={isPhotorealizing}
                   data-testid="button-export-png"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export PNG (1920×1088)
+                  {isPhotorealizing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export PNG (1920×1088)
+                    </>
+                  )}
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   onClick={() => exportPNG(3840, 2176)}
+                  disabled={isPhotorealizing}
                   data-testid="button-export-png-4k"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export 4K
                 </Button>
+                
+                <div className="flex items-center space-x-2 ml-4 px-4 py-2 border rounded-lg">
+                  <Switch
+                    id="photorealize"
+                    checked={photorealizeEnabled}
+                    onCheckedChange={setPhotorealizeEnabled}
+                    disabled={isPhotorealizing}
+                    data-testid="switch-photorealize"
+                  />
+                  <Label htmlFor="photorealize" className="flex items-center gap-2 cursor-pointer">
+                    <Sparkles className="h-4 w-4" />
+                    AI Photorealization
+                  </Label>
+                </div>
+                
+                {photorealizedImage && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowComparisonDialog(true)}
+                    data-testid="button-view-comparison"
+                  >
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    View Comparison
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -1389,6 +1618,317 @@ export default function GardenRenderer3D({
           </div>
         </CardContent>
       </Card>
+      
+      {/* Photorealization Comparison Dialog */}
+      <Dialog open={showComparisonDialog} onOpenChange={setShowComparisonDialog}>
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Photorealization Comparison
+            </DialogTitle>
+          </DialogHeader>
+          
+          <Tabs defaultValue="comparison" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="comparison">Side by Side</TabsTrigger>
+              <TabsTrigger value="original">Original</TabsTrigger>
+              <TabsTrigger value="photorealized">Photorealized</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="comparison" className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Original 3D Render</h3>
+                  {originalImage && (
+                    <img 
+                      src={originalImage} 
+                      alt="Original 3D render" 
+                      className="w-full rounded-lg border"
+                    />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">AI Photorealized</h3>
+                  {photorealizedImage && (
+                    <img 
+                      src={photorealizedImage} 
+                      alt="Photorealized version" 
+                      className="w-full rounded-lg border"
+                    />
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="original">
+              {originalImage && (
+                <img 
+                  src={originalImage} 
+                  alt="Original 3D render" 
+                  className="w-full rounded-lg border"
+                />
+              )}
+            </TabsContent>
+            
+            <TabsContent value="photorealized">
+              {photorealizedImage && (
+                <img 
+                  src={photorealizedImage} 
+                  alt="Photorealized version" 
+                  className="w-full rounded-lg border"
+                />
+              )}
+            </TabsContent>
+          </Tabs>
+          
+          <div className="flex justify-end gap-2 mt-4">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                if (originalImage) {
+                  const link = document.createElement('a');
+                  link.download = `garden-3d-original-${Date.now()}.png`;
+                  link.href = originalImage;
+                  link.click();
+                }
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download Original
+            </Button>
+            <Button 
+              onClick={() => {
+                if (photorealizedImage) {
+                  const link = document.createElement('a');
+                  link.download = `garden-3d-photorealized-${Date.now()}.png`;
+                  link.href = photorealizedImage;
+                  link.click();
+                }
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download Photorealized
+            </Button>
+            
+            {photorealizedImage && (
+              <Button
+                onClick={generateSeasonalVariations}
+                disabled={isGeneratingSeasons}
+                variant="default"
+                className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
+                data-testid="button-generate-seasons"
+              >
+                {isGeneratingSeasons ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating Seasons...
+                  </>
+                ) : (
+                  <>
+                    <Flower2 className="h-4 w-4 mr-2" />
+                    Generate All Seasons
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Seasonal Variations Dialog */}
+      <Dialog open={showSeasonalDialog} onOpenChange={setShowSeasonalDialog}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Flower2 className="h-5 w-5 text-green-600" />
+              Seasonal Garden Variations
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {isGeneratingSeasons && Object.keys(seasonalImages).length === 0 ? (
+              <div className="text-center py-8">
+                <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-green-600" />
+                <p className="text-lg font-medium">Generating seasonal variations with Gemini 2.5...</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  This may take a few moments as we create all four seasons
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                {/* Spring */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Flower2 className="h-4 w-4 text-pink-500" />
+                    <h3 className="font-medium">Spring</h3>
+                  </div>
+                  {seasonalImages.spring ? (
+                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                      <img 
+                        src={seasonalImages.spring} 
+                        alt="Spring variation"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="absolute bottom-2 right-2"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.download = `garden-spring-${Date.now()}.png`;
+                          link.href = seasonalImages.spring;
+                          link.click();
+                        }}
+                        data-testid="button-download-spring"
+                      >
+                        <Download className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="aspect-video rounded-lg border bg-muted flex items-center justify-center">
+                      <p className="text-sm text-muted-foreground">Generating spring...</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Summer */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Sun className="h-4 w-4 text-yellow-500" />
+                    <h3 className="font-medium">Summer</h3>
+                  </div>
+                  {seasonalImages.summer ? (
+                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                      <img 
+                        src={seasonalImages.summer} 
+                        alt="Summer variation"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="absolute bottom-2 right-2"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.download = `garden-summer-${Date.now()}.png`;
+                          link.href = seasonalImages.summer;
+                          link.click();
+                        }}
+                        data-testid="button-download-summer"
+                      >
+                        <Download className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="aspect-video rounded-lg border bg-muted flex items-center justify-center">
+                      <p className="text-sm text-muted-foreground">Generating summer...</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Autumn */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Leaf className="h-4 w-4 text-orange-500" />
+                    <h3 className="font-medium">Autumn</h3>
+                  </div>
+                  {seasonalImages.autumn ? (
+                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                      <img 
+                        src={seasonalImages.autumn} 
+                        alt="Autumn variation"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="absolute bottom-2 right-2"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.download = `garden-autumn-${Date.now()}.png`;
+                          link.href = seasonalImages.autumn;
+                          link.click();
+                        }}
+                        data-testid="button-download-autumn"
+                      >
+                        <Download className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="aspect-video rounded-lg border bg-muted flex items-center justify-center">
+                      <p className="text-sm text-muted-foreground">Generating autumn...</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Winter */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Snowflake className="h-4 w-4 text-blue-500" />
+                    <h3 className="font-medium">Winter</h3>
+                  </div>
+                  {seasonalImages.winter ? (
+                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                      <img 
+                        src={seasonalImages.winter} 
+                        alt="Winter variation"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="absolute bottom-2 right-2"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.download = `garden-winter-${Date.now()}.png`;
+                          link.href = seasonalImages.winter;
+                          link.click();
+                        }}
+                        data-testid="button-download-winter"
+                      >
+                        <Download className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="aspect-video rounded-lg border bg-muted flex items-center justify-center">
+                      <p className="text-sm text-muted-foreground">Generating winter...</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            {Object.keys(seasonalImages).length > 0 && (
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSeasonalDialog(false)}
+                  data-testid="button-close-seasonal"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => {
+                    // Download all seasonal images
+                    Object.entries(seasonalImages).forEach(([season, url]) => {
+                      const link = document.createElement('a');
+                      link.download = `garden-${season}-${Date.now()}.png`;
+                      link.href = url;
+                      setTimeout(() => link.click(), 100);
+                    });
+                  }}
+                  data-testid="button-download-all-seasons"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download All Seasons
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
