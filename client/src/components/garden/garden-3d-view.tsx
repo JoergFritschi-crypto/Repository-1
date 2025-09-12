@@ -19,7 +19,8 @@ import {
   Snowflake, 
   Info,
   Mountain,
-  Compass
+  Compass,
+  Wand2
 } from 'lucide-react';
 import {
   Tooltip,
@@ -124,6 +125,7 @@ export default function Garden3DView({
   });
   
   const { toast } = useToast();
+  const [isGeneratingArtistic, setIsGeneratingArtistic] = useState(false);
   
   // Fetch plant data for placed plants
   const { data: plants } = useQuery<Plant[]>({
@@ -984,6 +986,73 @@ export default function Garden3DView({
       description: "Your 3D garden view has been saved as an image.",
     });
   };
+  
+  // Generate artistic view using Gemini AI
+  const handleGenerateArtisticView = async () => {
+    if (!rendererRef.current || !sceneRef.current || !cameraRef.current || !canvasRef.current) return;
+    
+    setIsGeneratingArtistic(true);
+    
+    try {
+      // Render the scene first
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
+      
+      // Capture the current canvas as base64
+      const dataURL = rendererRef.current.domElement.toDataURL('image/png');
+      
+      // Create a prompt for enhancement
+      const prompt = `Enhance this 3D garden render into a photorealistic, artistic garden visualization.
+        Maintain the exact composition, viewing angle, plant positions, and layout.
+        Make it look like a professional landscape architecture visualization with:
+        - Realistic textures for plants, soil, grass, and pathways
+        - Beautiful ${renderSettings.timeOfDay < 12 ? 'morning' : renderSettings.timeOfDay < 17 ? 'afternoon' : 'evening'} lighting
+        - Atmospheric perspective and depth
+        - ${gardenData.style === 'cottage' ? 'Romantic cottage garden' : gardenData.style === 'formal' ? 'Elegant formal garden' : gardenData.style === 'modern' ? 'Contemporary minimalist' : 'Natural'} style
+        - Photorealistic plant rendering with proper colors and textures
+        Keep the same viewing angle and perspective as the input image.`;
+      
+      // Send to the API endpoint
+      const response = await fetch('/api/gardens/generate-artistic-view', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          canvasImage: dataURL,
+          prompt,
+          gardenId,
+          gardenName
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate artistic view');
+      }
+      
+      const data = await response.json();
+      
+      if (data.imageUrl) {
+        // Open the enhanced image in a new tab
+        window.open(data.imageUrl, '_blank');
+        
+        toast({
+          title: "Artistic View Generated",
+          description: "Your enhanced garden visualization has been created!",
+        });
+      } else {
+        throw new Error('No image URL in response');
+      }
+    } catch (error: any) {
+      console.error('Error generating artistic view:', error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate artistic view. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingArtistic(false);
+    }
+  };
 
   return (
     <Card className="border-2 border-gray-200">
@@ -1013,6 +1082,25 @@ export default function Garden3DView({
             >
               <Download className="w-4 h-4 mr-1" />
               Export
+            </Button>
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={handleGenerateArtisticView}
+              disabled={isGeneratingArtistic || !isSceneReady}
+              data-testid="button-generate-artistic"
+            >
+              {isGeneratingArtistic ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4 mr-1" />
+                  Generate Artistic View
+                </>
+              )}
             </Button>
           </div>
         </div>

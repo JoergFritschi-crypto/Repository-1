@@ -11,6 +11,12 @@ interface GeminiImageOptions {
   imageType: 'thumbnail' | 'full' | 'detail';
 }
 
+interface GeminiEnhanceOptions {
+  referenceImage: string; // base64 encoded image
+  prompt: string;
+  outputFileName?: string;
+}
+
 class GeminiImageGenerator {
   private ai: GoogleGenAI | null = null;
 
@@ -125,6 +131,89 @@ class GeminiImageGenerator {
     } catch (error: any) {
       console.error('Gemini image generation failed:', error);
       throw new Error(`Gemini image generation failed: ${error.message}`);
+    }
+  }
+
+  async generateImageWithReference(options: GeminiEnhanceOptions): Promise<string> {
+    if (!this.ai) {
+      throw new Error('Gemini API key not configured');
+    }
+
+    const { referenceImage, prompt, outputFileName } = options;
+    
+    try {
+      console.log('Enhancing image with Gemini (Nano Banana) using reference image...');
+      
+      // Prepare the image data for Gemini
+      // Remove data URL prefix if present
+      const base64Data = referenceImage.replace(/^data:image\/\w+;base64,/, '');
+      
+      // Generate enhanced image using both text and image inputs
+      const response = await this.ai.models.generateContent({
+        model: IMAGE_GENERATION_MODEL,
+        contents: [{ 
+          role: "user", 
+          parts: [
+            { text: prompt },
+            { 
+              inlineData: {
+                mimeType: 'image/png',
+                data: base64Data
+              }
+            }
+          ] 
+        }],
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
+      });
+
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
+        throw new Error('No enhanced image generated in response');
+      }
+
+      const content = candidates[0].content;
+      if (!content || !content.parts) {
+        throw new Error('No content in response');
+      }
+
+      // Find the image part
+      let imageData: string | null = null;
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          imageData = part.inlineData.data;
+          break;
+        }
+      }
+
+      if (!imageData) {
+        throw new Error('No enhanced image data in response');
+      }
+
+      // Convert base64 to buffer
+      const imageBuffer = Buffer.from(imageData, 'base64');
+      
+      // Save to file system
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(7);
+      const fileName = outputFileName || `enhanced-garden-${timestamp}-${randomStr}.png`;
+      const filePath = path.join('public', 'generated', fileName);
+      
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      
+      // Write file
+      await fs.writeFile(filePath, imageBuffer);
+      
+      console.log(`✅ Gemini (Nano Banana) enhanced image saved to ${filePath}`);
+      
+      // Return the path that can be served by the web server
+      return `/generated/${fileName}`;
+      
+    } catch (error: any) {
+      console.error('Gemini image enhancement failed:', error);
+      throw new Error(`Gemini image enhancement failed: ${error.message}`);
     }
   }
 }

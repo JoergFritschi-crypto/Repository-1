@@ -17,6 +17,7 @@ import { runwareImageGenerator } from "./runwareImageGenerator";
 import { aiInpaintingService } from "./aiInpaintingService";
 import { PlantImportService } from "./plantImportService";
 import { generateAllGardenToolIcons, generateGardenToolIcon } from "./aiIconGenerator";
+import { geminiImageGenerator } from "./geminiImageGenerator";
 import path from "path";
 
 // Initialize Stripe if API key is available
@@ -224,7 +225,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Generate 3D garden visualization using Runware
+  // Generate artistic view from 3D canvas using Gemini AI image-to-image enhancement
+  app.post('/api/gardens/generate-artistic-view', isAuthenticated, async (req: any, res) => {
+    try {
+      const { canvasImage, prompt, gardenId, gardenName } = req.body;
+      
+      if (!canvasImage) {
+        return res.status(400).json({ 
+          message: "Canvas image is required" 
+        });
+      }
+      
+      if (!geminiImageGenerator) {
+        return res.status(503).json({ 
+          message: "Gemini image generation service not configured. Please add GEMINI_API_KEY." 
+        });
+      }
+      
+      // Log the request for monitoring
+      await apiMonitoring.logApiCall(
+        'gemini',
+        'generate-artistic-view',
+        true,
+        { gardenId, gardenName }
+      );
+      
+      // Generate enhanced artistic view using Gemini's image-to-image capabilities
+      const imageUrl = await geminiImageGenerator.generateImageWithReference({
+        referenceImage: canvasImage,
+        prompt: prompt || `Enhance this 3D garden render into a photorealistic, artistic garden visualization.
+          Maintain the exact composition, viewing angle, plant positions, and layout.
+          Make it look like a professional landscape architecture visualization with:
+          - Realistic textures for plants, soil, grass, and pathways
+          - Beautiful natural lighting with atmospheric perspective
+          - High-quality photorealistic rendering
+          - Professional garden photography aesthetic
+          Keep the same viewing angle and perspective as the input image.`,
+        outputFileName: gardenName ? `artistic-${gardenName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png` : undefined
+      });
+      
+      res.json({ 
+        success: true, 
+        imageUrl,
+        message: "Artistic view generated successfully"
+      });
+      
+    } catch (error: any) {
+      console.error('Error generating artistic view:', error);
+      
+      // Log the failure for monitoring
+      await apiMonitoring.logApiCall(
+        'gemini',
+        'generate-artistic-view',
+        false,
+        { error: error.message }
+      );
+      
+      res.status(500).json({ 
+        message: "Failed to generate artistic view", 
+        error: error.message 
+      });
+    }
+  });
+  
+  // Generate 3D garden visualization using Gemini (primary) or Runware (fallback)
   app.post('/api/gardens/generate-visualization', isAuthenticated, async (req: any, res) => {
     try {
       const {
@@ -234,7 +298,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         style,
         season,
         sunExposure,
-        gardenId
+        gardenId,
+        canvasImage // Optional: if provided, use image-to-image enhancement
       } = req.body;
 
       if (!plantNames || !gardenDescription) {
@@ -243,19 +308,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Use runwareImageGenerator for all image generation
-      if (!runwareImageGenerator) {
-        return res.status(503).json({ 
-          message: "Image generation service not configured" 
-        });
-      }
+      // Generate detailed prompt for garden visualization
+      const visualizationPrompt = `photorealistic ${style || 'cottage'} garden, ${season || 'summer'} season, ${gardenDescription}, featuring ${plantNames}, natural lighting, professional garden photography, high detail, beautiful landscaping, ${sunExposure === 'full_sun' ? 'bright sunny day' : sunExposure === 'partial_shade' ? 'dappled sunlight through trees' : 'soft diffused light'}, well-maintained garden beds, realistic plant placement and growth`;
 
-      // Since runwareAPI is not properly configured, use runwareImageGenerator
-      if (runwareImageGenerator) {
+      let imageUrl: string;
+
+      // Use Gemini if available (preferred)
+      if (geminiImageGenerator) {
         try {
-          // Generate detailed prompt for garden visualization
-          const visualizationPrompt = `photorealistic ${style || 'cottage'} garden, ${season || 'summer'} season, ${gardenDescription}, featuring ${plantNames}, natural lighting, professional garden photography, high detail, beautiful landscaping, ${sunExposure === 'full_sun' ? 'bright sunny day' : sunExposure === 'partial_shade' ? 'dappled sunlight through trees' : 'soft diffused light'}, well-maintained garden beds, realistic plant placement and growth`;
+          // Log the request for monitoring
+          await apiMonitoring.logApiCall(
+            'gemini',
+            'generate-visualization',
+            true,
+            { gardenId, style, season }
+          );
 
+          // If canvas image is provided, use image-to-image enhancement
+          if (canvasImage) {
+            imageUrl = await geminiImageGenerator.generateImageWithReference({
+              referenceImage: canvasImage,
+              prompt: visualizationPrompt,
+              outputFileName: `garden-visualization-${Date.now()}.png`
+            });
+          } else {
+            // Otherwise use text-to-image generation
+            imageUrl = await geminiImageGenerator.generateImage({
+              prompt: visualizationPrompt,
+              plantName: `${style || 'cottage'}-garden-visualization`,
+              imageType: 'full'
+            });
+          }
+
+          // Optionally save to file vault
+          if (gardenId && fileVaultService) {
+            await fileVaultService.saveGardenImage(gardenId, imageUrl, 'visualization');
+          }
+
+          return res.json({ 
+            imageUrl,
+            message: "Garden visualization generated successfully with Gemini"
+          });
+        } catch (geminiError: any) {
+          console.error("Error with Gemini, falling back to Runware:", geminiError);
+          
+          // Log the failure for monitoring
+          await apiMonitoring.logApiCall(
+            'gemini',
+            'generate-visualization',
+            false,
+            { error: geminiError.message }
+          );
+          
+          // Fall back to Runware if Gemini fails
+          if (runwareImageGenerator) {
+            const imageUrl = await runwareImageGenerator.generateImage({
+              prompt: visualizationPrompt,
+              plantName: `${style || 'cottage'}-garden-visualization`,
+              imageType: 'full',
+              approach: 'garden',
+              modelChoice: 'schnell'
+            });
+
+            if (gardenId && fileVaultService) {
+              await fileVaultService.saveGardenImage(gardenId, imageUrl, 'visualization');
+            }
+
+            return res.json({ 
+              imageUrl,
+              message: "Garden visualization generated successfully with Runware (fallback)"
+            });
+          }
+        }
+      } else if (runwareImageGenerator) {
+        // Use Runware if Gemini is not available
+        try {
           const imageUrl = await runwareImageGenerator.generateImage({
             prompt: visualizationPrompt,
             plantName: `${style || 'cottage'}-garden-visualization`,
@@ -278,7 +405,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           throw error;
         }
       } else {
-        throw new Error("Image generation service not configured");
+        return res.status(503).json({ 
+          message: "No image generation service configured. Please add GEMINI_API_KEY or RUNWARE_API_KEY." 
+        });
       }
     } catch (error) {
       console.error("Error generating garden visualization:", error);
