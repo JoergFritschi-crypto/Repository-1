@@ -137,7 +137,6 @@ function TransparentGardenSpadeComponent({ className }: { className?: string }) 
     if (!ctx) return;
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     
     img.onload = () => {
       // Set canvas size to match image
