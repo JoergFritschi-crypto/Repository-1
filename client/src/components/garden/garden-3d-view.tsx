@@ -212,13 +212,13 @@ export default function Garden3DView({
     // Add to scene
     scene.add(plantMeshesRef.current);
     
-    // Add basic ambient lighting immediately to ensure visibility
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    // Add brighter ambient lighting immediately to ensure visibility
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     ambientLight.name = 'ambient-light-initial';
     scene.add(ambientLight);
     
-    // Add a simple directional light for initial visibility
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    // Add a brighter directional light for initial visibility
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
     directionalLight.position.set(5, 10, 5);
     directionalLight.name = 'directional-light-initial';
     scene.add(directionalLight);
@@ -303,11 +303,11 @@ export default function Garden3DView({
       groundGeometry.computeVertexNormals();
     }
     
-    // Create material with grass texture
+    // Create material with brighter grass color
     const groundMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2d5016,
-      roughness: 0.9,
-      metalness: 0.1,
+      color: 0x4a7c59, // Brighter, more visible green
+      roughness: 0.8,
+      metalness: 0.05,
       side: THREE.DoubleSide
     });
     
@@ -340,33 +340,54 @@ export default function Garden3DView({
     const compassGroup = new THREE.Group();
     compassGroup.name = 'compass';
     
-    // Create a more subtle north indicator
-    const arrowGeometry = new THREE.ConeGeometry(0.15, 0.5, 4);
-    const northArrow = new THREE.Mesh(
-      arrowGeometry,
+    // Create a clean north arrow indicator
+    const arrowLength = 0.8;
+    const arrowBodyGeometry = new THREE.CylinderGeometry(0.05, 0.05, arrowLength, 8);
+    const arrowBody = new THREE.Mesh(
+      arrowBodyGeometry,
       new THREE.MeshBasicMaterial({ 
-        color: 0x4488aa,
+        color: 0x4488aa, // Blue-gray color
         fog: false
       })
     );
-    northArrow.rotation.z = Math.PI;
-    northArrow.position.set(0, 1.5, -(Math.max(width, depth) / 2 + 2));
+    arrowBody.rotation.z = Math.PI / 2; // Rotate to horizontal
     
-    // Add "N" text sprite (simpler approach using a small sphere as marker)
-    const nMarkerGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-    const nMarker = new THREE.Mesh(
-      nMarkerGeometry,
+    // Create arrow head
+    const arrowHeadGeometry = new THREE.ConeGeometry(0.15, 0.3, 8);
+    const arrowHead = new THREE.Mesh(
+      arrowHeadGeometry,
       new THREE.MeshBasicMaterial({ 
-        color: 0x4488aa,
+        color: 0x4488aa, // Same blue-gray color
         fog: false
       })
     );
-    nMarker.position.set(0, 2.0, -(Math.max(width, depth) / 2 + 2.2));
+    arrowHead.rotation.z = -Math.PI / 2; // Point north
+    arrowHead.position.x = arrowLength / 2 + 0.1;
+    
+    // Create N label (using a flat disk)
+    const labelGeometry = new THREE.RingGeometry(0.15, 0.25, 16);
+    const labelMesh = new THREE.Mesh(
+      labelGeometry,
+      new THREE.MeshBasicMaterial({ 
+        color: 0x4488aa,
+        fog: false,
+        side: THREE.DoubleSide
+      })
+    );
+    labelMesh.position.x = arrowLength / 2 + 0.5;
+    labelMesh.rotation.x = -Math.PI / 2; // Face up
+    
+    // Position entire compass at edge of garden
+    const compassDistance = Math.max(width, depth) / 2 + 2;
+    compassGroup.position.set(0, 0.5, -compassDistance);
+    
+    // Add all parts to compass group
+    compassGroup.add(arrowBody);
+    compassGroup.add(arrowHead);
+    compassGroup.add(labelMesh);
     
     // Rotate compass based on north orientation
     compassGroup.rotation.y = -cardinalRotation * Math.PI / 180;
-    compassGroup.add(northArrow);
-    compassGroup.add(nMarker);
     compassGroup.visible = renderSettings.showCompass;
     
     sceneRef.current.add(compassGroup);
@@ -450,6 +471,26 @@ export default function Garden3DView({
         plantMesh.position.z = plant.position.y;
       }
       
+      // Apply tilt if on sloped terrain - use gardenData for slope values
+      if (gardenData.slopePercentage && parseFloat(gardenData.slopePercentage) > 0) {
+        const slopePercentage = parseFloat(gardenData.slopePercentage);
+        const slopeDirection = gardenData.slopeDirection || 'S';
+        
+        // Calculate tilt angle based on slope percentage (max 15 degrees tilt)
+        const tiltAngle = Math.min(Math.atan(slopePercentage / 100) * 0.3, 15 * Math.PI / 180);
+        
+        // Convert slope direction to rotation
+        const directionMap: Record<string, number> = {
+          'N': 0, 'NE': 45, 'E': 90, 'SE': 135,
+          'S': 180, 'SW': 225, 'W': 270, 'NW': 315
+        };
+        const slopeAngleRad = (directionMap[slopeDirection] || 180) * Math.PI / 180;
+        
+        // Apply tilt in the direction of the slope
+        plantMesh.rotation.x = Math.sin(slopeAngleRad) * tiltAngle;
+        plantMesh.rotation.z = Math.cos(slopeAngleRad) * tiltAngle;
+      }
+      
       plantMesh.castShadow = true;
       plantMesh.receiveShadow = true;
       plantMesh.userData = { plant };
@@ -458,7 +499,7 @@ export default function Garden3DView({
       console.log(`Added ${plant.plantName} to scene`);
     });
     console.log('Total plants in scene:', plantMeshesRef.current.children.length);
-  }, []);
+  }, [gardenData]);
 
   // Update lighting based on settings
   const updateLighting = useCallback(() => {
@@ -513,9 +554,9 @@ export default function Garden3DView({
     const rotatedZ = sunX * Math.sin(rotationRad) + sunZ * Math.cos(rotationRad);
     sunLight.position.set(rotatedX, sunHeight, rotatedZ);
     
-    // Adjust intensity based on sun elevation
+    // Adjust intensity based on sun elevation - keep it brighter
     const elevationFactor = Math.sin(sunAngle);
-    sunLight.intensity = lighting.sun.intensity * Math.max(0.3, elevationFactor);
+    sunLight.intensity = lighting.sun.intensity * Math.max(0.6, elevationFactor * 1.2); // Higher minimum and multiplier
     
     // Warm colors at dawn/dusk
     if (hour < 8 || hour > 18) {
@@ -551,10 +592,10 @@ export default function Garden3DView({
       sceneRef.current.remove(oldInitialAmbient);
     }
     
-    // Add new ambient light
+    // Add new ambient light - increase intensity for better visibility
     const newAmbientLight = new THREE.AmbientLight(
       lighting.ambient.color,
-      lighting.ambient.intensity
+      Math.min(1.2, lighting.ambient.intensity * 2) // Double the intensity but cap at 1.2
     );
     newAmbientLight.name = 'ambient-light';
     sceneRef.current.add(newAmbientLight);
@@ -663,62 +704,57 @@ export default function Garden3DView({
       const viewerGroup = new THREE.Group();
       viewerGroup.name = 'viewer-marker';
       
-      // Create viewer position indicator (a blue cone pointing towards the garden)
-      const coneGeometry = new THREE.ConeGeometry(0.2, 0.6, 4);
-      const viewerCone = new THREE.Mesh(
-        coneGeometry,
-        new THREE.MeshBasicMaterial({ 
-          color: 0x0066ff, // Bright blue for viewer
-          fog: false
-        })
-      );
-      viewerCone.position.y = 0.5; // Offset cone upward
-      
-      // Create a small sphere at the base to mark the exact position
-      const sphereGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+      // Create viewer position indicator (a bright blue sphere with arrow)
+      const sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
       const viewerSphere = new THREE.Mesh(
         sphereGeometry,
         new THREE.MeshBasicMaterial({ 
-          color: 0x0066ff, // Same bright blue
-          fog: false
+          color: 0x0066ff, // Bright blue for viewer
+          fog: false,
+          depthTest: false,
+          depthWrite: false,
+          transparent: true,
+          opacity: 0.9
         })
       );
       
-      viewerGroup.add(viewerCone);
+      // Create a small arrow pointing forward from the viewer
+      const arrowGeometry = new THREE.ConeGeometry(0.15, 0.4, 8);
+      const viewerArrow = new THREE.Mesh(
+        arrowGeometry,
+        new THREE.MeshBasicMaterial({ 
+          color: 0x0044cc, // Darker blue for arrow
+          fog: false,
+          depthTest: false,
+          depthWrite: false
+        })
+      );
+      viewerArrow.rotation.x = Math.PI / 2; // Point forward
+      viewerArrow.position.z = -0.3; // Position in front of sphere
+      
       viewerGroup.add(viewerSphere);
+      viewerGroup.add(viewerArrow);
       viewerGroup.renderOrder = 999;
-      viewerGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material.depthTest = false;
-        }
-      });
+      
       viewerMarkerRef.current = viewerGroup;
       sceneRef.current.add(viewerGroup);
     }
     
     // Update viewer marker position to match camera
     if (viewerMarkerRef.current) {
-      // Elevate marker above ground for visibility
+      // Place marker at camera position projected on ground
       viewerMarkerRef.current.position.set(
         camera.position.x,
-        Math.max(1.5, camera.position.z), // Y and Z swapped for Three.js, minimum height
-        camera.position.y
+        0.5, // Keep marker at fixed height above ground
+        camera.position.y  // Z in Three.js
       );
       
-      // Point the cone towards the garden center
-      const direction = new THREE.Vector3(
-        camera.target.x - camera.position.x,
-        camera.target.z - camera.position.z,
-        camera.target.y - camera.position.y
-      ).normalize();
-      
-      // Calculate rotation to point cone in the direction
-      const quaternion = new THREE.Quaternion();
-      const up = new THREE.Vector3(0, 1, 0);
-      quaternion.setFromUnitVectors(up, direction);
-      
-      // Apply rotation to the viewer group
-      viewerMarkerRef.current.quaternion.copy(quaternion);
+      // Rotate marker to point towards garden center
+      const lookDirection = Math.atan2(
+        camera.target.y - camera.position.y,
+        camera.target.x - camera.position.x
+      );
+      viewerMarkerRef.current.rotation.y = -lookDirection;
       
       // Set visibility based on settings
       viewerMarkerRef.current.visible = renderSettings.showViewerMarker;
