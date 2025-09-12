@@ -47,7 +47,7 @@ export function PlantDoctorIcon({ className }: IconProps) {
 export function PremiumIcon({ className }: IconProps) {
   return (
     <img
-      src="/generated-icons/garden-fork.png"
+      src="/generated-icons/watering-can.png"
       alt="Premium"
       className={cn("w-6 h-6 object-contain", className)}
     />

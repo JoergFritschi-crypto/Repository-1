@@ -44,10 +44,11 @@ MATERIAL SPECIFICATIONS:
 
 COMPOSITION:
 - Single tool positioned at 3/4 angle for depth
-- TRANSPARENT PNG BACKGROUND (no background color, fully transparent alpha channel)
-- Subtle drop shadow on transparent background for depth
+- PURE WHITE BACKGROUND (solid white #FFFFFF background, no transparency)
+- Clean white background like professional product photography
+- Subtle drop shadow on white background for depth
 - Tool should fill 70% of frame
-- Professional product photography style optimized for transparent overlays
+- Professional product photography style with white studio backdrop
 - Icon-appropriate clarity and contrast
 
 LIGHTING:
