@@ -30,6 +30,7 @@ import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@sh
 import { useAuthWithTesting } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { Lock, Crown, CreditCard } from 'lucide-react';
+import { GardenDesignIcon } from '@/components/ui/brand-icons';
 
 const gardenSchema = z.object({
   name: z.string().min(1, 'Garden name is required'),
@@ -395,7 +396,10 @@ export default function GardenProperties() {
         <div className="mb-6">
           <Card className="border-2 border-primary shadow-sm mb-2">
             <CardHeader className="py-6 flower-band-studio rounded-t-lg">
-              <CardTitle className="text-2xl md:text-3xl">Garden Design Studio</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl flex items-center gap-3">
+                Garden Design Studio
+                <GardenDesignIcon className="w-8 h-8" />
+              </CardTitle>
             </CardHeader>
           </Card>
           <p className="text-sm md:text-base text-gray-600">Create your personalized garden with AI assistance</p>
