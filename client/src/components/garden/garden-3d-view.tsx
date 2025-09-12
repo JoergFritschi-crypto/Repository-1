@@ -852,86 +852,28 @@ export default function Garden3DView({
       const viewerGroup = new THREE.Group();
       viewerGroup.name = 'viewer-marker';
       
-      // Create eye shape (outer ellipse)
-      const eyeOuterShape = new THREE.Shape();
-      const eyeWidth = 0.25;
-      const eyeHeight = 0.15;
-      eyeOuterShape.ellipse(0, 0, eyeWidth, eyeHeight, 0, Math.PI * 2, false, 0);
-      
-      const eyeOuterGeometry = new THREE.ShapeGeometry(eyeOuterShape);
-      const eyeOuter = new THREE.Mesh(
-        eyeOuterGeometry,
-        new THREE.MeshBasicMaterial({ 
-          color: 0x0066ff, // Bright blue for eye outline
-          fog: false,
-          depthTest: false,
-          depthWrite: false,
-          transparent: true,
-          opacity: 0.9,
-          side: THREE.DoubleSide
-        })
-      );
-      eyeOuter.rotation.x = -Math.PI / 2; // Lay flat on ground
-      eyeOuter.position.y = 0; // At group level
-      
-      // Create pupil (inner circle)
-      const pupilGeometry = new THREE.CircleGeometry(0.08, 16);
-      const pupil = new THREE.Mesh(
-        pupilGeometry,
-        new THREE.MeshBasicMaterial({ 
-          color: 0x001133, // Dark blue/black for pupil
-          fog: false,
-          depthTest: false,
-          depthWrite: false,
-          side: THREE.DoubleSide
-        })
-      );
-      pupil.rotation.x = -Math.PI / 2; // Lay flat on ground
-      pupil.position.y = 0.001; // Just above the eye
-      
-      // Create iris (middle circle)
-      const irisGeometry = new THREE.RingGeometry(0.05, 0.08, 16);
-      const iris = new THREE.Mesh(
-        irisGeometry,
-        new THREE.MeshBasicMaterial({ 
-          color: 0x0099ff, // Medium blue for iris
-          fog: false,
-          depthTest: false,
-          depthWrite: false,
-          transparent: true,
-          opacity: 0.8,
-          side: THREE.DoubleSide
-        })
-      );
-      iris.rotation.x = -Math.PI / 2; // Lay flat on ground
-      iris.position.y = 0.0005; // Between eye and pupil
-      
-      // Create view direction indicator (small triangle pointing forward)
+      // Create directional arrow indicator (clean and simple)
       const arrowShape = new THREE.Shape();
-      arrowShape.moveTo(0.08, 0);    // Front tip (toward positive X, which becomes forward when rotated)
-      arrowShape.lineTo(-0.08, -0.05); // Back left
-      arrowShape.lineTo(-0.08, 0.05);  // Back right
+      arrowShape.moveTo(0.2, 0);      // Front tip (larger arrow)
+      arrowShape.lineTo(-0.1, -0.1);   // Back left
+      arrowShape.lineTo(-0.05, 0);     // Back center notch
+      arrowShape.lineTo(-0.1, 0.1);    // Back right
       arrowShape.closePath();
       
       const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
       const viewerArrow = new THREE.Mesh(
         arrowGeometry,
         new THREE.MeshBasicMaterial({ 
-          color: 0x0044cc, // Darker blue for arrow
+          color: 0x0066ff, // Bright blue for visibility
           fog: false,
           depthTest: false,
           depthWrite: false,
-          transparent: true,
-          opacity: 0.7
+          side: THREE.DoubleSide
         })
       );
       viewerArrow.rotation.x = -Math.PI / 2; // Lay flat on ground
       viewerArrow.position.y = 0; // At group level
-      viewerArrow.position.z = -0.15;
       
-      viewerGroup.add(eyeOuter);
-      viewerGroup.add(iris);
-      viewerGroup.add(pupil);
       viewerGroup.add(viewerArrow);
       viewerGroup.renderOrder = 999;
       
