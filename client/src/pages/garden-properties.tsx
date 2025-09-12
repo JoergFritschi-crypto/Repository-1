@@ -34,6 +34,7 @@ import PhotoUpload from '@/components/garden/photo-upload';
 import StyleSelector from '@/components/garden/style-selector';
 import SafetyPreferences from '@/components/garden/safety-preferences';
 import Navigation from '@/components/layout/navigation';
+import VisualizationGenerationModal from '@/components/garden/visualization-generation-modal';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
 import { useAuthWithTesting } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -217,6 +218,7 @@ export default function GardenProperties() {
   const [recommendedStyleIds, setRecommendedStyleIds] = useState<string[]>([]);
   const [completeDesign, setCompleteDesign] = useState<any>(null);
   const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
+  const [showVisualizationModal, setShowVisualizationModal] = useState(false);
   const [selectedGardenStyle, setSelectedGardenStyle] = useState<string | null>(null);
   const [localDesignApproach, setLocalDesignApproach] = useState<"ai" | "manual" | undefined>(undefined);
   const [, setLocation] = useLocation();
@@ -270,6 +272,7 @@ export default function GardenProperties() {
   const watchedRhsZone = form.watch("rhsZone");
   const watchedName = form.watch("name");
   const watchedSunExposure = form.watch("sunExposure");
+  const watchedSoilType = form.watch("soilType");
   const watchedSelectedStyle = form.watch("selectedStyle");
   const watchedToxicityLevel = form.watch("preferences.toxicityLevel");
   const watchedPlantAvailability = form.watch("preferences.plantAvailability");
@@ -280,6 +283,13 @@ export default function GardenProperties() {
   }, [currentStep]);
 
   const nextStep = async () => {
+    // Show visualization modal when moving from step 4 to step 5
+    if (currentStep === 4) {
+      // Open the visualization generation modal instead of proceeding directly
+      setShowVisualizationModal(true);
+      return;
+    }
+    
     // Skip validation for admin users
     const isAdmin = user?.isAdmin === true;
     
@@ -2607,6 +2617,28 @@ export default function GardenProperties() {
           onClose={() => setShowPlantSearch(false)}
           onSelectPlant={handleAddPlantToInventory}
           userTier={user?.userTier || 'free'}
+        />
+        
+        {/* Visualization Generation Modal */}
+        <VisualizationGenerationModal
+          isOpen={showVisualizationModal}
+          onClose={() => setShowVisualizationModal(false)}
+          onComplete={() => {
+            setShowVisualizationModal(false);
+            setCurrentStep(5);
+          }}
+          gardenData={{
+            gardenId: gardenId || undefined,
+            gardenName: watchedName || 'My Garden',
+            shape: watchedShape,
+            dimensions: watchedDimensions,
+            units: watchedUnits,
+            style: watchedSelectedStyle || completeDesign?.styleName,
+            sunExposure: watchedSunExposure,
+            soilType: watchedSoilType || undefined,
+            season: 'summer'
+          }}
+          placedPlants={placedPlants}
         />
       </div>
     </div>

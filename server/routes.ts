@@ -224,6 +224,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Generate 3D garden visualization using Runware
+  app.post('/api/gardens/generate-visualization', isAuthenticated, async (req: any, res) => {
+    try {
+      const {
+        gardenDescription,
+        plantList,
+        plantNames,
+        style,
+        season,
+        sunExposure,
+        gardenId
+      } = req.body;
+
+      if (!plantNames || !gardenDescription) {
+        return res.status(400).json({ 
+          message: "Garden description and plant names are required" 
+        });
+      }
+
+      if (!runwareAPI) {
+        // Use alternative method if Runware is not configured
+        if (runwareImageGenerator) {
+          try {
+            // Generate detailed prompt for garden visualization
+            const visualizationPrompt = `photorealistic ${style || 'cottage'} garden, ${season || 'summer'} season, ${gardenDescription}, featuring ${plantNames}, natural lighting, professional garden photography, high detail, beautiful landscaping, ${sunExposure === 'full_sun' ? 'bright sunny day' : sunExposure === 'partial_shade' ? 'dappled sunlight through trees' : 'soft diffused light'}, well-maintained garden beds, realistic plant placement and growth`;
+
+            const imageUrl = await runwareImageGenerator.generateImage({
+              prompt: visualizationPrompt,
+              plantName: `${style || 'cottage'}-garden-visualization`,
+              imageType: 'full',
+              approach: 'garden',
+              modelChoice: 'schnell'
+            });
+
+            return res.json({ 
+              imageUrl,
+              message: "Garden visualization generated successfully"
+            });
+          } catch (error) {
+            console.error("Error with runwareImageGenerator:", error);
+            return res.status(500).json({ 
+              message: "Failed to generate visualization", 
+              error: (error as Error).message 
+            });
+          }
+        }
+        
+        return res.status(503).json({ 
+          message: "Image generation service not configured" 
+        });
+      }
+
+      console.log('🌿 Generating garden visualization');
+
+      // Generate visualization using Runware API
+      const prompt = `beautiful photorealistic ${style || 'cottage'} garden, ${season || 'summer'} season, ${gardenDescription}, featuring ${plantNames}, natural outdoor lighting, professional landscape photography, high detail, lush vegetation, ${sunExposure === 'full_sun' ? 'bright sunny day' : sunExposure === 'partial_shade' ? 'soft filtered sunlight' : 'overcast day light'}, well-designed garden layout`;
+
+      const response = await runwareAPI.generateImage({
+        positivePrompt: prompt,
+        negativePrompt: "cartoon, illustration, drawing, anime, low quality, blurry, artificial, indoor, white background",
+        model: "civitai:4201@130072", // Realistic Vision model
+        height: 1024,
+        width: 1024,
+        numberResults: 1,
+        outputType: "URL",
+        outputFormat: "PNG",
+        steps: 25,
+        CFGScale: 7.5
+      });
+
+      if (response && response.imageUrl) {
+        // Optionally save to file vault
+        if (gardenId) {
+          await fileVaultService.saveGardenImage(gardenId, response.imageUrl, 'visualization');
+        }
+
+        res.json({ 
+          imageUrl: response.imageUrl,
+          message: "Garden visualization generated successfully"
+        });
+      } else {
+        throw new Error("No image URL returned from Runware API");
+      }
+    } catch (error) {
+      console.error("Error generating garden visualization:", error);
+      res.status(500).json({ 
+        message: "Failed to generate garden visualization", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
   // Design generation tracking routes
   app.get('/api/design-generations', isAuthenticated, async (req: any, res) => {
     try {
