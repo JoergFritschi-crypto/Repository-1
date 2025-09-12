@@ -98,7 +98,7 @@ export default function Navigation() {
                     {item.label === "Premium" ? (
                       <div className="bg-white rounded-sm p-0.5">
                         <Icon className={cn(
-                          "w-3.5 h-3.5 transition-transform duration-200",
+                          "w-4 h-4 transition-transform duration-200",
                           !isActive && "group-hover:scale-110"
                         )} />
                       </div>
