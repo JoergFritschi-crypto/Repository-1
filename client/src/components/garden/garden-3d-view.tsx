@@ -872,7 +872,7 @@ export default function Garden3DView({
         })
       );
       eyeOuter.rotation.x = -Math.PI / 2; // Lay flat on ground
-      eyeOuter.position.y = 0.01; // Very close to ground
+      eyeOuter.position.y = 0; // At group level
       
       // Create pupil (inner circle)
       const pupilGeometry = new THREE.CircleGeometry(0.08, 16);
@@ -887,7 +887,7 @@ export default function Garden3DView({
         })
       );
       pupil.rotation.x = -Math.PI / 2; // Lay flat on ground
-      pupil.position.y = 0.011; // Just above the eye
+      pupil.position.y = 0.001; // Just above the eye
       
       // Create iris (middle circle)
       const irisGeometry = new THREE.RingGeometry(0.05, 0.08, 16);
@@ -904,7 +904,7 @@ export default function Garden3DView({
         })
       );
       iris.rotation.x = -Math.PI / 2; // Lay flat on ground
-      iris.position.y = 0.0105; // Between eye and pupil
+      iris.position.y = 0.0005; // Between eye and pupil
       
       // Create view direction indicator (small triangle)
       const arrowShape = new THREE.Shape();
@@ -926,7 +926,7 @@ export default function Garden3DView({
         })
       );
       viewerArrow.rotation.x = -Math.PI / 2; // Lay flat on ground
-      viewerArrow.position.y = 0.01; // Just above ground
+      viewerArrow.position.y = 0; // At group level
       viewerArrow.position.z = -0.15;
       
       viewerGroup.add(eyeOuter);
