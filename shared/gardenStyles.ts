@@ -247,7 +247,17 @@ export const GARDEN_STYLES = {
 } as const;
 
 export type GardenStyleId = keyof typeof GARDEN_STYLES;
-export type GardenStyle = typeof GARDEN_STYLES[GardenStyleId];
+
+// Utility type to make arrays mutable while keeping other properties unchanged
+type Mutable<T> = {
+  [K in keyof T]: T[K] extends readonly (infer U)[] ? U[] : T[K];
+};
+
+// The original readonly type
+export type GardenStyleReadonly = typeof GARDEN_STYLES[GardenStyleId];
+
+// The mutable version for components that need to modify arrays
+export type GardenStyle = Mutable<GardenStyleReadonly>;
 
 export const CORE_GARDEN_STYLES = [
   'ROMANTIC_COUNTRY',

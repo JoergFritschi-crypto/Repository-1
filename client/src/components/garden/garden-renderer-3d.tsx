@@ -3,8 +3,15 @@ import * as THREE from 'three';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Download, RotateCcw, Settings, Camera, Sun, Eye, Sparkles, ImageIcon, Loader2, Flower2, TreePine, Leaf, Snowflake, Calendar, AlertCircle, PlayCircle } from 'lucide-react';
+import { Download, RotateCcw, Settings, Camera, Sun, Eye, Sparkles, ImageIcon, Loader2, Flower2, TreePine, Leaf, Snowflake, Calendar, AlertCircle, PlayCircle, Info, ArrowLeft, Lightbulb, ChevronRight, MousePointer } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -1535,13 +1542,43 @@ export default function GardenRenderer3D({
 
   return (
     <div className="space-y-6" data-testid="garden-renderer-3d">
+      {/* Workflow Guidance Alert */}
+      <Alert className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-canary/5">
+        <AlertCircle className="h-4 w-4 text-primary" />
+        <AlertTitle className="text-primary">Generate 3D Visualization</AlertTitle>
+        <AlertDescription className="text-sm text-muted-foreground mt-2">
+          <div className="space-y-2">
+            <p className="flex items-center gap-2">
+              <Eye className="w-4 h-4 text-primary" />
+              Generate a 3D view of your garden design. You can refine and iterate at each step.
+            </p>
+            <p className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-gold" />
+              {isSceneReady ? "Preview your garden in 3D. Not satisfied? Return to Canvas tab to adjust." : "Click 'Generate 3D Visualization' to see your garden come to life!"}
+            </p>
+          </div>
+        </AlertDescription>
+      </Alert>
+
       {/* Controls Panel */}
       <Card className="border-2 border-primary shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-canary/5 border-b-2 border-gold/30">
-          <CardTitle className="flex items-center gap-2 text-primary">
-            <Eye className="h-5 w-5" />
-            3D Garden Visualization
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Eye className="h-5 w-5" />
+              3D Garden Visualization
+            </CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-gold cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="text-sm">Convert your 2D design to a realistic 3D garden view with photorealistic rendering options</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -1650,19 +1687,28 @@ export default function GardenRenderer3D({
                   Export 4K
                 </Button>
                 
-                <div className="flex items-center space-x-2 ml-4 px-4 py-2 border rounded-lg">
-                  <Switch
-                    id="photorealize"
-                    checked={photorealizeEnabled}
-                    onCheckedChange={setPhotorealizeEnabled}
-                    disabled={isPhotorealizing}
-                    data-testid="switch-photorealize"
-                  />
-                  <Label htmlFor="photorealize" className="flex items-center gap-2 cursor-pointer">
-                    <Sparkles className="h-4 w-4" />
-                    AI Photorealization
-                  </Label>
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center space-x-2 ml-4 px-4 py-2 border rounded-lg">
+                        <Switch
+                          id="photorealize"
+                          checked={photorealizeEnabled}
+                          onCheckedChange={setPhotorealizeEnabled}
+                          disabled={isPhotorealizing}
+                          data-testid="switch-photorealize"
+                        />
+                        <Label htmlFor="photorealize" className="flex items-center gap-2 cursor-pointer">
+                          <Sparkles className="h-4 w-4" />
+                          AI Photorealization
+                        </Label>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enhance the 3D render with photorealistic textures</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 
                 {photorealizedImage && (
                   <Button 
@@ -1704,6 +1750,22 @@ export default function GardenRenderer3D({
                     </h3>
                     <p className="text-muted-foreground">
                       Click "Generate 3D Visualization" to see your garden in 3D
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {isGenerating && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                <div className="text-center space-y-4">
+                  <Loader2 className="h-16 w-16 text-primary mx-auto animate-spin" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-primary">
+                      Preparing 3D view...
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Creating your garden visualization
                     </p>
                   </div>
                 </div>
@@ -1858,10 +1920,22 @@ export default function GardenRenderer3D({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5" />
-              Review Intermediate Image (Runware)
+              Review Intermediate Image
               <Badge variant="secondary">Step 1 of 2</Badge>
             </DialogTitle>
           </DialogHeader>
+          
+          <Alert className="border-primary/30 bg-primary/5 mb-4">
+            <Lightbulb className="h-4 w-4 text-gold" />
+            <AlertDescription className="text-sm">
+              <p className="mb-2 font-medium">This is a preliminary photorealistic render. You can:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Proceed to seasonal generation for time-based variations</li>
+                <li>Refine and regenerate for a different look</li>
+                <li>Return to canvas to adjust your design</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
           
           <div className="space-y-4">
             <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
@@ -1931,15 +2005,28 @@ export default function GardenRenderer3D({
             
             <div className="flex gap-2">
               <Button 
-                variant="outline"
+                variant="ghost"
                 onClick={() => {
                   setShowIntermediateReviewDialog(false);
                   setRunwareIntermediateImage(null);
                   setCurrentProcessingStep('idle');
                 }}
               >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Canvas for Adjustments
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setShowIntermediateReviewDialog(false);
+                  setRunwareIntermediateImage(null);
+                  setCurrentProcessingStep('idle');
+                  handlePhotorealize();
+                }}
+              >
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Start Over
+                Regenerate Different Variation
               </Button>
               
               <Button 
@@ -1947,8 +2034,8 @@ export default function GardenRenderer3D({
                 onClick={processWithGemini}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Continue to Gemini Enhancement
+                <ChevronRight className="h-4 w-4 mr-2" />
+                Proceed to Seasonal Generation
               </Button>
             </div>
           </div>
@@ -1964,6 +2051,16 @@ export default function GardenRenderer3D({
               Seasonal Garden Variations
             </DialogTitle>
           </DialogHeader>
+          
+          <Alert className="border-primary/30 bg-primary/5">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-sm">
+              <p className="mb-2">Select the time range for your seasonal garden views. Gemini will create botanically accurate variations for each period.</p>
+              <p className="text-xs text-muted-foreground">
+                <strong className="text-primary">Half-month periods</strong> allow precise seasonal progression (e.g., 'First half of March' shows early spring growth).
+              </p>
+            </AlertDescription>
+          </Alert>
           
           <div className="space-y-4">
             {isGeneratingSeasons && Object.keys(seasonalImages).length === 0 ? (

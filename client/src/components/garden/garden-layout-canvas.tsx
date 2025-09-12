@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Info, Image, Sun, Cloud, Snowflake, Flower2, Trash2, Save, FolderOpen, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Search, Info, Image, Sun, Cloud, Snowflake, Flower2, Trash2, Save, FolderOpen, Loader2, AlertCircle, ArrowRight, Lightbulb, MousePointer } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -732,6 +733,37 @@ export default function GardenLayoutCanvas({
       <div className="w-full flex gap-3">
       {/* Left side: Canvas area with info bars */}
       <div className="flex flex-col gap-3">
+        {/* Workflow Guidance Alert */}
+        <Alert className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-canary/5" style={{ width: `${canvasSize.width}px` }}>
+          <AlertCircle className="h-4 w-4 text-primary" />
+          <AlertTitle className="text-primary">Design Your Garden Layout</AlertTitle>
+          <AlertDescription className="text-sm text-muted-foreground mt-2">
+            {aiDesign ? (
+              <div className="space-y-2">
+                <p className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-gold" />
+                  This garden was AI-designed. Feel free to adjust plant positions or add/remove plants to personalize it.
+                </p>
+                <p className="flex items-center gap-2">
+                  <MousePointer className="w-4 h-4 text-primary" />
+                  Drag plants from the inventory on the right to reposition them. Drag back to remove.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="flex items-center gap-2">
+                  <MousePointer className="w-4 h-4 text-primary" />
+                  Design your garden by dragging plants from the inventory. You can manually adjust AI-generated designs or create from scratch.
+                </p>
+                <p className="flex items-center gap-2">
+                  <ArrowRight className="w-4 h-4 text-gold" />
+                  Once satisfied, switch to the <strong>3D Visualization</strong> tab to see your garden come to life!
+                </p>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+
         {/* Advanced Search Module at Top */}
         <Card className="shadow-md border-2 border-primary/30 hover:border-gold transition-all duration-200" style={{ width: `${canvasSize.width}px` }}>
           <CardHeader className="py-3 px-4 bg-gradient-to-r from-primary/5 to-canary/5 border-b border-gold/30">
@@ -776,44 +808,61 @@ export default function GardenLayoutCanvas({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-dark-spring-green text-white border-2 border-gold/50 hover:border-canary transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleSaveDesign}
-              disabled={isSaving || !gardenId || placedPlants.length === 0}
-              data-testid="button-save-design"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-1" />
-                  Save Design
-                </>
-              )}
-            </Button>
-            <Button
-              size="sm"
-              className="border-2 border-primary text-primary hover:bg-canary hover:text-primary hover:border-gold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
-              onClick={fetchAvailableGardens}
-              disabled={isLoading}
-              data-testid="button-load-design"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <FolderOpen className="w-4 h-4 mr-1" />
-                  Load Design
-                </>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="bg-primary hover:bg-dark-spring-green text-white border-2 border-gold/50 hover:border-canary transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleSaveDesign}
+                    disabled={isSaving || !gardenId || placedPlants.length === 0}
+                    data-testid="button-save-design"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-1" />
+                        Save Design
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Save your current layout to revisit later</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="border-2 border-primary text-primary hover:bg-canary hover:text-primary hover:border-gold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                    onClick={fetchAvailableGardens}
+                    disabled={isLoading}
+                    data-testid="button-load-design"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <FolderOpen className="w-4 h-4 mr-1" />
+                        Load Design
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Load a previously saved garden design</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div className="text-xs text-primary/70 ml-2 flex items-center">
               <Info className="w-3 h-3 mr-1 text-gold" />
               Drag plants to/from canvas
@@ -1083,9 +1132,21 @@ export default function GardenLayoutCanvas({
       {/* Right side: Plant Inventory - Full Height */}
       <Card className="shadow-md h-fit sticky top-4 border-2 border-primary hover:border-gold transition-all duration-200">
         <CardHeader className="py-3 px-4 bg-gradient-to-r from-primary/5 to-canary/5 border-b border-gold/30">
-          <CardTitle className="text-sm font-medium text-primary">
-            Plants Inventory ({unplacedPlants.length} unplaced)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-medium text-primary">
+              Plants Inventory ({unplacedPlants.length} unplaced)
+            </CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-gold cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="text-sm"><strong>Tip:</strong> Plants placed here can be freely moved or removed. Drag to canvas to place, drag back to remove.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           {/* Quick Test Plants Button for Test Gardens */}
           {gardenName?.includes("Test Garden") && (
             <Button

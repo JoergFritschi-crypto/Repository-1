@@ -12,11 +12,18 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye, Info, ChevronRight, MousePointer } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import GardenRenderer3D from '@/components/garden/garden-renderer-3d';
@@ -2330,16 +2337,76 @@ export default function GardenProperties() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
+                    {/* Workflow Breadcrumb Indicator */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-primary/5 to-canary/5 rounded-lg border-2 border-primary/30">
+                      <div className="flex items-center justify-center space-x-2 text-sm">
+                        <div className="flex items-center">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-white font-medium">
+                            <PenTool className="h-3 w-3" />
+                            Canvas Design
+                          </div>
+                          <ChevronRight className="h-4 w-4 mx-2 text-primary" />
+                        </div>
+                        <div className="flex items-center">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/30 text-primary">
+                            <Eye className="h-3 w-3" />
+                            3D Preview
+                          </div>
+                          <ChevronRight className="h-4 w-4 mx-2 text-primary/50" />
+                        </div>
+                        <div className="flex items-center">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/20 text-muted-foreground">
+                            <Sparkles className="h-3 w-3" />
+                            Photorealization
+                          </div>
+                          <ChevronRight className="h-4 w-4 mx-2 text-primary/30" />
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/20 text-muted-foreground">
+                          <Flower2 className="h-3 w-3" />
+                          Seasonal
+                        </div>
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground mt-2">
+                        You can return to any previous step to refine your design
+                      </p>
+                    </div>
+                    
                     <Tabs defaultValue="2d-canvas" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="2d-canvas" className="flex items-center gap-2" data-testid="tab-2d-canvas">
-                          <PenTool className="h-4 w-4" />
-                          2D Canvas Design
-                        </TabsTrigger>
-                        <TabsTrigger value="3d-visualization" className="flex items-center gap-2" data-testid="tab-3d-visualization">
-                          <Eye className="h-4 w-4" />
-                          3D Visualization
-                        </TabsTrigger>
+                      <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-primary/10 to-canary/10 p-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <TabsTrigger 
+                                value="2d-canvas" 
+                                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300 data-[state=active]:shadow-lg" 
+                                data-testid="tab-2d-canvas"
+                              >
+                                <PenTool className="h-4 w-4" />
+                                2D Canvas Design
+                              </TabsTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Design your garden layout by placing plants</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <TabsTrigger 
+                                value="3d-visualization" 
+                                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300 data-[state=active]:shadow-lg" 
+                                data-testid="tab-3d-visualization"
+                              >
+                                <Eye className="h-4 w-4" />
+                                3D Visualization
+                                <Info className="h-3 w-3 ml-1 opacity-70" />
+                              </TabsTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Convert your 2D design to a realistic 3D garden view</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </TabsList>
                       
                       <TabsContent value="2d-canvas" className="space-y-4 mt-4">
