@@ -95,10 +95,19 @@ export default function Navigation() {
                     aria-label={item.label}
                     aria-current={isActive ? "page" : undefined}
                   >
-                    <Icon className={cn(
-                      "w-3.5 h-3.5 transition-transform duration-200",
-                      !isActive && "group-hover:scale-110"
-                    )} />
+                    {item.label === "Premium" ? (
+                      <div className="bg-white rounded-sm p-0.5">
+                        <Icon className={cn(
+                          "w-3.5 h-3.5 transition-transform duration-200",
+                          !isActive && "group-hover:scale-110"
+                        )} />
+                      </div>
+                    ) : (
+                      <Icon className={cn(
+                        "w-3.5 h-3.5 transition-transform duration-200",
+                        !isActive && "group-hover:scale-110"
+                      )} />
+                    )}
                     <span>{item.label}</span>
                     {isActive && (
                       <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-[#FFD700] rounded-full" />
@@ -184,7 +193,13 @@ export default function Navigation() {
                     role="menuitem"
                   >
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
+                      {item.label === "Premium" ? (
+                        <div className="bg-white rounded-sm p-0.5">
+                          <Icon className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        <Icon className="w-4 h-4" />
+                      )}
                       <span>{item.label}</span>
                     </div>
                     <ChevronRight className={cn(
