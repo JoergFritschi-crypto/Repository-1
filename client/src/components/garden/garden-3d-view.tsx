@@ -432,51 +432,85 @@ export default function Garden3DView({
     const compassGroup = new THREE.Group();
     compassGroup.name = 'compass';
     
-    // Create a smaller north arrow indicator at ground level
-    const arrowLength = 0.3; // Much smaller
-    const arrowBodyGeometry = new THREE.CylinderGeometry(0.02, 0.02, arrowLength, 8);
-    const arrowBody = new THREE.Mesh(
-      arrowBodyGeometry,
-      new THREE.MeshBasicMaterial({ 
-        color: 0xff0000, // Red color for north
-        fog: false
-      })
-    );
-    arrowBody.rotation.z = Math.PI / 2; // Rotate to horizontal
+    // Create a classic compass arrow shape
+    const arrowShape = new THREE.Shape();
+    const arrowLength = 0.4;
+    const arrowWidth = 0.08;
     
-    // Create arrow head
-    const arrowHeadGeometry = new THREE.ConeGeometry(0.06, 0.12, 8);
-    const arrowHead = new THREE.Mesh(
-      arrowHeadGeometry,
-      new THREE.MeshBasicMaterial({ 
-        color: 0xff0000, // Red color
-        fog: false
-      })
-    );
-    arrowHead.rotation.z = -Math.PI / 2; // Point north
-    arrowHead.position.x = arrowLength / 2 + 0.04;
+    // Create diamond/rhombus shaped arrow
+    arrowShape.moveTo(arrowLength / 2, 0); // Tip
+    arrowShape.lineTo(0, arrowWidth); // Left middle
+    arrowShape.lineTo(-arrowLength / 4, 0); // Back point
+    arrowShape.lineTo(0, -arrowWidth); // Right middle
+    arrowShape.closePath();
     
-    // Create N label (using a flat disk)
-    const labelGeometry = new THREE.RingGeometry(0.06, 0.1, 16);
-    const labelMesh = new THREE.Mesh(
-      labelGeometry,
+    const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
+    const arrowMesh = new THREE.Mesh(
+      arrowGeometry,
       new THREE.MeshBasicMaterial({ 
-        color: 0xff0000,
+        color: 0xcc0000, // Deep red for north arrow
         fog: false,
         side: THREE.DoubleSide
       })
     );
-    labelMesh.position.x = arrowLength / 2 + 0.2;
-    labelMesh.rotation.x = -Math.PI / 2; // Face up
+    arrowMesh.rotation.x = -Math.PI / 2; // Lay flat on ground
+    arrowMesh.position.y = 0.02;
+    
+    // Create "N" letter using canvas texture for better visibility
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d')!;
+    
+    // Clear canvas with transparent background
+    ctx.clearRect(0, 0, 128, 128);
+    
+    // Draw white circle background
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(64, 64, 50, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw red "N" letter
+    ctx.fillStyle = '#cc0000';
+    ctx.font = 'bold 80px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('N', 64, 64);
+    
+    const nTexture = new THREE.CanvasTexture(canvas);
+    const nSprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({ 
+        map: nTexture,
+        fog: false
+      })
+    );
+    nSprite.scale.set(0.2, 0.2, 1);
+    nSprite.position.set(arrowLength / 2 + 0.15, 0.1, 0);
+    
+    // Add small compass ring around the arrow
+    const ringGeometry = new THREE.RingGeometry(0.3, 0.32, 32);
+    const ringMesh = new THREE.Mesh(
+      ringGeometry,
+      new THREE.MeshBasicMaterial({ 
+        color: 0x666666, // Gray ring
+        fog: false,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.5
+      })
+    );
+    ringMesh.rotation.x = -Math.PI / 2; // Lay flat
+    ringMesh.position.y = 0.01;
     
     // Position compass at ground level in corner of garden
     const compassDistance = Math.max(width, depth) / 2 + 0.8;
     compassGroup.position.set(compassDistance * 0.7, 0.05, -compassDistance * 0.7); // Just above ground
     
     // Add all parts to compass group
-    compassGroup.add(arrowBody);
-    compassGroup.add(arrowHead);
-    compassGroup.add(labelMesh);
+    compassGroup.add(ringMesh);
+    compassGroup.add(arrowMesh);
+    compassGroup.add(nSprite);
     
     // Rotate compass based on north orientation
     compassGroup.rotation.y = -cardinalRotation * Math.PI / 180;
@@ -815,12 +849,17 @@ export default function Garden3DView({
       const viewerGroup = new THREE.Group();
       viewerGroup.name = 'viewer-marker';
       
-      // Create viewer position indicator (a flat circle on the ground)
-      const circleGeometry = new THREE.RingGeometry(0.2, 0.35, 32);
-      const viewerCircle = new THREE.Mesh(
-        circleGeometry,
+      // Create eye shape (outer ellipse)
+      const eyeOuterShape = new THREE.Shape();
+      const eyeWidth = 0.25;
+      const eyeHeight = 0.15;
+      eyeOuterShape.ellipse(0, 0, eyeWidth, eyeHeight, 0, Math.PI * 2, false, 0);
+      
+      const eyeOuterGeometry = new THREE.ShapeGeometry(eyeOuterShape);
+      const eyeOuter = new THREE.Mesh(
+        eyeOuterGeometry,
         new THREE.MeshBasicMaterial({ 
-          color: 0x0066ff, // Bright blue for viewer
+          color: 0x0066ff, // Bright blue for eye outline
           fog: false,
           depthTest: false,
           depthWrite: false,
@@ -829,13 +868,46 @@ export default function Garden3DView({
           side: THREE.DoubleSide
         })
       );
-      viewerCircle.rotation.x = -Math.PI / 2; // Lay flat on ground
+      eyeOuter.rotation.x = -Math.PI / 2; // Lay flat on ground
+      eyeOuter.position.y = 0.01; // Very close to ground
       
-      // Create view direction arrow (flat triangle on ground)
+      // Create pupil (inner circle)
+      const pupilGeometry = new THREE.CircleGeometry(0.08, 16);
+      const pupil = new THREE.Mesh(
+        pupilGeometry,
+        new THREE.MeshBasicMaterial({ 
+          color: 0x001133, // Dark blue/black for pupil
+          fog: false,
+          depthTest: false,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        })
+      );
+      pupil.rotation.x = -Math.PI / 2; // Lay flat on ground
+      pupil.position.y = 0.011; // Just above the eye
+      
+      // Create iris (middle circle)
+      const irisGeometry = new THREE.RingGeometry(0.05, 0.08, 16);
+      const iris = new THREE.Mesh(
+        irisGeometry,
+        new THREE.MeshBasicMaterial({ 
+          color: 0x0099ff, // Medium blue for iris
+          fog: false,
+          depthTest: false,
+          depthWrite: false,
+          transparent: true,
+          opacity: 0.8,
+          side: THREE.DoubleSide
+        })
+      );
+      iris.rotation.x = -Math.PI / 2; // Lay flat on ground
+      iris.position.y = 0.0105; // Between eye and pupil
+      
+      // Create view direction indicator (small triangle)
       const arrowShape = new THREE.Shape();
-      arrowShape.moveTo(0, 0.15);
-      arrowShape.lineTo(-0.1, -0.15);
-      arrowShape.lineTo(0.1, -0.15);
+      arrowShape.moveTo(0, 0.08);
+      arrowShape.lineTo(-0.05, -0.08);
+      arrowShape.lineTo(0.05, -0.08);
       arrowShape.closePath();
       
       const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
@@ -845,14 +917,18 @@ export default function Garden3DView({
           color: 0x0044cc, // Darker blue for arrow
           fog: false,
           depthTest: false,
-          depthWrite: false
+          depthWrite: false,
+          transparent: true,
+          opacity: 0.7
         })
       );
       viewerArrow.rotation.x = -Math.PI / 2; // Lay flat on ground
       viewerArrow.position.y = 0.01; // Just above ground
-      viewerArrow.position.z = -0.2;
+      viewerArrow.position.z = -0.15;
       
-      viewerGroup.add(viewerCircle);
+      viewerGroup.add(eyeOuter);
+      viewerGroup.add(iris);
+      viewerGroup.add(pupil);
       viewerGroup.add(viewerArrow);
       viewerGroup.renderOrder = 999;
       
