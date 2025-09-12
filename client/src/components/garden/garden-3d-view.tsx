@@ -948,7 +948,7 @@ export default function Garden3DView({
         const fixedX = gardenBoundsRef.current.center.x + Math.cos(fixedAngle) * fixedDistance;
         const fixedZ = gardenBoundsRef.current.center.y + Math.sin(fixedAngle) * fixedDistance;
         
-        viewerMarkerRef.current.position.set(fixedX, 0.005, fixedZ); // Right on the grid
+        viewerMarkerRef.current.position.set(fixedX, 0.01, fixedZ); // Exactly on grid level
         
         // Point towards garden center
         const lookDirection = Math.atan2(
