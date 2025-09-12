@@ -24,8 +24,19 @@ import {
   Settings, 
   Leaf,
   Eye,
-  FolderOpen
+  FolderOpen,
+  ArrowLeft,
+  Home
 } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Link } from "wouter";
 
 export default function GardenDesign() {
   const { id } = useParams<{ id: string }>();
@@ -168,6 +179,35 @@ export default function GardenDesign() {
       <Navigation />
       
       <div className="container mx-auto px-4 py-6">
+        {/* Breadcrumb Navigation */}
+        <div className="mb-4">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/home" className="flex items-center gap-1 text-[#004025] hover:text-[#004025]/80">
+                    <Home className="w-3.5 h-3.5" />
+                    <span>Home</span>
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/garden-properties" className="text-[#004025] hover:text-[#004025]/80">
+                    Gardens
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-[#004025] font-semibold">
+                  {garden?.name || "Garden Design"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         {/* Admin Testing Controls */}
         {isAdmin && (
           <div className="bg-primary/10 dark:bg-primary/20 border border-primary/30 dark:border-primary/40 rounded-lg p-4 mb-4">

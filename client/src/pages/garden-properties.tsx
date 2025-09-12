@@ -23,7 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye, Info, ChevronRight, MousePointer } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye, Info, ChevronRight, MousePointer, Check } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import GardenRenderer3D from '@/components/garden/garden-renderer-3d';
@@ -490,23 +490,29 @@ export default function GardenProperties() {
                 className={`flex-1 text-center ${index < stepDetails.length - 1 ? 'relative' : ''}`}
               >
                 <div 
-                  className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-colors relative z-10 ${
+                  className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-all duration-300 transform relative z-10 ${
                     currentStep > index + 1 
-                      ? 'bg-primary text-white' 
+                      ? 'bg-[#004025] text-white scale-100' 
                       : currentStep === index + 1 
-                      ? 'bg-primary text-white ring-4 ring-primary/20' 
-                      : 'bg-gray-200 text-gray-600'
+                      ? 'bg-[#004025] text-white ring-4 ring-[#FFD700] shadow-lg scale-110' 
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                   data-testid={`step-indicator-${index + 1}`}
                 >
-                  {currentStep > index + 1 ? '✓' : index + 1}
+                  {currentStep > index + 1 ? (
+                    <Check className="w-4 h-4 md:w-5 md:h-5" />
+                  ) : (
+                    <span>{index + 1}</span>
+                  )}
                 </div>
-                <p className="text-xs mt-1 font-medium hidden md:block">{step.title}</p>
+                <p className={`text-xs mt-1 font-medium hidden md:block transition-colors duration-200 ${
+                  index + 1 === currentStep ? 'text-[#004025] font-semibold' : 'text-gray-600'
+                }`}>{step.title}</p>
                 <p className="text-xs text-gray-500 hidden lg:block">{step.subtitle}</p>
                 {index < stepDetails.length - 1 && (
                   <div 
-                    className={`absolute top-4 md:top-5 left-[calc(50%+20px)] right-0 h-0.5 transition-colors -z-10 ${
-                      currentStep > index + 1 ? 'bg-primary' : 'bg-gray-300'
+                    className={`absolute top-4 md:top-5 left-[calc(50%+20px)] right-0 h-0.5 transition-all duration-500 -z-10 ${
+                      currentStep > index + 1 ? 'bg-[#004025]' : 'bg-gray-300'
                     }`} 
                   />
                 )}
