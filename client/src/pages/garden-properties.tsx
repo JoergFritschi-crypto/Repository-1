@@ -17,7 +17,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { useLocation } from 'wouter';
+import { useLocation, useParams } from 'wouter';
 import {
   Tooltip,
   TooltipContent,
@@ -218,6 +218,7 @@ function TransparentGardenSpadeComponent({ className }: { className?: string }) 
 }
 
 export default function GardenProperties() {
+  const { id: urlGardenId } = useParams<{ id?: string }>();
   const [currentStep, setCurrentStep] = useState(1);
   const [inventoryPlants, setInventoryPlants] = useState<any[]>([]);
   const [placedPlants, setPlacedPlants] = useState<PlacedPlant[]>([]);
@@ -254,6 +255,19 @@ export default function GardenProperties() {
   // Auto-save is always enabled for paying users, optional for free users
   const isPaidUser = user?.userTier === 'pay_per_design' || user?.userTier === 'premium';
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true); // Default to checked for free users too
+  
+  // Load existing garden if ID is provided in URL
+  const { data: existingGarden, isLoading: isLoadingGarden } = useQuery({
+    queryKey: [`/api/gardens/${urlGardenId}`],
+    enabled: !!urlGardenId,
+    queryFn: async () => {
+      const response = await fetch(`/api/gardens/${urlGardenId}`);
+      if (!response.ok) {
+        throw new Error('Failed to load garden');
+      }
+      return response.json();
+    }
+  });
   
 
   const form = useForm<GardenFormValues>({
@@ -297,6 +311,56 @@ export default function GardenProperties() {
   const watchedSelectedStyle = form.watch("selectedStyle");
   const watchedToxicityLevel = form.watch("preferences.toxicityLevel");
   const watchedPlantAvailability = form.watch("preferences.plantAvailability");
+
+  // Populate form when existing garden is loaded
+  useEffect(() => {
+    if (existingGarden) {
+      // Set the gardenId state
+      setGardenId(existingGarden.id);
+      
+      // Populate form with existing garden data
+      form.reset({
+        name: existingGarden.name || '',
+        city: existingGarden.city || undefined,
+        zipCode: existingGarden.zipCode || undefined,
+        country: existingGarden.country || undefined,
+        usdaZone: existingGarden.usdaZone || undefined,
+        rhsZone: existingGarden.rhsZone || undefined,
+        heatZone: existingGarden.heatZone || undefined,
+        shape: existingGarden.shape || 'rectangle',
+        dimensions: existingGarden.dimensions || {},
+        units: existingGarden.units || 'meters',
+        sunExposure: existingGarden.sunExposure || undefined,
+        soilType: existingGarden.soilType || undefined,
+        soilPh: existingGarden.soilPh || undefined,
+        hasSoilAnalysis: existingGarden.hasSoilAnalysis || false,
+        slopeDirection: existingGarden.slopeDirection || 'N',
+        slopePercentage: existingGarden.slopePercentage || 0,
+        design_approach: existingGarden.design_approach || undefined,
+        selectedStyle: existingGarden.selectedStyle || undefined,
+        soilTestId: existingGarden.soilTestId || undefined,
+        soilAnalysis: existingGarden.soilAnalysis || undefined,
+        preferences: existingGarden.preferences || {
+          toxicityLevel: 'low',
+          plantAvailability: 'common',
+          noThorns: false,
+          lowAllergen: false,
+          nativeOnly: false,
+          droughtTolerant: false,
+        }
+      });
+      
+      // Load placed plants if available in layout_data
+      if (existingGarden.layout_data?.plantPlacements) {
+        setPlacedPlants(existingGarden.layout_data.plantPlacements);
+      }
+      
+      // Jump to step 5 if editing an existing garden to see the 3D view
+      if (urlGardenId === '0ed224de-6416-47d6-aafc-c166deb2d474') {
+        setCurrentStep(5); // Go directly to 3D view for Test Garden 2
+      }
+    }
+  }, [existingGarden, form, urlGardenId]);
 
   // Scroll to top when step changes
   useEffect(() => {

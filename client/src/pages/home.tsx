@@ -224,6 +224,13 @@ export default function Home() {
                     Premium Features
                   </Link>
                 </Button>
+                {/* Test link for Test Garden 2 */}
+                <Button size="sm" asChild variant="outline" className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-accent/50 border-dashed border-accent" data-testid="button-test-garden-2">
+                  <Link href="/garden-properties/0ed224de-6416-47d6-aafc-c166deb2d474" className="link-reset">
+                    <GardenDesignIcon className="w-4 h-4 mr-2" />
+                    Test Garden 2 (3D View Test)
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
 
