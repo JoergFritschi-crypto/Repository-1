@@ -40,13 +40,13 @@ export default function Home() {
                 Design stunning gardens with professional tools and expert plant knowledge
               </p>
               <div className="flex gap-3 justify-center">
-                <Button size="sm" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1 h-8 text-xs font-medium" asChild>
+                <Button className="bg-white/90 hover:bg-white text-primary border-2 border-primary hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1 h-8 px-3 text-xs font-medium" asChild>
                   <Link href="/garden-properties" className="link-reset">
                     <GardenDesignIcon className="w-3.5 h-3.5 mr-2" />
                     Create Your Garden
                   </Link>
                 </Button>
-                <Button size="sm" variant="outline" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1 h-8 text-xs font-medium" asChild>
+                <Button variant="outline" className="bg-white/90 hover:bg-white text-primary border-2 border-primary hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1 h-8 px-3 text-xs font-medium" asChild>
                   <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-3.5 h-3.5 mr-2" />
                     Browse Plants
