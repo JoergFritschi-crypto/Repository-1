@@ -327,48 +327,58 @@ export default function Garden3DView({
     plantMeshesRef.current.clear();
     
     plants3D.forEach(plant => {
-      console.log(`Creating ${plant.plantName} at position (${plant.position.x}, ${plant.position.y}) with height ${plant.dimensions.heightCurrent}m and spread ${plant.dimensions.spreadCurrent}m`);
+      // Scale plants to realistic garden sizes (3m max height)
+      const MAX_GARDEN_HEIGHT = 3; // Maximum height for normal gardens
+      const scaleFactor = plant.dimensions.heightCurrent > MAX_GARDEN_HEIGHT 
+        ? MAX_GARDEN_HEIGHT / plant.dimensions.heightCurrent 
+        : 1;
+      
+      const scaledHeight = plant.dimensions.heightCurrent * scaleFactor;
+      const scaledSpread = plant.dimensions.spreadCurrent * scaleFactor;
+      
+      console.log(`Creating ${plant.plantName} at position (${plant.position.x}, ${plant.position.y}) - Original: ${plant.dimensions.heightCurrent}m tall, Scaled: ${scaledHeight}m tall`);
+      
       // Create plant representation
       let plantMesh: THREE.Mesh;
       
       // Different representations based on plant type
       if (plant.properties.type?.includes('tree')) {
-        // Tree representation
-        const trunkGeometry = new THREE.CylinderGeometry(0.1, 0.15, plant.dimensions.heightCurrent * 0.3);
+        // Tree representation with scaled dimensions
+        const trunkGeometry = new THREE.CylinderGeometry(0.1, 0.15, scaledHeight * 0.3);
         const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3c28 });
         const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-        trunk.position.y = plant.dimensions.heightCurrent * 0.15;
+        trunk.position.y = scaledHeight * 0.15;
         
-        const crownRadius = plant.dimensions.spreadCurrent;
+        const crownRadius = scaledSpread / 2; // Use radius, not diameter
         const crownGeometry = new THREE.SphereGeometry(crownRadius, 16, 12);
         const crownMaterial = new THREE.MeshStandardMaterial({ 
           color: new THREE.Color(plant.properties.leafColor || '#2d5016')
         });
         const crown = new THREE.Mesh(crownGeometry, crownMaterial);
-        crown.position.y = plant.dimensions.heightCurrent * 0.7;
+        crown.position.y = scaledHeight * 0.7;
         
         const treeGroup = new THREE.Group();
         treeGroup.add(trunk);
         treeGroup.add(crown);
         plantMesh = treeGroup as any;
       } else if (plant.properties.type?.includes('shrub')) {
-        // Shrub representation
+        // Shrub representation with scaled dimensions
         const shrubGeometry = new THREE.SphereGeometry(
-          plant.dimensions.spreadCurrent,
+          scaledSpread / 2, // Use radius, not diameter
           12,
           8
         );
-        shrubGeometry.scale(1, plant.dimensions.heightCurrent / plant.dimensions.spreadCurrent, 1);
+        shrubGeometry.scale(1, scaledHeight / scaledSpread, 1);
         const shrubMaterial = new THREE.MeshStandardMaterial({
           color: new THREE.Color(plant.properties.leafColor || '#3a6b1c')
         });
         plantMesh = new THREE.Mesh(shrubGeometry, shrubMaterial);
-        plantMesh.position.y = plant.dimensions.heightCurrent / 2;
+        plantMesh.position.y = scaledHeight / 2;
       } else {
-        // Default plant representation (perennials, etc.)
+        // Default plant representation (perennials, etc.) with scaled dimensions
         const plantGeometry = new THREE.ConeGeometry(
-          plant.dimensions.spreadCurrent,
-          plant.dimensions.heightCurrent,
+          scaledSpread / 2, // Use radius, not diameter
+          scaledHeight,
           8
         );
         const plantColor = plant.properties.flowerColor || plant.properties.leafColor || '#4a7c59';
@@ -376,7 +386,7 @@ export default function Garden3DView({
           color: new THREE.Color(plantColor)
         });
         plantMesh = new THREE.Mesh(plantGeometry, plantMaterial);
-        plantMesh.position.y = plant.dimensions.heightCurrent / 2;
+        plantMesh.position.y = scaledHeight / 2;
       }
       
       // Position plant
