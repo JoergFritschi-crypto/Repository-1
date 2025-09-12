@@ -511,25 +511,33 @@ export default function Garden3DView({
     sceneRef.current.add(sunSphere);
     sunHelperRef.current = sunSphere;
     
-    // Create sun path arc
-    const pathCurve = new THREE.EllipseCurve(
-      0, 0,
-      gardenSize * 1.5, gardenSize * 1.5,
-      0, Math.PI,
-      false,
-      0
-    );
-    const pathPoints = pathCurve.getPoints(50);
-    const pathGeometry = new THREE.BufferGeometry().setFromPoints(
-      pathPoints.map(p => new THREE.Vector3(p.x, p.y + 5, 0))
-    );
+    // Create sun path arc - properly positioned as an arc in 3D space
+    const pathPoints: THREE.Vector3[] = [];
+    const numPoints = 50;
+    
+    // Create arc from east to west through south (overhead)
+    for (let i = 0; i <= numPoints; i++) {
+      const t = i / numPoints; // 0 to 1
+      const angle = t * Math.PI; // 0 to PI (sunrise to sunset)
+      
+      // Position on arc (east to west)
+      const x = Math.cos(angle) * gardenSize * 1.2;
+      const z = 0; // Along the east-west axis
+      
+      // Height varies with sun position (highest at noon)
+      const height = Math.sin(angle) * gardenSize * 0.8 + 0.5;
+      
+      pathPoints.push(new THREE.Vector3(x, height, z));
+    }
+    
+    const pathGeometry = new THREE.BufferGeometry().setFromPoints(pathPoints);
     
     // Rotate path based on cardinal direction
     pathGeometry.rotateY(-cardinalRotation * Math.PI / 180);
     
     const pathMaterial = new THREE.LineBasicMaterial({ 
       color: 0xffaa00,
-      opacity: 0.2,
+      opacity: 0.3,
       transparent: true
     });
     const pathLine = new THREE.Line(pathGeometry, pathMaterial);
