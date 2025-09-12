@@ -906,11 +906,11 @@ export default function Garden3DView({
       iris.rotation.x = -Math.PI / 2; // Lay flat on ground
       iris.position.y = 0.0005; // Between eye and pupil
       
-      // Create view direction indicator (small triangle)
+      // Create view direction indicator (small triangle pointing forward)
       const arrowShape = new THREE.Shape();
-      arrowShape.moveTo(0, 0.08);
-      arrowShape.lineTo(-0.05, -0.08);
-      arrowShape.lineTo(0.05, -0.08);
+      arrowShape.moveTo(0.08, 0);    // Front tip (toward positive X, which becomes forward when rotated)
+      arrowShape.lineTo(-0.08, -0.05); // Back left
+      arrowShape.lineTo(-0.08, 0.05);  // Back right
       arrowShape.closePath();
       
       const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
