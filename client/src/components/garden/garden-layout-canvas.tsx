@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Info, Image, Sun, Cloud, Snowflake, Flower2, Trash2 } from 'lucide-react';
+import { Search, Info, Image, Sun, Cloud, Snowflake, Flower2, Trash2, Save, FolderOpen, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -53,15 +54,110 @@ export default function GardenLayoutCanvas({
 }: GardenLayoutCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 800 });
-  const [unplacedPlants, setUnplacedPlants] = useState<Plant[]>([]);
+  const [unplacedPlants, setUnplacedPlants] = useState<Partial<Plant>[]>([]);
   const [placedPlants, setPlacedPlants] = useState<PlacedPlant[]>([]);
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingOverInventory, setIsDraggingOverInventory] = useState(false);
-  const [draggedPlant, setDraggedPlant] = useState<Plant | null>(null);
+  const [draggedPlant, setDraggedPlant] = useState<Partial<Plant> | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState<string>('summer');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showLoadDialog, setShowLoadDialog] = useState(false);
+  const [availableGardens, setAvailableGardens] = useState<any[]>([]);
   const { toast } = useToast();
+
+  // Save design to database
+  const handleSaveDesign = async () => {
+    if (!gardenId) {
+      toast({
+        title: "Error",
+        description: "No garden selected to save",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const layoutData = {
+        plantPlacements: placedPlants,
+        canvasSettings: {
+          shape,
+          dimensions,
+          units,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      await apiRequest('PUT', `/api/gardens/${gardenId}`, { layout_data: layoutData });
+
+      toast({
+        title: "Design Saved",
+        description: "Your garden design has been saved successfully"
+      });
+    } catch (error) {
+      console.error('Error saving design:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save garden design",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Load design from database
+  const handleLoadDesign = async (selectedGardenId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/gardens/${selectedGardenId}`);
+      const garden = await response.json();
+
+      if (garden.layout_data?.plantPlacements) {
+        setPlacedPlants(garden.layout_data.plantPlacements);
+        toast({
+          title: "Design Loaded",
+          description: `Loaded design from ${garden.name}`
+        });
+      } else {
+        toast({
+          title: "No Design Found",
+          description: "This garden doesn't have a saved design yet",
+          variant: "destructive"
+        });
+      }
+      setShowLoadDialog(false);
+    } catch (error) {
+      console.error('Error loading design:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load garden design",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch available gardens for loading
+  const fetchAvailableGardens = async () => {
+    try {
+      const response = await fetch('/api/gardens');
+      const gardens = await response.json();
+      setAvailableGardens(gardens);
+      setShowLoadDialog(true);
+    } catch (error) {
+      console.error('Error fetching gardens:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch available gardens",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Get plant initials from scientific name (e.g., "Acer palmatum" -> "AP")
   const getPlantInitials = (scientificName?: string): string => {
@@ -271,7 +367,7 @@ export default function GardenLayoutCanvas({
       );
       
       if (unplacedGardenPlants.length > 0) {
-        const inventoryPlantsFromGarden: Plant[] = [];
+        const inventoryPlantsFromGarden: Partial<Plant>[] = [];
         let uniqueCounter = 0;
         unplacedGardenPlants.forEach((gp: any) => {
           const quantity = gp.quantity || 1;
@@ -432,11 +528,11 @@ export default function GardenLayoutCanvas({
     }
   };
 
-  const handleDragStart = (plant: Plant, e: React.DragEvent) => {
+  const handleDragStart = (plant: Partial<Plant>, e: React.DragEvent) => {
     setDraggedPlant(plant);
     setIsDragging(true);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', plant.id);
+    e.dataTransfer.setData('text/plain', plant.id || '');
   };
 
   const handlePlacedPlantDragStart = (placedPlant: PlacedPlant, e: React.DragEvent) => {
@@ -486,8 +582,8 @@ export default function GardenLayoutCanvas({
       
       const newPlacedPlant: PlacedPlant = {
         id: `placed-${Date.now()}-${Math.random()}`,
-        plantId: draggedPlant.id,
-        plantName: draggedPlant.commonName,
+        plantId: draggedPlant.id || `plant-${Date.now()}`,
+        plantName: draggedPlant.commonName || 'Unknown Plant',
         scientificName: draggedPlant.scientificName,
         x: Math.max(5, Math.min(95, x)), // Keep within bounds
         y: Math.max(5, Math.min(95, y)),
@@ -516,7 +612,7 @@ export default function GardenLayoutCanvas({
         setPlacedPlants(placedPlants.filter(p => p.id !== placedPlantId));
         
         // Always add back to unplaced plants with complete data for color matching
-        const restoredPlant: Plant = {
+        const restoredPlant: Partial<Plant> = {
           id: `${placedPlant.plantId}-${Date.now()}`, // Unique ID to allow multiple of same plant
           commonName: placedPlant.plantName,
           scientificName: placedPlant.scientificName || '',
@@ -560,15 +656,14 @@ export default function GardenLayoutCanvas({
           pestSusceptibility: null,
           description: null,
           careGuides: null,
-          perenualCareGuideUrl: null,
-          imageUrl: null,
-          defaultImageUrl: null,
-          mediumImageUrl: null,
-          smallImageUrl: null,
-          thumbnailImageUrl: null,
-          seedImageUrl: null,
-          otherImages: null,
-          aiGeneratedImages: null,
+          thumbnailImage: null,
+          fullImage: null,
+          detailImage: null,
+          imageGenerationStatus: 'pending',
+          imageGenerationStartedAt: null,
+          imageGenerationCompletedAt: null,
+          imageGenerationError: null,
+          imageGenerationAttempts: 0,
           lastImageGenerationAt: null,
           generatedImageUrl: null,
           dataSource: 'perenual',
@@ -599,7 +694,43 @@ export default function GardenLayoutCanvas({
   }, {} as Record<string, { name: string; scientificName?: string; quantity: number }>);
 
   return (
-    <div className="w-full flex gap-3">
+    <>
+      {/* Load Garden Dialog */}
+      <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Load Garden Design</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {availableGardens.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No gardens available to load</p>
+            ) : (
+              <div className="space-y-2">
+                {availableGardens.map(garden => (
+                  <Button
+                    key={garden.id}
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleLoadDesign(garden.id)}
+                    disabled={isLoading}
+                    data-testid={`button-load-garden-${garden.id}`}
+                  >
+                    <Flower2 className="w-4 h-4 mr-2" />
+                    <div className="text-left">
+                      <div className="font-medium">{garden.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {garden.shape} • {garden.layout_data?.plantPlacements?.length || 0} plants
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="w-full flex gap-3">
       {/* Left side: Canvas area with info bars */}
       <div className="flex flex-col gap-3">
         {/* Advanced Search Module at Top */}
@@ -645,9 +776,49 @@ export default function GardenLayoutCanvas({
               <span className="text-sm font-bold text-primary">{calculateArea()} {unitSquared}</span>
             </div>
           </div>
-          <div className="text-xs text-muted-foreground">
-            <Info className="w-3 h-3 inline mr-1" />
-            Drag plants to/from canvas
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSaveDesign}
+              disabled={isSaving || !gardenId || placedPlants.length === 0}
+              data-testid="button-save-design"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-1" />
+                  Save Design
+                </>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={fetchAvailableGardens}
+              disabled={isLoading}
+              data-testid="button-load-design"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <FolderOpen className="w-4 h-4 mr-1" />
+                  Load Design
+                </>
+              )}
+            </Button>
+            <div className="text-xs text-muted-foreground ml-2">
+              <Info className="w-3 h-3 inline mr-1" />
+              Drag plants to/from canvas
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -1002,7 +1173,7 @@ export default function GardenLayoutCanvas({
                   {(() => {
                     // Group plants by scientificName
                     const groupedPlants = unplacedPlants.reduce((acc, plant) => {
-                      const key = plant.scientificName || plant.commonName;
+                      const key = plant.scientificName || plant.commonName || 'unknown';
                       if (!acc[key]) {
                         acc[key] = {
                           ...plant,
@@ -1074,5 +1245,6 @@ export default function GardenLayoutCanvas({
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }

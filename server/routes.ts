@@ -125,6 +125,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update garden design with layout data
+  app.put('/api/gardens/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const garden = await storage.getGarden(req.params.id);
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      // Check ownership
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Update garden with new layout data
+      const updatedGarden = await storage.updateGarden(req.params.id, {
+        ...req.body,
+        layout_data: req.body.layout_data || {}
+      });
+      
+      res.json(updatedGarden);
+    } catch (error) {
+      console.error("Error updating garden:", error);
+      res.status(500).json({ message: "Failed to update garden" });
+    }
+  });
+
   // Get plants in a garden
   app.get('/api/gardens/:id/plants', isAuthenticated, async (req: any, res) => {
     try {
