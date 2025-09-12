@@ -261,6 +261,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // CRITICAL SECURITY: Verify garden ownership before generation
+      const garden = await storage.getGarden(gardenId);
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized - you can only generate visualizations for your own gardens" });
+      }
+      
       // Log the request for monitoring
       console.log('[API Request] Comprehensive photorealization:', { 
         gardenId, 

@@ -33,10 +33,47 @@ interface PlantSeasonalData {
   maintenanceState: string;
 }
 
+interface BorderGeometry {
+  type: 'polygon' | 'circle' | 'rectangular';
+  coordinates: Array<{ x: number; y: number }>;
+  thickness: number; // in meters
+  material: string;
+  height: number; // in meters
+  color: string;
+}
+
+interface LayoutGeometry {
+  borders: BorderGeometry[];
+  paths: Array<{
+    coordinates: Array<{ x: number; y: number }>;
+    width: number; // in meters
+    material: string;
+    surfaceType: string;
+  }>;
+  groundAreas: Array<{
+    coordinates: Array<{ x: number; y: number }>;
+    material: string;
+    color: string;
+    texture: string;
+  }>;
+  surroundingFeatures: Array<{
+    type: string;
+    position: { x: number; y: number };
+    dimensions: { width: number; height: number };
+    description: string;
+  }>;
+  coordinateSystem: {
+    origin: { x: number; y: number };
+    scale: string; // 'percentage' or 'meters'
+    bounds: { width: number; height: number };
+  };
+}
+
 interface PhotorealizationContext {
   garden: Garden;
   plants: PlantSeasonalData[];
   sceneState: SceneState;
+  geometry: LayoutGeometry;
   environment: {
     surroundings: string;
     groundMaterial: string;
@@ -106,7 +143,10 @@ export async function buildPhotorealizationContext(
       };
     });
 
-  // Build environment description
+  // Extract detailed geometry from layout_data
+  const geometry = extractLayoutGeometry(garden);
+  
+  // Build environment description (enhanced with layout_data)
   const environment = {
     surroundings: describeSurroundings(garden),
     groundMaterial: describeGroundMaterial(garden),
@@ -126,22 +166,151 @@ export async function buildPhotorealizationContext(
     garden,
     plants: plantsData,
     sceneState,
+    geometry,
     environment,
     lighting
   };
 }
 
 /**
+ * Extracts detailed geometry information from garden layout_data
+ */
+function extractLayoutGeometry(garden: Garden): LayoutGeometry {
+  const layoutData = garden.layout_data as any || {};
+  
+  // Calculate coordinate system based on garden dimensions
+  const dimensions = calculateActualDimensions(garden);
+  const coordinateSystem = {
+    origin: { x: 0, y: 0 }, // Top-left corner as origin
+    scale: 'percentage' as const, // Canvas uses percentage positioning
+    bounds: { width: dimensions.width, height: dimensions.length }
+  };
+  
+  // Extract or infer borders from layout_data or garden shape
+  const borders: BorderGeometry[] = [];
+  if (layoutData.borders) {
+    // Use explicit border data if available
+    borders.push(...layoutData.borders.map((border: any) => ({
+      type: border.type || 'polygon',
+      coordinates: border.coordinates || [],
+      thickness: border.thickness || 0.15, // 15cm default
+      material: border.material || 'stone edging',
+      height: border.height || 0.1, // 10cm default
+      color: border.color || '#8B7355'
+    })));
+  } else {
+    // Infer border from garden shape
+    const shapeCoords = getShapeCoordinates(garden.shape, dimensions);
+    borders.push({
+      type: garden.shape === 'circle' ? 'circle' : 'polygon',
+      coordinates: shapeCoords,
+      thickness: 0.15,
+      material: 'natural stone edging',
+      height: 0.1,
+      color: '#8B7355'
+    });
+  }
+  
+  // Extract paths from layout_data
+  const paths = layoutData.paths ? layoutData.paths.map((path: any) => ({
+    coordinates: path.coordinates || [],
+    width: path.width || 0.8, // 80cm default
+    material: path.material || 'gravel',
+    surfaceType: path.surfaceType || 'natural gravel path'
+  })) : [];
+  
+  // Extract ground areas
+  const groundAreas = layoutData.groundAreas ? layoutData.groundAreas.map((area: any) => ({
+    coordinates: area.coordinates || [],
+    material: area.material || 'soil',
+    color: area.color || '#8B4513',
+    texture: area.texture || 'rich dark topsoil'
+  })) : [{
+    coordinates: getShapeCoordinates(garden.shape, dimensions),
+    material: 'soil',
+    color: '#8B4513',
+    texture: 'rich dark topsoil with organic matter'
+  }];
+  
+  // Extract surrounding features
+  const surroundingFeatures = layoutData.surroundings ? layoutData.surroundings.map((feature: any) => ({
+    type: feature.type || 'landscape',
+    position: feature.position || { x: 50, y: 0 },
+    dimensions: feature.dimensions || { width: 100, height: 50 },
+    description: feature.description || 'natural countryside transition'
+  })) : [];
+  
+  return {
+    borders,
+    paths,
+    groundAreas,
+    surroundingFeatures,
+    coordinateSystem
+  };
+}
+
+/**
+ * Get shape coordinates for standard garden shapes
+ */
+function getShapeCoordinates(shape: string, dimensions: any): Array<{ x: number; y: number }> {
+  switch (shape) {
+    case 'rectangle':
+    case 'square':
+      return [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+        { x: 0, y: 100 }
+      ];
+    case 'circle':
+      // Generate circle points
+      const points = [];
+      for (let i = 0; i < 16; i++) {
+        const angle = (i * 2 * Math.PI) / 16;
+        points.push({
+          x: 50 + 50 * Math.cos(angle),
+          y: 50 + 50 * Math.sin(angle)
+        });
+      }
+      return points;
+    case 'oval':
+      const ovalPoints = [];
+      for (let i = 0; i < 16; i++) {
+        const angle = (i * 2 * Math.PI) / 16;
+        ovalPoints.push({
+          x: 50 + 40 * Math.cos(angle),
+          y: 50 + 30 * Math.sin(angle)
+        });
+      }
+      return ovalPoints;
+    default:
+      // Default rectangle
+      return [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+        { x: 0, y: 100 }
+      ];
+  }
+}
+
+/**
  * Builds structured prompt from photorealization context
  */
 export function buildPhotorealizationPrompt(context: PhotorealizationContext): string {
-  const { garden, plants, sceneState, environment, lighting } = context;
+  const { garden, plants, sceneState, geometry, environment, lighting } = context;
 
   // Calculate garden dimensions
   const dimensions = calculateActualDimensions(garden);
 
   const prompt = `
 === PHOTOREALISTIC GARDEN VISUALIZATION ===
+
+COORDINATE SYSTEM & SCALE:
+- Origin: Top-left corner (0%, 0%) = (0m, 0m) in real coordinates
+- Scale: ${geometry.coordinateSystem.scale} positioning (0-100% canvas) = ${geometry.coordinateSystem.bounds.width}m × ${geometry.coordinateSystem.bounds.height}m real space
+- Grid reference: 1% canvas = ${(geometry.coordinateSystem.bounds.width / 100).toFixed(2)}m horizontal, ${(geometry.coordinateSystem.bounds.height / 100).toFixed(2)}m vertical
+- Conversion: Canvas position (x%, y%) = Real position (${(geometry.coordinateSystem.bounds.width / 100).toFixed(2)}*x meters, ${(geometry.coordinateSystem.bounds.height / 100).toFixed(2)}*y meters)
 
 CANVAS & BOUNDS:
 - Garden shape: ${garden.shape}
@@ -150,7 +319,40 @@ CANVAS & BOUNDS:
 - Ground level: ${garden.slopePercentage ? `${garden.slopePercentage}% slope ${garden.slopeDirection}` : 'level'}
 - North orientation: ${garden.northOrientation || 'N'}
 
-CAMERA & LENS:
+BORDERS & SURROUNDINGS GEOMETRY:
+${geometry.borders.map((border, idx) => `
+Border ${idx + 1}:
+  Type: ${border.type}
+  Material: ${border.material} (${border.color})
+  Thickness: ${border.thickness}m, Height: ${border.height}m
+  Coordinates (exact positions):
+${border.coordinates.map(coord => `    (${coord.x.toFixed(1)}%, ${coord.y.toFixed(1)}%) = (${((coord.x * geometry.coordinateSystem.bounds.width) / 100).toFixed(1)}m, ${((coord.y * geometry.coordinateSystem.bounds.height) / 100).toFixed(1)}m)`).join('\n')}`).join('')}
+
+${geometry.paths.length > 0 ? `PATHWAYS GEOMETRY:
+${geometry.paths.map((path, idx) => `
+Path ${idx + 1}:
+  Width: ${path.width}m
+  Material: ${path.material} (${path.surfaceType})
+  Route coordinates:
+${path.coordinates.map(coord => `    (${coord.x.toFixed(1)}%, ${coord.y.toFixed(1)}%) = (${((coord.x * geometry.coordinateSystem.bounds.width) / 100).toFixed(1)}m, ${((coord.y * geometry.coordinateSystem.bounds.height) / 100).toFixed(1)}m)`).join('\n')}`).join('')}` : ''}
+
+GROUND AREAS GEOMETRY:
+${geometry.groundAreas.map((area, idx) => `
+Ground Area ${idx + 1}:
+  Material: ${area.material} (${area.color})
+  Texture: ${area.texture}
+  Coverage coordinates:
+${area.coordinates.map(coord => `    (${coord.x.toFixed(1)}%, ${coord.y.toFixed(1)}%) = (${((coord.x * geometry.coordinateSystem.bounds.width) / 100).toFixed(1)}m, ${((coord.y * geometry.coordinateSystem.bounds.height) / 100).toFixed(1)}m)`).join('\n')}`).join('')}
+
+${geometry.surroundingFeatures.length > 0 ? `SURROUNDING FEATURES:
+${geometry.surroundingFeatures.map((feature, idx) => `
+Feature ${idx + 1}:
+  Type: ${feature.type}
+  Position: (${feature.position.x.toFixed(1)}%, ${feature.position.y.toFixed(1)}%) = (${((feature.position.x * geometry.coordinateSystem.bounds.width) / 100).toFixed(1)}m, ${((feature.position.y * geometry.coordinateSystem.bounds.height) / 100).toFixed(1)}m)
+  Size: ${feature.dimensions.width}m × ${feature.dimensions.height}m
+  Description: ${feature.description}`).join('')}` : ''}
+
+CAMERA & LENS (LOCKED POSITION):
 - Position: ${sceneState.camera.position.x.toFixed(1)}m, ${sceneState.camera.position.y.toFixed(1)}m, ${sceneState.camera.position.z.toFixed(1)}m
 - Target: ${sceneState.camera.target.x.toFixed(1)}m, ${sceneState.camera.target.y.toFixed(1)}m, ${sceneState.camera.target.z.toFixed(1)}m
 - Field of view: ${sceneState.camera.fov}°
@@ -162,12 +364,6 @@ LIGHTING (JULY):
 - Shadow direction: ${lighting.shadowDirection}
 - Light quality: ${lighting.lightQuality}
 - Sky: ${describeSkyCondition(sceneState.lighting.timeOfDay)}
-
-GROUND & MATERIALS:
-- Surface: ${environment.groundMaterial}
-- Pathways: ${environment.pathways.length > 0 ? environment.pathways.join(', ') : 'Natural grass paths'}
-- Borders: ${environment.borders.length > 0 ? environment.borders.join(', ') : 'Natural garden edges'}
-- Soil visible: Rich dark brown topsoil visible around plant bases
 
 PLANT LIST (EXACT POSITIONS - JULY SEASON):
 ${plants.map((plant, idx) => `
@@ -193,16 +389,42 @@ OUTPUT STYLE:
 - Sharp focus on foreground plants, gentle depth of field to background
 - Natural textures: soil, grass, plant materials, organic surfaces
 
-CRITICAL CONSTRAINTS (STRICT):
+CRITICAL CONSTRAINTS (ABSOLUTE REQUIREMENTS):
+
+CAMERA POSITION (LOCKED - NO MODIFICATIONS):
+- DO NOT move, rotate, or zoom the camera from specified position
+- DO NOT change the field of view (${sceneState.camera.fov}° locked)
+- DO NOT alter the viewing angle or perspective from 3D reference
+- MAINTAIN exact camera target and position coordinates as specified
+- DO NOT crop or reframe the composition
+
+BORDERS & MATERIALS (EXACT SPECIFICATIONS):
+- DO NOT alter border materials, thickness, or positioning from geometry specifications
+- DO NOT change ground materials or textures from specified coordinates
+- DO NOT modify pathway materials, width, or routing from defined coordinates
+- DO NOT add, remove, or relocate any surrounding features beyond specifications
+- MAINTAIN exact border polygons and edging as defined in coordinate system
+
+COORDINATE SYSTEM (ABSOLUTE FIDELITY):
+- USE ONLY the specified coordinate conversion: Canvas % to meters
+- DO NOT interpret positions differently than the defined grid reference
+- ANCHOR all elements to the scene bounds: ${geometry.coordinateSystem.bounds.width}m × ${geometry.coordinateSystem.bounds.height}m
+- RESPECT the origin at top-left corner (0%, 0%) as (0m, 0m)
+- SCALE anchoring: 1% canvas = ${(geometry.coordinateSystem.bounds.width / 100).toFixed(2)}m horizontal
+
+PLANT SPECIFICATIONS (NO DEVIATIONS):
 - EXACT plant count: Only ${plants.length} plants as specified above
 - NO additional plants, flowers, or vegetation beyond the list
-- NO decorative elements not mentioned (statues, furniture, arbors)
-- NO people, animals, or artificial objects
-- NO seasonal mismatch - strictly July appearance
-- MAINTAIN exact viewing angle and perspective from 3D reference
-- NO artistic interpretation of plant positions - use exact coordinates
+- NO artistic interpretation of plant positions - use exact coordinates only
 - BOTANICAL ACCURACY - each plant must look like its scientific species
 - REALISTIC SCALE - plants sized according to specified dimensions
+- July seasonal state ONLY - no other seasonal appearance
+
+FORBIDDEN ADDITIONS:
+- NO decorative elements not mentioned (statues, furniture, arbors, ornaments)
+- NO people, animals, or artificial objects anywhere in scene
+- NO water features, lighting, or structures not explicitly specified
+- NO creative liberties with composition, framing, or artistic interpretation
 
 Transform the provided 3D garden layout into a stunning photorealistic image that looks like it was photographed by a professional landscape photographer in July, maintaining absolute fidelity to the specified plant list, positions, and seasonal state.
 `;
