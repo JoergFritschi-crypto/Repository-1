@@ -245,37 +245,33 @@ export default function SeasonalViewer({
               
               <div className="flex gap-2">
                 <Button
-                  variant="ghost"
                   size="icon"
+                  className="bg-primary/20 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
                   onClick={() => setShowInfo(prev => !prev)}
-                  className="text-white hover:bg-white/20"
                   data-testid="button-toggle-info"
                 >
                   <Info className="h-5 w-5" />
                 </Button>
                 <Button
-                  variant="ghost"
                   size="icon"
+                  className="bg-primary/20 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
                   onClick={handleDownload}
-                  className="text-white hover:bg-white/20"
                   data-testid="button-download-image"
                 >
                   <Download className="h-5 w-5" />
                 </Button>
                 <Button
-                  variant="ghost"
                   size="icon"
+                  className="bg-primary/20 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
                   onClick={() => setIsFullscreen(prev => !prev)}
-                  className="text-white hover:bg-white/20"
                   data-testid="button-toggle-fullscreen"
                 >
                   {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
                 </Button>
                 <Button
-                  variant="ghost"
                   size="icon"
+                  className="bg-primary/20 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
                   onClick={onClose}
-                  className="text-white hover:bg-white/20"
                   data-testid="button-close"
                 >
                   <X className="h-5 w-5" />
@@ -298,10 +294,9 @@ export default function SeasonalViewer({
             {/* Side Navigation */}
             {currentIndex > 0 && (
               <Button
-                variant="ghost"
                 size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-primary/30 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110"
                 onClick={handlePrevious}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
                 data-testid="button-previous"
               >
                 <ChevronLeft className="h-8 w-8" />
@@ -310,10 +305,9 @@ export default function SeasonalViewer({
             
             {currentIndex < images.length - 1 && (
               <Button
-                variant="ghost"
                 size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-primary/30 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110"
                 onClick={handleNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
                 data-testid="button-next"
               >
                 <ChevronRight className="h-8 w-8" />
@@ -388,32 +382,29 @@ export default function SeasonalViewer({
             <div className="flex items-center justify-between px-4 py-3 mt-8">
               <div className="flex items-center gap-2">
                 <Button
-                  variant="ghost"
                   size="icon"
                   onClick={handlePrevious}
                   disabled={currentIndex === 0}
-                  className="text-white hover:bg-white/20 disabled:opacity-50"
+                  className="bg-primary/20 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="button-skip-back"
                 >
                   <SkipBack className="h-5 w-5" />
                 </Button>
                 
                 <Button
-                  variant="ghost"
                   size="icon"
                   onClick={() => setIsPlaying(prev => !prev)}
-                  className="text-white hover:bg-white/20"
+                  className="bg-primary/20 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
                   data-testid="button-play-pause"
                 >
                   {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
                 </Button>
                 
                 <Button
-                  variant="ghost"
                   size="icon"
                   onClick={handleNext}
                   disabled={currentIndex === images.length - 1}
-                  className="text-white hover:bg-white/20 disabled:opacity-50"
+                  className="bg-primary/20 text-white hover:bg-canary hover:text-primary border-2 border-gold/30 hover:border-gold transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="button-skip-forward"
                 >
                   <SkipForward className="h-5 w-5" />

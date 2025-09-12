@@ -1536,9 +1536,9 @@ export default function GardenRenderer3D({
   return (
     <div className="space-y-6" data-testid="garden-renderer-3d">
       {/* Controls Panel */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="border-2 border-primary shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-canary/5 border-b-2 border-gold/30">
+          <CardTitle className="flex items-center gap-2 text-primary">
             <Eye className="h-5 w-5" />
             3D Garden Visualization
           </CardTitle>
@@ -1601,6 +1601,7 @@ export default function GardenRenderer3D({
           
           <div className="flex flex-wrap gap-2 items-center">
             <Button 
+              className="bg-primary hover:bg-dark-spring-green text-white border-2 border-gold/50 hover:border-canary transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={generateScene3D} 
               disabled={isGenerating}
               data-testid="button-generate-3d"
@@ -1621,7 +1622,7 @@ export default function GardenRenderer3D({
             {isSceneReady && (
               <>
                 <Button 
-                  variant="outline" 
+                  className="border-2 border-primary text-primary hover:bg-canary hover:text-primary hover:border-gold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
                   onClick={() => exportPNG(1920, 1088)}
                   disabled={isPhotorealizing}
                   data-testid="button-export-png"
@@ -1640,7 +1641,7 @@ export default function GardenRenderer3D({
                 </Button>
                 
                 <Button 
-                  variant="outline" 
+                  className="border-2 border-primary text-primary hover:bg-canary hover:text-primary hover:border-gold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
                   onClick={() => exportPNG(3840, 2176)}
                   disabled={isPhotorealizing}
                   data-testid="button-export-png-4k"
@@ -1680,8 +1681,8 @@ export default function GardenRenderer3D({
       </Card>
 
       {/* 3D Canvas */}
-      <Card>
-        <CardContent className="p-0">
+      <Card className="border-2 border-primary shadow-lg hover:border-gold transition-all duration-200">
+        <CardContent className="p-0 bg-gradient-to-br from-background via-primary/5 to-canary/5">
           <div 
             ref={containerRef} 
             className="relative w-full min-h-[400px] bg-gradient-to-b from-sky-200 to-sky-100"

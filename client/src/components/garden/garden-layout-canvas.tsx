@@ -697,9 +697,9 @@ export default function GardenLayoutCanvas({
     <>
       {/* Load Garden Dialog */}
       <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Load Garden Design</DialogTitle>
+        <DialogContent className="sm:max-w-[425px] border-2 border-primary shadow-xl">
+          <DialogHeader className="border-b pb-4 border-gold/30">
+            <DialogTitle className="text-primary font-semibold">Load Garden Design</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {availableGardens.length === 0 ? (
@@ -709,13 +709,12 @@ export default function GardenLayoutCanvas({
                 {availableGardens.map(garden => (
                   <Button
                     key={garden.id}
-                    variant="outline"
-                    className="w-full justify-start"
+                    className="w-full justify-start border-2 border-primary/30 hover:bg-canary hover:text-primary hover:border-gold transition-all duration-200 hover:shadow-md hover:scale-105 bg-white"
                     onClick={() => handleLoadDesign(garden.id)}
                     disabled={isLoading}
                     data-testid={`button-load-garden-${garden.id}`}
                   >
-                    <Flower2 className="w-4 h-4 mr-2" />
+                    <Flower2 className="w-4 h-4 mr-2 text-primary" />
                     <div className="text-left">
                       <div className="font-medium">{garden.name}</div>
                       <div className="text-xs text-muted-foreground">
@@ -734,9 +733,9 @@ export default function GardenLayoutCanvas({
       {/* Left side: Canvas area with info bars */}
       <div className="flex flex-col gap-3">
         {/* Advanced Search Module at Top */}
-        <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
-          <CardHeader className="py-3 px-4 bg-muted/50">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+        <Card className="shadow-md border-2 border-primary/30 hover:border-gold transition-all duration-200" style={{ width: `${canvasSize.width}px` }}>
+          <CardHeader className="py-3 px-4 bg-gradient-to-r from-primary/5 to-canary/5 border-b border-gold/30">
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-primary">
               <Search className="w-4 h-4" />
               Plant Search
             </CardTitle>
@@ -744,7 +743,7 @@ export default function GardenLayoutCanvas({
           <CardContent className="py-3 px-4">
             <Button 
               onClick={onOpenPlantSearch}
-              className="w-full"
+              className="w-full bg-primary hover:bg-dark-spring-green text-white border-2 border-gold/50 hover:border-canary transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
               data-testid="button-open-plant-search"
             >
               Go to Advanced Search Tab →
@@ -753,16 +752,16 @@ export default function GardenLayoutCanvas({
         </Card>
 
         {/* Garden Info Bar Above Canvas */}
-        <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
-        <CardContent className="py-2 px-4 flex items-center justify-between">
+        <Card className="shadow-md border-2 border-primary/30" style={{ width: `${canvasSize.width}px` }}>
+        <CardContent className="py-2 px-4 flex items-center justify-between bg-gradient-to-r from-background to-primary/5">
           <div className="flex gap-6">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground uppercase">Shape:</span>
-              <span className="text-sm font-semibold">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</span>
+              <span className="text-xs text-primary/60 uppercase font-medium">Shape:</span>
+              <span className="text-sm font-semibold text-primary">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground uppercase">Dimensions:</span>
-              <span className="text-sm font-semibold">
+              <span className="text-xs text-primary/60 uppercase font-medium">Dimensions:</span>
+              <span className="text-sm font-semibold text-primary">
                 {shape === 'circle' ? 
                   `R: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
                 shape === 'square' ?
@@ -772,14 +771,14 @@ export default function GardenLayoutCanvas({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground uppercase">Area:</span>
-              <span className="text-sm font-bold text-primary">{calculateArea()} {unitSquared}</span>
+              <span className="text-xs text-primary/60 uppercase font-medium">Area:</span>
+              <span className="text-sm font-bold text-dark-spring-green">{calculateArea()} {unitSquared}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              variant="outline"
+              className="bg-primary hover:bg-dark-spring-green text-white border-2 border-gold/50 hover:border-canary transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSaveDesign}
               disabled={isSaving || !gardenId || placedPlants.length === 0}
               data-testid="button-save-design"
@@ -798,7 +797,7 @@ export default function GardenLayoutCanvas({
             </Button>
             <Button
               size="sm"
-              variant="outline"
+              className="border-2 border-primary text-primary hover:bg-canary hover:text-primary hover:border-gold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
               onClick={fetchAvailableGardens}
               disabled={isLoading}
               data-testid="button-load-design"
@@ -815,8 +814,8 @@ export default function GardenLayoutCanvas({
                 </>
               )}
             </Button>
-            <div className="text-xs text-muted-foreground ml-2">
-              <Info className="w-3 h-3 inline mr-1" />
+            <div className="text-xs text-primary/70 ml-2 flex items-center">
+              <Info className="w-3 h-3 mr-1 text-gold" />
               Drag plants to/from canvas
             </div>
           </div>
@@ -826,8 +825,8 @@ export default function GardenLayoutCanvas({
       {/* Main Canvas */}
       <div className="flex gap-3">
         {/* Canvas Section - Full Width */}
-        <Card className="shadow-lg overflow-visible" style={{ width: `${canvasSize.width}px` }}>
-          <CardContent className="p-3 overflow-visible">
+        <Card className="shadow-lg overflow-visible border-2 border-primary hover:border-gold transition-all duration-200" style={{ width: `${canvasSize.width}px` }}>
+          <CardContent className="p-3 overflow-visible bg-gradient-to-br from-background via-primary/5 to-canary/5">
             <div 
               ref={canvasRef}
               className="relative bg-gradient-to-br from-muted/30 via-background to-muted/30 rounded-lg shadow-inner"
@@ -1014,9 +1013,9 @@ export default function GardenLayoutCanvas({
       </div>
 
         {/* Placed Plants List Below Canvas */}
-        <Card className="shadow-md" style={{ width: `${canvasSize.width}px` }}>
-          <CardHeader className="py-3 px-4 bg-muted/50">
-            <CardTitle className="text-sm">
+        <Card className="shadow-md border-2 border-primary/30" style={{ width: `${canvasSize.width}px` }}>
+          <CardHeader className="py-3 px-4 bg-gradient-to-r from-primary/5 to-canary/5 border-b border-gold/30">
+            <CardTitle className="text-sm text-primary font-medium">
               Placed Plants ({placedPlants.length} total, {Object.keys(plantSummary).length} unique species)
             </CardTitle>
           </CardHeader>
@@ -1049,7 +1048,7 @@ export default function GardenLayoutCanvas({
                           <TooltipTrigger asChild>
                             <div className="flex items-center gap-2 bg-background border rounded-lg px-3 py-1.5 shadow-sm">
                               <div
-                                className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
+                                className="rounded-full border-2 border-primary shadow-md hover:shadow-lg flex items-center justify-center transition-all duration-200"
                                 style={{
                                   width: '24px',
                                   height: '24px',
@@ -1082,9 +1081,9 @@ export default function GardenLayoutCanvas({
       </div>
 
       {/* Right side: Plant Inventory - Full Height */}
-      <Card className="shadow-md h-fit sticky top-4">
-        <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm font-medium">
+      <Card className="shadow-md h-fit sticky top-4 border-2 border-primary hover:border-gold transition-all duration-200">
+        <CardHeader className="py-3 px-4 bg-gradient-to-r from-primary/5 to-canary/5 border-b border-gold/30">
+          <CardTitle className="text-sm font-medium text-primary">
             Plants Inventory ({unplacedPlants.length} unplaced)
           </CardTitle>
           {/* Quick Test Plants Button for Test Gardens */}
@@ -1192,7 +1191,7 @@ export default function GardenLayoutCanvas({
                           <div className="flex flex-col gap-2 bg-background border rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center gap-2">
                               <div
-                                className="rounded-full border border-foreground/70 shadow-sm flex items-center justify-center"
+                                className="rounded-full border-2 border-primary shadow-md hover:shadow-lg flex items-center justify-center transition-all duration-200"
                                 style={{
                                   width: '20px',
                                   height: '20px',

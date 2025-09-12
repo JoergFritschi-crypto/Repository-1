@@ -46,6 +46,9 @@ export default {
         ring: "hsl(var(--ring))",
         canary: "hsl(var(--canary))",
         gold: "hsl(var(--gold))",
+        "dark-spring-green": "hsl(var(--dark-spring-green))",
+        "dark-pastel-green": "hsl(var(--dark-pastel-green))",
+        "british-racing-green": "hsl(var(--british-racing-green))",
         chart: {
           "1": "hsl(var(--chart-1))",
           "2": "hsl(var(--chart-2))",
