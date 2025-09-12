@@ -39,6 +39,10 @@ export interface PlacedPlant {
   quantity: number;
   plantType?: string;
   flowerColor?: string;
+  spreadMin?: number; // minimum spread in meters
+  spreadMax?: number; // maximum spread in meters
+  heightMin?: number; // minimum height in meters
+  heightMax?: number; // maximum height in meters
 }
 
 export default function GardenLayoutCanvas({
@@ -66,6 +70,7 @@ export default function GardenLayoutCanvas({
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [availableGardens, setAvailableGardens] = useState<any[]>([]);
   const { toast } = useToast();
+  const [plantDetails, setPlantDetails] = useState<Record<string, Plant>>({}); // Store fetched plant details
 
   // Save design to database
   const handleSaveDesign = async () => {
@@ -166,6 +171,40 @@ export default function GardenLayoutCanvas({
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return scientificName.substring(0, 2).toUpperCase();
+  };
+  
+  // Calculate plant size based on spread dimensions
+  const getPlantSize = (plant: PlacedPlant): number => {
+    // Use average spread if available, otherwise default based on type
+    if (plant.spreadMin && plant.spreadMax) {
+      const avgSpread = (plant.spreadMin + plant.spreadMax) / 2;
+      // Convert spread from meters to pixels based on garden scale
+      const spreadInBaseUnits = units === 'metric' ? avgSpread * 100 : avgSpread * 3.28 * 12; // cm or inches
+      const sizeInPixels = Math.min(spreadInBaseUnits * scaleX, spreadInBaseUnits * scaleY);
+      // Ensure minimum visibility (15px) and reasonable maximum (100px)
+      return Math.max(15, Math.min(100, sizeInPixels));
+    }
+    
+    // Default sizes based on plant type if spread not available
+    const plantTypeLower = (plant.plantType || '').toLowerCase();
+    const plantNameLower = (plant.plantName || '').toLowerCase();
+    const scientificNameLower = (plant.scientificName || '').toLowerCase();
+    
+    // Specific plant defaults based on common knowledge
+    if (plantNameLower.includes('maple') || scientificNameLower.includes('acer')) return 60; // Large tree
+    if (plantNameLower.includes('hosta')) return 25; // Small perennial
+    if (plantNameLower.includes('rose') || scientificNameLower.includes('rosa')) return 30; // Medium shrub
+    if (plantNameLower.includes('lavender') || scientificNameLower.includes('lavandula')) return 20; // Small shrub
+    
+    // Type-based defaults
+    if (plantTypeLower.includes('tree')) return 60;
+    if (plantTypeLower.includes('shrub')) return 35;
+    if (plantTypeLower.includes('perennial')) return 25;
+    if (plantTypeLower.includes('annual')) return 20;
+    if (plantTypeLower.includes('herb')) return 18;
+    
+    // Default medium size
+    return 24;
   };
 
   // Get plant color based on type or characteristics
@@ -390,6 +429,51 @@ export default function GardenLayoutCanvas({
       onPlacedPlantsChange(placedPlants);
     }
   }, [placedPlants, onPlacedPlantsChange]);
+  
+  // Fetch plant details to get spread dimensions
+  useEffect(() => {
+    const fetchPlantDetails = async () => {
+      const uniquePlantIds = Array.from(new Set(placedPlants.map(p => p.plantId)));
+      if (uniquePlantIds.length === 0) return;
+      
+      const newPlantDetails: Record<string, Plant> = {};
+      
+      for (const plantId of uniquePlantIds) {
+        if (!plantDetails[plantId]) {
+          try {
+            const response = await fetch(`/api/plants/${plantId}`);
+            if (response.ok) {
+              const plantData = await response.json();
+              newPlantDetails[plantId] = plantData;
+            }
+          } catch (error) {
+            console.error(`Error fetching plant ${plantId}:`, error);
+          }
+        }
+      }
+      
+      if (Object.keys(newPlantDetails).length > 0) {
+        setPlantDetails(prev => ({ ...prev, ...newPlantDetails }));
+        
+        // Update placed plants with spread dimensions
+        setPlacedPlants(prev => prev.map(plant => {
+          const details = newPlantDetails[plant.plantId] || plantDetails[plant.plantId];
+          if (details) {
+            return {
+              ...plant,
+              spreadMin: details.spreadMin,
+              spreadMax: details.spreadMax,
+              heightMin: details.heightMin,
+              heightMax: details.heightMax
+            };
+          }
+          return plant;
+        }));
+      }
+    };
+    
+    fetchPlantDetails();
+  }, [placedPlants.map(p => p.plantId).join(',')]); // Only fetch when plantIds change
 
   // Add inventory plants from advanced search
   useEffect(() => {
@@ -960,8 +1044,8 @@ export default function GardenLayoutCanvas({
                           selectedPlant === plant.id ? 'ring-2 ring-primary' : ''
                         }`}
                         style={{
-                          width: '24px',
-                          height: '24px',
+                          width: `${getPlantSize(plant)}px`,
+                          height: `${getPlantSize(plant)}px`,
                           backgroundColor: getPlantColor(plant),
                           left: `${plant.x}%`,
                           top: `${plant.y}%`,
@@ -970,7 +1054,10 @@ export default function GardenLayoutCanvas({
                         onClick={() => setSelectedPlant(plant.id)}
                         data-testid={`placed-plant-${plant.id}`}
                       >
-                        <span className="text-white font-bold drop-shadow-md" style={{ fontSize: '11px', textShadow: '0 0 2px rgba(0,0,0,0.8)' }}>
+                        <span className="text-white font-bold drop-shadow-md" style={{ 
+                          fontSize: `${Math.max(10, Math.min(16, getPlantSize(plant) / 3))}px`, 
+                          textShadow: '0 0 2px rgba(0,0,0,0.8)' 
+                        }}>
                           {getPlantInitials(plant.scientificName)}
                         </span>
                       </div>

@@ -421,13 +421,25 @@ export default function Garden3DView({
     // Clear existing plants
     plantMeshesRef.current.clear();
     
+    // Calculate garden dimensions for proportional scaling
+    const gardenBounds = gardenBoundsRef.current;
+    const gardenWidth = gardenBounds ? gardenBounds.maxX - gardenBounds.minX : 10;
+    const gardenHeight = gardenBounds ? gardenBounds.maxY - gardenBounds.minY : 10;
+    const maxGardenDimension = Math.max(gardenWidth, gardenHeight);
+    
+    // Find the tallest plant to determine scaling
+    const tallestPlantHeight = Math.max(...plants3D.map(p => p.dimensions.heightCurrent), 1);
+    
+    // Scale plants proportionally to garden size
+    // If tallest plant is taller than garden dimension, scale down
+    // Otherwise use actual sizes up to a reasonable proportion (e.g., 1.5x garden size)
+    const maxAllowedHeight = maxGardenDimension * 1.5; // Plants can be up to 1.5x garden size
+    const scaleFactor = tallestPlantHeight > maxAllowedHeight 
+      ? maxAllowedHeight / tallestPlantHeight 
+      : 1;
+    
     plants3D.forEach(plant => {
-      // Scale plants to realistic garden sizes (3m max height)
-      const MAX_GARDEN_HEIGHT = 3; // Maximum height for normal gardens
-      const scaleFactor = plant.dimensions.heightCurrent > MAX_GARDEN_HEIGHT 
-        ? MAX_GARDEN_HEIGHT / plant.dimensions.heightCurrent 
-        : 1;
-      
+      // Apply proportional scaling to all plants
       const scaledHeight = plant.dimensions.heightCurrent * scaleFactor;
       const scaledSpread = plant.dimensions.spreadCurrent * scaleFactor;
       
