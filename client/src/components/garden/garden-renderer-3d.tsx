@@ -11,7 +11,8 @@ import { Slider } from '@/components/ui/slider';
 import { 
   createGardenScene3D, 
   type GardenScene3D, 
-  type PlacedPlant 
+  type PlacedPlant,
+  type PlantInstance3D
 } from '@shared/schema';
 
 interface GardenRenderer3DProps {
@@ -44,6 +45,8 @@ export default function GardenRenderer3D({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const billboardsRef = useRef<THREE.Sprite[]>([]);
+  const textureCache = useRef<Map<string, THREE.Texture>>(new Map());
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
@@ -60,9 +63,116 @@ export default function GardenRenderer3D({
   
   const { toast } = useToast();
 
+  // CRITICAL FIX: Centralized scene reset with comprehensive resource disposal
+  const resetScene = useCallback(() => {
+    console.log('Resetting 3D scene and disposing resources...');
+    
+    // Cancel animation frame to prevent memory leaks
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    
+    // Dispose billboards with proper material cleanup
+    billboardsRef.current.forEach(billboard => {
+      if (sceneRef.current) {
+        sceneRef.current.remove(billboard);
+      }
+      // Dispose billboard material (but preserve cached textures)
+      if (billboard.material) {
+        billboard.material.dispose();
+      }
+    });
+    billboardsRef.current = [];
+    
+    // Dispose renderer resources
+    if (rendererRef.current) {
+      rendererRef.current.dispose();
+      rendererRef.current = null;
+    }
+    
+    // CRITICAL: Comprehensively dispose previous scene's resources
+    if (sceneRef.current) {
+      // Track cached textures for proper preservation
+      const cachedTextures = new Set(textureCache.current.values());
+      
+      sceneRef.current.traverse((object) => {
+        // CRITICAL FIX: Include THREE.LineSegments for GridHelper/AxesHelper disposal
+        if (object instanceof THREE.Mesh || 
+            object instanceof THREE.Line || 
+            object instanceof THREE.Points || 
+            object instanceof THREE.LineSegments || 
+            object instanceof THREE.Sprite) {
+          
+          // Dispose geometries
+          if (object.geometry) {
+            object.geometry.dispose();
+          }
+          
+          // Dispose materials and their textures with corrected cache logic
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => {
+                // CRITICAL FIX: Correct cache preservation using Set of cached textures
+                if (material.map && !cachedTextures.has(material.map)) {
+                  material.map.dispose();
+                }
+                material.dispose();
+              });
+            } else {
+              // CRITICAL FIX: Correct cache preservation using Set of cached textures
+              if (object.material.map && !cachedTextures.has(object.material.map)) {
+                object.material.map.dispose();
+              }
+              object.material.dispose();
+            }
+          }
+        }
+        
+        // Dispose lights and their shadow maps
+        if (object instanceof THREE.Light) {
+          if (object.shadow && object.shadow.map) {
+            object.shadow.map.dispose();
+          }
+        }
+      });
+      
+      // Clear scene hierarchy and reset
+      sceneRef.current.clear();
+      sceneRef.current = null;
+    }
+    
+    // Reset camera reference
+    cameraRef.current = null;
+    
+    console.log('Scene reset complete - GPU resources disposed');
+  }, []);
+
+  // Optional: Texture cache management with improved filtering
+  const manageTextureCache = useCallback((forceReset: boolean = false) => {
+    if (forceReset || textureCache.current.size > 50) { // Limit cache size
+      console.log(`Managing texture cache (${textureCache.current.size} textures)`);
+      textureCache.current.forEach(texture => {
+        texture.dispose();
+      });
+      textureCache.current.clear();
+    }
+    
+    // Apply better texture filtering for existing cached textures
+    textureCache.current.forEach(texture => {
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+    });
+  }, []);
+
   // Initialize Three.js scene
   const initializeScene = useCallback(() => {
     if (!canvasRef.current || !containerRef.current) return null;
+
+    // CRITICAL FIX: Use centralized reset function for proper resource disposal
+    // This ensures no previous scene resources remain in GPU memory
+    resetScene();
 
     // Create scene with proper coordinate system
     const scene = new THREE.Scene();
@@ -154,15 +264,202 @@ export default function GardenRenderer3D({
     cameraRef.current = camera;
     
     return { scene, renderer, camera };
-  }, [renderSettings.showGrid, renderSettings.shadowsEnabled]);
+  }, [renderSettings.showGrid, renderSettings.shadowsEnabled, resetScene]);
 
-  // Animation loop
+  // Create plant billboard sprite based on plant type and dimensions
+  const createPlantBillboard = useCallback((plant: PlantInstance3D): THREE.Sprite => {
+    // Determine plant visual style based on type
+    const plantType = plant.properties.type?.toLowerCase() || 'perennial';
+    const flowerColor = plant.properties.flowerColor || '#90EE90';
+    const leafColor = plant.properties.leafColor || '#228B22';
+    
+    // Create cache key for texture reuse
+    const cacheKey = `${plantType}-${flowerColor}-${leafColor}`;
+    
+    // Check texture cache first
+    let texture = textureCache.current.get(cacheKey);
+    
+    if (!texture) {
+      // Create canvas texture for the plant billboard
+      const canvas = document.createElement('canvas');
+      const size = 256; // Texture resolution
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      
+      // Clear canvas with transparent background
+      ctx.clearRect(0, 0, size, size);
+    
+    // Create different shapes based on plant type
+    if (plantType.includes('tree') || plantType.includes('ornamental tree')) {
+      // Tree: Simple tree silhouette with trunk and canopy
+      ctx.fillStyle = '#8B4513'; // Brown trunk
+      const trunkWidth = size * 0.1;
+      const trunkHeight = size * 0.4;
+      ctx.fillRect((size - trunkWidth) / 2, size - trunkHeight, trunkWidth, trunkHeight);
+      
+      // Green canopy
+      ctx.fillStyle = leafColor;
+      ctx.beginPath();
+      ctx.arc(size / 2, size * 0.3, size * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+      
+    } else if (plantType.includes('shrub')) {
+      // Shrub: Rounded bush shape
+      ctx.fillStyle = leafColor;
+      ctx.beginPath();
+      ctx.arc(size / 2, size * 0.6, size * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Add some texture with darker green
+      ctx.fillStyle = '#1F5F1F';
+      ctx.beginPath();
+      ctx.arc(size * 0.4, size * 0.55, size * 0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(size * 0.6, size * 0.65, size * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      
+    } else {
+      // Perennial/flower: Simple flower shape with colorful bloom
+      ctx.fillStyle = leafColor;
+      // Stem
+      ctx.fillRect(size * 0.47, size * 0.5, size * 0.06, size * 0.5);
+      
+      // Flower bloom
+      ctx.fillStyle = flowerColor;
+      ctx.beginPath();
+      ctx.arc(size / 2, size * 0.3, size * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Add petals for flower look
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        const petalX = size / 2 + Math.cos(angle) * size * 0.15;
+        const petalY = size * 0.3 + Math.sin(angle) * size * 0.15;
+        ctx.beginPath();
+        ctx.arc(petalX, petalY, size * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+      // Add subtle border for visibility
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size * 0.45, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Create texture from canvas with improved filtering
+      texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+      
+      // Cache the texture for reuse
+      textureCache.current.set(cacheKey, texture);
+    }
+    
+    // Create sprite material
+    const material = new THREE.SpriteMaterial({ 
+      map: texture,
+      transparent: true,
+      alphaTest: 0.1 // Remove transparent pixels
+    });
+    
+    // Create sprite
+    const sprite = new THREE.Sprite(material);
+    
+    // CRITICAL FIX: Set sprite center to bottom for proper ground anchoring
+    sprite.center.set(0.5, 0); // Bottom center anchoring
+    
+    // Clamp dimensions to prevent zero/negative values
+    const heightCurrent = Math.max(0.1, plant.dimensions.heightCurrent || 0.5);
+    const spreadCurrent = Math.max(0.1, plant.dimensions.spreadCurrent || 0.5);
+    
+    // Position sprite at plant location with proper Z positioning
+    // Since sprite center is now at bottom (0.5, 0), the bottom of sprite sits at plant.position.z
+    sprite.position.set(plant.position.x, plant.position.y, plant.position.z);
+    
+    // Scale sprite based on plant dimensions
+    // Use the larger of height or spread for consistent scaling
+    const scaleH = heightCurrent;
+    const scaleW = Math.max(spreadCurrent, heightCurrent * 0.6);
+    sprite.scale.set(scaleW, scaleH, 1);
+    
+    // Store plant data for debugging
+    sprite.userData = {
+      plantId: plant.id,
+      plantName: plant.plantName,
+      type: plantType,
+      height: heightCurrent,
+      spread: spreadCurrent
+    };
+    
+    return sprite;
+  }, []);
+
+  // Update all billboards to face the camera
+  const updateBillboardRotations = useCallback(() => {
+    if (!cameraRef.current || billboardsRef.current.length === 0) return;
+    
+    // Billboards automatically face camera due to THREE.Sprite nature
+    // but we can add custom rotation logic here if needed
+    billboardsRef.current.forEach(billboard => {
+      // Sprites automatically face camera, but we can add custom behavior
+      // For example, constrain rotation to vertical axis only for more realistic look
+      if (billboard.material instanceof THREE.SpriteMaterial) {
+        // Optional: Add wind animation or seasonal effects here
+      }
+    });
+  }, []);
+
+  // Create all plant billboards for the scene
+  const createPlantBillboards = useCallback((plants: PlantInstance3D[]) => {
+    if (!sceneRef.current) return;
+    
+    // Clear existing billboards with proper resource disposal
+    billboardsRef.current.forEach(billboard => {
+      sceneRef.current?.remove(billboard);
+      // Dispose material and its texture map
+      if (billboard.material) {
+        billboard.material.dispose();
+        // Note: Don't dispose cached textures here, they're reused
+      }
+    });
+    billboardsRef.current = [];
+    
+    // Create new billboards for each plant
+    plants.forEach(plant => {
+      const billboard = createPlantBillboard(plant);
+      sceneRef.current?.add(billboard);
+      billboardsRef.current.push(billboard);
+    });
+    
+    console.log(`Created ${billboardsRef.current.length} plant billboards`);
+  }, [createPlantBillboard]);
+
+  // Animation loop with lifecycle guards
   const animate = useCallback(() => {
-    if (!rendererRef.current || !sceneRef.current || !cameraRef.current) return;
+    // CRITICAL FIX: Guard against multiple animation loops
+    if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
+    }
+    
+    // Update billboard rotations to face camera
+    updateBillboardRotations();
     
     rendererRef.current.render(sceneRef.current, cameraRef.current);
-    animationFrameRef.current = requestAnimationFrame(animate);
-  }, []);
+    
+    // Only continue animation loop if still valid
+    if (rendererRef.current && sceneRef.current) {
+      animationFrameRef.current = requestAnimationFrame(animate);
+    }
+  }, [updateBillboardRotations]);
 
   // Handle window resize
   const handleResize = useCallback(() => {
@@ -192,6 +489,11 @@ export default function GardenRenderer3D({
     }
 
     setIsGenerating(true);
+    
+    // CRITICAL FIX: Reset scene before generating new one for clean GPU memory state
+    console.log('Starting 3D scene generation - cleaning up previous resources...');
+    resetScene();
+    manageTextureCache(); // Optimize texture cache for better performance
     
     try {
       // Convert garden data to 3D scene using schema functions
@@ -239,12 +541,17 @@ export default function GardenRenderer3D({
         camera.fov = cameraParams.fov;
         camera.updateProjectionMatrix();
         
-        // Start animation loop
-        animate();
+        // Create plant billboards for visual representation
+        createPlantBillboards(scene3DData.plants);
+        
+        // CRITICAL FIX: Only start animation loop if not already running
+        if (!animationFrameRef.current) {
+          animate();
+        }
         
         toast({
           title: "3D Scene Generated",
-          description: "Your garden has been rendered in 3D successfully.",
+          description: `Your garden has been rendered in 3D with ${scene3DData.plants.length} plant billboards.`,
         });
       }
       
@@ -258,7 +565,7 @@ export default function GardenRenderer3D({
     } finally {
       setIsGenerating(false);
     }
-  }, [gardenData, placedPlants, inventoryPlants, orientationSettings, renderSettings, initializeScene, animate, toast]);
+  }, [gardenData, placedPlants, inventoryPlants, orientationSettings, renderSettings, initializeScene, animate, createPlantBillboards, toast, resetScene, manageTextureCache]);
 
   // Export PNG at specified resolution
   const exportPNG = useCallback(async (width: number = 1920, height: number = 1088) => {
@@ -316,20 +623,74 @@ export default function GardenRenderer3D({
     }
   }, [gardenData.gardenName, toast]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount with comprehensive resource disposal
   useEffect(() => {
     return () => {
+      // Cancel animation frame
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
       
+      // Clean up billboards with proper disposal
+      billboardsRef.current.forEach(billboard => {
+        if (billboard.material) {
+          billboard.material.dispose();
+          // Note: Don't dispose cached textures here, handle separately
+        }
+      });
+      billboardsRef.current = [];
+      
+      // Dispose cached textures
+      textureCache.current.forEach(texture => {
+        texture.dispose();
+      });
+      textureCache.current.clear();
+      
+      // Dispose renderer
       if (rendererRef.current) {
         rendererRef.current.dispose();
+        rendererRef.current = null;
       }
       
-      // Clean up Three.js objects
+      // CRITICAL FIX: Clean up Three.js scene with complete object type coverage
       if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          // Include ALL object types that have disposable resources
+          if (object instanceof THREE.Mesh || 
+              object instanceof THREE.Line || 
+              object instanceof THREE.Points || 
+              object instanceof THREE.LineSegments || 
+              object instanceof THREE.Sprite) {
+            
+            // Dispose geometry
+            if (object.geometry) object.geometry.dispose();
+            
+            // Dispose materials
+            if (object.material) {
+              if (Array.isArray(object.material)) {
+                object.material.forEach(material => {
+                  // Dispose material textures (all textures at cleanup)
+                  if (material.map) material.map.dispose();
+                  material.dispose();
+                });
+              } else {
+                // Dispose material texture (all textures at cleanup)
+                if (object.material.map) object.material.map.dispose();
+                object.material.dispose();
+              }
+            }
+          }
+          
+          // Dispose lights and shadow maps
+          if (object instanceof THREE.Light) {
+            if (object.shadow && object.shadow.map) {
+              object.shadow.map.dispose();
+            }
+          }
+        });
         sceneRef.current.clear();
+        sceneRef.current = null;
       }
     };
   }, []);
