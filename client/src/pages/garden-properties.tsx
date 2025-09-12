@@ -16,7 +16,7 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import PlantSearchModal from '@/components/plant/plant-search-modal';
@@ -176,7 +176,7 @@ function TransparentGardenSpadeComponent({ className }: { className?: string }) 
   }, []);
 
   if (!isProcessed) {
-    return <Palette className={`${className} text-[#004025]`} />;
+    return <Sparkles className={`${className} text-[#004025]`} />;
   }
 
   return (
