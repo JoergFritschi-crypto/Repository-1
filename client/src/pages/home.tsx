@@ -40,13 +40,13 @@ export default function Home() {
                 Design stunning gardens with professional tools and expert plant knowledge
               </p>
               <div className="flex gap-3 justify-center">
-                <Button size="default" className="bg-white/90 hover:bg-white text-primary border shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+                <Button size="default" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1" asChild>
                   <Link href="/garden-properties" className="link-reset">
                     <GardenDesignIcon className="w-4 h-4 mr-2" />
                     Start Designing
                   </Link>
                 </Button>
-                <Button size="default" variant="outline" className="bg-white/90 hover:bg-white text-primary border shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+                <Button size="default" variant="outline" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1" asChild>
                   <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-4 h-4 mr-2" />
                     Browse Plants
@@ -118,7 +118,7 @@ export default function Home() {
                   <p className="text-lg font-bold" data-testid="text-stat-membership">Free</p>
                   <p className="text-xs text-muted-foreground">Membership</p>
                 </div>
-                <User className="w-6 h-6 text-primary" />
+                <PremiumIcon className="w-6 h-6" />
               </div>
             </CardContent>
           </Card>
@@ -130,7 +130,7 @@ export default function Home() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4">
                 <CardTitle className="text-base" data-testid="text-recent-gardens-title">Recent Garden Designs</CardTitle>
-                <Button size="sm" asChild data-testid="button-new-garden">
+                <Button size="sm" asChild className="hover:scale-105 hover:shadow-md transition-all duration-200" data-testid="button-new-garden">
                   <Link href="/garden-properties">
                     <PlusCircle className="w-4 h-4 mr-2" />
                     New Garden
@@ -166,6 +166,7 @@ export default function Home() {
                           <Button 
                             variant="outline" 
                             size="sm" 
+                            className="hover:scale-105 hover:shadow-sm transition-all duration-200"
                             data-testid={`button-edit-${garden.id}`}
                             onClick={() => {
                               sessionStorage.setItem('intentionalNavigation', 'true');
@@ -174,7 +175,7 @@ export default function Home() {
                           >
                             Edit
                           </Button>
-                          <Button variant="outline" size="sm" data-testid={`button-view-${garden.id}`}>
+                          <Button variant="outline" size="sm" className="hover:scale-105 hover:shadow-sm transition-all duration-200" data-testid={`button-view-${garden.id}`}>
                             View 3D
                           </Button>
                         </div>
@@ -188,7 +189,7 @@ export default function Home() {
                     <p className="text-xs text-muted-foreground mb-3">
                       Start by creating your first garden design
                     </p>
-                    <Button size="sm" asChild data-testid="button-create-first-garden">
+                    <Button size="sm" asChild className="hover:scale-105 hover:shadow-md transition-all duration-200" data-testid="button-create-first-garden">
                       <Link href="/garden-properties">Create Your First Garden</Link>
                     </Button>
                   </div>
@@ -205,19 +206,19 @@ export default function Home() {
                 <CardTitle className="text-base" data-testid="text-quick-actions-title">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button size="sm" asChild className="w-full justify-start" data-testid="button-plant-doctor">
+                <Button size="sm" asChild className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/90" data-testid="button-plant-doctor">
                   <Link href="/plant-doctor" className="link-reset">
                     <PlantDoctorIcon className="w-4 h-4 mr-2" />
                     Plant Doctor
                   </Link>
                 </Button>
-                <Button size="sm" asChild variant="secondary" className="w-full justify-start" data-testid="button-browse-plants">
+                <Button size="sm" asChild className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/90" data-testid="button-browse-plants">
                   <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-4 h-4 mr-2" />
                     Browse Plants
                   </Link>
                 </Button>
-                <Button size="sm" asChild variant="outline" className="w-full justify-start" data-testid="button-premium-features">
+                <Button size="sm" asChild className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/90" data-testid="button-premium-features">
                   <Link href="/premium" className="link-reset">
                     <PremiumIcon className="w-4 h-4 mr-2" />
                     Premium Features
@@ -230,7 +231,7 @@ export default function Home() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4">
                 <CardTitle className="text-base" data-testid="text-collection-title">My Plant Collection</CardTitle>
-                <Button variant="ghost" size="sm" asChild data-testid="button-view-all-plants">
+                <Button variant="ghost" size="sm" asChild className="hover:scale-105 hover:bg-primary/10 transition-all duration-200" data-testid="button-view-all-plants">
                   <Link href="/plant-library?tab=collection">View All</Link>
                 </Button>
               </CardHeader>
@@ -263,7 +264,7 @@ export default function Home() {
                   <div className="text-center py-3" data-testid="empty-collection">
                     <PlantLibraryIcon className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
                     <p className="text-xs text-muted-foreground">No plants in collection</p>
-                    <Button variant="ghost" size="sm" asChild className="mt-2" data-testid="button-browse-to-add">
+                    <Button variant="ghost" size="sm" asChild className="mt-2 hover:scale-105 hover:bg-primary/10 transition-all duration-200" data-testid="button-browse-to-add">
                       <Link href="/plant-library" className="link-reset">Browse Plants</Link>
                     </Button>
                   </div>
