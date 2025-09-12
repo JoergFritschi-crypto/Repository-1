@@ -233,11 +233,11 @@ export default function Landing() {
                     <span className="text-xs">Community support</span>
                   </li>
                 </ul>
-                <Button size="sm" variant="outline" className="w-full mt-auto" asChild data-testid="button-plan-free">
+                <Button size="sm" variant="outline" className="w-full mt-auto hover:bg-muted hover:border-primary transition-all duration-300" asChild data-testid="button-plan-free">
                   {!isAuthenticated ? (
                     <a href="/api/login">Get Started</a>
                   ) : (
-                    <Link href="/home">Go to Dashboard</Link>
+                    <Link href="/home" className="link-reset">Go to Dashboard</Link>
                   )}
                 </Button>
               </CardContent>
@@ -270,11 +270,11 @@ export default function Landing() {
                     <span className="text-xs">Priority support</span>
                   </li>
                 </ul>
-                <Button size="sm" className="w-full mt-auto bg-primary hover:bg-primary/90" asChild data-testid="button-plan-design">
+                <Button size="sm" className="w-full mt-auto bg-primary hover:bg-primary/90 hover:shadow-lg transition-all duration-300" asChild data-testid="button-plan-design">
                   {!isAuthenticated ? (
                     <a href="/api/login">Create Design</a>
                   ) : (
-                    <Link href="/garden-properties">Create Design</Link>
+                    <Link href="/garden-properties" className="link-reset">Create Design</Link>
                   )}
                 </Button>
               </CardContent>
@@ -308,11 +308,11 @@ export default function Landing() {
                     <span className="text-xs">Premium dashboard</span>
                   </li>
                 </ul>
-                <Button size="sm" variant="secondary" className="w-full mt-auto" asChild data-testid="button-plan-premium">
+                <Button size="sm" variant="secondary" className="w-full mt-auto hover:bg-secondary/80 hover:shadow-md transition-all duration-300" asChild data-testid="button-plan-premium">
                   {!isAuthenticated ? (
                     <a href="/api/login">Start Premium</a>
                   ) : (
-                    <Link href="/premium">View Premium</Link>
+                    <Link href="/premium" className="link-reset">View Premium</Link>
                   )}
                 </Button>
               </CardContent>
