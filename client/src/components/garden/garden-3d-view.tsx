@@ -322,10 +322,12 @@ export default function Garden3DView({
 
   // Create plant representations
   const createPlants = useCallback((plants3D: PlantInstance3D[]) => {
+    console.log('createPlants called with:', plants3D.length, 'plants');
     // Clear existing plants
     plantMeshesRef.current.clear();
     
     plants3D.forEach(plant => {
+      console.log(`Creating ${plant.plantName} at position (${plant.position.x}, ${plant.position.y}) with height ${plant.dimensions.heightCurrent}m and spread ${plant.dimensions.spreadCurrent}m`);
       // Create plant representation
       let plantMesh: THREE.Mesh;
       
@@ -391,7 +393,9 @@ export default function Garden3DView({
       plantMesh.userData = { plant };
       
       plantMeshesRef.current.add(plantMesh);
+      console.log(`Added ${plant.plantName} to scene`);
     });
+    console.log('Total plants in scene:', plantMeshesRef.current.children.length);
   }, []);
 
   // Update lighting based on settings
@@ -544,6 +548,7 @@ export default function Garden3DView({
 
   // Build complete 3D scene
   const buildScene = useCallback(() => {
+    console.log('Building scene - plants:', plants, 'isSceneReady:', isSceneReady, 'placedPlants:', placedPlants);
     if (!plants || !isSceneReady) return;
     
     // Create garden scene data
@@ -578,6 +583,7 @@ export default function Garden3DView({
     });
     
     // Create plants
+    console.log('Creating plants in 3D scene:', sceneData.plants);
     createPlants(sceneData.plants);
     
     // Update lighting and camera
