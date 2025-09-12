@@ -233,7 +233,7 @@ export default function Landing() {
                     <span className="text-xs">Community support</span>
                   </li>
                 </ul>
-                <Button size="sm" variant="outline" className="w-full mt-auto hover:bg-primary hover:text-white hover:border-primary transition-all duration-300" asChild data-testid="button-plan-free">
+                <Button size="sm" variant="secondary" className="w-full mt-auto hover:bg-secondary/80 hover:shadow-md transition-all duration-300" asChild data-testid="button-plan-free">
                   {!isAuthenticated ? (
                     <a href="/api/login">Get Started</a>
                   ) : (
@@ -270,7 +270,7 @@ export default function Landing() {
                     <span className="text-xs">Priority support</span>
                   </li>
                 </ul>
-                <Button size="sm" variant="outline" className="w-full mt-auto hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg transition-all duration-300" asChild data-testid="button-plan-design">
+                <Button size="sm" variant="secondary" className="w-full mt-auto hover:bg-secondary/80 hover:shadow-md transition-all duration-300" asChild data-testid="button-plan-design">
                   {!isAuthenticated ? (
                     <a href="/api/login">Create Design</a>
                   ) : (
