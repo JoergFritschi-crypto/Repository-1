@@ -1284,17 +1284,18 @@ export default function Garden3DView({
               size="sm"
               onClick={handleGenerateArtisticView}
               disabled={isGeneratingArtistic || !isSceneReady}
-              data-testid="button-generate-artistic"
+              data-testid="button-capture-view"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
             >
               {isGeneratingArtistic ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  Generating...
+                  Processing...
                 </>
               ) : (
                 <>
-                  <Wand2 className="w-4 h-4 mr-1" />
-                  Generate Artistic View
+                  <Camera className="w-4 h-4 mr-1" />
+                  Use This View
                 </>
               )}
             </Button>
