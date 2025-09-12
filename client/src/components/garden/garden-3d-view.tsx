@@ -822,7 +822,7 @@ export default function Garden3DView({
     
     // Treat viewingDistance as TRUE 3D spherical distance from camera to garden center
     const maxDistance = 30;
-    const clampedDistance = Math.max(clampedHeight + 0.1, Math.min(maxDistance, renderSettings.viewingDistance));
+    const clampedDistance = Math.max(0.5, Math.min(maxDistance, renderSettings.viewingDistance));
     
     // Calculate ground-plane radius: r = sqrt(max(0, distance^2 - height^2))
     const groundRadius = Math.sqrt(Math.max(0, clampedDistance * clampedDistance - clampedHeight * clampedHeight));
@@ -948,7 +948,7 @@ export default function Garden3DView({
         const fixedX = gardenBoundsRef.current.center.x + Math.cos(fixedAngle) * fixedDistance;
         const fixedZ = gardenBoundsRef.current.center.y + Math.sin(fixedAngle) * fixedDistance;
         
-        viewerMarkerRef.current.position.set(fixedX, 0.01, fixedZ); // Exactly on grid level
+        viewerMarkerRef.current.position.set(fixedX, 0.02, fixedZ); // Just above grid level
         
         // Point towards garden center
         const lookDirection = Math.atan2(
