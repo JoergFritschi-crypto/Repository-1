@@ -110,7 +110,6 @@ export default function Garden3DView({
   
   // Render settings with database values
   const [renderSettings, setRenderSettings] = useState({
-    season: 'summer' as 'spring' | 'summer' | 'autumn' | 'winter',
     timeOfDay: 14,
     viewingDistance: initialCamera.distance,
     viewingHeight: initialCamera.height,
@@ -173,7 +172,7 @@ export default function Garden3DView({
       antialias: true,
       alpha: true
     });
-    renderer.shadowMap.enabled = renderSettings.shadowsEnabled;
+    renderer.shadowMap.enabled = true; // Will be controlled by toggle
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
@@ -279,46 +278,61 @@ export default function Garden3DView({
     
     sceneRef.current.add(ground);
     
-    // Add grid helper if enabled
-    if (renderSettings.showGrid) {
-      const existingGrid = sceneRef.current.getObjectByName('grid-helper');
-      if (existingGrid) {
-        sceneRef.current.remove(existingGrid);
-      }
-      
-      const gridSize = Math.max(width, depth) * 1.5;
-      const gridHelper = new THREE.GridHelper(gridSize, 20, 0x888888, 0xcccccc);
-      gridHelper.name = 'grid-helper';
-      gridHelper.position.y = 0.01;
-      sceneRef.current.add(gridHelper);
+    // Always create grid helper (visibility controlled by toggle)
+    const existingGrid = sceneRef.current.getObjectByName('grid-helper');
+    if (existingGrid) {
+      sceneRef.current.remove(existingGrid);
     }
     
-    // Add compass if enabled
-    if (renderSettings.showCompass) {
-      const existingCompass = sceneRef.current.getObjectByName('compass');
-      if (existingCompass) {
-        sceneRef.current.remove(existingCompass);
-      }
-      
-      const compassGroup = new THREE.Group();
-      compassGroup.name = 'compass';
-      
-      // North arrow
-      const arrowGeometry = new THREE.ConeGeometry(0.3, 1, 4);
-      const northArrow = new THREE.Mesh(
-        arrowGeometry,
-        new THREE.MeshBasicMaterial({ color: 0xff0000 })
-      );
-      northArrow.rotation.z = Math.PI;
-      northArrow.position.set(0, 1, -(Math.max(width, depth) / 2 + 2));
-      
-      // Rotate compass based on north orientation
-      compassGroup.rotation.y = -cardinalRotation * Math.PI / 180;
-      compassGroup.add(northArrow);
-      
-      sceneRef.current.add(compassGroup);
+    const gridSize = Math.max(width, depth) * 1.5;
+    const gridHelper = new THREE.GridHelper(gridSize, 20, 0xaaaaaa, 0xdddddd);
+    gridHelper.name = 'grid-helper';
+    gridHelper.position.y = 0.01;
+    gridHelper.visible = renderSettings.showGrid;
+    sceneRef.current.add(gridHelper);
+    
+    // Always create compass (visibility controlled by toggle)
+    const existingCompass = sceneRef.current.getObjectByName('compass');
+    if (existingCompass) {
+      sceneRef.current.remove(existingCompass);
     }
-  }, [renderSettings.showGrid, renderSettings.showCompass, cardinalRotation]);
+    
+    const compassGroup = new THREE.Group();
+    compassGroup.name = 'compass';
+    
+    // Create a more subtle north indicator
+    const arrowGeometry = new THREE.ConeGeometry(0.15, 0.5, 4);
+    const northArrow = new THREE.Mesh(
+      arrowGeometry,
+      new THREE.MeshBasicMaterial({ 
+        color: 0x4488aa,
+        opacity: 0.6,
+        transparent: true
+      })
+    );
+    northArrow.rotation.z = Math.PI;
+    northArrow.position.set(0, 0.5, -(Math.max(width, depth) / 2 + 2));
+    
+    // Add "N" text sprite (simpler approach using a small sphere as marker)
+    const nMarkerGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const nMarker = new THREE.Mesh(
+      nMarkerGeometry,
+      new THREE.MeshBasicMaterial({ 
+        color: 0x4488aa,
+        opacity: 0.6,
+        transparent: true
+      })
+    );
+    nMarker.position.set(0, 0.8, -(Math.max(width, depth) / 2 + 2.2));
+    
+    // Rotate compass based on north orientation
+    compassGroup.rotation.y = -cardinalRotation * Math.PI / 180;
+    compassGroup.add(northArrow);
+    compassGroup.add(nMarker);
+    compassGroup.visible = renderSettings.showCompass;
+    
+    sceneRef.current.add(compassGroup);
+  }, [renderSettings, cardinalRotation]);
 
   // Create plant representations
   const createPlants = useCallback((plants3D: PlantInstance3D[]) => {
@@ -423,11 +437,11 @@ export default function Garden3DView({
       sceneRef.current.remove(sunHelperRef.current);
     }
     
-    // Create new lighting parameters
+    // Create new lighting parameters (always use summer for step 5)
     const lighting = createLightingParameters(
       cardinalRotation,
       renderSettings.timeOfDay,
-      renderSettings.season
+      'summer' // Always summer in step 5, seasons are in step 7
     );
     
     // Create sun light
@@ -476,48 +490,53 @@ export default function Garden3DView({
       sceneRef.current.add(newAmbientLight);
     }
     
-    // Add sun path visualization if enabled
-    if (renderSettings.showSunPath) {
-      // Create sun sphere
-      const sunGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-      const sunMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0xffff00
-      });
-      const sunSphere = new THREE.Mesh(sunGeometry, sunMaterial);
-      sunSphere.position.copy(sunLight.position);
-      sceneRef.current.add(sunSphere);
-      sunHelperRef.current = sunSphere;
-      
-      // Create sun path arc
-      const pathCurve = new THREE.EllipseCurve(
-        0, 0,
-        gardenSize * 1.5, gardenSize * 1.5,
-        0, Math.PI,
-        false,
-        0
-      );
-      const pathPoints = pathCurve.getPoints(50);
-      const pathGeometry = new THREE.BufferGeometry().setFromPoints(
-        pathPoints.map(p => new THREE.Vector3(p.x, p.y + 5, 0))
-      );
-      
-      // Rotate path based on cardinal direction
-      pathGeometry.rotateY(-cardinalRotation * Math.PI / 180);
-      
-      const pathMaterial = new THREE.LineBasicMaterial({ 
-        color: 0xffaa00,
-        opacity: 0.3,
-        transparent: true
-      });
-      const pathLine = new THREE.Line(pathGeometry, pathMaterial);
-      pathLine.name = 'sun-path';
-      
-      // Remove old path if exists
-      const oldPath = sceneRef.current.getObjectByName('sun-path');
-      if (oldPath) sceneRef.current.remove(oldPath);
-      
-      sceneRef.current.add(pathLine);
-    }
+    // Always create sun path visualization (visibility controlled by toggle)
+    // Remove old sun helper and path if exists
+    const oldSunSphere = sceneRef.current.getObjectByName('sun-sphere');
+    if (oldSunSphere) sceneRef.current.remove(oldSunSphere);
+    const oldPath = sceneRef.current.getObjectByName('sun-path');
+    if (oldPath) sceneRef.current.remove(oldPath);
+    
+    // Create sun sphere
+    const sunGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    const sunMaterial = new THREE.MeshBasicMaterial({ 
+      color: 0xffd700,
+      opacity: 0.8,
+      transparent: true
+    });
+    const sunSphere = new THREE.Mesh(sunGeometry, sunMaterial);
+    sunSphere.name = 'sun-sphere';
+    sunSphere.position.copy(sunLight.position);
+    sunSphere.visible = renderSettings.showSunPath;
+    sceneRef.current.add(sunSphere);
+    sunHelperRef.current = sunSphere;
+    
+    // Create sun path arc
+    const pathCurve = new THREE.EllipseCurve(
+      0, 0,
+      gardenSize * 1.5, gardenSize * 1.5,
+      0, Math.PI,
+      false,
+      0
+    );
+    const pathPoints = pathCurve.getPoints(50);
+    const pathGeometry = new THREE.BufferGeometry().setFromPoints(
+      pathPoints.map(p => new THREE.Vector3(p.x, p.y + 5, 0))
+    );
+    
+    // Rotate path based on cardinal direction
+    pathGeometry.rotateY(-cardinalRotation * Math.PI / 180);
+    
+    const pathMaterial = new THREE.LineBasicMaterial({ 
+      color: 0xffaa00,
+      opacity: 0.2,
+      transparent: true
+    });
+    const pathLine = new THREE.Line(pathGeometry, pathMaterial);
+    pathLine.name = 'sun-path';
+    pathLine.visible = renderSettings.showSunPath;
+    
+    sceneRef.current.add(pathLine);
   }, [renderSettings, cardinalRotation]);
 
   // Update camera position
@@ -575,7 +594,7 @@ export default function Garden3DView({
         viewerRotation: renderSettings.viewerRotation
       },
       environmentSettings: {
-        season: renderSettings.season,
+        season: 'summer', // Always summer in step 5
         timeOfDay: renderSettings.timeOfDay,
         slopePercentage: gardenData.slopePercentage || 0,
         slopeDirection: gardenData.slopeDirection || 'S',
@@ -644,6 +663,41 @@ export default function Garden3DView({
     if (isSceneReady && gardenBoundsRef.current) {
       updateLighting();
       updateCamera();
+      
+      // Update visibility of toggleable elements
+      if (sceneRef.current) {
+        // Toggle grid visibility
+        const grid = sceneRef.current.getObjectByName('grid-helper');
+        if (grid) {
+          grid.visible = renderSettings.showGrid;
+        }
+        
+        // Toggle compass visibility
+        const compass = sceneRef.current.getObjectByName('compass');
+        if (compass) {
+          compass.visible = renderSettings.showCompass;
+        }
+        
+        // Toggle sun path visibility
+        const sunPath = sceneRef.current.getObjectByName('sun-path');
+        if (sunPath) {
+          sunPath.visible = renderSettings.showSunPath;
+        }
+        const sunSphere = sceneRef.current.getObjectByName('sun-sphere');
+        if (sunSphere) {
+          sunSphere.visible = renderSettings.showSunPath;
+        }
+        
+        // Toggle shadows
+        if (rendererRef.current) {
+          rendererRef.current.shadowMap.enabled = renderSettings.shadowsEnabled;
+          if (sunLightRef.current) {
+            sunLightRef.current.castShadow = renderSettings.shadowsEnabled;
+          }
+          // Force re-render
+          rendererRef.current.shadowMap.needsUpdate = true;
+        }
+      }
     }
   }, [renderSettings, isSceneReady, updateLighting, updateCamera]);
 
@@ -670,8 +724,7 @@ export default function Garden3DView({
       viewingDistance: initial.distance,
       viewingHeight: initial.height,
       viewerRotation: initial.rotation,
-      timeOfDay: 14,
-      season: 'summer'
+      timeOfDay: 14
     }));
   };
 
@@ -837,44 +890,6 @@ export default function Garden3DView({
                   className="mt-1"
                   data-testid="slider-time-of-day"
                 />
-              </div>
-              
-              <div>
-                <Label className="text-xs">Season</Label>
-                <Select 
-                  value={renderSettings.season} 
-                  onValueChange={(value: any) => setRenderSettings(prev => ({ ...prev, season: value }))}
-                >
-                  <SelectTrigger className="w-full mt-1" data-testid="select-season">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="spring">
-                      <span className="flex items-center gap-2">
-                        <Leaf className="w-4 h-4 text-green-500" />
-                        Spring
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="summer">
-                      <span className="flex items-center gap-2">
-                        <Sun className="w-4 h-4 text-yellow-500" />
-                        Summer
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="autumn">
-                      <span className="flex items-center gap-2">
-                        <TreePine className="w-4 h-4 text-orange-500" />
-                        Autumn
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="winter">
-                      <span className="flex items-center gap-2">
-                        <Snowflake className="w-4 h-4 text-blue-500" />
-                        Winter
-                      </span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               
               <div className="space-y-2">
