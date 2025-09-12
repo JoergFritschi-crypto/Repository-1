@@ -210,7 +210,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">3D seasonal visualization</span>
+                    <span className="text-xs">Seasonal garden imagery</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
@@ -300,8 +300,8 @@ export default function Landing() {
                 <div className="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <SeasonIcon className="w-8 h-8" />
                 </div>
-                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-3d-title">3D Visualization</h3>
-                <p className="text-xs text-muted-foreground" data-testid="text-feature-3d-description">
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-seasonal-title">Seasonal Visualization</h3>
+                <p className="text-xs text-muted-foreground" data-testid="text-feature-seasonal-description">
                   See your garden through the seasons with AI-generated imagery
                 </p>
               </CardContent>
