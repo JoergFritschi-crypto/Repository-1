@@ -327,7 +327,23 @@ export default function Garden3DView({
     console.log('=== INIT SCENE END ===');
     
     setIsSceneReady(true);
-  }, [gardenData, cardinalRotation, renderSettings.shadowsEnabled]);
+  }, [gardenData, cardinalRotation]);
+
+  // Handle shadow settings changes without rebuilding scene
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.shadowMap.enabled = renderSettings.shadowsEnabled;
+      
+      // Update all lights that cast shadows
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object instanceof THREE.DirectionalLight || object instanceof THREE.SpotLight) {
+            object.castShadow = renderSettings.shadowsEnabled;
+          }
+        });
+      }
+    }
+  }, [renderSettings.shadowsEnabled]);
 
   // Create garden ground and terrain
   const createGardenTerrain = useCallback((bounds: GardenBounds, slope?: { percentage?: number; direction?: string }) => {
