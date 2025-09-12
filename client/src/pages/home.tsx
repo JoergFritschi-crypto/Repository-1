@@ -40,8 +40,8 @@ export default function Home() {
                 Design stunning gardens with professional tools and expert plant knowledge
               </p>
               <div className="flex gap-3 justify-center">
-                <Button size="default" className="btn-gold shadow-lg hover:shadow-xl transition-all duration-300" asChild>
-                  <Link href="/garden-properties">
+                <Button size="default" className="bg-white/90 hover:bg-white text-primary border shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+                  <Link href="/garden-properties" className="link-reset">
                     <GardenDesignIcon className="w-4 h-4 mr-2" />
                     Start Designing
                   </Link>
