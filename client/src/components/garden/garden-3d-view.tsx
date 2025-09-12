@@ -229,6 +229,38 @@ export default function Garden3DView({
     // Add to scene
     scene.add(plantMeshesRef.current);
     
+    // Add garden dimensions display
+    const gardenWidth = gardenData.dimensions?.width || 10;
+    const gardenHeight = gardenData.dimensions?.height || 10;
+    const dimensionText = `${gardenWidth}m × ${gardenHeight}m`;
+    
+    // Create a plane to display dimensions
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.fillRect(0, 0, 256, 64);
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(dimensionText, 128, 32);
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    const dimensionSprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({ 
+        map: texture,
+        fog: false
+      })
+    );
+    dimensionSprite.scale.set(2, 0.5, 1);
+    dimensionSprite.position.set(0, 0.1, -Math.max(gardenWidth, gardenHeight) / 2 - 1);
+    dimensionSprite.name = 'dimension-sprite';
+    scene.add(dimensionSprite);
+    
     // Add brighter ambient lighting immediately to ensure visibility
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     ambientLight.name = 'ambient-light-initial';
@@ -361,46 +393,46 @@ export default function Garden3DView({
     const compassGroup = new THREE.Group();
     compassGroup.name = 'compass';
     
-    // Create a clean north arrow indicator
-    const arrowLength = 0.8;
-    const arrowBodyGeometry = new THREE.CylinderGeometry(0.05, 0.05, arrowLength, 8);
+    // Create a smaller north arrow indicator at ground level
+    const arrowLength = 0.3; // Much smaller
+    const arrowBodyGeometry = new THREE.CylinderGeometry(0.02, 0.02, arrowLength, 8);
     const arrowBody = new THREE.Mesh(
       arrowBodyGeometry,
       new THREE.MeshBasicMaterial({ 
-        color: 0x4488aa, // Blue-gray color
+        color: 0xff0000, // Red color for north
         fog: false
       })
     );
     arrowBody.rotation.z = Math.PI / 2; // Rotate to horizontal
     
     // Create arrow head
-    const arrowHeadGeometry = new THREE.ConeGeometry(0.15, 0.3, 8);
+    const arrowHeadGeometry = new THREE.ConeGeometry(0.06, 0.12, 8);
     const arrowHead = new THREE.Mesh(
       arrowHeadGeometry,
       new THREE.MeshBasicMaterial({ 
-        color: 0x4488aa, // Same blue-gray color
+        color: 0xff0000, // Red color
         fog: false
       })
     );
     arrowHead.rotation.z = -Math.PI / 2; // Point north
-    arrowHead.position.x = arrowLength / 2 + 0.1;
+    arrowHead.position.x = arrowLength / 2 + 0.04;
     
     // Create N label (using a flat disk)
-    const labelGeometry = new THREE.RingGeometry(0.15, 0.25, 16);
+    const labelGeometry = new THREE.RingGeometry(0.06, 0.1, 16);
     const labelMesh = new THREE.Mesh(
       labelGeometry,
       new THREE.MeshBasicMaterial({ 
-        color: 0x4488aa,
+        color: 0xff0000,
         fog: false,
         side: THREE.DoubleSide
       })
     );
-    labelMesh.position.x = arrowLength / 2 + 0.5;
+    labelMesh.position.x = arrowLength / 2 + 0.2;
     labelMesh.rotation.x = -Math.PI / 2; // Face up
     
-    // Position compass in top-right corner of garden
-    const compassDistance = Math.max(width, depth) / 2 + 1.5;
-    compassGroup.position.set(compassDistance * 0.7, 2, -compassDistance * 0.7);
+    // Position compass at ground level in corner of garden
+    const compassDistance = Math.max(width, depth) / 2 + 0.8;
+    compassGroup.position.set(compassDistance * 0.7, 0.05, -compassDistance * 0.7); // Just above ground
     
     // Add all parts to compass group
     compassGroup.add(arrowBody);
@@ -747,22 +779,30 @@ export default function Garden3DView({
       const viewerGroup = new THREE.Group();
       viewerGroup.name = 'viewer-marker';
       
-      // Create viewer position indicator (a bright blue sphere with arrow)
-      const sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-      const viewerSphere = new THREE.Mesh(
-        sphereGeometry,
+      // Create viewer position indicator (a flat circle on the ground)
+      const circleGeometry = new THREE.RingGeometry(0.2, 0.35, 32);
+      const viewerCircle = new THREE.Mesh(
+        circleGeometry,
         new THREE.MeshBasicMaterial({ 
           color: 0x0066ff, // Bright blue for viewer
           fog: false,
           depthTest: false,
           depthWrite: false,
           transparent: true,
-          opacity: 0.9
+          opacity: 0.9,
+          side: THREE.DoubleSide
         })
       );
+      viewerCircle.rotation.x = -Math.PI / 2; // Lay flat on ground
       
-      // Create a small arrow pointing forward from the viewer
-      const arrowGeometry = new THREE.ConeGeometry(0.15, 0.4, 8);
+      // Create view direction arrow (flat triangle on ground)
+      const arrowShape = new THREE.Shape();
+      arrowShape.moveTo(0, 0.15);
+      arrowShape.lineTo(-0.1, -0.15);
+      arrowShape.lineTo(0.1, -0.15);
+      arrowShape.closePath();
+      
+      const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
       const viewerArrow = new THREE.Mesh(
         arrowGeometry,
         new THREE.MeshBasicMaterial({ 
@@ -772,10 +812,11 @@ export default function Garden3DView({
           depthWrite: false
         })
       );
-      viewerArrow.rotation.x = Math.PI / 2; // Point forward
-      viewerArrow.position.z = -0.3; // Position in front of sphere
+      viewerArrow.rotation.x = -Math.PI / 2; // Lay flat on ground
+      viewerArrow.position.y = 0.01; // Just above ground
+      viewerArrow.position.z = -0.2;
       
-      viewerGroup.add(viewerSphere);
+      viewerGroup.add(viewerCircle);
       viewerGroup.add(viewerArrow);
       viewerGroup.renderOrder = 999;
       
@@ -792,7 +833,7 @@ export default function Garden3DView({
         const fixedX = gardenBoundsRef.current.center.x + Math.cos(fixedAngle) * fixedDistance;
         const fixedZ = gardenBoundsRef.current.center.y + Math.sin(fixedAngle) * fixedDistance;
         
-        viewerMarkerRef.current.position.set(fixedX, 0.5, fixedZ);
+        viewerMarkerRef.current.position.set(fixedX, 0.02, fixedZ); // Just above ground level
         
         // Point towards garden center
         const lookDirection = Math.atan2(
