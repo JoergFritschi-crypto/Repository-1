@@ -1341,7 +1341,7 @@ export default function GardenRenderer3D({
           bloomTime: plant.bloomTime || 'summer',
           foliageColor: plant.foliageColor || 'green',
           height: plant.height,
-          position: p.position
+          position: { x: p.x, y: p.y, z: 0 }
         };
       }).filter(Boolean);
       
@@ -1434,8 +1434,8 @@ export default function GardenRenderer3D({
         const plantInfo = inventoryPlants.find(p => p.id === plant.plantId);
         return {
           plantName: plantInfo?.name || 'Unknown Plant',
-          x: plant.position.x,
-          y: plant.position.y,
+          x: plant.x,
+          y: plant.y,
           size: plantInfo?.matureSize?.includes('tree') || 
                 (plantInfo?.heightMax && plantInfo.heightMax > 300) ? 'large' : 
                 (plantInfo?.heightMax && plantInfo.heightMax < 50) ? 'small' : 'medium'
@@ -2044,7 +2044,10 @@ export default function GardenRenderer3D({
                   setShowIntermediateReviewDialog(false);
                   setRunwareIntermediateImage(null);
                   setCurrentProcessingStep('idle');
-                  handlePhotorealize();
+                  const imageDataUrl = rendererRef.current?.domElement.toDataURL('image/png');
+                  if (imageDataUrl && containerRef.current) {
+                    photorealizeImage(imageDataUrl, containerRef.current.offsetWidth, containerRef.current.offsetHeight);
+                  }
                 }}
               >
                 <RotateCcw className="h-4 w-4 mr-2" />

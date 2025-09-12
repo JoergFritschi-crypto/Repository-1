@@ -189,7 +189,8 @@ export default function Garden3DView({
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasRef.current,
       antialias: true,
-      alpha: true
+      alpha: true,
+      preserveDrawingBuffer: true // For reliable canvas capture
     });
     renderer.shadowMap.enabled = renderSettings.shadowsEnabled;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;

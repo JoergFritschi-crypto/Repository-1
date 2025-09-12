@@ -242,13 +242,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Log the request for monitoring
-      await apiMonitoring.logApiCall(
-        'gemini',
-        'generate-artistic-view',
-        true,
-        { gardenId, gardenName }
-      );
+      // Log the request for monitoring - using console.log since logApiCall is not available
+      console.log('[API Request] Gemini generate-artistic-view:', { gardenId, gardenName });
       
       // Generate enhanced artistic view using Gemini's image-to-image capabilities
       const imageUrl = await geminiImageGenerator.generateImageWithReference({
@@ -273,13 +268,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error generating artistic view:', error);
       
-      // Log the failure for monitoring
-      await apiMonitoring.logApiCall(
-        'gemini',
-        'generate-artistic-view',
-        false,
-        { error: error.message }
-      );
+      // Log the failure for monitoring - using console.log since logApiCall is not available
+      console.log('[API Error] Gemini generate-artistic-view:', { error: error.message });
       
       res.status(500).json({ 
         message: "Failed to generate artistic view", 
@@ -316,13 +306,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use Gemini if available (preferred)
       if (geminiImageGenerator) {
         try {
-          // Log the request for monitoring
-          await apiMonitoring.logApiCall(
-            'gemini',
-            'generate-visualization',
-            true,
-            { gardenId, style, season }
-          );
+          // Log the request for monitoring - using console.log since logApiCall is not available
+          console.log('[API Request] Gemini generate-visualization:', { gardenId, style, season });
 
           // If canvas image is provided, use image-to-image enhancement
           if (canvasImage) {
@@ -352,13 +337,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (geminiError: any) {
           console.error("Error with Gemini, falling back to Runware:", geminiError);
           
-          // Log the failure for monitoring
-          await apiMonitoring.logApiCall(
-            'gemini',
-            'generate-visualization',
-            false,
-            { error: geminiError.message }
-          );
+          // Log the failure for monitoring - using console.log since logApiCall is not available
+          console.log('[API Error] Gemini generate-visualization:', { error: geminiError.message });
           
           // Fall back to Runware if Gemini fails
           if (runwareImageGenerator) {
