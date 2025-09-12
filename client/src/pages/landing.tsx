@@ -151,55 +151,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Overview */}
-      <section className="py-8 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-serif font-bold text-foreground mb-2" data-testid="text-features-title">
-              Professional Garden Design Tools
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-xl mx-auto" data-testid="text-features-subtitle">
-              AI-powered tools for every step of garden planning
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card className="text-center">
-              <CardContent className="pt-4 pb-4 px-4">
-                <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <GardenDesignIcon className="w-8 h-8" />
-                </div>
-                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-ai-title">AI Garden Design</h3>
-                <p className="text-xs text-muted-foreground" data-testid="text-feature-ai-description">
-                  Intelligent plant selection and layout optimization based on your garden conditions
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="text-center">
-              <CardContent className="pt-4 pb-4 px-4">
-                <div className="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <SeasonIcon className="w-8 h-8" />
-                </div>
-                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-3d-title">3D Visualization</h3>
-                <p className="text-xs text-muted-foreground" data-testid="text-feature-3d-description">
-                  See your garden through the seasons with AI-generated imagery
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="text-center">
-              <CardContent className="pt-4 pb-4 px-4">
-                <div className="w-14 h-14 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <PlantDoctorIcon className="w-8 h-8" />
-                </div>
-                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-doctor-title">Plant Doctor</h3>
-                <p className="text-xs text-muted-foreground" data-testid="text-feature-doctor-description">
-                  Identify plants and diseases with AI-powered image recognition
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Section */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -315,6 +266,55 @@ export default function Landing() {
                     <Link href="/premium" className="link-reset">View Premium</Link>
                   )}
                 </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Overview */}
+      <section className="py-8 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-serif font-bold text-foreground mb-2" data-testid="text-features-title">
+              Professional Garden Design Tools
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto" data-testid="text-features-subtitle">
+              AI-powered tools for every step of garden planning
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className="text-center">
+              <CardContent className="pt-4 pb-4 px-4">
+                <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <GardenDesignIcon className="w-8 h-8" />
+                </div>
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-ai-title">AI Garden Design</h3>
+                <p className="text-xs text-muted-foreground" data-testid="text-feature-ai-description">
+                  Intelligent plant selection and layout optimization based on your garden conditions
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="pt-4 pb-4 px-4">
+                <div className="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <SeasonIcon className="w-8 h-8" />
+                </div>
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-3d-title">3D Visualization</h3>
+                <p className="text-xs text-muted-foreground" data-testid="text-feature-3d-description">
+                  See your garden through the seasons with AI-generated imagery
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="pt-4 pb-4 px-4">
+                <div className="w-14 h-14 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <PlantDoctorIcon className="w-8 h-8" />
+                </div>
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-doctor-title">Plant Doctor</h3>
+                <p className="text-xs text-muted-foreground" data-testid="text-feature-doctor-description">
+                  Identify plants and diseases with AI-powered image recognition
+                </p>
               </CardContent>
             </Card>
           </div>
