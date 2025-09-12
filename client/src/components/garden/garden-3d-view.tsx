@@ -1193,13 +1193,63 @@ export default function Garden3DView({
     });
   };
   
-  // Generate artistic view using Gemini AI
+  // Extract comprehensive scene state for photorealization
+  const extractSceneState = () => {
+    if (!cameraRef.current || !gardenBoundsRef.current) {
+      console.warn('Cannot extract scene state: missing camera or bounds');
+      return null;
+    }
+
+    const camera = cameraRef.current;
+    const bounds = gardenBoundsRef.current;
+    
+    // Calculate sun angle based on time of day
+    const sunAngle = (renderSettings.timeOfDay - 6) * 15; // Convert to degrees (0-210°)
+    
+    return {
+      camera: {
+        position: {
+          x: camera.position.x,
+          y: camera.position.y,
+          z: camera.position.z
+        },
+        target: controlsRef.current ? {
+          x: controlsRef.current.target.x,
+          y: controlsRef.current.target.y,
+          z: controlsRef.current.target.z
+        } : { x: 0, y: 0, z: 0 },
+        fov: camera.fov
+      },
+      lighting: {
+        timeOfDay: renderSettings.timeOfDay,
+        sunAngle: sunAngle,
+        shadowIntensity: renderSettings.shadowsEnabled ? 0.7 : 0.0
+      },
+      bounds: {
+        width: bounds.maxX - bounds.minX,
+        height: bounds.maxY - bounds.minY,
+        depth: bounds.maxZ - bounds.minZ
+      },
+      season: 'summer',
+      month: 7 // July for peak summer appearance
+    };
+  };
+
+  // Generate photorealistic view using comprehensive context
   const handleGenerateArtisticView = async () => {
     if (!rendererRef.current || !sceneRef.current || !cameraRef.current || !canvasRef.current) return;
     
     setIsGeneratingArtistic(true);
     
     try {
+      // Extract comprehensive scene state
+      const sceneState = extractSceneState();
+      if (!sceneState) {
+        throw new Error('Could not extract scene state. Please ensure the 3D view is fully loaded.');
+      }
+      
+      console.log('Extracted scene state for photorealization:', sceneState);
+      
       // Hide UI elements during capture
       toggleUIElementsForCapture(false);
       
@@ -1213,18 +1263,7 @@ export default function Garden3DView({
       toggleUIElementsForCapture(true);
       rendererRef.current.render(sceneRef.current, cameraRef.current);
       
-      // Create a prompt for enhancement
-      const prompt = `Enhance this 3D garden render into a photorealistic, artistic garden visualization.
-        Maintain the exact composition, viewing angle, plant positions, and layout.
-        Make it look like a professional landscape architecture visualization with:
-        - Realistic textures for plants, soil, grass, and pathways
-        - Beautiful ${renderSettings.timeOfDay < 12 ? 'morning' : renderSettings.timeOfDay < 17 ? 'afternoon' : 'evening'} lighting
-        - Atmospheric perspective and depth
-        - Natural garden style
-        - Photorealistic plant rendering with proper colors and textures
-        Keep the same viewing angle and perspective as the input image.`;
-      
-      // Send to the API endpoint
+      // Send comprehensive data to the photorealization endpoint
       const response = await fetch('/api/gardens/generate-artistic-view', {
         method: 'POST',
         headers: {
@@ -1232,14 +1271,16 @@ export default function Garden3DView({
         },
         body: JSON.stringify({
           canvasImage: dataURL,
-          prompt,
           gardenId,
-          gardenName
+          gardenName,
+          sceneState, // Complete scene context for comprehensive prompting
+          // customPrompt can be added here if user wants to override
         }),
       });
       
       if (!response.ok) {
-        throw new Error('Failed to generate artistic view');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to generate photorealistic view');
       }
       
       const data = await response.json();
@@ -1249,17 +1290,17 @@ export default function Garden3DView({
         window.open(data.imageUrl, '_blank');
         
         toast({
-          title: "Artistic View Generated",
-          description: "Your enhanced garden visualization has been created!",
+          title: "Photorealistic View Generated",
+          description: `Your enhanced garden visualization has been created! ${data.context ? `(${data.context.plantCount} plants in ${data.context.seasonalContext})` : ''}`,
         });
       } else {
         throw new Error('No image URL in response');
       }
     } catch (error: any) {
-      console.error('Error generating artistic view:', error);
+      console.error('Error generating photorealistic view:', error);
       toast({
         title: "Generation Failed",
-        description: error.message || "Failed to generate artistic view. Please try again.",
+        description: error.message || "Failed to generate photorealistic view. Please try again.",
         variant: "destructive"
       });
     } finally {

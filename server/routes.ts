@@ -18,6 +18,7 @@ import { aiInpaintingService } from "./aiInpaintingService";
 import { PlantImportService } from "./plantImportService";
 import { generateAllGardenToolIcons, generateGardenToolIcon } from "./aiIconGenerator";
 import { geminiImageGenerator } from "./geminiImageGenerator";
+import { buildPhotorealizationContext, buildPhotorealizationPrompt } from "./photorealizationService";
 import path from "path";
 
 // Initialize Stripe if API key is available
@@ -225,14 +226,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Generate artistic view from 3D canvas using Gemini AI image-to-image enhancement
+  // Generate artistic view from 3D canvas using comprehensive photorealization
   app.post('/api/gardens/generate-artistic-view', isAuthenticated, async (req: any, res) => {
     try {
-      const { canvasImage, prompt, gardenId, gardenName } = req.body;
+      const { 
+        canvasImage, 
+        gardenId, 
+        gardenName, 
+        sceneState,
+        customPrompt 
+      } = req.body;
       
       if (!canvasImage) {
         return res.status(400).json({ 
           message: "Canvas image is required" 
+        });
+      }
+      
+      if (!gardenId) {
+        return res.status(400).json({ 
+          message: "Garden ID is required" 
+        });
+      }
+      
+      if (!sceneState) {
+        return res.status(400).json({ 
+          message: "Scene state is required (camera, lighting, bounds)" 
         });
       }
       
@@ -242,64 +261,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Log the request for monitoring - using console.log since logApiCall is not available
-      console.log('[API Request] Gemini generate-artistic-view:', { gardenId, gardenName });
+      // Log the request for monitoring
+      console.log('[API Request] Comprehensive photorealization:', { 
+        gardenId, 
+        gardenName,
+        sceneCamera: sceneState.camera,
+        sceneLighting: sceneState.lighting
+      });
       
-      // Get the actual plants from this garden for accurate representation
-      let specificPlantPrompt = '';
-      if (gardenId) {
-        try {
-          const gardenPlants = await storage.getGardenPlants(gardenId);
-          if (gardenPlants.length > 0) {
-            const plantNames = gardenPlants.map(gp => gp.plantId).join(', ');
-            specificPlantPrompt = `\nThis garden specifically contains: ${plantNames}. 
-            IMPORTANT: Only show these exact plants - do not add any other species.
-            Make sure to accurately represent each plant's characteristics:`;
-            
-            // Add specific plant descriptions
-            gardenPlants.forEach(gp => {
-              if (gp.plantId === 'hosta') {
-                specificPlantPrompt += '\n- Hosta: Large, broad green leaves in clumps, shade-loving perennial';
-              } else if (gp.plantId === 'rose-red') {
-                specificPlantPrompt += '\n- Red Rose: Bush with red blooms and thorny stems, classic garden rose';
-              } else if (gp.plantId === 'lavender') {
-                specificPlantPrompt += '\n- Lavender: Purple flower spikes, silvery-green foliage, Mediterranean herb';
-              }
-            });
-          }
-        } catch (error) {
-          console.log('Could not fetch garden plants for prompt:', error);
-        }
-      }
+      // Build comprehensive photorealization context
+      const context = await buildPhotorealizationContext(gardenId, sceneState);
+      
+      // Generate structured prompt with complete context
+      const photorealizationPrompt = customPrompt || buildPhotorealizationPrompt(context);
+      
+      console.log('[Photorealization] Generated comprehensive prompt:', {
+        gardenShape: context.garden.shape,
+        plantCount: context.plants.length,
+        promptLength: photorealizationPrompt.length
+      });
       
       // Generate enhanced artistic view using Gemini's image-to-image capabilities
       const imageUrl = await geminiImageGenerator.generateImageWithReference({
         referenceImage: canvasImage,
-        prompt: prompt || `Enhance this 3D garden render into a photorealistic, artistic garden visualization.
-          Maintain the exact composition, viewing angle, plant positions, and layout.${specificPlantPrompt}
-          Make it look like a professional landscape architecture visualization with:
-          - Realistic textures for plants, soil, grass, and pathways
-          - Beautiful natural lighting with atmospheric perspective
-          - High-quality photorealistic rendering
-          - Professional garden photography aesthetic
-          Keep the same viewing angle and perspective as the input image.`,
-        outputFileName: gardenName ? `artistic-${gardenName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png` : undefined
+        prompt: photorealizationPrompt,
+        outputFileName: gardenName ? `photorealistic-${gardenName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png` : undefined
       });
+      
+      // Optionally save to file vault
+      if (fileVaultService) {
+        try {
+          await fileVaultService.saveGardenImage(gardenId, imageUrl, 'photorealistic-view');
+        } catch (vaultError) {
+          console.error('Error saving photorealistic view to vault:', vaultError);
+          // Don't fail the request if vault save fails
+        }
+      }
       
       res.json({ 
         success: true, 
         imageUrl,
-        message: "Artistic view generated successfully"
+        message: "Photorealistic view generated successfully",
+        context: {
+          plantCount: context.plants.length,
+          gardenDimensions: `${context.garden.shape} garden`,
+          seasonalContext: 'July seasonal state applied'
+        }
       });
       
     } catch (error: any) {
-      console.error('Error generating artistic view:', error);
+      console.error('Error generating photorealistic view:', error);
       
-      // Log the failure for monitoring - using console.log since logApiCall is not available
-      console.log('[API Error] Gemini generate-artistic-view:', { error: error.message });
+      // Log the failure for monitoring
+      console.log('[API Error] Photorealization failed:', { 
+        gardenId: req.body.gardenId,
+        error: error.message 
+      });
       
       res.status(500).json({ 
-        message: "Failed to generate artistic view", 
+        message: "Failed to generate photorealistic view", 
         error: error.message 
       });
     }
