@@ -320,11 +320,11 @@ export default function Garden3DView({
       groundGeometry.computeVertexNormals();
     }
     
-    // Create material with brighter grass color
+    // Create material with soil/earth color
     const groundMaterial = new THREE.MeshStandardMaterial({
-      color: 0x4a7c59, // Brighter, more visible green
-      roughness: 0.8,
-      metalness: 0.05,
+      color: 0x8b6914, // Brown soil color
+      roughness: 0.9,
+      metalness: 0.02,
       side: THREE.DoubleSide
     });
     
@@ -447,7 +447,9 @@ export default function Garden3DView({
         const crownRadius = scaledSpread / 2; // Use radius, not diameter
         const crownGeometry = new THREE.SphereGeometry(crownRadius, 16, 12);
         const crownMaterial = new THREE.MeshStandardMaterial({ 
-          color: new THREE.Color(plant.properties.leafColor || '#2d5016')
+          color: new THREE.Color(plant.properties.leafColor || '#7db86f'), // Lighter green
+          roughness: 0.7,
+          metalness: 0.1
         });
         const crown = new THREE.Mesh(crownGeometry, crownMaterial);
         crown.position.y = scaledHeight * 0.7;
@@ -465,7 +467,9 @@ export default function Garden3DView({
         );
         shrubGeometry.scale(1, scaledHeight / scaledSpread, 1);
         const shrubMaterial = new THREE.MeshStandardMaterial({
-          color: new THREE.Color(plant.properties.leafColor || '#3a6b1c')
+          color: new THREE.Color(plant.properties.leafColor || '#8fce6f'), // Light green
+          roughness: 0.6,
+          metalness: 0.1
         });
         plantMesh = new THREE.Mesh(shrubGeometry, shrubMaterial);
         plantMesh.position.y = scaledHeight / 2;
@@ -476,9 +480,11 @@ export default function Garden3DView({
           scaledHeight,
           8
         );
-        const plantColor = plant.properties.flowerColor || plant.properties.leafColor || '#4a7c59';
+        const plantColor = plant.properties.flowerColor || plant.properties.leafColor || '#9acd32'; // Yellowish green
         const plantMaterial = new THREE.MeshStandardMaterial({
-          color: new THREE.Color(plantColor)
+          color: new THREE.Color(plantColor),
+          roughness: 0.5,
+          metalness: 0.05
         });
         plantMesh = new THREE.Mesh(plantGeometry, plantMaterial);
         plantMesh.position.y = scaledHeight / 2;
