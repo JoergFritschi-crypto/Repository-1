@@ -377,7 +377,7 @@ export default function GardenProperties() {
           title: 'Garden Created',
           description: 'Your garden design has been saved successfully!',
         });
-        setLocation('/gardens');
+        setLocation('/home');
       } else {
         // Silent save during progress (for paid users and opted-in free users)
         console.log('Garden auto-saved with ID:', data.id);
