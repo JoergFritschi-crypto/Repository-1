@@ -12,7 +12,8 @@ import {
   createGardenScene3D, 
   type GardenScene3D, 
   type PlacedPlant,
-  type PlantInstance3D
+  type PlantInstance3D,
+  type GardenBounds
 } from '@shared/schema';
 
 interface GardenRenderer3DProps {
@@ -47,6 +48,7 @@ export default function GardenRenderer3D({
   const animationFrameRef = useRef<number | null>(null);
   const billboardsRef = useRef<THREE.Sprite[]>([]);
   const textureCache = useRef<Map<string, THREE.Texture>>(new Map());
+  const gardenGeometryRef = useRef<{ ground?: THREE.Mesh, borders?: THREE.Group }>({});
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
@@ -148,6 +150,544 @@ export default function GardenRenderer3D({
     console.log('Scene reset complete - GPU resources disposed');
   }, []);
 
+  // Create ground plane texture based on garden type
+  const createGroundTexture = useCallback((surfaceType: 'grass' | 'soil' | 'gravel' | 'mulch' = 'grass') => {
+    const cacheKey = `ground-${surfaceType}`;
+    let texture = textureCache.current.get(cacheKey);
+    
+    if (!texture) {
+      const canvas = document.createElement('canvas');
+      const size = 512;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      
+      // Create different ground textures
+      switch (surfaceType) {
+        case 'grass':
+          // Green grass with subtle texture
+          ctx.fillStyle = '#2d5016';
+          ctx.fillRect(0, 0, size, size);
+          // Add grass texture pattern
+          ctx.fillStyle = '#3a6b1c';
+          for (let i = 0; i < 200; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            ctx.fillRect(x, y, 2, 8);
+          }
+          break;
+        case 'soil':
+          // Brown soil texture
+          ctx.fillStyle = '#4a3429';
+          ctx.fillRect(0, 0, size, size);
+          // Add soil particles
+          ctx.fillStyle = '#5d4037';
+          for (let i = 0; i < 300; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            ctx.fillRect(x, y, 3, 3);
+          }
+          break;
+        case 'gravel':
+          // Gray gravel texture
+          ctx.fillStyle = '#616161';
+          ctx.fillRect(0, 0, size, size);
+          // Add gravel stones
+          ctx.fillStyle = '#757575';
+          for (let i = 0; i < 400; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const radius = Math.random() * 3 + 1;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          break;
+        case 'mulch':
+          // Brown mulch texture
+          ctx.fillStyle = '#3e2723';
+          ctx.fillRect(0, 0, size, size);
+          // Add mulch pieces
+          ctx.fillStyle = '#5d4037';
+          for (let i = 0; i < 150; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            ctx.fillRect(x, y, 8, 3);
+          }
+          break;
+      }
+      
+      texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+      
+      textureCache.current.set(cacheKey, texture);
+    }
+    
+    return texture;
+  }, []);
+
+  // Create border texture
+  const createBorderTexture = useCallback((borderType: 'stone' | 'wood' | 'brick' | 'metal' = 'stone') => {
+    const cacheKey = `border-${borderType}`;
+    let texture = textureCache.current.get(cacheKey);
+    
+    if (!texture) {
+      const canvas = document.createElement('canvas');
+      const size = 256;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      
+      switch (borderType) {
+        case 'stone':
+          ctx.fillStyle = '#708090';
+          ctx.fillRect(0, 0, size, size);
+          // Add stone texture
+          ctx.fillStyle = '#8B9DC3';
+          for (let i = 0; i < 30; i++) {
+            const x = Math.random() * size;
+            const y = Math.random() * size;
+            const width = Math.random() * 40 + 20;
+            const height = Math.random() * 30 + 15;
+            ctx.fillRect(x, y, width, height);
+          }
+          break;
+        case 'wood':
+          ctx.fillStyle = '#8D6E63';
+          ctx.fillRect(0, 0, size, size);
+          // Add wood grain
+          ctx.strokeStyle = '#6D4C41';
+          ctx.lineWidth = 2;
+          for (let i = 0; i < size; i += 8) {
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(size, i + Math.random() * 4 - 2);
+            ctx.stroke();
+          }
+          break;
+        case 'brick':
+          ctx.fillStyle = '#8D4E37';
+          ctx.fillRect(0, 0, size, size);
+          // Add brick pattern
+          ctx.strokeStyle = '#654321';
+          ctx.lineWidth = 2;
+          const brickHeight = 32;
+          const brickWidth = 64;
+          for (let y = 0; y < size; y += brickHeight) {
+            for (let x = 0; x < size; x += brickWidth) {
+              const offset = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
+              ctx.strokeRect(x + offset, y, brickWidth, brickHeight);
+            }
+          }
+          break;
+        case 'metal':
+          ctx.fillStyle = '#424242';
+          ctx.fillRect(0, 0, size, size);
+          // Add metal texture
+          const gradient = ctx.createLinearGradient(0, 0, size, size);
+          gradient.addColorStop(0, '#616161');
+          gradient.addColorStop(0.5, '#424242');
+          gradient.addColorStop(1, '#212121');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, size, size);
+          break;
+      }
+      
+      texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+      
+      textureCache.current.set(cacheKey, texture);
+    }
+    
+    return texture;
+  }, []);
+
+  // Create garden ground plane based on GardenBounds
+  const createGardenGroundPlane = useCallback((bounds: GardenBounds, surfaceType: 'grass' | 'soil' | 'gravel' | 'mulch' = 'grass') => {
+    if (!sceneRef.current) return null;
+    
+    let geometry: THREE.BufferGeometry;
+    const texture = createGroundTexture(surfaceType);
+    
+    // Set texture repeat based on garden size for realistic scaling
+    const width = bounds.maxX - bounds.minX;
+    const height = bounds.maxY - bounds.minY;
+    const repeatX = Math.max(1, Math.floor(width / 2)); // Repeat every 2 meters
+    const repeatY = Math.max(1, Math.floor(height / 2));
+    texture.repeat.set(repeatX, repeatY);
+    
+    switch (bounds.shape) {
+      case 'rectangle':
+      case 'square':
+        geometry = new THREE.PlaneGeometry(width, height);
+        break;
+        
+      case 'circle':
+        geometry = new THREE.CircleGeometry(bounds.boundaryGeometry.radius || 5, 64);
+        break;
+        
+      case 'oval':
+        // CRITICAL FIX: Use CircleGeometry instead of RingGeometry for better UV mapping
+        const radiusX = bounds.boundaryGeometry.radiusX || 4;
+        const radiusY = bounds.boundaryGeometry.radiusY || 3;
+        geometry = new THREE.CircleGeometry(1, 64);
+        geometry.scale(radiusX, radiusY, 1);
+        break;
+        
+      case 'triangle':
+        // CRITICAL FIX: Use actual triangle vertices from boundaryGeometry.vertices for accurate triangle shape
+        if (bounds.boundaryGeometry.vertices && bounds.boundaryGeometry.vertices.length >= 3) {
+          const triangleShape = new THREE.Shape();
+          const vertices = bounds.boundaryGeometry.vertices;
+          
+          // Use actual triangle vertices for accurate shape
+          triangleShape.moveTo(vertices[0].x, vertices[0].y);
+          for (let i = 1; i < vertices.length; i++) {
+            triangleShape.lineTo(vertices[i].x, vertices[i].y);
+          }
+          triangleShape.closePath();
+          
+          geometry = new THREE.ShapeGeometry(triangleShape);
+        } else {
+          // Fallback only if vertices missing - use bounding box approximation
+          console.warn('Triangle garden missing vertices, using bounding box approximation');
+          const triangleShape = new THREE.Shape();
+          triangleShape.moveTo(0, height/2);
+          triangleShape.lineTo(-width/2, -height/2);
+          triangleShape.lineTo(width/2, -height/2);
+          triangleShape.closePath();
+          geometry = new THREE.ShapeGeometry(triangleShape);
+        }
+        break;
+        
+      case 'l_shaped':
+      case 'r_shaped':
+        // Create complex shape from vertices
+        if (bounds.boundaryGeometry.vertices && bounds.boundaryGeometry.vertices.length > 0) {
+          const shape = new THREE.Shape();
+          const vertices = bounds.boundaryGeometry.vertices;
+          
+          shape.moveTo(vertices[0].x, vertices[0].y);
+          for (let i = 1; i < vertices.length; i++) {
+            shape.lineTo(vertices[i].x, vertices[i].y);
+          }
+          shape.closePath();
+          
+          geometry = new THREE.ShapeGeometry(shape);
+        } else {
+          // Fallback to rectangle
+          geometry = new THREE.PlaneGeometry(width, height);
+        }
+        break;
+        
+      default:
+        geometry = new THREE.PlaneGeometry(width, height);
+    }
+    
+    // Create material with texture
+    const material = new THREE.MeshLambertMaterial({
+      map: texture,
+      transparent: false,
+      side: THREE.DoubleSide
+    });
+    
+    const groundMesh = new THREE.Mesh(geometry, material);
+    groundMesh.position.set(bounds.center.x, bounds.center.y, 0); // At ground level
+    groundMesh.receiveShadow = true;
+    groundMesh.userData = { type: 'ground', gardenId: bounds.shape };
+    
+    return groundMesh;
+  }, [createGroundTexture]);
+
+  // Create garden borders based on GardenBounds
+  const createGardenBorders = useCallback((bounds: GardenBounds, borderType: 'stone' | 'wood' | 'brick' | 'metal' = 'stone', borderHeight: number = 0.15) => {
+    if (!sceneRef.current) return null;
+    
+    const borderGroup = new THREE.Group();
+    const texture = createBorderTexture(borderType);
+    const material = new THREE.MeshLambertMaterial({ 
+      map: texture,
+      transparent: false 
+    });
+    
+    // Set texture repeat for border (smaller repeat for detail)
+    texture.repeat.set(4, 1);
+    
+    switch (bounds.shape) {
+      case 'rectangle':
+      case 'square':
+        if (bounds.boundaryGeometry.corners && bounds.boundaryGeometry.corners.length >= 4) {
+          const corners = bounds.boundaryGeometry.corners;
+          
+          // Create four border segments
+          for (let i = 0; i < corners.length; i++) {
+            const current = corners[i];
+            const next = corners[(i + 1) % corners.length];
+            
+            const dx = next.x - current.x;
+            const dy = next.y - current.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            if (length > 0) {
+              const borderGeometry = new THREE.BoxGeometry(length, 0.05, borderHeight);
+              const borderMesh = new THREE.Mesh(borderGeometry, material.clone());
+              
+              borderMesh.position.set(
+                (current.x + next.x) / 2,
+                (current.y + next.y) / 2,
+                borderHeight / 2
+              );
+              borderMesh.rotation.z = angle;
+              borderMesh.castShadow = true;
+              
+              borderGroup.add(borderMesh);
+            }
+          }
+        }
+        break;
+        
+      case 'circle':
+        if (bounds.boundaryGeometry.radius) {
+          const radius = bounds.boundaryGeometry.radius;
+          const segments = 64;
+          
+          // CRITICAL FIX: Create circular border using segmented BoxGeometry around circumference
+          // This ensures proper 3D height and shadow casting (not flat ring)
+          for (let i = 0; i < segments; i++) {
+            const angle1 = (i / segments) * Math.PI * 2;
+            const angle2 = ((i + 1) / segments) * Math.PI * 2;
+            
+            const x1 = bounds.center.x + radius * Math.cos(angle1);
+            const y1 = bounds.center.y + radius * Math.sin(angle1);
+            const x2 = bounds.center.x + radius * Math.cos(angle2);
+            const y2 = bounds.center.y + radius * Math.sin(angle2);
+            
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            
+            if (length > 0) {
+              const borderGeometry = new THREE.BoxGeometry(length, 0.05, borderHeight);
+              const borderMesh = new THREE.Mesh(borderGeometry, material.clone());
+              
+              borderMesh.position.set(
+                (x1 + x2) / 2,
+                (y1 + y2) / 2,
+                borderHeight / 2
+              );
+              borderMesh.rotation.z = Math.atan2(dy, dx);
+              borderMesh.castShadow = true;
+              
+              borderGroup.add(borderMesh);
+            }
+          }
+        }
+        break;
+        
+      case 'oval':
+        if (bounds.boundaryGeometry.radiusX && bounds.boundaryGeometry.radiusY) {
+          const radiusX = bounds.boundaryGeometry.radiusX;
+          const radiusY = bounds.boundaryGeometry.radiusY;
+          const segments = 64;
+          
+          // Create elliptical border using multiple segments
+          for (let i = 0; i < segments; i++) {
+            const angle1 = (i / segments) * Math.PI * 2;
+            const angle2 = ((i + 1) / segments) * Math.PI * 2;
+            
+            const x1 = bounds.center.x + radiusX * Math.cos(angle1);
+            const y1 = bounds.center.y + radiusY * Math.sin(angle1);
+            const x2 = bounds.center.x + radiusX * Math.cos(angle2);
+            const y2 = bounds.center.y + radiusY * Math.sin(angle2);
+            
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            
+            if (length > 0) {
+              const borderGeometry = new THREE.BoxGeometry(length, 0.05, borderHeight);
+              const borderMesh = new THREE.Mesh(borderGeometry, material.clone());
+              
+              borderMesh.position.set(
+                (x1 + x2) / 2,
+                (y1 + y2) / 2,
+                borderHeight / 2
+              );
+              borderMesh.rotation.z = Math.atan2(dy, dx);
+              borderMesh.castShadow = true;
+              
+              borderGroup.add(borderMesh);
+            }
+          }
+        }
+        break;
+        
+      case 'triangle':
+        // CRITICAL FIX: Use actual triangle vertices from boundaryGeometry.vertices for accurate border
+        if (bounds.boundaryGeometry.vertices && bounds.boundaryGeometry.vertices.length >= 3) {
+          const vertices = bounds.boundaryGeometry.vertices;
+          
+          // Create border segments using actual triangle vertices
+          for (let i = 0; i < vertices.length; i++) {
+            const current = vertices[i];
+            const next = vertices[(i + 1) % vertices.length];
+            
+            const dx = next.x - current.x;
+            const dy = next.y - current.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            if (length > 0) {
+              const borderGeometry = new THREE.BoxGeometry(length, 0.05, borderHeight);
+              const borderMesh = new THREE.Mesh(borderGeometry, material.clone());
+              
+              borderMesh.position.set(
+                (current.x + next.x) / 2,
+                (current.y + next.y) / 2,
+                borderHeight / 2
+              );
+              borderMesh.rotation.z = angle;
+              borderMesh.castShadow = true;
+              
+              borderGroup.add(borderMesh);
+            }
+          }
+        } else {
+          // Fallback only if vertices missing - use bounding box approximation
+          console.warn('Triangle garden border missing vertices, using bounding box approximation');
+          const width = bounds.maxX - bounds.minX;
+          const height = bounds.maxY - bounds.minY;
+          const triangleCorners = [
+            { x: bounds.center.x, y: bounds.center.y + height/2 },
+            { x: bounds.center.x - width/2, y: bounds.center.y - height/2 },
+            { x: bounds.center.x + width/2, y: bounds.center.y - height/2 }
+          ];
+          
+          for (let i = 0; i < triangleCorners.length; i++) {
+            const current = triangleCorners[i];
+            const next = triangleCorners[(i + 1) % triangleCorners.length];
+            
+            const dx = next.x - current.x;
+            const dy = next.y - current.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            if (length > 0) {
+              const borderGeometry = new THREE.BoxGeometry(length, 0.05, borderHeight);
+              const borderMesh = new THREE.Mesh(borderGeometry, material.clone());
+              
+              borderMesh.position.set(
+                (current.x + next.x) / 2,
+                (current.y + next.y) / 2,
+                borderHeight / 2
+              );
+              borderMesh.rotation.z = angle;
+              borderMesh.castShadow = true;
+              
+              borderGroup.add(borderMesh);
+            }
+          }
+        }
+        break;
+        
+      case 'l_shaped':
+      case 'r_shaped':
+        // Create complex shape borders from vertices
+        if (bounds.boundaryGeometry.vertices && bounds.boundaryGeometry.vertices.length > 2) {
+          const vertices = bounds.boundaryGeometry.vertices;
+          
+          for (let i = 0; i < vertices.length; i++) {
+            const current = vertices[i];
+            const next = vertices[(i + 1) % vertices.length];
+            
+            const dx = next.x - current.x;
+            const dy = next.y - current.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            if (length > 0) {
+              const borderGeometry = new THREE.BoxGeometry(length, 0.05, borderHeight);
+              const borderMesh = new THREE.Mesh(borderGeometry, material.clone());
+              
+              borderMesh.position.set(
+                (current.x + next.x) / 2,
+                (current.y + next.y) / 2,
+                borderHeight / 2
+              );
+              borderMesh.rotation.z = angle;
+              borderMesh.castShadow = true;
+              
+              borderGroup.add(borderMesh);
+            }
+          }
+        }
+        break;
+    }
+    
+    borderGroup.userData = { type: 'border', gardenId: bounds.shape };
+    return borderGroup;
+  }, [createBorderTexture]);
+
+  // Apply garden ground and borders to scene
+  const applyGardenGeometry = useCallback((scene3DData: GardenScene3D) => {
+    if (!sceneRef.current) return;
+    
+    // Remove existing garden geometry
+    if (gardenGeometryRef.current.ground) {
+      sceneRef.current.remove(gardenGeometryRef.current.ground);
+      if (gardenGeometryRef.current.ground.geometry) {
+        gardenGeometryRef.current.ground.geometry.dispose();
+      }
+      if (gardenGeometryRef.current.ground.material) {
+        (gardenGeometryRef.current.ground.material as THREE.Material).dispose();
+      }
+      gardenGeometryRef.current.ground = undefined;
+    }
+    
+    if (gardenGeometryRef.current.borders) {
+      sceneRef.current.remove(gardenGeometryRef.current.borders);
+      gardenGeometryRef.current.borders.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        }
+      });
+      gardenGeometryRef.current.borders = undefined;
+    }
+    
+    // Create new garden geometry
+    const surfaceType = scene3DData.terrain?.surface?.primaryMaterial as 'grass' | 'soil' | 'gravel' | 'mulch' || 'grass';
+    const groundPlane = createGardenGroundPlane(scene3DData.bounds, surfaceType);
+    const borders = createGardenBorders(scene3DData.bounds, 'stone', 0.15);
+    
+    if (groundPlane) {
+      sceneRef.current.add(groundPlane);
+      gardenGeometryRef.current.ground = groundPlane;
+    }
+    
+    if (borders) {
+      sceneRef.current.add(borders);
+      gardenGeometryRef.current.borders = borders;
+    }
+    
+    console.log(`Applied garden geometry: ground=${!!groundPlane}, borders=${!!borders}`);
+  }, [createGardenGroundPlane, createGardenBorders]);
+
   // Optional: Texture cache management with improved filtering
   const manageTextureCache = useCallback((forceReset: boolean = false) => {
     if (forceReset || textureCache.current.size > 50) { // Limit cache size
@@ -211,17 +751,8 @@ export default function GardenRenderer3D({
     camera.position.set(10, -10, 8);
     camera.lookAt(0, 0, 0);
     
-    // Create ground plane at z=0 (oriented for Z-up system)
-    const groundGeometry = new THREE.PlaneGeometry(50, 50);
-    const groundMaterial = new THREE.MeshLambertMaterial({ 
-      color: 0x8b4513,
-      transparent: true,
-      opacity: 0.8
-    });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.position.set(0, 0, 0); // At z=0 for Z-up system
-    ground.receiveShadow = true;
-    scene.add(ground);
+    // Note: Ground plane will be created by applyGardenGeometry based on actual garden bounds
+    // This provides proper garden-shaped ground instead of generic 50x50 plane
     
     // Add coordinate system helper for Z-up verification
     if (renderSettings.showGrid) {
@@ -541,6 +1072,9 @@ export default function GardenRenderer3D({
         camera.fov = cameraParams.fov;
         camera.updateProjectionMatrix();
         
+        // Apply garden geometry (ground plane and borders) based on actual garden shape
+        applyGardenGeometry(scene3DData);
+        
         // Create plant billboards for visual representation
         createPlantBillboards(scene3DData.plants);
         
@@ -565,7 +1099,7 @@ export default function GardenRenderer3D({
     } finally {
       setIsGenerating(false);
     }
-  }, [gardenData, placedPlants, inventoryPlants, orientationSettings, renderSettings, initializeScene, animate, createPlantBillboards, toast, resetScene, manageTextureCache]);
+  }, [gardenData, placedPlants, inventoryPlants, orientationSettings, renderSettings, initializeScene, animate, createPlantBillboards, applyGardenGeometry, toast, resetScene, manageTextureCache]);
 
   // Export PNG at specified resolution
   const exportPNG = useCallback(async (width: number = 1920, height: number = 1088) => {
