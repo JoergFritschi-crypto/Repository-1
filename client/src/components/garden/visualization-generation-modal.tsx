@@ -13,7 +13,7 @@ import type { PlacedPlant } from './garden-layout-canvas';
 interface VisualizationGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: (imageUrl?: string) => void;
   gardenData: {
     gardenId?: string;
     gardenName: string;
@@ -153,7 +153,7 @@ export default function VisualizationGenerationModal({
 
   const handleContinue = () => {
     if (generatedImage) {
-      onComplete();
+      onComplete(generatedImage);
     }
   };
 
@@ -161,6 +161,14 @@ export default function VisualizationGenerationModal({
     setGeneratedImage(null);
     setError(null);
     handleGenerateVisualization();
+  };
+
+  const handleCloseModal = () => {
+    // Pass the generated image (if any) when closing
+    if (generatedImage) {
+      onComplete(generatedImage);
+    }
+    onClose();
   };
 
   return (
