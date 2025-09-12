@@ -206,19 +206,19 @@ export default function Home() {
                 <CardTitle className="text-base" data-testid="text-quick-actions-title">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button size="sm" asChild className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/90" data-testid="button-plant-doctor">
+                <Button size="sm" asChild variant="outline" className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/10" data-testid="button-plant-doctor">
                   <Link href="/plant-doctor" className="link-reset">
                     <PlantDoctorIcon className="w-4 h-4 mr-2" />
                     Plant Doctor
                   </Link>
                 </Button>
-                <Button size="sm" asChild className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/90" data-testid="button-browse-plants">
+                <Button size="sm" asChild variant="outline" className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/10" data-testid="button-browse-plants">
                   <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-4 h-4 mr-2" />
                     Browse Plants
                   </Link>
                 </Button>
-                <Button size="sm" asChild className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/90" data-testid="button-premium-features">
+                <Button size="sm" asChild variant="outline" className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/10" data-testid="button-premium-features">
                   <Link href="/premium" className="link-reset">
                     <PremiumIcon className="w-4 h-4 mr-2" />
                     Premium Features
