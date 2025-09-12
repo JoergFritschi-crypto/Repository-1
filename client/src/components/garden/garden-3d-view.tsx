@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -494,8 +494,8 @@ export default function Garden3DView({
       }
       
       // Apply tilt if on sloped terrain - use gardenData for slope values
-      if (gardenData.slopePercentage && parseFloat(gardenData.slopePercentage) > 0) {
-        const slopePercentage = parseFloat(gardenData.slopePercentage);
+      if (gardenData.slopePercentage && gardenData.slopePercentage > 0) {
+        const slopePercentage = gardenData.slopePercentage;
         const slopeDirection = gardenData.slopeDirection || 'S';
         
         // Calculate tilt angle based on slope percentage (max 15 degrees tilt)
@@ -1039,7 +1039,7 @@ export default function Garden3DView({
         - Realistic textures for plants, soil, grass, and pathways
         - Beautiful ${renderSettings.timeOfDay < 12 ? 'morning' : renderSettings.timeOfDay < 17 ? 'afternoon' : 'evening'} lighting
         - Atmospheric perspective and depth
-        - ${gardenData.style === 'cottage' ? 'Romantic cottage garden' : gardenData.style === 'formal' ? 'Elegant formal garden' : gardenData.style === 'modern' ? 'Contemporary minimalist' : 'Natural'} style
+        - Natural garden style
         - Photorealistic plant rendering with proper colors and textures
         Keep the same viewing angle and perspective as the input image.`;
       
