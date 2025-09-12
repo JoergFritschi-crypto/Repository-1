@@ -13,6 +13,7 @@ import GardenLayoutCanvas, { type PlacedPlant } from "@/components/garden/garden
 import PlantSearchModal from "@/components/plant/plant-search-modal";
 import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { GardenVisualization } from "@/components/garden/garden-visualization";
+import Garden3DView from "@/components/garden/garden-3d-view";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import type { Garden } from "@/types/garden";
@@ -430,20 +431,28 @@ export default function GardenDesign() {
 
             {/* 3D View - Premium Feature */}
             <TabsContent value="3d" className="mt-0">
-              <Card className="border-2 border-gray-200">
-                <div className="relative bg-gradient-to-b from-blue-100 to-green-100 rounded-lg h-[600px] overflow-hidden" data-testid="3d-visualization">
-                  <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                    <div className="text-center">
-                      <Eye className="w-16 h-16 text-primary mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">3D Visualization</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Experience your garden design in photorealistic 3D
-                      </p>
-                      <Badge className="bg-accent text-primary">Premium Feature</Badge>
+              {garden ? (
+                <Garden3DView
+                  gardenId={id || ''}
+                  gardenName={garden.name}
+                  gardenData={garden}
+                  placedPlants={canvasPlacedPlants}
+                />
+              ) : (
+                <Card className="border-2 border-gray-200">
+                  <div className="relative bg-gradient-to-b from-blue-100 to-green-100 rounded-lg h-[600px] overflow-hidden" data-testid="3d-visualization">
+                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                      <div className="text-center">
+                        <Eye className="w-16 h-16 text-primary mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold mb-2">3D Visualization</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Loading garden data...
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Plant List View */}

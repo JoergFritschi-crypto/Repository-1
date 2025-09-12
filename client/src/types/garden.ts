@@ -8,6 +8,8 @@ export interface Garden {
   dimensions: GardenDimensions;
   slopePercentage?: number;
   slopeDirection?: 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
+  northOrientation?: 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
+  pointOfView?: 'top_down' | 'bird_eye' | 'ground_level' | 'elevated_angle' | 'isometric';
   sunExposure?: 'full_sun' | 'partial_sun' | 'partial_shade' | 'full_shade';
   soilType?: 'clay' | 'loam' | 'sand' | 'silt' | 'chalk';
   soilPh?: number;
