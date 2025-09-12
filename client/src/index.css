@@ -35,6 +35,43 @@
   --radius: 8px;
   --font-sans: 'Inter', sans-serif;
   --font-serif: 'Playfair Display', serif;
+  
+  /* Text Enhancement Properties */
+  --header-text-shadow: 0 0 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --header-bg-opacity: 0.45;
+  --header-text-shadow-gold: 0 0 4px rgba(255, 213, 0, 0.5), 0 0 8px rgba(255, 213, 0, 0.3);
+  --header-text-shadow-white: 0 0 3px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(255, 255, 255, 0.5);
+  --header-text-shadow-strong: 0 0 4px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Text Enhancement Classes for Testing Different Shadow Effects */
+.text-enhance-subtle {
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.text-enhance-gold {
+  text-shadow: 0 0 4px rgba(255, 213, 0, 0.5), 0 0 8px rgba(255, 213, 0, 0.3) !important;
+}
+
+.text-enhance-white {
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+}
+
+.text-enhance-strong {
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Background Enhancement Classes */
+.bg-enhance-light {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
+
+.bg-enhance-medium {
+  background: rgba(255, 255, 255, 0.45) !important;
+}
+
+.bg-enhance-strong {
+  background: rgba(255, 255, 255, 0.55) !important;
 }
 
 .dark {
@@ -604,11 +641,12 @@
     z-index: 2;
     color: #004025;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, var(--header-bg-opacity));
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     backdrop-filter: blur(2px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-shadow: var(--header-text-shadow);
   }
   
   /* Photorealistic flower band - Garden Design Studio header */
@@ -646,11 +684,12 @@
     z-index: 2;
     color: #004025;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, var(--header-bg-opacity));
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     backdrop-filter: blur(2px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-shadow: var(--header-text-shadow);
   }
   
   /* Photorealistic flower band - Green garden theme */
@@ -688,11 +727,12 @@
     z-index: 2;
     color: #004025;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, var(--header-bg-opacity));
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     backdrop-filter: blur(2px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-shadow: var(--header-text-shadow);
   }
   
   /* Photorealistic flower band - Summer cottage garden theme */
@@ -730,11 +770,12 @@
     z-index: 2;
     color: #004025;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, var(--header-bg-opacity));
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     backdrop-filter: blur(2px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-shadow: var(--header-text-shadow);
   }
   
   /* Photorealistic flower band - Autumn garden theme */
@@ -772,11 +813,12 @@
     z-index: 2;
     color: #004025;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, var(--header-bg-opacity));
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     backdrop-filter: blur(2px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-shadow: var(--header-text-shadow);
   }
   
   @keyframes subtle-shift {
@@ -874,12 +916,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -917,12 +959,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -960,12 +1002,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1003,12 +1045,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1048,12 +1090,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1091,12 +1133,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1134,12 +1176,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1177,12 +1219,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1220,12 +1262,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1263,12 +1305,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1306,12 +1348,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1349,12 +1391,12 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
 
@@ -1392,11 +1434,11 @@
   position: relative;
   z-index: 2;
   color: #004025;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, var(--header-bg-opacity));
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   backdrop-filter: blur(2px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
+  text-shadow: var(--header-text-shadow);
   font-weight: 600;
 }
