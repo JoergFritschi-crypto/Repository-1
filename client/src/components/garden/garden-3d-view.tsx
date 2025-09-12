@@ -669,7 +669,7 @@ export default function Garden3DView({
     );
     
     // Enforce bounds to keep garden in view
-    const minDistance = 3;
+    const minDistance = 2;
     const maxDistance = 30;
     const clampedDistance = Math.max(minDistance, Math.min(maxDistance, renderSettings.viewingDistance));
     
@@ -1075,7 +1075,7 @@ export default function Garden3DView({
                 <Slider
                   value={[renderSettings.viewingDistance]}
                   onValueChange={([value]) => setRenderSettings(prev => ({ ...prev, viewingDistance: value }))}
-                  min={5}
+                  min={2}
                   max={30}
                   step={1}
                   className="mt-1"
@@ -1088,7 +1088,7 @@ export default function Garden3DView({
                 <Slider
                   value={[renderSettings.viewingHeight]}
                   onValueChange={([value]) => setRenderSettings(prev => ({ ...prev, viewingHeight: value }))}
-                  min={2}
+                  min={1}
                   max={15}
                   step={0.5}
                   className="mt-1"
