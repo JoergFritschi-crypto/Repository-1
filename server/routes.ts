@@ -245,11 +245,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the request for monitoring - using console.log since logApiCall is not available
       console.log('[API Request] Gemini generate-artistic-view:', { gardenId, gardenName });
       
+      // Get the actual plants from this garden for accurate representation
+      let specificPlantPrompt = '';
+      if (gardenId) {
+        try {
+          const gardenPlants = await storage.getGardenPlants(gardenId);
+          if (gardenPlants.length > 0) {
+            const plantNames = gardenPlants.map(gp => gp.plantId).join(', ');
+            specificPlantPrompt = `\nThis garden specifically contains: ${plantNames}. 
+            IMPORTANT: Only show these exact plants - do not add any other species.
+            Make sure to accurately represent each plant's characteristics:`;
+            
+            // Add specific plant descriptions
+            gardenPlants.forEach(gp => {
+              if (gp.plantId === 'hosta') {
+                specificPlantPrompt += '\n- Hosta: Large, broad green leaves in clumps, shade-loving perennial';
+              } else if (gp.plantId === 'rose-red') {
+                specificPlantPrompt += '\n- Red Rose: Bush with red blooms and thorny stems, classic garden rose';
+              } else if (gp.plantId === 'lavender') {
+                specificPlantPrompt += '\n- Lavender: Purple flower spikes, silvery-green foliage, Mediterranean herb';
+              }
+            });
+          }
+        } catch (error) {
+          console.log('Could not fetch garden plants for prompt:', error);
+        }
+      }
+      
       // Generate enhanced artistic view using Gemini's image-to-image capabilities
       const imageUrl = await geminiImageGenerator.generateImageWithReference({
         referenceImage: canvasImage,
         prompt: prompt || `Enhance this 3D garden render into a photorealistic, artistic garden visualization.
-          Maintain the exact composition, viewing angle, plant positions, and layout.
+          Maintain the exact composition, viewing angle, plant positions, and layout.${specificPlantPrompt}
           Make it look like a professional landscape architecture visualization with:
           - Realistic textures for plants, soil, grass, and pathways
           - Beautiful natural lighting with atmospheric perspective
