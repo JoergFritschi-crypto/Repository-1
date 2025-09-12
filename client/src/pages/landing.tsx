@@ -216,7 +216,7 @@ export default function Landing() {
             <Card className="h-full relative">
               <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
                 <h3 className="text-base font-semibold mb-1" data-testid="text-plan-free-title">Free</h3>
-                <p className="text-xl font-bold mb-3 text-accent" data-testid="text-plan-free-price">
+                <p className="text-xl font-bold mb-3 text-primary" data-testid="text-plan-free-price">
                   Always Free
                 </p>
                 <ul className="space-y-1 mb-4 flex-1">
