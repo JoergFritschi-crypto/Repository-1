@@ -18,15 +18,21 @@ import AdminTestVisualization from "@/pages/admin-test-visualization";
 import AdminSpriteTest from "@/pages/admin-sprite-test";
 import InpaintingComparison from "@/pages/inpainting-comparison";
 import IconGallery from "@/pages/icon-gallery";
+import Privacy from "@/pages/privacy";
+import Terms from "@/pages/terms";
+import Contact from "@/pages/contact";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <Switch>
-      {/* Landing page is the default for everyone */}
+      {/* Public pages available to everyone */}
       <Route path="/" component={Landing} />
       <Route path="/welcome" component={Landing} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/contact" component={Contact} />
       
       {/* Authenticated routes */}
       {isAuthenticated && (
