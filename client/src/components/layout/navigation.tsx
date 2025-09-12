@@ -132,7 +132,7 @@ export default function Navigation() {
                 </Link>
               ))}
               <div className="border-t-2 border-[#004025] pt-3 mt-3 space-y-2">
-                <Button asChild className="w-full" onClick={() => setMobileMenuOpen(false)} data-testid="mobile-button-new-garden">
+                <Button asChild className="w-full bg-[#004025] hover:bg-[#004025]/90 text-white" onClick={() => setMobileMenuOpen(false)} data-testid="mobile-button-new-garden">
                   <Link href="/garden-properties" className="link-reset">New Garden</Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full" data-testid="mobile-button-logout">
