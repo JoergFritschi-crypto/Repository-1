@@ -105,6 +105,9 @@ export default function Garden3DView({
   const viewerMarkerRef = useRef<THREE.Group | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const compassRef = useRef<THREE.Group | null>(null);
+  const targetCameraPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
+  const targetCameraTargetRef = useRef<THREE.Vector3>(new THREE.Vector3());
+  const smoothTransitionRef = useRef<boolean>(false);
   
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [scene3D, setScene3D] = useState<GardenScene3D | null>(null);
@@ -205,18 +208,54 @@ export default function Garden3DView({
       1000
     );
     
-    // Set initial camera position
-    camera.position.set(10, 10, 10);
+    // Set initial camera position based on garden settings
+    const initialCameraSettings = pointOfViewToCamera(gardenData.pointOfView);
+    camera.position.set(
+      initialCameraSettings.distance,
+      initialCameraSettings.height,
+      initialCameraSettings.distance
+    );
     camera.lookAt(0, 0, 0);
     
-    // Add OrbitControls for pan/zoom/rotate
+    // Initialize target positions for smooth transitions
+    targetCameraPositionRef.current.copy(camera.position);
+    targetCameraTargetRef.current.set(0, 0, 0);
+    
+    // Add OrbitControls for pan/zoom/rotate with smooth modern settings
     const controls = new OrbitControls(camera, canvasRef.current);
+    
+    // Enable smooth damping for modern feel
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    controls.dampingFactor = 0.08; // Slightly higher for smoother feel
+    
+    // Set control speeds for smooth movement
+    controls.rotateSpeed = 0.7; // Smooth rotation speed
+    controls.panSpeed = 0.8; // Smooth panning speed
+    controls.zoomSpeed = 0.8; // Smooth zoom speed
+    
+    // Enable screen space panning for intuitive movement
     controls.screenSpacePanning = true; // Allow panning parallel to screen
     controls.minDistance = 2;
     controls.maxDistance = 50;
     controls.maxPolarAngle = Math.PI / 2; // Prevent camera from going below ground
+    
+    // Configure mouse settings for smooth scrolling
+    controls.mouseButtons = {
+      LEFT: THREE.MOUSE.ROTATE,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: THREE.MOUSE.PAN
+    };
+    
+    // Set smooth touch controls for mobile
+    controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,
+      TWO: THREE.TOUCH.DOLLY_PAN
+    };
+    
+    // Enable auto-rotation for a dynamic feel (disabled by default)
+    controls.autoRotate = false;
+    controls.autoRotateSpeed = 2.0;
+    
     controls.target.set(0, 0, 0);
     controls.update();
     controlsRef.current = controls;
@@ -730,7 +769,7 @@ export default function Garden3DView({
     sceneRef.current.add(pathLine);
   }, [renderSettings, cardinalRotation]);
 
-  // Update camera position
+  // Update camera position with smooth transitions
   const updateCamera = useCallback(() => {
     if (!cameraRef.current || !gardenBoundsRef.current || !sceneRef.current || !controlsRef.current) return;
     
@@ -751,24 +790,21 @@ export default function Garden3DView({
     const maxHeight = 20;
     const clampedHeight = Math.max(minHeight, Math.min(maxHeight, renderSettings.viewingHeight));
     
-    // Recalculate camera position with clamped values
+    // Calculate target camera position
     const cameraAngle = (renderSettings.viewerRotation + cardinalRotation) * Math.PI / 180;
     const cameraX = gardenBoundsRef.current.center.x + Math.cos(cameraAngle) * clampedDistance;
     const cameraZ = gardenBoundsRef.current.center.y + Math.sin(cameraAngle) * clampedDistance;
     
-    cameraRef.current.position.set(
-      cameraX,
-      clampedHeight,
-      cameraZ
-    );
-    
-    // Update orbit controls target to garden center
-    controlsRef.current.target.set(
+    // Set target positions for smooth transition
+    targetCameraPositionRef.current.set(cameraX, clampedHeight, cameraZ);
+    targetCameraTargetRef.current.set(
       gardenBoundsRef.current.center.x,
       0,
       gardenBoundsRef.current.center.y
     );
-    controlsRef.current.update();
+    
+    // Enable smooth transition
+    smoothTransitionRef.current = true;
     
     cameraRef.current.fov = camera.fov;
     cameraRef.current.updateProjectionMatrix();
@@ -849,27 +885,20 @@ export default function Garden3DView({
     }
   }, [renderSettings, cardinalRotation]);
 
-  // Animation loop with debug info
+  // Smooth animation loop optimized for 60 FPS with camera transitions
   const animate = useCallback(() => {
     if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
-      console.log('Animation loop: waiting for refs...', {
-        renderer: !!rendererRef.current,
-        scene: !!sceneRef.current,
-        camera: !!cameraRef.current
-      });
-      // If refs aren't ready, try again next frame
+      // If refs aren't ready, try again next frame silently
       animationFrameRef.current = requestAnimationFrame(animate);
       return;
     }
     
-    // Check renderer size
+    // Check renderer size only when needed
     const size = rendererRef.current.getSize(new THREE.Vector2());
     if (size.x === 0 || size.y === 0) {
-      console.warn('Renderer has zero size, checking container...');
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
-          console.log('Resizing renderer to:', rect.width, 'x', rect.height);
           rendererRef.current.setSize(rect.width, rect.height);
           if (cameraRef.current) {
             cameraRef.current.aspect = rect.width / rect.height;
@@ -879,7 +908,29 @@ export default function Garden3DView({
       }
     }
     
-    // Update controls if they exist
+    // Handle smooth camera transitions when settings change
+    if (smoothTransitionRef.current && controlsRef.current) {
+      const lerpFactor = 0.1; // Smooth interpolation factor
+      
+      // Smoothly interpolate camera position
+      cameraRef.current.position.lerp(targetCameraPositionRef.current, lerpFactor);
+      
+      // Smoothly interpolate controls target
+      controlsRef.current.target.lerp(targetCameraTargetRef.current, lerpFactor);
+      
+      // Check if we're close enough to the target
+      const positionDistance = cameraRef.current.position.distanceTo(targetCameraPositionRef.current);
+      const targetDistance = controlsRef.current.target.distanceTo(targetCameraTargetRef.current);
+      
+      if (positionDistance < 0.01 && targetDistance < 0.01) {
+        // Snap to final position and disable smooth transition
+        cameraRef.current.position.copy(targetCameraPositionRef.current);
+        controlsRef.current.target.copy(targetCameraTargetRef.current);
+        smoothTransitionRef.current = false;
+      }
+    }
+    
+    // Update controls for smooth damping - CRITICAL for smooth movement
     if (controlsRef.current) {
       controlsRef.current.update();
     }
@@ -887,7 +938,7 @@ export default function Garden3DView({
     // Render the scene
     rendererRef.current.render(sceneRef.current, cameraRef.current);
     
-    // Continue the animation loop
+    // Continue the animation loop for smooth 60 FPS
     animationFrameRef.current = requestAnimationFrame(animate);
   }, []);
 
