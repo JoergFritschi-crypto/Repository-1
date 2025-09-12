@@ -1392,13 +1392,13 @@ export default function Garden3DView({
             
             <div className="space-y-3">
               <div>
-                <Label className="text-xs">Time of Day: {renderSettings.timeOfDay}:00</Label>
+                <Label className="text-xs">Time of Day: {Math.floor(renderSettings.timeOfDay)}:{String(Math.round((renderSettings.timeOfDay % 1) * 60)).padStart(2, '0')}</Label>
                 <Slider
                   value={[renderSettings.timeOfDay]}
                   onValueChange={([value]) => setRenderSettings(prev => ({ ...prev, timeOfDay: value }))}
                   min={6}
                   max={20}
-                  step={1}
+                  step={0.1}
                   className="mt-1"
                   data-testid="slider-time-of-day"
                 />
