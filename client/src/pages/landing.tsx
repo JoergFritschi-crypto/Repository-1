@@ -108,7 +108,7 @@ export default function Landing() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
                   <div className="flex-1">
-                    <Button asChild size="sm" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 w-full h-8 text-xs hover:scale-110 hover:-translate-y-1" data-testid="button-start-designing">
+                    <Button asChild className="bg-white/90 hover:bg-white text-primary border-2 border-primary hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 w-full h-8 px-3 text-xs font-medium hover:scale-110 hover:-translate-y-1" data-testid="button-start-designing">
                       {!isAuthenticated ? (
                         <a href="/api/login" className="flex items-center justify-center gap-1 h-full link-reset">
                           <GardenDesignIcon className="w-3.5 h-3.5" />
@@ -124,7 +124,7 @@ export default function Landing() {
                     <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Start designing with AI guidance</p>
                   </div>
                   <div className="flex-1">
-                    <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 w-full h-8 text-xs hover:scale-110 hover:-translate-y-1" data-testid="button-watch-demo" asChild>
+                    <Button variant="outline" asChild className="bg-white/90 hover:bg-white text-primary border-2 border-primary hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 w-full h-8 px-3 text-xs font-medium hover:scale-110 hover:-translate-y-1" data-testid="button-watch-demo">
                       {!isAuthenticated ? (
                         <a href="/api/login" className="flex items-center justify-center gap-1 h-full link-reset">
                           <PlantLibraryIcon className="w-3.5 h-3.5" />
