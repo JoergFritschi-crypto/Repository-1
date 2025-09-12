@@ -1022,53 +1022,38 @@ export default function GardenLayoutCanvas({
                   No plants placed yet. Drag plants from the inventory to the canvas.
                 </p>
               ) : (
-                <div className="flex flex-wrap gap-3">
-                  <TooltipProvider>
-                    {(() => {
-                      // Group placed plants by plantName and scientificName
-                      const groupedPlacedPlants = placedPlants.reduce((acc, plant) => {
-                        const key = `${plant.plantName}-${plant.scientificName || 'unknown'}`;
-                        if (!acc[key]) {
-                          acc[key] = {
-                            plantName: plant.plantName,
-                            scientificName: plant.scientificName,
-                            plants: []
-                          };
-                        }
-                        acc[key].plants.push(plant);
-                        return acc;
-                      }, {} as Record<string, any>);
+                <div className="space-y-2">
+                  {(() => {
+                    // Group placed plants by plantName and scientificName
+                    const groupedPlacedPlants = placedPlants.reduce((acc, plant) => {
+                      const key = `${plant.plantName}-${plant.scientificName || 'unknown'}`;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          plantName: plant.plantName,
+                          scientificName: plant.scientificName,
+                          plants: []
+                        };
+                      }
+                      acc[key].plants.push(plant);
+                      return acc;
+                    }, {} as Record<string, any>);
 
-                      return Object.values(groupedPlacedPlants).map((group: any, groupIndex: number) => (
-                        <Tooltip key={`placed-group-${groupIndex}`}>
-                          <TooltipTrigger asChild>
-                            <div className="flex items-center gap-2 bg-background border rounded-lg px-3 py-1.5 shadow-sm">
-                              <div
-                                className="rounded-full border-2 border-primary shadow-md hover:shadow-lg flex items-center justify-center transition-all duration-200"
-                                style={{
-                                  width: '24px',
-                                  height: '24px',
-                                  backgroundColor: getPlantColor(group),
-                                }}
-                              >
-                                <span className="text-white text-xs font-bold" style={{ fontSize: '10px' }}>
-                                  {getPlantInitials(group.scientificName)}
-                                </span>
-                              </div>
-                              <span className="text-sm font-medium">{group.plants.length}</span>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent className="p-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg">
-                            <div className="text-sm">
-                              <div className="font-semibold italic">{group.scientificName || 'Unknown'}</div>
-                              <div className="text-xs opacity-75">{group.plantName}</div>
-                              <div className="text-xs opacity-75 mt-1">Quantity on canvas: {group.plants.length}</div>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      ));
-                    })()}
-                  </TooltipProvider>
+                    return Object.values(groupedPlacedPlants).map((group: any, groupIndex: number) => (
+                      <div key={`placed-group-${groupIndex}`} className="flex items-center justify-between py-2 px-3 bg-background border border-primary/20 rounded-lg hover:border-primary/30 transition-colors">
+                        <div className="flex-1">
+                          <div className="font-medium text-sm italic text-primary">
+                            {group.scientificName || 'Unknown Species'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {group.plantName}
+                          </div>
+                        </div>
+                        <div className="text-sm font-medium text-gold bg-gold/10 px-2 py-1 rounded-md">
+                          {group.plants.length}
+                        </div>
+                      </div>
+                    ));
+                  })()}
                 </div>
               )}
             </ScrollArea>
