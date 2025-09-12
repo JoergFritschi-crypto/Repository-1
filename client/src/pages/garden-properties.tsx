@@ -492,9 +492,9 @@ export default function GardenProperties() {
                 <div 
                   className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-all duration-300 transform relative z-10 ${
                     currentStep > index + 1 
-                      ? 'bg-[#004025] text-white scale-100' 
+                      ? 'bg-[#004025] text-white ring-2 ring-[#FFD700] ring-offset-2 ring-offset-white scale-100' 
                       : currentStep === index + 1 
-                      ? 'bg-[#004025] text-white ring-4 ring-[#FFD700] shadow-lg scale-110' 
+                      ? 'bg-[#004025] text-white ring-4 ring-[#FFD700] ring-offset-2 ring-offset-white scale-110' 
                       : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                   data-testid={`step-indicator-${index + 1}`}
