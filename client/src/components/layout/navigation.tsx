@@ -90,7 +90,7 @@ export default function Navigation() {
           </div>
           
           <div className="hidden md:flex items-center space-x-2">
-            <Button size="sm" className="h-8 text-xs bg-[#004025] hover:bg-[#004025]/90 border-2 border-[#004025]" asChild data-testid="button-new-garden">
+            <Button size="sm" className="h-8 text-xs bg-[#004025] hover:bg-[#004025]/90 border-2 border-[#004025] text-white" asChild data-testid="button-new-garden">
               <Link href="/garden-properties" className="link-reset">New Garden</Link>
             </Button>
             <Button size="sm" variant="outline" className="h-8 text-xs border-2 border-[#004025] text-[#004025] hover:bg-[#004025]/10" asChild data-testid="button-logout">
