@@ -28,6 +28,7 @@ import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cl
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import GardenRenderer3D from '@/components/garden/garden-renderer-3d';
+import Garden3DView from '@/components/garden/garden-3d-view';
 import PlantSearchModal from '@/components/plant/plant-search-modal';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
@@ -128,12 +129,17 @@ const stepDetails = [
     description: 'Interactive canvas for plant placement'
   },
   { 
-    title: '3D Visualization', 
-    subtitle: 'See your garden',
-    description: 'Photorealistic 3D view'
+    title: '3D Garden View', 
+    subtitle: 'Technical preview',
+    description: 'Precise 3D rendering with exact positions'
   },
   { 
-    title: 'Seasonal Views', 
+    title: 'Garden Visualization', 
+    subtitle: 'Artistic rendering',
+    description: 'Photorealistic garden view'
+  },
+  { 
+    title: 'Seasonal Imaging', 
     subtitle: 'Year-round beauty',
     description: 'Spring, summer, autumn & winter'
   },
@@ -298,8 +304,8 @@ export default function GardenProperties() {
   }, [currentStep]);
 
   const nextStep = async () => {
-    // Show visualization modal when moving from step 4 to step 5
-    if (currentStep === 4) {
+    // Show visualization modal when moving from step 5 to step 6
+    if (currentStep === 5) {
       // Open the visualization generation modal instead of proceeding directly
       setShowVisualizationModal(true);
       return;
@@ -388,7 +394,7 @@ export default function GardenProperties() {
     //   return;
     // }
     
-    setCurrentStep(prev => Math.min(prev + 1, 7));
+    setCurrentStep(prev => Math.min(prev + 1, 8));
   };
 
   const prevStep = () => {
@@ -457,7 +463,7 @@ export default function GardenProperties() {
     },
     onSuccess: (data) => {
       setGardenId(data.id);
-      if (currentStep === 7) {
+      if (currentStep === 8) {
         // Only redirect on final submission
         toast({
           title: 'Garden Created',
@@ -484,7 +490,7 @@ export default function GardenProperties() {
       return response.json();
     },
     onSuccess: () => {
-      if (currentStep === 7) {
+      if (currentStep === 8) {
         toast({
           title: 'Garden Updated',
           description: 'Your garden has been updated successfully!',
@@ -2531,14 +2537,14 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 5: 3D Visualization */}
+            {/* Step 5: Three.js 3D Technical View */}
             {currentStep === 5 && (
               <div className="space-y-3">
-                <Card className="border-2 border-primary shadow-sm" data-testid="step-3d-visualization">
+                <Card className="border-2 border-primary shadow-sm" data-testid="step-3d-technical-view">
                   <CardHeader className="py-3">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Eye className="w-4 h-4 text-primary" />
-                      3D Garden Visualization
+                      3D Garden View - Technical Rendering
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -2555,14 +2561,86 @@ export default function GardenProperties() {
                         <div className="flex items-center">
                           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-white font-medium">
                             <Eye className="h-3 w-3" />
-                            3D Preview
+                            3D Technical
                           </div>
                           <ChevronRight className="h-4 w-4 mx-2 text-primary" />
                         </div>
                         <div className="flex items-center">
                           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/20 text-muted-foreground">
                             <Sparkles className="h-3 w-3" />
-                            Seasonal Views
+                            Artistic View
+                          </div>
+                          <ChevronRight className="h-4 w-4 mx-2 text-primary/30" />
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/20 text-muted-foreground">
+                          <Flower2 className="h-3 w-3" />
+                          Seasonal
+                        </div>
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground mt-2">
+                        Precise 3D technical rendering with exact plant positions
+                      </p>
+                    </div>
+
+                    {/* Three.js 3D Garden View */}
+                    <Garden3DView
+                      gardenId={gardenId || 'temp-garden'}
+                      gardenName={watchedName || 'My Garden'}
+                      gardenData={{
+                        shape: watchedShape,
+                        dimensions: watchedDimensions,
+                        units: watchedUnits,
+                        slopeDirection: watchedSlopeDirection,
+                        slopePercentage: watchedSlopePercentage,
+                        northOrientation: watchedSlopeDirection,
+                        pointOfView: 'bird_eye'
+                      } as any}
+                      placedPlants={placedPlants}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Step 6: Runware Artistic Visualization */}
+            {currentStep === 6 && (
+              <div className="space-y-3">
+                <Card className="border-2 border-primary shadow-sm" data-testid="step-artistic-visualization">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      Garden Visualization - Artistic Rendering
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Workflow Progress Indicator */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-primary/5 to-canary/5 rounded-lg border-2 border-primary/30">
+                      <div className="flex items-center justify-center space-x-2 text-sm">
+                        <div className="flex items-center">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/30 text-primary">
+                            <Check className="h-3 w-3" />
+                            Canvas Design
+                          </div>
+                          <ChevronRight className="h-4 w-4 mx-2 text-primary" />
+                        </div>
+                        <div className="flex items-center">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/30 text-primary">
+                            <Check className="h-3 w-3" />
+                            3D Technical
+                          </div>
+                          <ChevronRight className="h-4 w-4 mx-2 text-primary" />
+                        </div>
+                        <div className="flex items-center">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-white font-medium">
+                            <Sparkles className="h-3 w-3" />
+                            Artistic View
+                          </div>
+                          <ChevronRight className="h-4 w-4 mx-2 text-primary" />
+                        </div>
+                        <div className="flex items-center">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/20 text-muted-foreground">
+                            <Flower2 className="h-3 w-3" />
+                            Seasonal
                           </div>
                           <ChevronRight className="h-4 w-4 mx-2 text-primary/30" />
                         </div>
@@ -2572,7 +2650,7 @@ export default function GardenProperties() {
                         </div>
                       </div>
                       <p className="text-xs text-center text-muted-foreground mt-2">
-                        Generate a photorealistic 3D view of your garden
+                        Generate a photorealistic artistic view of your garden
                       </p>
                     </div>
 
@@ -2590,8 +2668,8 @@ export default function GardenProperties() {
                           disabled={placedPlants.length === 0}
                           data-testid="button-generate-3d"
                         >
-                          <Eye className="w-5 h-5 mr-2" />
-                          Generate 3D Visualization
+                          <Sparkles className="w-5 h-5 mr-2" />
+                          Generate Artistic Visualization
                         </Button>
                         {placedPlants.length === 0 && (
                           <p className="text-xs text-red-500">
@@ -2645,8 +2723,8 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 6: Seasonal Imaging with Gemini */}
-            {currentStep === 6 && (
+            {/* Step 7: Seasonal Imaging with Gemini */}
+            {currentStep === 7 && (
               <div className="space-y-3">
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-seasonal-imaging">
                   <CardHeader className="py-3">
@@ -2820,8 +2898,8 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 7: Review & Finalize - Blueprint & Download */}
-            {currentStep === 7 && (
+            {/* Step 8: Review & Finalize - Blueprint & Download */}
+            {currentStep === 8 && (
               <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="step-finale-blueprint">
                 <CardHeader className="py-7 flower-band-review rounded-t-lg">
                   <CardTitle className="text-base">Review & Generate Blueprint</CardTitle>
@@ -2876,15 +2954,15 @@ export default function GardenProperties() {
               </Button>
 
               <Button
-                type={currentStep === 7 ? "submit" : "button"}
-                onClick={currentStep < 7 ? nextStep : undefined}
+                type={currentStep === 8 ? "submit" : "button"}
+                onClick={currentStep < 8 ? nextStep : undefined}
                 disabled={createGardenMutation.isPending}
-                variant={currentStep === 7 ? "default" : "default"}
+                variant={currentStep === 8 ? "default" : "default"}
                 data-testid="button-next-or-create"
               >
                 {createGardenMutation.isPending ? (
                   "Creating..."
-                ) : currentStep === 7 ? (
+                ) : currentStep === 8 ? (
                   "Generate Garden Design"
                 ) : (
                   <>
