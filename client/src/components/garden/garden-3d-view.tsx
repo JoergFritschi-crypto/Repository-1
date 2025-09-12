@@ -270,7 +270,7 @@ export default function Garden3DView({
     
     // Add garden dimensions display
     const gardenWidth = gardenData.dimensions?.width || 10;
-    const gardenHeight = gardenData.dimensions?.height || 10;
+    const gardenHeight = gardenData.dimensions?.length || 10;
     const dimensionText = `${gardenWidth}m × ${gardenHeight}m`;
     
     // Create a plane to display dimensions
