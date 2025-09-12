@@ -122,7 +122,7 @@ export default function Garden3DView({
     viewingDistance: initialCamera.distance,
     viewingHeight: initialCamera.height,
     viewerRotation: initialCamera.rotation,
-    showGrid: true,
+    showGrid: false,
     showCompass: true,
     showSunPath: true,
     showViewerMarker: true,
