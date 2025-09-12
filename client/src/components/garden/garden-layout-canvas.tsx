@@ -783,93 +783,270 @@ export default function GardenLayoutCanvas({
           </CardContent>
         </Card>
 
-        {/* Garden Info Bar Above Canvas */}
-        <Card className="shadow-md border-2 border-primary/30" style={{ width: `${canvasSize.width}px` }}>
-        <CardContent className="py-2 px-4 flex items-center justify-between bg-gradient-to-r from-background to-primary/5">
-          <div className="flex gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-primary/60 uppercase font-medium">Shape:</span>
-              <span className="text-sm font-semibold text-primary">{shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}</span>
+        {/* Garden Info Bar Above Canvas - Improved Layout */}
+        <Card className="shadow-md border-2 border-primary/30 hover:border-gold/50 transition-all duration-200" style={{ width: `${canvasSize.width}px` }}>
+          <CardContent className="p-0 bg-gradient-to-r from-background via-primary/5 to-canary/5">
+            {/* Top Row - Garden Information */}
+            <div className="px-4 py-3 border-b border-gold/20">
+              <div className="flex flex-wrap gap-4 sm:gap-6 items-center">
+                {/* Shape Info */}
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/60 rounded-md border border-primary/20">
+                  <span className="text-xs text-primary/70 uppercase font-medium tracking-wide">Shape:</span>
+                  <span className="text-sm font-bold text-primary">
+                    {shape.charAt(0).toUpperCase() + shape.slice(1).replace('-', ' ')}
+                  </span>
+                </div>
+                
+                {/* Dimensions Info */}
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/60 rounded-md border border-primary/20">
+                  <span className="text-xs text-primary/70 uppercase font-medium tracking-wide">Size:</span>
+                  <span className="text-sm font-bold text-primary">
+                    {shape === 'circle' ? 
+                      `R: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
+                    shape === 'square' ?
+                      `${dimensions.width || dimensions.side || 10}${unitSymbol}` :
+                      `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 10}${unitSymbol}`
+                    }
+                  </span>
+                </div>
+                
+                {/* Area Info - Highlighted */}
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-primary/10 to-gold/10 rounded-md border border-gold/30">
+                  <span className="text-xs text-primary/70 uppercase font-medium tracking-wide">Total Area:</span>
+                  <span className="text-sm font-bold text-dark-spring-green">
+                    {calculateArea()} {unitSquared}
+                  </span>
+                </div>
+                
+                {/* Help Text - Right Aligned */}
+                <div className="ml-auto flex items-center gap-1.5 text-xs text-primary/60">
+                  <Info className="w-3.5 h-3.5 text-gold" />
+                  <span className="hidden sm:inline">Drag plants to/from canvas</span>
+                  <span className="sm:hidden">Drag plants</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-primary/60 uppercase font-medium">Dimensions:</span>
-              <span className="text-sm font-semibold text-primary">
-                {shape === 'circle' ? 
-                  `R: ${dimensions.radius || dimensions.width/2 || 5}${unitSymbol}` :
-                shape === 'square' ?
-                  `${dimensions.width || dimensions.side || 10}${unitSymbol}` :
-                  `${dimensions.width || 10} × ${dimensions.height || dimensions.width || 10}${unitSymbol}`
-                }
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-primary/60 uppercase font-medium">Area:</span>
-              <span className="text-sm font-bold text-dark-spring-green">{calculateArea()} {unitSquared}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="bg-primary hover:bg-dark-spring-green text-white border-2 border-gold/50 hover:border-canary transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleSaveDesign}
-                    disabled={isSaving || !gardenId || placedPlants.length === 0}
-                    data-testid="button-save-design"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-1" />
-                        Save Design
-                      </>
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Save your current layout to revisit later</p>
-                </TooltipContent>
-              </Tooltip>
+            
+            {/* Bottom Row - Action Buttons */}
+            <div className="px-4 py-2.5 flex flex-wrap gap-2 items-center justify-between">
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  {/* Save Design Button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="h-8 px-4 bg-primary hover:bg-dark-spring-green text-white border border-gold/50 hover:border-canary transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleSaveDesign}
+                        disabled={isSaving || !gardenId || placedPlants.length === 0}
+                        data-testid="button-save-design"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                            <span className="hidden sm:inline">Saving...</span>
+                            <span className="sm:hidden">Save</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-3.5 h-3.5 mr-1.5" />
+                            <span className="hidden sm:inline">Save Design</span>
+                            <span className="sm:hidden">Save</span>
+                          </>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs">Save your current layout to revisit later</p>
+                    </TooltipContent>
+                  </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="border-2 border-primary text-primary hover:bg-canary hover:text-primary hover:border-gold transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
-                    onClick={fetchAvailableGardens}
-                    disabled={isLoading}
-                    data-testid="button-load-design"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <FolderOpen className="w-4 h-4 mr-1" />
-                        Load Design
-                      </>
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Load a previously saved garden design</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <div className="text-xs text-primary/70 ml-2 flex items-center">
-              <Info className="w-3 h-3 mr-1 text-gold" />
-              Drag plants to/from canvas
+                  {/* Load Design Button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="h-8 px-4 border border-primary text-primary hover:bg-canary/20 hover:text-dark-spring-green hover:border-gold transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                        onClick={fetchAvailableGardens}
+                        disabled={isLoading}
+                        data-testid="button-load-design"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                            <span className="hidden sm:inline">Loading...</span>
+                            <span className="sm:hidden">Load</span>
+                          </>
+                        ) : (
+                          <>
+                            <FolderOpen className="w-3.5 h-3.5 mr-1.5" />
+                            <span className="hidden sm:inline">Load Design</span>
+                            <span className="sm:hidden">Load</span>
+                          </>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs">Load a previously saved garden design</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              
+              {/* Plant Count Badge */}
+              {placedPlants.length > 0 && (
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                  {placedPlants.length} {placedPlants.length === 1 ? 'plant' : 'plants'} placed
+                </Badge>
+              )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Seasonal Visualization Section */}
+        <Card className="shadow-md border-2 border-primary/30 hover:border-gold/50 transition-all duration-200" style={{ width: `${canvasSize.width}px` }}>
+          <CardHeader className="py-2 px-4 bg-gradient-to-r from-primary/5 via-gold/5 to-canary/5 border-b border-gold/20">
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-primary">
+              <Image className="w-4 h-4 text-gold" />
+              Seasonal Visualization
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <div className="flex flex-wrap gap-2 items-center justify-between">
+              <div className="flex gap-2">
+                {/* Spring Button */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={selectedSeason === 'spring' ? 'default' : 'outline'}
+                        className={`h-8 px-3 transition-all duration-200 ${
+                          selectedSeason === 'spring' 
+                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-600' 
+                            : 'border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-500'
+                        }`}
+                        onClick={() => {
+                          setSelectedSeason('spring');
+                          generateSeasonalImage('spring');
+                        }}
+                        disabled={isGeneratingImage || placedPlants.length === 0}
+                        data-testid="button-season-spring"
+                      >
+                        <Flower2 className="w-3.5 h-3.5 mr-1.5" />
+                        Spring
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">Generate spring garden visualization</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Summer Button */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={selectedSeason === 'summer' ? 'default' : 'outline'}
+                        className={`h-8 px-3 transition-all duration-200 ${
+                          selectedSeason === 'summer' 
+                            ? 'bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-600' 
+                            : 'border-yellow-500/50 text-yellow-600 hover:bg-yellow-50 hover:border-yellow-500'
+                        }`}
+                        onClick={() => {
+                          setSelectedSeason('summer');
+                          generateSeasonalImage('summer');
+                        }}
+                        disabled={isGeneratingImage || placedPlants.length === 0}
+                        data-testid="button-season-summer"
+                      >
+                        <Sun className="w-3.5 h-3.5 mr-1.5" />
+                        Summer
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">Generate summer garden visualization</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Autumn Button */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={selectedSeason === 'autumn' ? 'default' : 'outline'}
+                        className={`h-8 px-3 transition-all duration-200 ${
+                          selectedSeason === 'autumn' 
+                            ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-600' 
+                            : 'border-orange-500/50 text-orange-600 hover:bg-orange-50 hover:border-orange-500'
+                        }`}
+                        onClick={() => {
+                          setSelectedSeason('autumn');
+                          generateSeasonalImage('autumn');
+                        }}
+                        disabled={isGeneratingImage || placedPlants.length === 0}
+                        data-testid="button-season-autumn"
+                      >
+                        <Cloud className="w-3.5 h-3.5 mr-1.5" />
+                        Autumn
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">Generate autumn garden visualization</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Winter Button */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={selectedSeason === 'winter' ? 'default' : 'outline'}
+                        className={`h-8 px-3 transition-all duration-200 ${
+                          selectedSeason === 'winter' 
+                            ? 'bg-blue-500 hover:bg-blue-600 text-white border-blue-600' 
+                            : 'border-blue-500/50 text-blue-600 hover:bg-blue-50 hover:border-blue-500'
+                        }`}
+                        onClick={() => {
+                          setSelectedSeason('winter');
+                          generateSeasonalImage('winter');
+                        }}
+                        disabled={isGeneratingImage || placedPlants.length === 0}
+                        data-testid="button-season-winter"
+                      >
+                        <Snowflake className="w-3.5 h-3.5 mr-1.5" />
+                        Winter
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">Generate winter garden visualization</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              {/* Status Indicator */}
+              {isGeneratingImage && (
+                <div className="flex items-center gap-2 text-sm text-primary/70">
+                  <Loader2 className="w-4 h-4 animate-spin text-gold" />
+                  <span>Generating {selectedSeason} visualization...</span>
+                </div>
+              )}
+              
+              {!isGeneratingImage && placedPlants.length === 0 && (
+                <div className="text-xs text-muted-foreground italic">
+                  Add plants to enable seasonal views
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
       {/* Main Canvas */}
       <div className="flex gap-3">
