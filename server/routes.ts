@@ -1570,6 +1570,107 @@ Rules:
       });
     }
   });
+  
+  // NEW: Admin route for Gemini 2.5 Flash botanical enhancement (Step 2 of pipeline)
+  app.post('/api/admin/gemini-enhance-garden', isAuthenticated, async (req: any, res) => {
+    try {
+      const {
+        referenceImage,
+        plants,
+        season,
+        gardenDimensions,
+        gardenShape,
+        botanicalAccuracy = true,
+        maintainComposition = true
+      } = req.body;
+      
+      if (!referenceImage || !plants) {
+        return res.status(400).json({ message: "Reference image and plant data are required" });
+      }
+      
+      if (!geminiAI) {
+        console.warn('Gemini API not configured - enhancement skipped');
+        return res.status(503).json({ message: "Gemini API not configured" });
+      }
+      
+      console.log('🌿 Starting Gemini 2.5 Flash botanical enhancement');
+      
+      // Create botanical-aware prompt for Gemini 2.5 Flash
+      const botanicalPrompt = createBotanicalPrompt(plants, season, gardenShape, gardenDimensions);
+      
+      // Use Gemini's enhanceGardenToPhotorealistic method
+      const enhancedImage = await geminiAI.enhanceGardenToPhotorealistic({
+        imageBase64: referenceImage,
+        plants: plants.map((p: any) => ({
+          plantName: p.name,
+          x: p.position?.x || 50,
+          y: p.position?.y || 50,
+          size: p.height > 3 ? 'large' : p.height > 1 ? 'medium' : 'small'
+        })),
+        gardenSize: `${gardenDimensions.width}m x ${gardenDimensions.length}m`,
+        season: season,
+        style: 'Natural photorealistic garden photography'
+      });
+      
+      if (!enhancedImage) {
+        throw new Error('Failed to generate enhanced image');
+      }
+      
+      console.log('✨ Gemini enhancement complete');
+      
+      // Save to file vault
+      const fileName = `gemini_enhanced_${season}_${Date.now()}.png`;
+      await fileVaultService.saveFile('garden_images', fileName, enhancedImage, 'base64');
+      
+      res.json({
+        imageUrl: enhancedImage,
+        message: "Garden enhanced with Gemini 2.5 Flash successfully"
+      });
+    } catch (error) {
+      console.error('Error enhancing garden with Gemini:', error);
+      apiMonitoring.recordError('/api/admin/gemini-enhance-garden', error);
+      res.status(500).json({ message: "Failed to enhance garden with Gemini" });
+    }
+  });
+  
+  // Helper function to create botanical-aware prompts
+  function createBotanicalPrompt(
+    plants: any[],
+    season: string,
+    shape: string,
+    dimensions: any
+  ): string {
+    // Determine which plants are blooming in this season
+    const bloomingPlants = plants.filter(p => {
+      const bloomTime = p.bloomTime || 'summer';
+      if (season === 'spring') return bloomTime.includes('spring') || bloomTime.includes('early');
+      if (season === 'summer') return bloomTime.includes('summer') || bloomTime.includes('mid');
+      if (season === 'autumn') return bloomTime.includes('autumn') || bloomTime.includes('fall') || bloomTime.includes('late');
+      if (season === 'winter') return p.type === 'evergreen' || p.foliageType === 'evergreen';
+      return false;
+    });
+    
+    const seasonalDescriptions = {
+      spring: 'Fresh spring garden with new growth, budding plants, bright green foliage, early blooms',
+      summer: 'Lush summer garden in full bloom, vibrant flower colors, deep green foliage, abundant growth',
+      autumn: 'Autumn garden with warm colors, changing foliage, late season blooms, golden and red tones',
+      winter: 'Winter garden with dormant plants, evergreen structure, frost touches, muted earth tones'
+    };
+    
+    const plantDescriptions = plants.map(p => {
+      if (season === 'winter' && p.foliageType !== 'evergreen') {
+        return `${p.name} (dormant, bare branches)`;
+      } else if (bloomingPlants.includes(p)) {
+        return `${p.name} (in bloom)`;
+      } else {
+        return `${p.name} (foliage only)`;
+      }
+    }).join(', ');
+    
+    return `Photorealistic ${season} garden photograph. ${seasonalDescriptions[season]}. 
+      ${shape} garden ${dimensions.width}x${dimensions.length}m containing: ${plantDescriptions}. 
+      Natural lighting, botanical accuracy, maintain exact plant positions from reference.`;
+  }
 
   // Generate seasonal variations using Gemini 2.5 "nano banana"
   app.post('/api/admin/generate-seasonal-variations', isAuthenticated, async (req: any, res) => {

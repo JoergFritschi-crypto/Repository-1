@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Download, RotateCcw, Settings, Camera, Sun, Eye, Sparkles, ImageIcon, Loader2, Flower2, TreePine, Leaf, Snowflake } from 'lucide-react';
+import { Download, RotateCcw, Settings, Camera, Sun, Eye, Sparkles, ImageIcon, Loader2, Flower2, TreePine, Leaf, Snowflake, Calendar, AlertCircle, PlayCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SeasonalViewer from './seasonal-viewer';
 import { 
   createGardenScene3D, 
   type GardenScene3D, 
@@ -66,18 +67,26 @@ export default function GardenRenderer3D({
     levelOfDetail: 'medium' as 'low' | 'medium' | 'high' | 'ultra'
   });
   
-  // Photorealization state
+  // Photorealization state - NEW flow with intermediate step
   const [photorealizeEnabled, setPhotorealizeEnabled] = useState(false);
   const [isPhotorealizing, setIsPhotorealizing] = useState(false);
+  const [runwareIntermediateImage, setRunwareIntermediateImage] = useState<string | null>(null);
   const [photorealizedImage, setPhotorealizedImage] = useState<string | null>(null);
   const [showComparisonDialog, setShowComparisonDialog] = useState(false);
+  const [showIntermediateReviewDialog, setShowIntermediateReviewDialog] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [currentProcessingStep, setCurrentProcessingStep] = useState<'idle' | 'runware' | 'review' | 'gemini' | 'complete'>('idle');
   
   // Seasonal variations state
   const [isGeneratingSeasons, setIsGeneratingSeasons] = useState(false);
   const [seasonalImages, setSeasonalImages] = useState<{ [key: string]: string }>({});
   const [showSeasonalDialog, setShowSeasonalDialog] = useState(false);
   const [currentSeasonGenerating, setCurrentSeasonGenerating] = useState<string | null>(null);
+  
+  // Time period selection state  
+  const [startPeriod, setStartPeriod] = useState<{ month: number; half: 'first' | 'second' }>({ month: 3, half: 'first' });
+  const [endPeriod, setEndPeriod] = useState<{ month: number; half: 'first' | 'second' }>({ month: 11, half: 'second' });
+  const [showSeasonalViewer, setShowSeasonalViewer] = useState(false);
   
   const { toast } = useToast();
 
@@ -1185,11 +1194,18 @@ export default function GardenRenderer3D({
     }
   }, [gardenData.gardenName, photorealizeEnabled, toast]);
 
-  // Photorealize the exported image using Runware img2img
+  // NEW: Photorealize using 2-step pipeline: Runware (intermediate) → User Review → Gemini (final)
   const photorealizeImage = useCallback(async (baseImage: string, width: number, height: number) => {
     setIsPhotorealizing(true);
+    setCurrentProcessingStep('runware');
     
     try {
+      // Step 1: Generate INTERMEDIATE image with Runware
+      toast({
+        title: "Step 1: Runware Processing",
+        description: "Creating intermediate photorealistic image for review...",
+      });
+      
       // Generate prompt based on garden data and render settings
       const seasonDescriptions = {
         spring: 'fresh spring garden with budding plants, bright green foliage',
@@ -1218,7 +1234,7 @@ export default function GardenRenderer3D({
       
       const negativePrompt = 'cartoon, anime, illustration, painting, watercolor, sketch, blurry, distorted, oversaturated, artificial, plastic, fake, cgi render, video game graphics';
       
-      // Send to server for photorealization
+      // Send to server for Runware photorealization
       const response = await fetch('/api/admin/photorealize-garden', {
         method: 'POST',
         headers: {
@@ -1235,38 +1251,127 @@ export default function GardenRenderer3D({
           seed: 42, // Fixed seed for consistency
           gardenId: gardenData.gardenId,
           season: renderSettings.season,
-          timeOfDay: renderSettings.timeOfDay
+          timeOfDay: renderSettings.timeOfDay,
+          processor: 'runware' // Explicitly use Runware for intermediate
         }),
       });
       
       if (!response.ok) {
-        throw new Error('Photorealization failed');
+        throw new Error('Runware photorealization failed');
+      }
+      
+      const result = await response.json();
+      
+      if (result.imageUrl) {
+        // Store intermediate Runware result
+        setRunwareIntermediateImage(result.imageUrl);
+        setCurrentProcessingStep('review');
+        setShowIntermediateReviewDialog(true);
+        
+        toast({
+          title: "Runware Complete",
+          description: "Intermediate image ready. Please review before final processing.",
+        });
+      }
+    } catch (error) {
+      console.error('Runware error:', error);
+      toast({
+        title: "Runware Failed",
+        description: "Failed to create intermediate image. Please try again.",
+        variant: "destructive"
+      });
+      setCurrentProcessingStep('idle');
+    } finally {
+      setIsPhotorealizing(false);
+    }
+  }, [gardenData, placedPlants, inventoryPlants, renderSettings, toast]);
+  
+  // NEW: Process with Gemini 2.5 Flash after user approves Runware intermediate
+  const processWithGemini = useCallback(async () => {
+    if (!runwareIntermediateImage) return;
+    
+    setIsPhotorealizing(true);
+    setCurrentProcessingStep('gemini');
+    setShowIntermediateReviewDialog(false);
+    
+    try {
+      toast({
+        title: "Step 2: Gemini 2.5 Flash Processing",
+        description: "Creating final botanical seasonal images...",
+      });
+      
+      // Create botanical description for accurate seasonal rendering
+      const plantDescriptions = placedPlants.map(p => {
+        const plant = inventoryPlants.find(ip => ip.id === p.plantId);
+        if (!plant) return null;
+        
+        // Include botanical details for seasonal accuracy
+        return {
+          name: plant.name,
+          type: plant.type,
+          bloomTime: plant.bloomTime || 'summer',
+          foliageColor: plant.foliageColor || 'green',
+          height: plant.height,
+          position: p.position
+        };
+      }).filter(Boolean);
+      
+      // Send to Gemini for final processing
+      const response = await fetch('/api/admin/gemini-enhance-garden', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          referenceImage: runwareIntermediateImage,
+          plants: plantDescriptions,
+          season: renderSettings.season,
+          gardenDimensions: gardenData.dimensions,
+          gardenShape: gardenData.shape,
+          botanicalAccuracy: true,
+          maintainComposition: true
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Gemini enhancement failed');
       }
       
       const result = await response.json();
       
       if (result.imageUrl) {
         setPhotorealizedImage(result.imageUrl);
+        setCurrentProcessingStep('complete');
         setShowComparisonDialog(true);
         
         toast({
-          title: "Photorealization Complete",
-          description: "Your garden has been photorealized with AI enhancement.",
+          title: "Final Image Complete",
+          description: "Your garden has been enhanced with botanical accuracy.",
         });
       }
     } catch (error) {
-      console.error('Photorealization error:', error);
+      console.error('Gemini error:', error);
+      // Fallback to Runware intermediate if Gemini fails
+      setPhotorealizedImage(runwareIntermediateImage);
+      setCurrentProcessingStep('complete');
       toast({
-        title: "Photorealization Failed",
-        description: "Failed to enhance image with AI. Original image was exported.",
+        title: "Using Intermediate Image",
+        description: "Gemini enhancement failed. Using Runware result instead.",
         variant: "destructive"
       });
     } finally {
       setIsPhotorealizing(false);
     }
-  }, [gardenData, placedPlants, inventoryPlants, renderSettings, toast]);
+  }, [runwareIntermediateImage, gardenData, placedPlants, inventoryPlants, renderSettings, toast]);
 
-  // Generate seasonal variations using Gemini 2.5 "nano banana"
+  // Helper function to calculate number of periods between start and end
+  const calculatePeriodCount = (start: { month: number; half: 'first' | 'second' }, end: { month: number; half: 'first' | 'second' }) => {
+    const startIndex = (start.month - 1) * 2 + (start.half === 'first' ? 0 : 1);
+    const endIndex = (end.month - 1) * 2 + (end.half === 'first' ? 0 : 1);
+    return Math.max(1, endIndex - startIndex + 1);
+  };
+  
+  // Generate seasonal variations using Gemini 2.5 Flash with botanical intelligence
   const generateSeasonalVariations = useCallback(async () => {
     if (!photorealizedImage) {
       toast({
@@ -1278,7 +1383,7 @@ export default function GardenRenderer3D({
     }
     
     setIsGeneratingSeasons(true);
-    setShowSeasonalDialog(true);
+    setShowSeasonalViewer(false); // Ensure viewer is closed during generation
     setSeasonalImages({}); // Clear previous seasonal images
     
     try {
@@ -1712,26 +1817,139 @@ export default function GardenRenderer3D({
             </Button>
             
             {photorealizedImage && (
-              <Button
-                onClick={generateSeasonalVariations}
-                disabled={isGeneratingSeasons}
-                variant="default"
-                className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
-                data-testid="button-generate-seasons"
-              >
-                {isGeneratingSeasons ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Generating Seasons...
-                  </>
-                ) : (
-                  <>
-                    <Flower2 className="h-4 w-4 mr-2" />
-                    Generate All Seasons
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowSeasonalDialog(true)}
+                  variant="outline"
+                  data-testid="button-set-period"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Set Time Period
+                </Button>
+                <Button
+                  onClick={generateSeasonalVariations}
+                  disabled={isGeneratingSeasons || !startPeriod || !endPeriod}
+                  variant="default"
+                  className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
+                  data-testid="button-generate-seasons"
+                >
+                  {isGeneratingSeasons ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating {currentSeasonGenerating || 'Seasons'}...
+                    </>
+                  ) : (
+                    <>
+                      <PlayCircle className="h-4 w-4 mr-2" />
+                      Generate Seasonal Journey
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* NEW: Intermediate Review Dialog for Runware output */}
+      <Dialog open={showIntermediateReviewDialog} onOpenChange={setShowIntermediateReviewDialog}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Review Intermediate Image (Runware)
+              <Badge variant="secondary">Step 1 of 2</Badge>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                    Intermediate Image Ready for Review
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    This is the Runware-processed image. Review it before proceeding to the final Gemini 2.5 Flash enhancement for botanical accuracy and seasonal variations.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {runwareIntermediateImage && (
+              <div className="space-y-2">
+                <img 
+                  src={runwareIntermediateImage} 
+                  alt="Runware intermediate result" 
+                  className="w-full rounded-lg border"
+                />
+                
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Camera className="h-4 w-4" />
+                      Original 3D Render
+                    </h4>
+                    {originalImage && (
+                      <img 
+                        src={originalImage} 
+                        alt="Original 3D render" 
+                        className="w-full rounded-lg border opacity-80"
+                      />
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      Next: Gemini 2.5 Flash Enhancement
+                    </h4>
+                    <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-8 flex flex-col items-center justify-center h-[200px]">
+                      <Sparkles className="h-12 w-12 text-gray-400 mb-3" />
+                      <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                        Gemini will enhance this image with:
+                      </p>
+                      <ul className="text-xs text-gray-500 dark:text-gray-500 mt-2 space-y-1">
+                        <li>• Botanical accuracy</li>
+                        <li>• Seasonal variations</li>
+                        <li>• Plant-specific details</li>
+                        <li>• Natural lighting</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-between items-center mt-6">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Processing Pipeline: <span className="font-medium">Three.js → Runware (current) → Gemini 2.5</span>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setShowIntermediateReviewDialog(false);
+                  setRunwareIntermediateImage(null);
+                  setCurrentProcessingStep('idle');
+                }}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Start Over
+              </Button>
+              
+              <Button 
+                variant="default"
+                onClick={processWithGemini}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Continue to Gemini Enhancement
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
