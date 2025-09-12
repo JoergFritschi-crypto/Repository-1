@@ -1134,12 +1134,36 @@ export default function Garden3DView({
     }));
   };
 
+  // Helper function to hide/show UI elements during image capture
+  const toggleUIElementsForCapture = (visible: boolean) => {
+    if (sceneRef.current) {
+      // Hide/show viewer marker
+      const viewerMarker = sceneRef.current.getObjectByName('viewer-marker');
+      if (viewerMarker) viewerMarker.visible = visible;
+      
+      // Hide/show compass
+      const compass = sceneRef.current.getObjectByName('compass');
+      if (compass) compass.visible = visible;
+      
+      // Hide/show dimensions display
+      const dimensions = sceneRef.current.getObjectByName('dimensions');
+      if (dimensions) dimensions.visible = visible;
+    }
+  };
+
   // Export as image
   const handleExportImage = () => {
     if (!rendererRef.current || !sceneRef.current || !cameraRef.current) return;
     
+    // Hide UI elements during capture
+    toggleUIElementsForCapture(false);
+    
     rendererRef.current.render(sceneRef.current, cameraRef.current);
     const dataURL = rendererRef.current.domElement.toDataURL('image/png');
+    
+    // Restore UI elements after capture
+    toggleUIElementsForCapture(true);
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
     
     const link = document.createElement('a');
     link.download = `${gardenName}-3d-view.png`;
@@ -1159,11 +1183,18 @@ export default function Garden3DView({
     setIsGeneratingArtistic(true);
     
     try {
+      // Hide UI elements during capture
+      toggleUIElementsForCapture(false);
+      
       // Render the scene first
       rendererRef.current.render(sceneRef.current, cameraRef.current);
       
       // Capture the current canvas as base64
       const dataURL = rendererRef.current.domElement.toDataURL('image/png');
+      
+      // Restore UI elements after capture
+      toggleUIElementsForCapture(true);
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
       
       // Create a prompt for enhancement
       const prompt = `Enhance this 3D garden render into a photorealistic, artistic garden visualization.

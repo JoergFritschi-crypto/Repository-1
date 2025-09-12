@@ -1154,12 +1154,34 @@ export default function GardenRenderer3D({
       cameraRef.current.aspect = width / height;
       cameraRef.current.updateProjectionMatrix();
       
+      // Hide UI elements during capture
+      if (sceneRef.current) {
+        const viewerMarker = sceneRef.current.getObjectByName('viewer-marker');
+        const compass = sceneRef.current.getObjectByName('compass');
+        const dimensions = sceneRef.current.getObjectByName('dimensions');
+        if (viewerMarker) viewerMarker.visible = false;
+        if (compass) compass.visible = false;
+        if (dimensions) dimensions.visible = false;
+      }
+      
       // Render at high resolution
       rendererRef.current.render(sceneRef.current, cameraRef.current);
       
       // Get canvas data
       const canvas = rendererRef.current.domElement;
       const dataURL = canvas.toDataURL('image/png');
+      
+      // Restore UI elements after capture
+      if (sceneRef.current) {
+        const viewerMarker = sceneRef.current.getObjectByName('viewer-marker');
+        const compass = sceneRef.current.getObjectByName('compass');
+        const dimensions = sceneRef.current.getObjectByName('dimensions');
+        if (viewerMarker) viewerMarker.visible = true;
+        if (compass) compass.visible = true;
+        if (dimensions) dimensions.visible = true;
+        // Re-render to show UI elements again
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      }
       
       // Store original for comparison
       setOriginalImage(dataURL);
