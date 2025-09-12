@@ -357,6 +357,12 @@ export default function GardenProperties() {
       }
     }
     
+    // When on step 4 (Garden Design), redirect to garden design page instead of step 5
+    if (currentStep === 4 && gardenId) {
+      setLocation(`/garden-design/${gardenId}`);
+      return;
+    }
+    
     setCurrentStep(prev => Math.min(prev + 1, 5));
   };
 
