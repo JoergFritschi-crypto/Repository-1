@@ -84,6 +84,20 @@ export const soilTypeEnum = pgEnum("soil_type", [
   "chalk"
 ]);
 
+// North orientation enum
+export const northOrientationEnum = pgEnum("north_orientation", [
+  "N", "NE", "E", "SE", "S", "SW", "W", "NW"
+]);
+
+// Point of view enum
+export const pointOfViewEnum = pgEnum("point_of_view", [
+  "top_down",
+  "bird_eye",
+  "ground_level",
+  "elevated_angle",
+  "isometric"
+]);
+
 // Gardens table
 export const gardens = pgTable("gardens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -95,6 +109,8 @@ export const gardens = pgTable("gardens", {
   dimensions: jsonb("dimensions").notNull(), // flexible storage for different shape parameters
   slopePercentage: decimal("slope_percentage", { precision: 5, scale: 2 }),
   slopeDirection: slopeDirectionEnum("slope_direction"),
+  northOrientation: northOrientationEnum("north_orientation"),
+  pointOfView: pointOfViewEnum("point_of_view").default("bird_eye"),
   sunExposure: sunExposureEnum("sun_exposure"),
   soilType: soilTypeEnum("soil_type"),
   soilPh: decimal("soil_ph", { precision: 3, scale: 1 }),
