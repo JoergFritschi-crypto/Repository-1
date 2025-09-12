@@ -235,7 +235,7 @@ export default function Garden3DView({
     
     // Enable screen space panning for intuitive movement
     controls.screenSpacePanning = true; // Allow panning parallel to screen
-    controls.minDistance = 2;
+    controls.minDistance = 0.01; // Set very low to avoid clamp conflicts with slider
     controls.maxDistance = 50;
     controls.maxPolarAngle = Math.PI / 2; // Prevent camera from going below ground
     
@@ -816,18 +816,21 @@ export default function Garden3DView({
     );
     
     // Enforce bounds to keep garden in view
-    const minDistance = 2;
-    const maxDistance = 30;
-    const clampedDistance = Math.max(minDistance, Math.min(maxDistance, renderSettings.viewingDistance));
-    
     const minHeight = 1;
     const maxHeight = 20;
     const clampedHeight = Math.max(minHeight, Math.min(maxHeight, renderSettings.viewingHeight));
     
-    // Calculate target camera position
+    // Treat viewingDistance as TRUE 3D spherical distance from camera to garden center
+    const maxDistance = 30;
+    const clampedDistance = Math.max(clampedHeight + 0.1, Math.min(maxDistance, renderSettings.viewingDistance));
+    
+    // Calculate ground-plane radius: r = sqrt(max(0, distance^2 - height^2))
+    const groundRadius = Math.sqrt(Math.max(0, clampedDistance * clampedDistance - clampedHeight * clampedHeight));
+    
+    // Calculate target camera position using 3D spherical distance
     const cameraAngle = (renderSettings.viewerRotation + cardinalRotation) * Math.PI / 180;
-    const cameraX = gardenBoundsRef.current.center.x + Math.cos(cameraAngle) * clampedDistance;
-    const cameraZ = gardenBoundsRef.current.center.y + Math.sin(cameraAngle) * clampedDistance;
+    const cameraX = gardenBoundsRef.current.center.x + Math.cos(cameraAngle) * groundRadius;
+    const cameraZ = gardenBoundsRef.current.center.y + Math.sin(cameraAngle) * groundRadius;
     
     // Set target positions for smooth transition
     targetCameraPositionRef.current.set(cameraX, clampedHeight, cameraZ);
