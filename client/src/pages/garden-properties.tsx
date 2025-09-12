@@ -398,7 +398,7 @@ export default function GardenProperties() {
             <CardHeader className="py-6 flower-band-studio rounded-t-lg">
               <CardTitle className="text-2xl md:text-3xl flex items-center gap-3">
                 Garden Design Studio
-                <GardenDesignIcon className="w-8 h-8" />
+                <Palette className="w-8 h-8 text-[#004025]" />
               </CardTitle>
             </CardHeader>
           </Card>
