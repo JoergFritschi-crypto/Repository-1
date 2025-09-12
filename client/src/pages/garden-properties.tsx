@@ -2005,9 +2005,9 @@ export default function GardenProperties() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Slope Direction</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                  <SelectTrigger data-testid="select-slope-direction">
+                                  <SelectTrigger data-testid="select-slope-direction" className="bg-white dark:bg-card">
                                     <SelectValue placeholder="Select direction" />
                                   </SelectTrigger>
                                 </FormControl>
@@ -2045,6 +2045,7 @@ export default function GardenProperties() {
                                   {...field} 
                                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                   data-testid="input-slope-percentage"
+                                  className="bg-white dark:bg-card"
                                 />
                               </FormControl>
                               <FormDescription className="text-xs">
