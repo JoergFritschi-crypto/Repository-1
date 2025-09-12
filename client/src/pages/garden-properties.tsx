@@ -16,9 +16,10 @@ import { toast, useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
+import GardenRenderer3D from '@/components/garden/garden-renderer-3d';
 import PlantSearchModal from '@/components/plant/plant-search-modal';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
@@ -2316,11 +2317,11 @@ export default function GardenProperties() {
                   </Card>
                 )}
 
-                {/* Main Design Canvas */}
+                {/* Main Design Canvas with Tabs */}
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-interactive-canvas">
                   <CardHeader className="py-3">
                     <CardTitle className="text-base">
-                      Garden Layout Canvas
+                      Garden Design Canvas
                       {completeDesign && (
                         <Badge className="ml-2" variant="secondary">
                           AI Design Loaded
@@ -2329,16 +2330,51 @@ export default function GardenProperties() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <GardenLayoutCanvas
-                      shape={watchedShape}
-                      dimensions={watchedDimensions}
-                      units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
-                      gardenName={watchedName}
-                      aiDesign={completeDesign}
-                      inventoryPlants={inventoryPlants}
-                      onOpenPlantSearch={() => setShowPlantSearch(true)}
-                      onPlacedPlantsChange={setPlacedPlants}
-                    />
+                    <Tabs defaultValue="2d-canvas" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="2d-canvas" className="flex items-center gap-2" data-testid="tab-2d-canvas">
+                          <PenTool className="h-4 w-4" />
+                          2D Canvas Design
+                        </TabsTrigger>
+                        <TabsTrigger value="3d-visualization" className="flex items-center gap-2" data-testid="tab-3d-visualization">
+                          <Eye className="h-4 w-4" />
+                          3D Visualization
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="2d-canvas" className="space-y-4 mt-4">
+                        <GardenLayoutCanvas
+                          shape={watchedShape}
+                          dimensions={watchedDimensions}
+                          units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
+                          gardenName={watchedName}
+                          aiDesign={completeDesign}
+                          inventoryPlants={inventoryPlants}
+                          onOpenPlantSearch={() => setShowPlantSearch(true)}
+                          onPlacedPlantsChange={setPlacedPlants}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="3d-visualization" className="space-y-4 mt-4">
+                        <GardenRenderer3D
+                          gardenData={{
+                            gardenId: gardenId || 'temp-garden',
+                            gardenName: watchedName || 'Garden Design',
+                            shape: watchedShape,
+                            dimensions: watchedDimensions,
+                            units: watchedUnits === 'feet' ? 'imperial' : 'metric',
+                            slopeDirection: watchedSlopeDirection,
+                            slopePercentage: watchedSlopePercentage
+                          }}
+                          placedPlants={placedPlants}
+                          inventoryPlants={inventoryPlants}
+                          orientationSettings={{
+                            cardinalRotation: hasSetOrientation ? 45 : 0, // Default rotation based on orientation setup
+                            viewerRotation: 45 // Default viewer angle
+                          }}
+                        />
+                      </TabsContent>
+                    </Tabs>
                   </CardContent>
                 </Card>
 
