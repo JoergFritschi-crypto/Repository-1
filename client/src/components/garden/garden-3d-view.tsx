@@ -100,6 +100,7 @@ export default function Garden3DView({
   const sunHelperRef = useRef<THREE.Mesh | null>(null);
   const gardenBoundsRef = useRef<GardenBounds | null>(null);
   const plantMeshesRef = useRef<THREE.Group>(new THREE.Group());
+  const viewerMarkerRef = useRef<THREE.Group | null>(null);
   
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [scene3D, setScene3D] = useState<GardenScene3D | null>(null);
@@ -117,6 +118,7 @@ export default function Garden3DView({
     showGrid: true,
     showCompass: true,
     showSunPath: true,
+    showViewerMarker: true,
     shadowsEnabled: true,
     levelOfDetail: 'high' as 'low' | 'medium' | 'high' | 'ultra'
   });
@@ -549,7 +551,7 @@ export default function Garden3DView({
 
   // Update camera position
   const updateCamera = useCallback(() => {
-    if (!cameraRef.current || !gardenBoundsRef.current) return;
+    if (!cameraRef.current || !gardenBoundsRef.current || !sceneRef.current) return;
     
     const camera = createCameraParameters(
       cardinalRotation,
@@ -573,6 +575,70 @@ export default function Garden3DView({
     
     cameraRef.current.fov = camera.fov;
     cameraRef.current.updateProjectionMatrix();
+    
+    // Create or update viewer position marker
+    if (!viewerMarkerRef.current) {
+      // Create viewer marker group
+      const viewerGroup = new THREE.Group();
+      viewerGroup.name = 'viewer-marker';
+      
+      // Create viewer position indicator (a blue cone pointing towards the garden)
+      const coneGeometry = new THREE.ConeGeometry(0.2, 0.6, 4);
+      const viewerCone = new THREE.Mesh(
+        coneGeometry,
+        new THREE.MeshBasicMaterial({ 
+          color: 0x0066ff, // Bright blue for viewer
+          opacity: 0.8,
+          transparent: true
+        })
+      );
+      
+      // Create a small sphere at the base to mark the exact position
+      const sphereGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+      const viewerSphere = new THREE.Mesh(
+        sphereGeometry,
+        new THREE.MeshBasicMaterial({ 
+          color: 0x0066ff, // Same bright blue
+          opacity: 0.6,
+          transparent: true
+        })
+      );
+      
+      viewerGroup.add(viewerCone);
+      viewerGroup.add(viewerSphere);
+      viewerMarkerRef.current = viewerGroup;
+      sceneRef.current.add(viewerGroup);
+    }
+    
+    // Update viewer marker position to match camera
+    if (viewerMarkerRef.current) {
+      viewerMarkerRef.current.position.set(
+        camera.position.x,
+        camera.position.z, // Y and Z swapped for Three.js
+        camera.position.y
+      );
+      
+      // Point the cone towards the garden center
+      const direction = new THREE.Vector3(
+        camera.target.x - camera.position.x,
+        camera.target.z - camera.position.z,
+        camera.target.y - camera.position.y
+      ).normalize();
+      
+      // Calculate rotation to point cone in the direction
+      const quaternion = new THREE.Quaternion();
+      const up = new THREE.Vector3(0, 1, 0);
+      quaternion.setFromUnitVectors(up, direction);
+      
+      // Apply rotation to the first child (cone)
+      const cone = viewerMarkerRef.current.children[0];
+      if (cone) {
+        cone.quaternion.copy(quaternion);
+      }
+      
+      // Set visibility based on settings
+      viewerMarkerRef.current.visible = renderSettings.showViewerMarker;
+    }
   }, [renderSettings, cardinalRotation]);
 
   // Animation loop
@@ -925,6 +991,15 @@ export default function Garden3DView({
                     checked={renderSettings.showSunPath}
                     onCheckedChange={(checked) => setRenderSettings(prev => ({ ...prev, showSunPath: checked }))}
                     data-testid="switch-show-sun-path"
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Show Viewer Position</Label>
+                  <Switch
+                    checked={renderSettings.showViewerMarker}
+                    onCheckedChange={(checked) => setRenderSettings(prev => ({ ...prev, showViewerMarker: checked }))}
+                    data-testid="switch-show-viewer"
                   />
                 </div>
                 
