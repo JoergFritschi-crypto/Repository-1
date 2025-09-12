@@ -1349,7 +1349,7 @@ export default function Garden3DView({
                   onValueChange={([value]) => setRenderSettings(prev => ({ ...prev, viewingDistance: value }))}
                   min={2}
                   max={30}
-                  step={1}
+                  step={0.5}
                   className="mt-1"
                   data-testid="slider-camera-distance"
                 />
@@ -1362,7 +1362,7 @@ export default function Garden3DView({
                   onValueChange={([value]) => setRenderSettings(prev => ({ ...prev, viewingHeight: value }))}
                   min={1}
                   max={15}
-                  step={0.5}
+                  step={0.1}
                   className="mt-1"
                   data-testid="slider-camera-height"
                 />
@@ -1375,7 +1375,7 @@ export default function Garden3DView({
                   onValueChange={([value]) => setRenderSettings(prev => ({ ...prev, viewerRotation: value }))}
                   min={0}
                   max={360}
-                  step={5}
+                  step={1}
                   className="mt-1"
                   data-testid="slider-viewer-rotation"
                 />
