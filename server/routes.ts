@@ -1606,7 +1606,8 @@ Rules:
         gardenDimensions,
         gardenShape,
         botanicalAccuracy = true,
-        maintainComposition = true
+        maintainComposition = true,
+        specificMonth
       } = req.body;
       
       if (!referenceImage || !plants) {
@@ -1620,21 +1621,55 @@ Rules:
       
       console.log('🌿 Starting Gemini 2.5 Flash botanical enhancement');
       
-      // Create botanical-aware prompt for Gemini 2.5 Flash
-      const botanicalPrompt = createBotanicalPrompt(plants, season, gardenShape, gardenDimensions);
+      // Fetch complete botanical data for all plants if not already provided
+      let enrichedPlants = plants;
+      if (plants.length > 0 && !plants[0].genus) {
+        // Plants don't have full botanical data, fetch it
+        const plantIds = plants.map((p: any) => p.id || p.plantId).filter(Boolean);
+        const fullPlantData = await Promise.all(
+          plantIds.map(async (id: string) => {
+            const plant = await storage.getPlant(id);
+            return plant;
+          })
+        );
+        
+        // Merge position data with botanical data
+        enrichedPlants = plants.map((p: any, idx: number) => {
+          const botanicalData = fullPlantData.find(fp => fp?.id === (p.id || p.plantId));
+          return {
+            ...botanicalData,
+            ...p,
+            position: p.position || { x: 50, y: 50 }
+          };
+        });
+      }
       
-      // Use Gemini's enhanceGardenToPhotorealistic method
+      // Create botanical-aware prompt with complete plant data
+      const botanicalPrompt = createBotanicalPrompt(enrichedPlants, season, gardenShape, gardenDimensions, specificMonth);
+      
+      // Use Gemini's enhanceGardenToPhotorealistic method with enriched data
       const enhancedImage = await geminiAI.enhanceGardenToPhotorealistic({
         imageBase64: referenceImage,
-        plants: plants.map((p: any) => ({
-          plantName: p.name,
+        plants: enrichedPlants.map((p: any) => ({
+          plantName: p.commonName || p.name,
+          scientificName: p.cultivar ? 
+            `${p.genus} ${p.species} '${p.cultivar}'` : 
+            p.genus && p.species ? `${p.genus} ${p.species}` : 
+            p.scientificName,
           x: p.position?.x || 50,
           y: p.position?.y || 50,
-          size: p.height > 3 ? 'large' : p.height > 1 ? 'medium' : 'small'
+          height: p.heightMaxCm ? p.heightMaxCm / 100 : 1,
+          spread: p.spreadMaxCm ? p.spreadMaxCm / 100 : 0.5,
+          bloomStatus: p.bloomStartMonth && p.bloomEndMonth && 
+            specificMonth >= p.bloomStartMonth && specificMonth <= p.bloomEndMonth ?
+            'blooming' : 'not-blooming',
+          foliageType: p.foliage,
+          size: p.heightMaxCm > 300 ? 'large' : p.heightMaxCm > 100 ? 'medium' : 'small'
         })),
         gardenSize: `${gardenDimensions.width}m x ${gardenDimensions.length}m`,
         season: season,
-        style: 'Natural photorealistic garden photography'
+        style: 'Natural photorealistic garden photography',
+        botanicalContext: botanicalPrompt
       });
       
       if (!enhancedImage) {
@@ -1658,28 +1693,103 @@ Rules:
     }
   });
   
-  // Helper function to create botanical-aware prompts
+  // Helper function to create botanical-aware prompts with complete plant data
   function createBotanicalPrompt(
     plants: any[],
     season: string,
     shape: string,
-    dimensions: any
+    dimensions: any,
+    specificMonth?: number
   ): string {
-    // Determine which plants are blooming in this season
-    const bloomingPlants = plants.filter(p => {
-      const bloomTime = p.bloomTime || 'summer';
-      if (season === 'spring') return bloomTime.includes('spring') || bloomTime.includes('early');
-      if (season === 'summer') return bloomTime.includes('summer') || bloomTime.includes('mid');
-      if (season === 'autumn') return bloomTime.includes('autumn') || bloomTime.includes('fall') || bloomTime.includes('late');
-      if (season === 'winter') return p.type === 'evergreen' || p.foliageType === 'evergreen';
-      return false;
-    });
+    // Map seasons to specific months for precise rendering
+    const getMonthFromSeason = (s: string, month?: number): number => {
+      if (month) return month;
+      switch(s) {
+        case 'spring': return 4; // April
+        case 'summer': return 7; // July
+        case 'autumn': return 10; // October
+        case 'winter': return 1; // January
+        default: return 7;
+      }
+    };
+    
+    const targetMonth = getMonthFromSeason(season, specificMonth);
+    
+    // Create detailed plant descriptions with complete botanical data
+    const detailedPlantDescriptions = plants.map((p, idx) => {
+      const { 
+        genus, species, cultivar, commonName,
+        heightMinCm, heightMaxCm, spreadMinCm, spreadMaxCm,
+        bloomStartMonth, bloomEndMonth, floweringSeason,
+        flowerColor, leafColor, foliage,
+        type, growthRate, cycle,
+        position = { x: 50, y: 50 }
+      } = p;
+      
+      // Create scientific name
+      const scientificName = cultivar ? 
+        `${genus} ${species} '${cultivar}'` : 
+        genus && species ? `${genus} ${species}` : 
+        p.scientificName || commonName;
+      
+      // Calculate dimensions
+      const heightM = heightMaxCm ? (heightMaxCm / 100).toFixed(1) : '1.0';
+      const spreadM = spreadMaxCm ? (spreadMaxCm / 100).toFixed(1) : '0.5';
+      
+      // Determine bloom status for target month
+      const isBlooming = bloomStartMonth && bloomEndMonth && 
+        targetMonth >= bloomStartMonth && targetMonth <= bloomEndMonth;
+      
+      // Create seasonal description based on plant characteristics
+      let seasonalState = '';
+      if (targetMonth >= 3 && targetMonth <= 5) { // Spring
+        if (isBlooming) {
+          seasonalState = `showing ${flowerColor?.join(' and ') || 'colorful'} spring blooms`;
+        } else if (foliage === 'deciduous') {
+          seasonalState = 'with fresh emerging foliage, bright green new growth';
+        } else {
+          seasonalState = 'with new growth emerging';
+        }
+      } else if (targetMonth >= 6 && targetMonth <= 8) { // Summer
+        if (isBlooming) {
+          seasonalState = `in peak bloom with abundant ${flowerColor?.join(' and ') || 'colorful'} flowers`;
+        } else {
+          seasonalState = `with full, lush ${leafColor?.join('-') || 'green'} foliage`;
+        }
+      } else if (targetMonth >= 9 && targetMonth <= 11) { // Autumn
+        if (foliage === 'deciduous') {
+          if (isBlooming) {
+            seasonalState = `with late ${flowerColor?.join('-') || 'autumn'} blooms and changing foliage`;
+          } else {
+            seasonalState = 'with foliage turning brilliant autumn colors (gold, orange, red)';
+          }
+        } else if (isBlooming) {
+          seasonalState = `with late season ${flowerColor?.join('-') || 'autumn'} blooms`;
+        } else {
+          seasonalState = 'with mature foliage and seed heads';
+        }
+      } else { // Winter
+        if (foliage === 'evergreen') {
+          seasonalState = 'maintaining evergreen structure and winter interest';
+        } else if (type === 'ornamental trees' || type === 'shrubs') {
+          seasonalState = 'showing bare architectural branching structure';
+        } else {
+          seasonalState = 'dormant, cut back to ground level';
+        }
+      }
+      
+      return `Plant ${idx + 1} at position (${position.x}%, ${position.y}%):
+  ${commonName} [${scientificName}]
+  Size: Height ${heightM}m, Spread ${spreadM}m
+  Type: ${type || 'perennial'}, ${cycle || 'perennial'} ${foliage || ''}
+  Current state (Month ${targetMonth}): ${seasonalState}`;
+    }).join('\n\n');
     
     const seasonalDescriptions = {
-      spring: 'Fresh spring garden with new growth, budding plants, bright green foliage, early blooms',
-      summer: 'Lush summer garden in full bloom, vibrant flower colors, deep green foliage, abundant growth',
-      autumn: 'Autumn garden with warm colors, changing foliage, late season blooms, golden and red tones',
-      winter: 'Winter garden with dormant plants, evergreen structure, frost touches, muted earth tones'
+      spring: `Fresh spring garden in month ${targetMonth} (${['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][targetMonth]}): New growth emerging, early blooms beginning, bright green foliage`,
+      summer: `Peak summer garden in month ${targetMonth} (${['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][targetMonth]}): Full bloom period, lush mature foliage, abundant flowers`,
+      autumn: `Autumn garden in month ${targetMonth} (${['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][targetMonth]}): Changing foliage colors, late blooms, seed heads forming`,
+      winter: `Winter garden in month ${targetMonth} (${['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][targetMonth]}): Dormant perennials, evergreen structure, bare architectural elements`
     };
     
     const plantDescriptions = plants.map(p => {
@@ -2337,12 +2447,29 @@ Rules:
         return res.status(400).json({ message: "Canvas design with plants is required" });
       }
 
+      // Fetch complete botanical data for all plants
+      const plantIds = canvasDesign.plants.map((p: any) => p.id).filter(Boolean);
+      const fullPlantData = await Promise.all(
+        plantIds.map(async (id: string) => {
+          const plant = await storage.getPlant(id);
+          return plant;
+        })
+      );
+      
+      // Create a map for easy lookup
+      const plantDataMap: Record<string, any> = {};
+      fullPlantData.forEach(plant => {
+        if (plant) {
+          plantDataMap[plant.id] = plant;
+        }
+      })
+
       // Convert canvas positions to hyperprecise grid coordinates (1cm precision)
       // Canvas is 1200x800px representing garden dimensions
       const gardenWidth = garden.dimensions.width;
       const gardenLength = garden.dimensions.length;
       
-      // Create hyperprecise plant positioning with centimeter-level grid coordinates
+      // Create hyperprecise plant positioning with centimeter-level grid coordinates and botanical data
       const plantPositions = canvasDesign.plants.map((p: any, index: number) => {
         // Convert percentage to actual garden coordinates with centimeter precision
         const xCentimeters = Math.round(p.x / 100 * gardenWidth * 100);
@@ -2373,9 +2500,59 @@ Rules:
           relationships.push(`${distToFirst}m from Plant 1`);
         }
         
+        // Get full botanical data for this plant
+        const botanicalData = plantDataMap[p.id] || {};
+        
+        // Create detailed botanical description based on season
+        const createSeasonalDescription = (plantData: any, targetSeason: string) => {
+          const { genus, species, cultivar, foliage, leafColor, flowerColor, 
+                  bloomStartMonth, bloomEndMonth, heightMaxCm, spreadMaxCm,
+                  type, growthRate } = plantData;
+          
+          const scientificName = cultivar ? `${genus} ${species} '${cultivar}'` : `${genus} ${species}`;
+          const heightM = heightMaxCm ? (heightMaxCm / 100).toFixed(1) : '1.0';
+          const spreadM = spreadMaxCm ? (spreadMaxCm / 100).toFixed(1) : '0.5';
+          
+          let seasonalDesc = '';
+          if (targetSeason === 'spring') {
+            if (bloomStartMonth && bloomStartMonth <= 5) {
+              seasonalDesc = `showing early ${flowerColor?.join('-') || 'white'} blooms`;
+            } else {
+              seasonalDesc = 'with fresh new growth, bright green emerging foliage';
+            }
+          } else if (targetSeason === 'summer') {
+            if (bloomStartMonth && bloomEndMonth && bloomStartMonth <= 7 && bloomEndMonth >= 7) {
+              seasonalDesc = `in peak bloom with ${flowerColor?.join(' and ') || 'colorful'} flowers`;
+            } else {
+              seasonalDesc = `with lush ${leafColor?.join('-') || 'green'} foliage at full size`;
+            }
+          } else if (targetSeason === 'autumn') {
+            if (foliage === 'deciduous') {
+              seasonalDesc = 'with foliage turning golden/red autumn colors';
+            } else if (bloomEndMonth && bloomEndMonth >= 9) {
+              seasonalDesc = `with late season ${flowerColor?.join('-') || 'autumn'} blooms`;
+            } else {
+              seasonalDesc = 'with mature foliage and seed heads forming';
+            }
+          } else if (targetSeason === 'winter') {
+            if (foliage === 'evergreen') {
+              seasonalDesc = 'maintaining evergreen structure and color';
+            } else {
+              seasonalDesc = 'dormant with bare architectural stems';
+            }
+          }
+          
+          return `[${scientificName}] Height: ${heightM}m, Spread: ${spreadM}m, ${seasonalDesc}`;
+        };
+        
+        const botanicalDesc = botanicalData.id ? 
+          createSeasonalDescription(botanicalData, season || 'summer') : 
+          '';
+        
         return `Plant ${index + 1}: ${p.plantName || p.commonName} (${p.scientificName})
   Grid: ${gridCol}${gridRow} (${xCentimeters}cm from left, ${yCentimeters}cm from front)
-  Exact: X=${xMeters}m, Y=${yMeters}m${relationships.length > 0 ? '\n  Spacing: ' + relationships.join(', ') : ''}`;
+  Exact: X=${xMeters}m, Y=${yMeters}m${relationships.length > 0 ? '\n  Spacing: ' + relationships.join(', ') : ''}
+  Botanical: ${botanicalDesc}`;
       });
       
       // Count plant types to prevent additions

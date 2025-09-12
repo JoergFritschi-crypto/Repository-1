@@ -228,22 +228,59 @@ class GeminiAI {
 
   async enhanceGardenToPhotorealistic(options: {
     imageBase64: string;
-    plants: Array<{ plantName: string; x: number; y: number; size: string }>;
+    plants: Array<{ 
+      plantName: string; 
+      scientificName?: string;
+      x: number; 
+      y: number; 
+      height?: number;
+      spread?: number;
+      bloomStatus?: string;
+      foliageType?: string;
+      size: string;
+    }>;
     gardenSize: string;
     season: string;
     style: string;
+    botanicalContext?: string;
   }): Promise<string | null> {
     try {
-      const plantList = options.plants.map(p => 
-        `${p.plantName} (${p.size === 'small' ? '30cm tall' : p.size === 'large' ? '3-4m tall' : '1m tall'})`
-      ).join(', ');
+      // Create detailed plant descriptions with botanical accuracy
+      const plantDescriptions = options.plants.map((p, idx) => {
+        const height = p.height ? `${p.height.toFixed(1)}m` : 
+                      p.size === 'small' ? '0.3m' : 
+                      p.size === 'large' ? '3-4m' : '1m';
+        const spread = p.spread ? `${p.spread.toFixed(1)}m` : height;
+        const botanical = p.scientificName ? ` [${p.scientificName}]` : '';
+        const bloom = p.bloomStatus === 'blooming' ? ' (currently flowering)' : '';
+        const foliage = p.foliageType ? `, ${p.foliageType} foliage` : '';
+        
+        return `${idx + 1}. ${p.plantName}${botanical} at (${p.x}%, ${p.y}%): Height ${height}, Spread ${spread}${bloom}${foliage}`;
+      }).join('\n');
       
-      const prompt = `Transform this garden layout into a photorealistic image. 
-        This is a ${options.gardenSize} garden containing: ${plantList}.
-        Season: ${options.season}. 
-        Style: Natural photorealistic garden photography.
-        Maintain the exact plant positions from the reference image but make them look real, with natural lighting, shadows, and environmental integration.
-        The plants should look like they're actually growing in the garden, not overlaid sprites.`;
+      // If botanical context is provided, use it for the main description
+      const botanicalInfo = options.botanicalContext || plantDescriptions;
+      
+      const prompt = `Transform this garden layout into a photorealistic ${options.season} garden photograph.
+
+GARDEN SPECIFICATIONS:
+- Size: ${options.gardenSize}
+- Season: ${options.season}
+- Photography style: ${options.style}
+
+BOTANICAL ACCURACY REQUIREMENTS:
+${botanicalInfo}
+
+CRITICAL INSTRUCTIONS:
+1. EXACT POSITIONING: Each plant must remain at its specified percentage coordinates
+2. BOTANICAL ACCURACY: Render each plant with correct size, form, and seasonal appearance
+3. SEASONAL REALISM: Show appropriate bloom status, foliage color, and growth stage for ${options.season}
+4. PHOTOGRAPHIC QUALITY: Natural lighting, realistic shadows, environmental integration
+5. NO ADDITIONS: Do not add any plants not listed above
+6. MAINTAIN COMPOSITION: Keep the exact spatial arrangement from the reference image
+
+The plants should look naturally established in the garden, not like overlaid sprites.
+Create a cohesive, photorealistic garden scene while maintaining precise plant positions.`;
       
       const result = await this.generateImageWithReference(prompt, options.imageBase64);
       return result.imageData || result.imageUrl || null;
