@@ -398,12 +398,17 @@ export default function GardenProperties() {
             <CardHeader className="py-6 flower-band-studio rounded-t-lg">
               <CardTitle className="text-2xl md:text-3xl flex items-center gap-3">
                 Garden Design Studio
-                <GardenDesignIcon className="w-8 h-8 rounded-md p-1" style={{
-                  background: 'rgba(255, 255, 255, 0.3)',
-                  backdropFilter: 'blur(2px)',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                  mixBlendMode: 'multiply'
-                }} />
+                <div 
+                  className="w-8 h-8 rounded-md p-1 flex items-center justify-center"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.3)',
+                    backdropFilter: 'blur(2px)',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                    mixBlendMode: 'multiply'
+                  }}
+                >
+                  <GardenDesignIcon className="w-6 h-6" />
+                </div>
               </CardTitle>
             </CardHeader>
           </Card>
