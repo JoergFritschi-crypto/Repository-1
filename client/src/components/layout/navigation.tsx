@@ -68,7 +68,7 @@ export default function Navigation() {
             )}
             
             <Link 
-              href={user ? "/home" : "/"} 
+              href="/" 
               className="flex items-center space-x-2 group transition-transform duration-200 hover:scale-105" 
               data-testid="link-home"
               aria-label="GardenScape Pro Home"
