@@ -871,8 +871,8 @@ export default function Garden3DView({
           side: THREE.DoubleSide
         })
       );
-      viewerArrow.rotation.x = -Math.PI / 2; // Lay flat on ground
-      viewerArrow.position.y = 0; // At group level
+      viewerArrow.rotation.x = -Math.PI / 2; // Lay flat on ground  
+      viewerArrow.position.y = 0.03; // Slightly above ground level for visibility
       
       viewerGroup.add(viewerArrow);
       viewerGroup.renderOrder = 999;
