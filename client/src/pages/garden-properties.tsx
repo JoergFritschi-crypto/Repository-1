@@ -398,7 +398,19 @@ export default function GardenProperties() {
             <CardHeader className="py-6 flower-band-studio rounded-t-lg">
               <CardTitle className="text-2xl md:text-3xl flex items-center gap-3">
                 Garden Design Studio
-                <Palette className="w-8 h-8 text-[#004025]" />
+                <img 
+                  src="/generated-icons/garden-spade.png"
+                  alt="Garden Spade"
+                  className="w-8 h-8"
+                  onError={(e) => {
+                    // Fallback to Palette icon if generated icon doesn't exist yet
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    const palette = document.createElement('div');
+                    palette.className = 'w-8 h-8 text-[#004025] flex items-center justify-center';
+                    palette.innerHTML = '🎨';
+                    (e.target as HTMLImageElement).parentNode?.appendChild(palette);
+                  }}
+                />
               </CardTitle>
             </CardHeader>
           </Card>
