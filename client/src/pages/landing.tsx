@@ -108,15 +108,15 @@ export default function Landing() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
                   <div className="flex-1">
-                    <Button asChild size="lg" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/20 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 w-full h-16 hover:-translate-y-0.5" data-testid="button-start-designing">
+                    <Button asChild size="sm" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/20 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-200 w-full h-8 text-xs hover:scale-105" data-testid="button-start-designing">
                       {!isAuthenticated ? (
-                        <a href="/api/login" className="flex items-center justify-center gap-2 h-full link-reset">
-                          <GardenDesignIcon className="w-5 h-5" />
+                        <a href="/api/login" className="flex items-center justify-center gap-1 h-full link-reset">
+                          <GardenDesignIcon className="w-3.5 h-3.5" />
                           Create Your Garden
                         </a>
                       ) : (
-                        <Link href="/garden-properties" className="flex items-center justify-center gap-2 h-full link-reset">
-                          <GardenDesignIcon className="w-5 h-5" />
+                        <Link href="/garden-properties" className="flex items-center justify-center gap-1 h-full link-reset">
+                          <GardenDesignIcon className="w-3.5 h-3.5" />
                           Create Your Garden
                         </Link>
                       )}
@@ -124,15 +124,15 @@ export default function Landing() {
                     <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Start designing with AI guidance</p>
                   </div>
                   <div className="flex-1">
-                    <Button variant="outline" size="lg" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/20 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 w-full h-16 hover:-translate-y-0.5" data-testid="button-watch-demo" asChild>
+                    <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white text-primary border-2 border-transparent hover:border-primary/20 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-200 w-full h-8 text-xs hover:scale-105" data-testid="button-watch-demo" asChild>
                       {!isAuthenticated ? (
-                        <a href="/api/login" className="flex items-center justify-center gap-2 h-full link-reset">
-                          <PlantLibraryIcon className="w-5 h-5" />
+                        <a href="/api/login" className="flex items-center justify-center gap-1 h-full link-reset">
+                          <PlantLibraryIcon className="w-3.5 h-3.5" />
                           Browse Plants
                         </a>
                       ) : (
-                        <Link href="/plant-library" className="flex items-center justify-center gap-2 h-full link-reset">
-                          <PlantLibraryIcon className="w-5 h-5" />
+                        <Link href="/plant-library" className="flex items-center justify-center gap-1 h-full link-reset">
+                          <PlantLibraryIcon className="w-3.5 h-3.5" />
                           Browse Plants
                         </Link>
                       )}
