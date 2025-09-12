@@ -157,6 +157,7 @@ export default function Garden3DView({
     if (sceneRef.current) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
       if (rendererRef.current) {
         rendererRef.current.dispose();
@@ -174,7 +175,7 @@ export default function Garden3DView({
       antialias: true,
       alpha: true
     });
-    renderer.shadowMap.enabled = true; // Will be controlled by toggle
+    renderer.shadowMap.enabled = renderSettings.shadowsEnabled;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
@@ -200,7 +201,7 @@ export default function Garden3DView({
     scene.add(plantMeshesRef.current);
     
     setIsSceneReady(true);
-  }, [gardenData, cardinalRotation, renderSettings.shadowsEnabled]);
+  }, [gardenData, cardinalRotation]);
 
   // Create garden ground and terrain
   const createGardenTerrain = useCallback((bounds: GardenBounds, slope?: { percentage?: number; direction?: string }) => {
@@ -308,12 +309,11 @@ export default function Garden3DView({
       arrowGeometry,
       new THREE.MeshBasicMaterial({ 
         color: 0x4488aa,
-        opacity: 0.6,
-        transparent: true
+        fog: false
       })
     );
     northArrow.rotation.z = Math.PI;
-    northArrow.position.set(0, 0.5, -(Math.max(width, depth) / 2 + 2));
+    northArrow.position.set(0, 1.5, -(Math.max(width, depth) / 2 + 2));
     
     // Add "N" text sprite (simpler approach using a small sphere as marker)
     const nMarkerGeometry = new THREE.SphereGeometry(0.1, 8, 8);
@@ -321,11 +321,10 @@ export default function Garden3DView({
       nMarkerGeometry,
       new THREE.MeshBasicMaterial({ 
         color: 0x4488aa,
-        opacity: 0.6,
-        transparent: true
+        fog: false
       })
     );
-    nMarker.position.set(0, 0.8, -(Math.max(width, depth) / 2 + 2.2));
+    nMarker.position.set(0, 2.0, -(Math.max(width, depth) / 2 + 2.2));
     
     // Rotate compass based on north orientation
     compassGroup.rotation.y = -cardinalRotation * Math.PI / 180;
@@ -452,13 +451,43 @@ export default function Garden3DView({
       lighting.sun.intensity
     );
     
-    // Scale sun position to scene
-    const scaleFactor = 0.05;
-    sunLight.position.set(
-      lighting.sun.position.x * scaleFactor,
-      lighting.sun.position.z * scaleFactor, // Y and Z swapped for Three.js coordinate system
-      lighting.sun.position.y * scaleFactor
+    // Calculate sun position based on time of day
+    const gardenSize = Math.max(
+      gardenBoundsRef.current.maxX - gardenBoundsRef.current.minX,
+      gardenBoundsRef.current.maxY - gardenBoundsRef.current.minY
     );
+    
+    // Calculate sun position on arc (0-24 hours)
+    const hour = renderSettings.timeOfDay;
+    const dayProgress = (hour - 6) / 12; // 6am to 6pm normalized to 0-1
+    const sunAngle = Math.PI * Math.max(0, Math.min(1, dayProgress)); // Clamp to sunrise-sunset
+    
+    // Position sun on east-west arc
+    const sunDistance = gardenSize * 1.5;
+    const sunHeight = Math.sin(sunAngle) * gardenSize * 0.8 + 0.5;
+    const sunX = Math.cos(sunAngle) * sunDistance;
+    const sunZ = 0;
+    
+    sunLight.position.set(sunX, sunHeight, sunZ);
+    
+    // Rotate based on north orientation
+    const rotationRad = -cardinalRotation * Math.PI / 180;
+    const rotatedX = sunX * Math.cos(rotationRad) - sunZ * Math.sin(rotationRad);
+    const rotatedZ = sunX * Math.sin(rotationRad) + sunZ * Math.cos(rotationRad);
+    sunLight.position.set(rotatedX, sunHeight, rotatedZ);
+    
+    // Adjust intensity based on sun elevation
+    const elevationFactor = Math.sin(sunAngle);
+    sunLight.intensity = lighting.sun.intensity * Math.max(0.3, elevationFactor);
+    
+    // Warm colors at dawn/dusk
+    if (hour < 8 || hour > 18) {
+      sunLight.color = new THREE.Color(0xffaa88);
+    } else if (hour < 10 || hour > 16) {
+      sunLight.color = new THREE.Color(0xffd8aa);
+    } else {
+      sunLight.color = new THREE.Color(lighting.sun.color);
+    }
     
     sunLight.castShadow = renderSettings.shadowsEnabled;
     sunLight.shadow.mapSize.width = 2048;
@@ -466,14 +495,11 @@ export default function Garden3DView({
     sunLight.shadow.camera.near = 0.5;
     sunLight.shadow.camera.far = 50;
     
-    const gardenSize = Math.max(
-      gardenBoundsRef.current.maxX - gardenBoundsRef.current.minX,
-      gardenBoundsRef.current.maxY - gardenBoundsRef.current.minY
-    );
-    sunLight.shadow.camera.left = -gardenSize;
-    sunLight.shadow.camera.right = gardenSize;
-    sunLight.shadow.camera.top = gardenSize;
-    sunLight.shadow.camera.bottom = -gardenSize;
+    const shadowSize = gardenSize * 1.5;
+    sunLight.shadow.camera.left = -shadowSize;
+    sunLight.shadow.camera.right = shadowSize;
+    sunLight.shadow.camera.top = shadowSize;
+    sunLight.shadow.camera.bottom = -shadowSize;
     
     sceneRef.current.add(sunLight);
     sunLightRef.current = sunLight;
@@ -500,11 +526,10 @@ export default function Garden3DView({
     if (oldPath) sceneRef.current.remove(oldPath);
     
     // Create sun sphere
-    const sunGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    const sunGeometry = new THREE.SphereGeometry(0.5, 16, 16);
     const sunMaterial = new THREE.MeshBasicMaterial({ 
-      color: 0xffd700,
-      opacity: 0.8,
-      transparent: true
+      color: hour < 8 || hour > 18 ? 0xff8844 : 0xffd700,
+      fog: false
     });
     const sunSphere = new THREE.Mesh(sunGeometry, sunMaterial);
     sunSphere.name = 'sun-sphere';
@@ -561,16 +586,31 @@ export default function Garden3DView({
       renderSettings.viewingHeight
     );
     
+    // Enforce bounds to keep garden in view
+    const minDistance = 3;
+    const maxDistance = 30;
+    const clampedDistance = Math.max(minDistance, Math.min(maxDistance, renderSettings.viewingDistance));
+    
+    const minHeight = 1;
+    const maxHeight = 20;
+    const clampedHeight = Math.max(minHeight, Math.min(maxHeight, renderSettings.viewingHeight));
+    
+    // Recalculate camera position with clamped values
+    const cameraAngle = (renderSettings.viewerRotation + cardinalRotation) * Math.PI / 180;
+    const cameraX = gardenBoundsRef.current.center.x + Math.cos(cameraAngle) * clampedDistance;
+    const cameraZ = gardenBoundsRef.current.center.y + Math.sin(cameraAngle) * clampedDistance;
+    
     cameraRef.current.position.set(
-      camera.position.x,
-      camera.position.z, // Y and Z swapped for Three.js
-      camera.position.y
+      cameraX,
+      clampedHeight,
+      cameraZ
     );
     
+    // Always look at garden center for stable framing
     cameraRef.current.lookAt(
-      camera.target.x,
-      camera.target.z,
-      camera.target.y
+      gardenBoundsRef.current.center.x,
+      0,
+      gardenBoundsRef.current.center.y
     );
     
     cameraRef.current.fov = camera.fov;
@@ -588,10 +628,10 @@ export default function Garden3DView({
         coneGeometry,
         new THREE.MeshBasicMaterial({ 
           color: 0x0066ff, // Bright blue for viewer
-          opacity: 0.8,
-          transparent: true
+          fog: false
         })
       );
+      viewerCone.position.y = 0.5; // Offset cone upward
       
       // Create a small sphere at the base to mark the exact position
       const sphereGeometry = new THREE.SphereGeometry(0.15, 8, 8);
@@ -599,22 +639,28 @@ export default function Garden3DView({
         sphereGeometry,
         new THREE.MeshBasicMaterial({ 
           color: 0x0066ff, // Same bright blue
-          opacity: 0.6,
-          transparent: true
+          fog: false
         })
       );
       
       viewerGroup.add(viewerCone);
       viewerGroup.add(viewerSphere);
+      viewerGroup.renderOrder = 999;
+      viewerGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.material.depthTest = false;
+        }
+      });
       viewerMarkerRef.current = viewerGroup;
       sceneRef.current.add(viewerGroup);
     }
     
     // Update viewer marker position to match camera
     if (viewerMarkerRef.current) {
+      // Elevate marker above ground for visibility
       viewerMarkerRef.current.position.set(
         camera.position.x,
-        camera.position.z, // Y and Z swapped for Three.js
+        Math.max(1.5, camera.position.z), // Y and Z swapped for Three.js, minimum height
         camera.position.y
       );
       
@@ -630,11 +676,8 @@ export default function Garden3DView({
       const up = new THREE.Vector3(0, 1, 0);
       quaternion.setFromUnitVectors(up, direction);
       
-      // Apply rotation to the first child (cone)
-      const cone = viewerMarkerRef.current.children[0];
-      if (cone) {
-        cone.quaternion.copy(quaternion);
-      }
+      // Apply rotation to the viewer group
+      viewerMarkerRef.current.quaternion.copy(quaternion);
       
       // Set visibility based on settings
       viewerMarkerRef.current.visible = renderSettings.showViewerMarker;
