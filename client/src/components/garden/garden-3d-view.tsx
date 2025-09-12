@@ -140,8 +140,16 @@ export default function Garden3DView({
 
   // Initialize Three.js scene
   const initScene = useCallback(() => {
-    if (!canvasRef.current || !containerRef.current) return;
+    if (!canvasRef.current || !containerRef.current) {
+      console.error('Cannot initialize scene: missing refs', {
+        canvas: !!canvasRef.current,
+        container: !!containerRef.current
+      });
+      return;
+    }
     
+    console.log('=== INIT SCENE START ===');
+    console.log('Container dimensions:', containerRef.current.getBoundingClientRect());
     console.log('Initializing 3D scene with garden data:', {
       shape: gardenData.shape,
       dimensions: gardenData.dimensions,
@@ -192,6 +200,10 @@ export default function Garden3DView({
       1000
     );
     
+    // Set initial camera position
+    camera.position.set(10, 10, 10);
+    camera.lookAt(0, 0, 0);
+    
     // Store references
     sceneRef.current = scene;
     rendererRef.current = renderer;
@@ -200,8 +212,33 @@ export default function Garden3DView({
     // Add to scene
     scene.add(plantMeshesRef.current);
     
+    // Add basic ambient lighting immediately to ensure visibility
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    ambientLight.name = 'ambient-light-initial';
+    scene.add(ambientLight);
+    
+    // Add a simple directional light for initial visibility
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    directionalLight.position.set(5, 10, 5);
+    directionalLight.name = 'directional-light-initial';
+    scene.add(directionalLight);
+    console.log('Added initial lighting');
+    
+    // Start animation loop immediately
+    if (!animationFrameRef.current) {
+      console.log('Starting animation loop from initScene');
+      animate();
+    }
+    
+    // Force initial render
+    console.log('About to force initial render...');
+    renderer.render(scene, camera);
+    console.log('Forced initial render complete');
+    console.log('Scene children count:', scene.children.length);
+    console.log('=== INIT SCENE END ===');
+    
     setIsSceneReady(true);
-  }, [gardenData, cardinalRotation]);
+  }, [gardenData, cardinalRotation, renderSettings.shadowsEnabled]);
 
   // Create garden ground and terrain
   const createGardenTerrain = useCallback((bounds: GardenBounds, slope?: { percentage?: number; direction?: string }) => {
@@ -504,19 +541,23 @@ export default function Garden3DView({
     sceneRef.current.add(sunLight);
     sunLightRef.current = sunLight;
     
-    // Update ambient light
-    const ambientLight = sceneRef.current.getObjectByName('ambient-light') as THREE.AmbientLight;
-    if (ambientLight) {
-      ambientLight.color = new THREE.Color(lighting.ambient.color);
-      ambientLight.intensity = lighting.ambient.intensity;
-    } else {
-      const newAmbientLight = new THREE.AmbientLight(
-        lighting.ambient.color,
-        lighting.ambient.intensity
-      );
-      newAmbientLight.name = 'ambient-light';
-      sceneRef.current.add(newAmbientLight);
+    // Update ambient light - remove old ones first
+    const oldAmbientLight = sceneRef.current.getObjectByName('ambient-light') as THREE.AmbientLight;
+    if (oldAmbientLight) {
+      sceneRef.current.remove(oldAmbientLight);
     }
+    const oldInitialAmbient = sceneRef.current.getObjectByName('ambient-light-initial') as THREE.AmbientLight;
+    if (oldInitialAmbient) {
+      sceneRef.current.remove(oldInitialAmbient);
+    }
+    
+    // Add new ambient light
+    const newAmbientLight = new THREE.AmbientLight(
+      lighting.ambient.color,
+      lighting.ambient.intensity
+    );
+    newAmbientLight.name = 'ambient-light';
+    sceneRef.current.add(newAmbientLight);
     
     // Always create sun path visualization (visibility controlled by toggle)
     // Remove old sun helper and path if exists
@@ -684,17 +725,47 @@ export default function Garden3DView({
     }
   }, [renderSettings, cardinalRotation]);
 
-  // Animation loop
+  // Animation loop with debug info
   const animate = useCallback(() => {
-    if (!rendererRef.current || !sceneRef.current || !cameraRef.current) return;
+    if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
+      console.log('Animation loop: waiting for refs...', {
+        renderer: !!rendererRef.current,
+        scene: !!sceneRef.current,
+        camera: !!cameraRef.current
+      });
+      // If refs aren't ready, try again next frame
+      animationFrameRef.current = requestAnimationFrame(animate);
+      return;
+    }
     
+    // Check renderer size
+    const size = rendererRef.current.getSize(new THREE.Vector2());
+    if (size.x === 0 || size.y === 0) {
+      console.warn('Renderer has zero size, checking container...');
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          console.log('Resizing renderer to:', rect.width, 'x', rect.height);
+          rendererRef.current.setSize(rect.width, rect.height);
+          if (cameraRef.current) {
+            cameraRef.current.aspect = rect.width / rect.height;
+            cameraRef.current.updateProjectionMatrix();
+          }
+        }
+      }
+    }
+    
+    // Render the scene
     rendererRef.current.render(sceneRef.current, cameraRef.current);
+    
+    // Continue the animation loop
     animationFrameRef.current = requestAnimationFrame(animate);
   }, []);
 
   // Build complete 3D scene
   const buildScene = useCallback(() => {
-    console.log('Building scene - plants:', plants, 'isSceneReady:', isSceneReady, 'placedPlants:', placedPlants);
+    console.log('=== BUILD SCENE START ===');
+    console.log('Building scene - plants:', plants?.length, 'isSceneReady:', isSceneReady, 'placedPlants:', placedPlants?.length);
     if (!plants || !isSceneReady) return;
     
     // Create garden scene data
@@ -736,10 +807,15 @@ export default function Garden3DView({
     updateLighting();
     updateCamera();
     
-    // Start animation
+    // Make sure animation loop is running
     if (!animationFrameRef.current) {
+      console.log('Starting animation loop from buildScene');
       animate();
+    } else {
+      console.log('Animation loop already running');
     }
+    
+    console.log('=== BUILD SCENE END ===');
   }, [
     plants,
     isSceneReady,
@@ -758,9 +834,19 @@ export default function Garden3DView({
 
   // Initialize scene on mount
   useEffect(() => {
+    console.log('=== MOUNT EFFECT: Initializing scene ===');
     initScene();
     
+    // Start animation loop after a short delay to ensure everything is ready
+    const timer = setTimeout(() => {
+      if (!animationFrameRef.current) {
+        console.log('Starting animation from mount effect after delay');
+        animate();
+      }
+    }, 100);
+    
     return () => {
+      clearTimeout(timer);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -768,7 +854,7 @@ export default function Garden3DView({
         rendererRef.current.dispose();
       }
     };
-  }, [initScene]);
+  }, [initScene, animate]);
 
   // Build scene when ready
   useEffect(() => {
@@ -906,7 +992,8 @@ export default function Garden3DView({
         >
           <canvas 
             ref={canvasRef}
-            className="w-full h-full"
+            className="w-full h-full block"
+            style={{ display: 'block', width: '100%', height: '100%' }}
             data-testid="3d-canvas"
           />
           
