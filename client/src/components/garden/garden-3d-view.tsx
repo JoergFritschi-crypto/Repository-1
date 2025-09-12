@@ -1349,7 +1349,7 @@ export default function Garden3DView({
                   onValueChange={([value]) => setRenderSettings(prev => ({ ...prev, viewingDistance: value }))}
                   min={2}
                   max={30}
-                  step={0.5}
+                  step={0.1}
                   className="mt-1"
                   data-testid="slider-camera-distance"
                 />
