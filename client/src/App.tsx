@@ -17,7 +17,6 @@ import Admin from "@/pages/admin";
 import AdminTestVisualization from "@/pages/admin-test-visualization";
 import AdminSpriteTest from "@/pages/admin-sprite-test";
 import InpaintingComparison from "@/pages/inpainting-comparison";
-import IconGallery from "@/pages/icon-gallery";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
 import Contact from "@/pages/contact";
@@ -48,7 +47,6 @@ function Router() {
           <Route path="/admin/test-visualization" component={AdminTestVisualization} />
           <Route path="/admin/sprite-test" component={AdminSpriteTest} />
           <Route path="/admin/inpainting-comparison" component={InpaintingComparison} />
-          <Route path="/icon-gallery" component={IconGallery} />
         </>
       )}
       <Route component={NotFound} />
