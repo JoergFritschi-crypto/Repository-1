@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,6 +31,7 @@ import { useAuthWithTesting } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { Lock, Crown, CreditCard } from 'lucide-react';
 import { GardenDesignIcon } from '@/components/ui/brand-icons';
+
 
 const gardenSchema = z.object({
   name: z.string().min(1, 'Garden name is required'),
@@ -122,6 +123,74 @@ const stepDetails = [
     description: 'Review and create blueprint'
   }
 ];
+
+// Component to automatically remove white background from AI-generated garden spade
+function TransparentGardenSpadeComponent({ className }: { className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isProcessed, setIsProcessed] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      // Set canvas size to match image
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      // Draw the image
+      ctx.drawImage(img, 0, 0);
+      
+      // Get image data
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      // Convert white/light pixels to transparent
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // If pixel is white or very light (near white), make it transparent
+        if (r > 240 && g > 240 && b > 240) {
+          data[i + 3] = 0; // Set alpha to 0 (transparent)
+        }
+      }
+      
+      // Put the processed image data back
+      ctx.putImageData(imageData, 0, 0);
+      setIsProcessed(true);
+    };
+
+    img.onerror = () => {
+      // Fallback: hide canvas and show palette icon
+      setIsProcessed(false);
+    };
+
+    img.src = '/generated-icons/garden-spade.png';
+  }, []);
+
+  if (!isProcessed) {
+    return <Palette className={`${className} text-[#004025]`} />;
+  }
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={className}
+      style={{ 
+        objectFit: 'contain',
+        imageRendering: 'crisp-edges'
+      }}
+    />
+  );
+}
 
 export default function GardenProperties() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -398,19 +467,7 @@ export default function GardenProperties() {
             <CardHeader className="py-6 flower-band-studio rounded-t-lg">
               <CardTitle className="text-2xl md:text-3xl flex items-center gap-3">
                 Garden Design Studio
-                <img 
-                  src="/generated-icons/garden-spade.png"
-                  alt="Garden Spade"
-                  className="w-8 h-8"
-                  onError={(e) => {
-                    // Fallback to Palette icon if generated icon doesn't exist yet
-                    (e.target as HTMLImageElement).style.display = 'none';
-                    const palette = document.createElement('div');
-                    palette.className = 'w-8 h-8 text-[#004025] flex items-center justify-center';
-                    palette.innerHTML = '🎨';
-                    (e.target as HTMLImageElement).parentNode?.appendChild(palette);
-                  }}
-                />
+                <TransparentGardenSpadeComponent className="w-8 h-8" />
               </CardTitle>
             </CardHeader>
           </Card>
