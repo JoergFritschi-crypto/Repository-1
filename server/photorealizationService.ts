@@ -93,10 +93,44 @@ interface PhotorealizationContext {
  * Builds comprehensive photorealization context with all necessary information
  * for AI image generation
  */
+// Type definition for plants provided from frontend
+interface ProvidedPlant {
+  id: string;
+  plantId: string;
+  plantName?: string;
+  scientificName?: string;
+  x?: number;
+  y?: number;
+  plantDetails?: {
+    id?: string;
+    commonName?: string;
+    scientificName?: string;
+    cultivar?: string; // Critical for cultivar support
+    type?: string;
+    heightMaxCm?: number;
+    heightMax?: number;
+    spreadMaxCm?: number;
+    spreadMax?: number;
+    foliage?: string;
+    // Frontend field names
+    flowerColor?: string | string[];
+    floweringSeason?: string | string[];
+    sunlight?: string;
+    soil?: string;
+    watering?: string;
+    // Backend field names (might also be present)
+    flowerColors?: string[];
+    bloomTime?: string[];
+    sunExposure?: string;
+    soilType?: string;
+    waterNeeds?: string;
+  };
+}
+
 export async function buildPhotorealizationContext(
   gardenId: string, 
   sceneState: SceneState,
-  providedPlants?: any[] // Optional plants provided from frontend
+  providedPlants?: ProvidedPlant[] // Properly typed plants from frontend
 ): Promise<PhotorealizationContext> {
   // Get garden data
   const garden = await storage.getGarden(gardenId);
@@ -121,19 +155,45 @@ export async function buildPhotorealizationContext(
         position_y: placedPlant.y?.toString() || '50',
         notes: null
       },
-      plant: placedPlant.plantDetails || {
+      plant: placedPlant.plantDetails ? {
+        // When plantDetails exists, properly map all fields including cultivar
+        id: placedPlant.plantDetails.id || placedPlant.plantId,
+        commonName: placedPlant.plantDetails.commonName || placedPlant.plantName || 'Unknown Plant',
+        scientificName: placedPlant.plantDetails.scientificName || placedPlant.scientificName || '',
+        cultivar: placedPlant.plantDetails.cultivar || null, // CRITICAL: Include cultivar from plantDetails
+        type: placedPlant.plantDetails.type || 'perennial',
+        heightMaxCm: placedPlant.plantDetails.heightMaxCm || placedPlant.plantDetails.heightMax || 60,
+        spreadMaxCm: placedPlant.plantDetails.spreadMaxCm || placedPlant.plantDetails.spreadMax || 40,
+        foliage: placedPlant.plantDetails.foliage || 'deciduous',
+        // Map frontend field names to backend expected field names
+        flowerColors: placedPlant.plantDetails.flowerColor ? 
+          (Array.isArray(placedPlant.plantDetails.flowerColor) ? 
+            placedPlant.plantDetails.flowerColor : 
+            [placedPlant.plantDetails.flowerColor]) : 
+          (placedPlant.plantDetails.flowerColors || []),
+        bloomTime: placedPlant.plantDetails.floweringSeason ? 
+          (Array.isArray(placedPlant.plantDetails.floweringSeason) ? 
+            placedPlant.plantDetails.floweringSeason : 
+            [placedPlant.plantDetails.floweringSeason]) : 
+          (placedPlant.plantDetails.bloomTime || []),
+        sunExposure: placedPlant.plantDetails.sunlight || placedPlant.plantDetails.sunExposure || 'full sun',
+        soilType: placedPlant.plantDetails.soil || placedPlant.plantDetails.soilType || 'well-drained',
+        waterNeeds: placedPlant.plantDetails.watering || placedPlant.plantDetails.waterNeeds || 'moderate'
+      } : {
+        // Fallback when no plantDetails exist
         id: placedPlant.plantId,
         commonName: placedPlant.plantName || 'Unknown Plant',
         scientificName: placedPlant.scientificName || '',
-        type: placedPlant.plantDetails?.type || 'perennial',
-        heightMaxCm: placedPlant.plantDetails?.heightMaxCm || 60,
-        spreadMaxCm: placedPlant.plantDetails?.spreadMaxCm || 40,
-        foliage: placedPlant.plantDetails?.foliage || 'deciduous',
-        flowerColors: placedPlant.plantDetails?.flowerColors || [],
-        bloomTime: placedPlant.plantDetails?.bloomTime || [],
-        sunExposure: placedPlant.plantDetails?.sunExposure || 'full sun',
-        soilType: placedPlant.plantDetails?.soilType || 'well-drained',
-        waterNeeds: placedPlant.plantDetails?.waterNeeds || 'moderate'
+        cultivar: null, // No cultivar in fallback
+        type: 'perennial',
+        heightMaxCm: 60,
+        spreadMaxCm: 40,
+        foliage: 'deciduous',
+        flowerColors: [],
+        bloomTime: [],
+        sunExposure: 'full sun',
+        soilType: 'well-drained',
+        waterNeeds: 'moderate'
       }
     }));
   } else {
@@ -180,14 +240,28 @@ export async function buildPhotorealizationContext(
       };
     });
     
-  // Log plant data for debugging
+  // Enhanced logging for debugging cultivar propagation
   console.log(`[Photorealization] Processing ${plantsData.length} plants for garden ${gardenId}:`, 
     plantsData.map(p => ({
       name: p.commonName,
+      scientificName: p.scientificName,
+      cultivar: p.cultivar || 'No cultivar', // Log cultivar explicitly
       position: `(${p.position.x.toFixed(1)}%, ${p.position.y.toFixed(1)}%)`,
-      size: `${p.size.height}m x ${p.size.spread}m`
+      size: `${p.size.height}m x ${p.size.spread}m`,
+      seasonalState: p.seasonalState,
+      bloomStatus: p.bloomStatus
     }))
   );
+  
+  // Additional logging specifically for cultivar tracking
+  const plantsWithCultivars = plantsData.filter(p => p.cultivar);
+  if (plantsWithCultivars.length > 0) {
+    console.log(`[Photorealization] Found ${plantsWithCultivars.length} plants with cultivars:`,
+      plantsWithCultivars.map(p => `${p.scientificName} '${p.cultivar}'`)
+    );
+  } else {
+    console.log('[Photorealization] No cultivars found in plant data');
+  }
 
   // Extract detailed geometry from layout_data
   const geometry = extractLayoutGeometry(garden);
