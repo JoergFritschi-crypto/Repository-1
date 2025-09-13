@@ -1521,11 +1521,11 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
             heightMaxCm: plantDetail.heightMaxCm,
             spreadMaxCm: plantDetail.spreadMaxCm,
             foliage: plantDetail.foliage,
-            flowerColors: plantDetail.flowerColors,
-            bloomTime: plantDetail.bloomTime,
-            sunExposure: plantDetail.sunExposure,
-            soilType: plantDetail.soilType,
-            waterNeeds: plantDetail.waterNeeds,
+            flowerColor: plantDetail.flowerColor, // Fixed: singular not plural
+            floweringSeason: plantDetail.floweringSeason, // Fixed: proper field name
+            sunlight: plantDetail.sunlight, // Fixed: sunlight not sunExposure
+            soil: plantDetail.soil, // Fixed: soil not soilType
+            watering: plantDetail.watering, // Fixed: watering not waterNeeds
             // Add other relevant properties
           } : null
         };

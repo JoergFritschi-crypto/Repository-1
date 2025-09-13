@@ -1013,7 +1013,7 @@ export function convertPlantTo3D(
       spreadCurrent
     },
     properties: {
-      type: plant.type,
+      type: plant.type || undefined,
       flowerColor: placedPlant.flowerColor,
       leafColor: Array.isArray(plant.leafColor) ? plant.leafColor[0] : plant.leafColor,
       plantType: placedPlant.plantType,

@@ -24,6 +24,7 @@ export interface Plant {
   spreadMinInches?: number | null;
   spreadMaxInches?: number | null;
   cycle?: string;
+  foliage?: string; // deciduous, evergreen, variegated
   growthRate?: string;
   floweringSeason?: string;
   flowerColor?: any; // JSON array

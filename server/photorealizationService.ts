@@ -736,64 +736,142 @@ function describeSkyCondition(hour: number): string {
 }
 
 /**
- * Get detailed botanical morphology for a plant
+ * Get detailed botanical morphology for a plant - trait-driven approach
  */
 function getBotanicalMorphology(scientificName: string, commonName: string, cultivar?: string): string {
-  const botanicalDescriptions: Record<string, string> = {
-    'Hosta sieboldiana': 'HOSTA: Large broad ovate leaves with prominent parallel venation, blue-green color, clumping herbaceous perennial forming dense mounds, smooth leaf texture, NO flower spikes in July, shade-tolerant plant',
-    'Hosta plantaginea': 'HOSTA: Large heart-shaped leaves, glossy green, deep parallel veins, thick texture, mounding habit 60cm tall, fragrant white flowers if blooming',
-    'Rosa': 'ROSE BUSH: Flowering shrub with RED or PINK FLOWERS (multiple blooms visible in July), compound pinnate leaves with 5-7 glossy leaflets, serrated margins, thorny green stems, bushy upright growth habit 1-2m tall, MUST show flowers',
-    'Rosa × damascena': 'DAMASK ROSE: Bushy shrub with fragrant DOUBLE PINK FLOWERS, compound leaves with 5-7 leaflets, thorny canes, multiple blooms in July, 1.5m tall flowering bush',
-    'Rosa rugosa': 'RUGOSA ROSE: Shrub with large SINGLE PINK/RED FLOWERS, wrinkled dark green compound leaves, very thorny stems, showing multiple blooms in July, robust bush form',
-    'Rosa gallica': 'FRENCH ROSE: Compact shrub with DEEP PINK/RED FLOWERS, compound leaves, thorny stems, multiple fragrant blooms visible in July, bushy growth to 1.2m',
-    "Rosa 'Mister Lincoln'": "MISTER LINCOLN ROSE: Classic hybrid tea rose with DEEP VELVETY RED flowers, high-centered blooms 5-6 inches across, long cutting stems, dark green glossy foliage, tall upright growth to 2m, exceptionally fragrant, multiple large blooms in July",
-    "Rosa 'Chrysler Imperial'": "CHRYSLER IMPERIAL ROSE: Hybrid tea with DARK CRIMSON-RED flowers, classic high-centered form, velvety petals, strong damask fragrance, dark green foliage, upright bush 1.5m tall",
-    "Rosa 'Oklahoma'": "OKLAHOMA ROSE: Hybrid tea with BLACK-RED velvety flowers, very fragrant, large blooms on long stems, dark green foliage, vigorous upright growth to 1.8m",
-    "Rosa 'Ingrid Bergman'": "INGRID BERGMAN ROSE: Hybrid tea with classic BRIGHT RED flowers, perfect form, minimal fragrance, excellent disease resistance, glossy dark green foliage, compact growth 1.2m",
-    "Rosa 'Double Delight'": "DOUBLE DELIGHT ROSE: Hybrid tea with CREAM flowers edged in RED, color intensifies in sun, spicy fragrance, glossy green foliage, bushy growth to 1.5m, unique bicolor blooms",
-    'Rosa hybrida': 'HYBRID ROSE: Modern rose bush with large RED or PINK flowers, high-centered blooms, compound leaves with 5-7 leaflets, thorny stems, upright growth 1-2m, multiple blooms in July',
-    'Lavandula angustifolia': 'ENGLISH LAVENDER: Linear gray-green leaves, opposite arrangement, aromatic, PURPLE flower spikes on square stems above foliage, compact Mediterranean shrub 60cm tall',
-    'Lavandula': 'LAVENDER: Narrow silvery-gray leaves, Mediterranean shrub, upright PURPLE flower spikes rising above foliage, woody base, aromatic plant',
-    'Acer palmatum': 'JAPANESE MAPLE: Palmate leaves with 5-7 pointed lobes, opposite leaf arrangement, small ornamental tree, smooth gray bark, graceful branching',
-    'Helianthus': 'SUNFLOWER: Large rough-textured ovate leaves, tall upright stems, large daisy-like YELLOW flowers with brown centers, 2-3m tall',
-    'Helianthus maximiliani': 'MAXIMILIAN SUNFLOWER: Narrow lanceolate leaves, tall prairie perennial, multiple YELLOW flowers along stem, 2.5m tall'
+  const genus = scientificName.split(' ')[0];
+  const plantNameUpper = commonName.toUpperCase();
+  const cultivarLabel = cultivar ? ` '${cultivar}'` : '';
+  
+  // Build trait-based descriptions based on genus and common characteristics
+  const genusTraits: Record<string, any> = {
+    'Rosa': {
+      base: 'ROSE',
+      leafType: 'compound pinnate leaves with 5-7 glossy leaflets, serrated margins',
+      stems: 'thorny green stems',
+      growth: 'bushy upright growth habit',
+      flowers: 'multiple blooms visible in July',
+      cultivarMap: {
+        'Mister Lincoln': 'DEEP VELVETY RED flowers, high-centered blooms 5-6 inches across, exceptionally fragrant, tall upright growth to 2m',
+        'Chrysler Imperial': 'DARK CRIMSON-RED flowers, classic high-centered form, velvety petals, strong damask fragrance, upright bush 1.5m tall',
+        'Oklahoma': 'BLACK-RED velvety flowers, very fragrant, large blooms on long stems, vigorous upright growth to 1.8m',
+        'Ingrid Bergman': 'BRIGHT RED flowers, perfect form, minimal fragrance, excellent disease resistance, compact growth 1.2m',
+        'Double Delight': 'CREAM flowers edged in RED, color intensifies in sun, spicy fragrance, bushy growth to 1.5m, unique bicolor blooms'
+      }
+    },
+    'Hosta': {
+      base: 'HOSTA',
+      leafType: 'large broad ovate leaves with prominent parallel venation',
+      growth: 'clumping herbaceous perennial forming dense mounds',
+      defaultColor: 'green to blue-green foliage',
+      cultivarMap: {
+        'Sum and Substance': 'ENORMOUS chartreuse-gold leaves up to 50cm wide, giant mounding form to 90cm tall',
+        'Patriot': 'dark green leaves with broad white margins, medium mounding habit 60cm tall',
+        'Blue Angel': 'huge blue-gray leaves with heavy texture, large mounding form to 80cm tall'
+      }
+    },
+    'Lavandula': {
+      base: 'LAVENDER',
+      leafType: 'narrow linear gray-green aromatic leaves',
+      growth: 'compact Mediterranean shrub',
+      flowers: 'upright PURPLE flower spikes rising above foliage',
+      cultivarMap: {
+        'Hidcote': 'deep purple flowers, compact form to 40cm, silvery foliage',
+        'Munstead': 'lavender-blue flowers, dwarf habit to 45cm, gray-green foliage',
+        'Grosso': 'long purple flower spikes, vigorous growth to 80cm, highly fragrant'
+      }
+    },
+    'Phlox': {
+      base: 'PHLOX',
+      leafType: 'opposite lanceolate leaves',
+      growth: 'upright herbaceous perennial',
+      flowers: 'terminal clusters of fragrant flowers in July',
+      cultivarMap: {
+        'David': 'pure WHITE flower clusters, tall upright growth to 1.2m, mildew resistant',
+        'Starfire': 'brilliant RED flower clusters, dark green foliage, compact growth to 80cm',
+        'Blue Paradise': 'LAVENDER-BLUE flower clusters, sturdy stems to 90cm'
+      }
+    },
+    'Helianthus': {
+      base: 'SUNFLOWER',
+      leafType: 'large rough-textured ovate to lanceolate leaves',
+      growth: 'tall upright perennial or annual',
+      flowers: 'daisy-like flowers with prominent centers',
+      cultivarMap: {
+        'Lemon Queen': 'pale LEMON-YELLOW flowers, multiple blooms, tall growth to 2m',
+        'Prairie Gold': 'golden YELLOW flowers along stems, prairie native, 2.5m tall',
+        'Italian White': 'creamy WHITE flowers with dark centers, multi-branched to 1.5m'
+      }
+    },
+    'Delphinium': {
+      base: 'DELPHINIUM',
+      leafType: 'deeply lobed palmate leaves',
+      growth: 'tall herbaceous perennial',
+      flowers: 'tall dense flower spikes',
+      cultivarMap: {
+        'Blue Bird': 'bright BLUE flowers with white bee, tall spikes to 1.8m',
+        'Galahad': 'pure WHITE flower spikes, sturdy stems to 2m',
+        'Black Knight': 'deep PURPLE-BLACK flowers, imposing spikes to 1.8m'
+      }
+    },
+    'Echinacea': {
+      base: 'CONEFLOWER',
+      leafType: 'rough lanceolate leaves',
+      growth: 'upright herbaceous perennial',
+      flowers: 'daisy-like flowers with prominent raised centers',
+      cultivarMap: {
+        'Magnus': 'large ROSE-PINK flowers, horizontal petals, sturdy growth to 90cm',
+        'White Swan': 'pure WHITE flowers with golden centers, compact to 60cm',
+        'Cheyenne Spirit': 'mixed colors from YELLOW to ORANGE to RED, 60cm tall'
+      }
+    },
+    'Rudbeckia': {
+      base: 'BLACK-EYED SUSAN',
+      leafType: 'rough hairy ovate to lanceolate leaves',
+      growth: 'upright herbaceous perennial',
+      flowers: 'bright daisy-like flowers with dark centers',
+      cultivarMap: {
+        'Goldsturm': 'golden YELLOW flowers with black centers, compact to 60cm',
+        'Cherokee Sunset': 'warm ORANGE-RED-BRONZE flowers, double blooms, 60cm tall',
+        'Prairie Sun': 'YELLOW flowers with green centers, tall growth to 90cm'
+      }
+    }
   };
   
-  // Try cultivar-specific match first (e.g., "Rosa 'Mister Lincoln'")
-  if (cultivar && scientificName) {
-    const cultivarKey = `${scientificName.split(' ')[0]} '${cultivar}'`;
-    if (botanicalDescriptions[cultivarKey]) {
-      return botanicalDescriptions[cultivarKey];
+  // Check if we have specific traits for this genus
+  const traits = genusTraits[genus];
+  
+  if (traits) {
+    let description = `${traits.base}${cultivarLabel}: `;
+    
+    // Check for specific cultivar description
+    if (cultivar && traits.cultivarMap && traits.cultivarMap[cultivar]) {
+      description += traits.cultivarMap[cultivar] + ', ';
+    } else if (traits.flowers) {
+      // Generic flower description if no specific cultivar
+      description += traits.flowers + ', ';
     }
+    
+    // Add common traits
+    description += traits.leafType;
+    if (traits.stems) description += ', ' + traits.stems;
+    description += ', ' + traits.growth;
+    
+    return description;
   }
   
-  // Try exact scientific name match
-  if (botanicalDescriptions[scientificName]) {
-    return botanicalDescriptions[scientificName];
+  // Fallback for plants not in our trait system
+  // Try to build description from common name patterns
+  if (commonName.toLowerCase().includes('maple')) {
+    return `${plantNameUpper}${cultivarLabel}: Palmate lobed leaves with 5-7 points, opposite arrangement, ornamental tree or large shrub form`;
+  } else if (commonName.toLowerCase().includes('grass')) {
+    return `${plantNameUpper}${cultivarLabel}: Ornamental grass with linear leaves, clumping or spreading habit, graceful texture`;
+  } else if (commonName.toLowerCase().includes('fern')) {
+    return `${plantNameUpper}${cultivarLabel}: Divided fronds with pinnate structure, shade-tolerant, spreading or clumping habit`;
   }
   
-  // Try genus match
-  const genus = scientificName.split(' ')[0];
-  if (botanicalDescriptions[genus]) {
-    return botanicalDescriptions[genus];
-  }
-  
-  // Default botanical description based on common name patterns
-  if (commonName.toLowerCase().includes('hosta')) {
-    return 'HOSTA: Large broad leaves with parallel venation, clumping perennial habit forming dense mounds, shade garden plant with smooth leaves';
-  } else if (commonName.toLowerCase().includes('rose')) {
-    // If it's a rose with a specific cultivar, provide cultivar-specific description
-    if (cultivar && cultivar !== 'Red') {
-      return `ROSE CULTIVAR '${cultivar}': Hybrid tea rose with characteristic blooms, compound leaves with 5-7 leaflets, thorny stems, showing multiple flowers in July, specific cultivar traits`;
-    }
-    return 'ROSE BUSH: FLOWERING shrub showing RED/PINK BLOOMS in July, compound pinnate leaves with 5-7 leaflets, thorny stems, bushy growth 1-2m tall, MUST display multiple flowers';
-  } else if (commonName.toLowerCase().includes('lavender')) {
-    return 'LAVENDER: Narrow gray-green aromatic leaves, upright PURPLE flower spikes rising above foliage, Mediterranean shrub 60cm tall';
-  } else if (commonName.toLowerCase().includes('maple')) {
-    return 'JAPANESE MAPLE: Palmate lobed leaves with 5-7 points, opposite arrangement, small ornamental tree or large shrub form';
-  }
-  
-  return 'Botanically accurate representation with species-specific leaf shape and growth habit';
+  // Generic fallback with cultivar name if present
+  return `${plantNameUpper}${cultivarLabel}: Botanically accurate representation with species-specific leaf shape and growth habit`;
 }
 
 /**
