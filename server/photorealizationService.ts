@@ -341,7 +341,7 @@ function getShapeCoordinates(shape: string, dimensions: any): Array<{ x: number;
 /**
  * Builds structured prompt from photorealization context
  */
-export function buildPhotorealizationPrompt(context: PhotorealizationContext): string {
+function buildDetailedPhotorealizationPrompt(context: PhotorealizationContext): string {
   const { garden, plants, sceneState, geometry, environment, lighting } = context;
 
   // Calculate garden dimensions
@@ -510,8 +510,40 @@ BACKGROUND MINIMIZATION REQUIREMENTS:
 - SKY: Minimal, neutral tones only, no dramatic clouds or colors
 - HORIZON: Barely visible, no landscape details
 
-Create a botanically accurate photorealistic garden bed documentation image that meets scientific identification standards. Focus 90-95% on the garden bed itself with minimal, neutral background blur. This should look like it was photographed for a botanical journal or RHS plant identification guide in July, with shallow depth of field keeping attention on the plants. Each plant specimen must be recognizable to its exact scientific species with correct morphological features - as if being documented for a botanical survey. Maintain absolute fidelity to the specified plant list, exact positions, and July seasonal phenology. Think herbarium-quality accuracy in a garden setting with professional macro/portrait lens bokeh for the minimal background.
+Generate a photorealistic garden image showing exactly ${plants.length} plants: ${plants.map(p => p.commonName).join(', ')}. Each plant must be botanically accurate at its specified position. July bloom state, soft blurred background, no decorations or extras.
 `;
+
+  return prompt.trim();
+}
+
+/**
+ * Builds a simplified prompt to avoid Gemini API errors
+ */
+export function buildPhotorealizationPrompt(context: PhotorealizationContext): string {
+  const { garden, plants } = context;
+  const dimensions = calculateActualDimensions(garden);
+  
+  // Build a much simpler prompt that's under 5000 characters
+  const plantList = plants.map((plant, idx) => {
+    const num = idx + 1;
+    const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName);
+    return `${num}. ${plant.commonName} at position ${plant.position.x.toFixed(0)}%, ${plant.position.y.toFixed(0)}% - ${morphology}`;
+  }).join('\n');
+  
+  const prompt = `Create a photorealistic garden image.
+
+GARDEN: ${garden.shape} bed, ${dimensions.width}m × ${dimensions.length}m
+
+EXACTLY ${plants.length} PLANTS (no extras):
+${plantList}
+
+REQUIREMENTS:
+- Show exactly ${plants.length} plants: ${plants.map(p => p.commonName).join(', ')}
+- Each plant must match its botanical description
+- July summer appearance with appropriate blooms
+- Soft blurred background
+- No decorations, people, or extra plants
+- Focus on the garden bed itself`;
 
   return prompt.trim();
 }
