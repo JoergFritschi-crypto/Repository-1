@@ -39,10 +39,10 @@ export interface PlacedPlant {
   quantity: number;
   plantType?: string;
   flowerColor?: string;
-  spreadMin?: number; // minimum spread in meters
-  spreadMax?: number; // maximum spread in meters
-  heightMin?: number; // minimum height in meters
-  heightMax?: number; // maximum height in meters
+  spreadMin?: number; // minimum spread in meters (converted from cm)
+  spreadMax?: number; // maximum spread in meters (converted from cm)
+  heightMin?: number; // minimum height in meters (converted from cm)
+  heightMax?: number; // maximum height in meters (converted from cm)
 }
 
 export default function GardenLayoutCanvas({
@@ -461,10 +461,10 @@ export default function GardenLayoutCanvas({
           if (details) {
             return {
               ...plant,
-              spreadMin: details.spreadMin,
-              spreadMax: details.spreadMax,
-              heightMin: details.heightMin,
-              heightMax: details.heightMax
+              spreadMin: details.spreadMinCm ? details.spreadMinCm / 100 : undefined, // Convert cm to meters
+              spreadMax: details.spreadMaxCm ? details.spreadMaxCm / 100 : undefined, // Convert cm to meters
+              heightMin: details.heightMinCm ? details.heightMinCm / 100 : undefined, // Convert cm to meters
+              heightMax: details.heightMaxCm ? details.heightMaxCm / 100 : undefined // Convert cm to meters
             };
           }
           return plant;
@@ -1033,8 +1033,81 @@ export default function GardenLayoutCanvas({
 
               {/* Placed Plants */}
               <TooltipProvider>
-                {placedPlants.map((plant) => (
+                {placedPlants.map((plant) => {
+                  // Calculate spread circle sizes
+                  const calculateSpreadPixels = (spreadMeters: number): number => {
+                    // Convert spread from meters to pixels
+                    const gardenSizeInMeters = units === 'metric' ? gardenWidth : gardenWidth * 0.3048; // Convert feet to meters if imperial
+                    const pixelsPerMeter = (canvasSize.width - 24 - 70) / gardenSizeInMeters; // Account for padding
+                    return spreadMeters * pixelsPerMeter;
+                  };
+
+                  // Get spread values or use sensible defaults based on plant type
+                  const getDefaultSpread = (plantType?: string) => {
+                    const type = (plantType || '').toLowerCase();
+                    const name = (plant.plantName || '').toLowerCase();
+                    const scientific = (plant.scientificName || '').toLowerCase();
+                    
+                    // Specific defaults for known plants
+                    if (name.includes('maple') || scientific.includes('acer')) return { min: 3, max: 6 }; // Tree
+                    if (name.includes('hosta')) return { min: 0.3, max: 0.6 }; // Small perennial
+                    if (name.includes('rose') || scientific.includes('rosa')) return { min: 0.6, max: 1.2 }; // Shrub
+                    if (name.includes('lavender') || scientific.includes('lavandula')) return { min: 0.4, max: 0.8 }; // Small shrub
+                    
+                    // Type-based defaults
+                    if (type.includes('tree')) return { min: 2, max: 5 };
+                    if (type.includes('shrub')) return { min: 0.5, max: 1.5 };
+                    if (type.includes('perennial')) return { min: 0.3, max: 0.8 };
+                    if (type.includes('annual')) return { min: 0.2, max: 0.5 };
+                    if (type.includes('herb')) return { min: 0.15, max: 0.4 };
+                    
+                    return { min: 0.3, max: 0.8 }; // Default
+                  };
+                  
+                  const defaultSpread = getDefaultSpread(plant.plantType);
+                  const minSpread = plant.spreadMin || defaultSpread.min;
+                  const maxSpread = plant.spreadMax || defaultSpread.max;
+                  
+                  const minSpreadPixels = calculateSpreadPixels(minSpread);
+                  const maxSpreadPixels = calculateSpreadPixels(maxSpread);
+                  const plantColor = getPlantColor(plant);
+                  
+                  return (
                   <Tooltip key={plant.id}>
+                    {/* Outer spread circle (maximum spread) */}
+                    <div
+                      className="absolute rounded-full border-2 pointer-events-none"
+                      style={{
+                        width: `${maxSpreadPixels}px`,
+                        height: `${maxSpreadPixels}px`,
+                        borderColor: plantColor,
+                        borderStyle: 'dashed',
+                        opacity: 0.15,
+                        left: `${plant.x}%`,
+                        top: `${plant.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 1
+                      }}
+                      data-testid={`spread-outer-${plant.id}`}
+                    />
+                    
+                    {/* Inner spread circle (minimum spread) */}
+                    <div
+                      className="absolute rounded-full border-2 pointer-events-none"
+                      style={{
+                        width: `${minSpreadPixels}px`,
+                        height: `${minSpreadPixels}px`,
+                        borderColor: plantColor,
+                        borderStyle: 'solid',
+                        opacity: 0.25,
+                        left: `${plant.x}%`,
+                        top: `${plant.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 2
+                      }}
+                      data-testid={`spread-inner-${plant.id}`}
+                    />
+                    
                     <TooltipTrigger asChild>
                       <div
                         draggable
@@ -1046,10 +1119,11 @@ export default function GardenLayoutCanvas({
                         style={{
                           width: `${getPlantSize(plant)}px`,
                           height: `${getPlantSize(plant)}px`,
-                          backgroundColor: getPlantColor(plant),
+                          backgroundColor: plantColor,
                           left: `${plant.x}%`,
                           top: `${plant.y}%`,
-                          transform: 'translate(-50%, -50%)'
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 10 // Ensure plant dot is above spread circles
                         }}
                         onClick={() => setSelectedPlant(plant.id)}
                         data-testid={`placed-plant-${plant.id}`}
@@ -1081,9 +1155,16 @@ export default function GardenLayoutCanvas({
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
+                      {plant.spreadMin && plant.spreadMax && (
+                        <div className="text-xs mt-1">
+                          <span className="text-primary">Spread: </span>
+                          {plant.spreadMin.toFixed(1)}-{plant.spreadMax.toFixed(1)}m
+                        </div>
+                      )}
                     </TooltipContent>
                   </Tooltip>
-                ))}
+                  );
+                })}
               </TooltipProvider>
 
               {/* Drag indicator - subtle border only */}
