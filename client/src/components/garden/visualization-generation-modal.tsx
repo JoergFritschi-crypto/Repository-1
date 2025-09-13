@@ -26,6 +26,7 @@ interface VisualizationGenerationModalProps {
     season?: string;
   };
   placedPlants: PlacedPlant[];
+  onPhotorealizationModeChange?: (enabled: boolean) => void;
 }
 
 export default function VisualizationGenerationModal({
@@ -33,7 +34,8 @@ export default function VisualizationGenerationModal({
   onClose,
   onComplete,
   gardenData,
-  placedPlants
+  placedPlants,
+  onPhotorealizationModeChange
 }: VisualizationGenerationModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -59,6 +61,11 @@ export default function VisualizationGenerationModal({
       setError(null);
       setProgress(0);
       setStatusMessage('');
+      
+      // Enable photorealization mode for AI capture
+      if (onPhotorealizationModeChange) {
+        onPhotorealizationModeChange(true);
+      }
       
       // Auto-start generation when modal opens
       handleGenerateVisualization();
@@ -99,6 +106,11 @@ export default function VisualizationGenerationModal({
       const plantNames = Array.from(new Set(placedPlants.map(p => p.plantName))).join(', ');
 
       setProgress(40);
+      setStatusMessage('Capturing 3D scene for AI processing...');
+      
+      // Brief delay to ensure photorealization mode is fully rendered
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       setStatusMessage('Generating 3D visualization with AI...');
 
       // Call API to generate visualization
@@ -164,6 +176,11 @@ export default function VisualizationGenerationModal({
   };
 
   const handleCloseModal = () => {
+    // Disable photorealization mode when closing
+    if (onPhotorealizationModeChange) {
+      onPhotorealizationModeChange(false);
+    }
+    
     // Pass the generated image (if any) when closing
     if (generatedImage) {
       onComplete(generatedImage);

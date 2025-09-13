@@ -243,6 +243,7 @@ export default function GardenProperties() {
   const [seasonalImages, setSeasonalImages] = useState<any>(null);
   const [isGeneratingSeasonalImages, setIsGeneratingSeasonalImages] = useState(false);
   const [seasonalProgress, setSeasonalProgress] = useState(0);
+  const [photorealizationMode, setPhotorealizationMode] = useState(false);
   const [, setLocation] = useLocation();
   
   // Get user data and design generation history
@@ -2661,6 +2662,7 @@ export default function GardenProperties() {
                         pointOfView: 'bird_eye'
                       } as any}
                       placedPlants={placedPlants}
+                      photorealizationMode={photorealizationMode}
                     />
                   </CardContent>
                 </Card>
@@ -3085,6 +3087,7 @@ export default function GardenProperties() {
             season: 'summer'
           }}
           placedPlants={placedPlants}
+          onPhotorealizationModeChange={setPhotorealizationMode}
         />
       </div>
     </div>
