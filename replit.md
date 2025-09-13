@@ -10,6 +10,24 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Streamlined 6-Step Workflow Implementation (September 2025)
+- **Workflow Simplified**: Reduced from 8+ steps to 6 clean steps with focus on seasonal visualization
+  - Step 1: Welcome (location & climate)
+  - Step 2: Site Details (dimensions & orientation)
+  - Step 3: Interactive Design (unified plant selection & placement)
+  - Step 4: [Hidden] 3D rendering for AI reference only
+  - Step 5: Seasonal Generation (integrated date selection → progress → viewer)
+  - Step 6: Final Review (gallery, batch downloads, sharing)
+- **Core Focus**: Seasonal images are now the primary output - no single static view option
+- **UI Improvements**:
+  - Combined plant selection and placement into split-panel Interactive Design step
+  - Hidden 3D viewer completely - renders invisibly for AI reference only
+  - Seamless flow from design to seasonal generation without redundant steps
+- **New Features**:
+  - Comprehensive final review gallery with batch downloads (ZIP, PDF, CSV, JSON)
+  - Social sharing capabilities and project archiving
+  - Progress indicator shows only 6 visible steps (Step 4 hidden from users)
+
 ### AI Design System Architecture & Safety Fixes (September 2025)
 - **AI Implementation**: Uses Anthropic Claude API for garden design generation (not in-house solution)
 - **Fixed Logic Error**: Moved safety preferences from manual design to AI design approach
