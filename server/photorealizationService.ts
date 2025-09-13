@@ -437,9 +437,10 @@ function buildDetailedPhotorealizationPrompt(context: PhotorealizationContext): 
 
 IMAGE REQUIREMENTS:
 - ASPECT RATIO: Generate a landscape 16:9 image (1280x720 pixels). Do not crop or change aspect ratio.
-- ORIENTATION: Preserve exact orientation from reference. Green marker on LEFT edge, red marker on RIGHT edge. Blue/N marker at TOP. Do NOT mirror, flip, or rotate the image.
+- ORIENTATION: Preserve exact orientation from reference. NO HORIZONTAL MIRRORING. Plants on the left MUST stay on the left, plants on the right MUST stay on the right from YOUR viewing position.
 - BOUNDARIES: Show garden bed boundaries/edges as clearly visible natural borders (stone edging, mulch edge, or lawn edge) around the planting area.
-- COORDINATE PRESERVATION: Origin at top-left (0,0), x increases rightward, y increases downward. Maintain exact plant positions from reference.
+- COORDINATE PRESERVATION: Origin at top-left (0,0), x increases rightward FROM YOUR VIEWPOINT, y increases downward. Maintain exact plant positions from reference.
+- VIEWING PERSPECTIVE: You are viewing from the EXACT camera position shown in reference. DO NOT flip or mirror the scene horizontally.
 
 COORDINATE SYSTEM & SCALE:
 - Origin: Top-left corner (0%, 0%) = (0m, 0m) in real coordinates
@@ -492,6 +493,7 @@ CAMERA & LENS (LOCKED POSITION):
 - Target: ${sceneState.camera.target.x.toFixed(1)}m, ${sceneState.camera.target.y.toFixed(1)}m, ${sceneState.camera.target.z.toFixed(1)}m
 - Field of view: ${sceneState.camera.fov}°
 - Lens type: Professional landscape photography (equivalent to 24-70mm)
+${getCameraViewingPerspective(sceneState)}
 
 LIGHTING (JULY):
 - Time: ${lighting.timeDescription}
@@ -605,6 +607,62 @@ Generate a photorealistic garden image showing exactly ${plants.length} plants: 
 `;
 
   return prompt.trim();
+}
+
+/**
+ * Calculate and describe the viewing perspective based on camera position
+ */
+function getCameraViewingPerspective(sceneState: any): string {
+  if (!sceneState?.camera?.position) {
+    return 'VIEWING DIRECTION: Standard front view';
+  }
+  
+  const camPos = sceneState.camera.position;
+  const camTarget = sceneState.camera.target || { x: 0, y: 0, z: 0 };
+  
+  // Calculate viewing angle based on camera position relative to target
+  const dx = camTarget.x - camPos.x;
+  const dz = camTarget.z - camPos.z;
+  const viewAngle = Math.atan2(dx, -dz) * (180 / Math.PI);
+  
+  // Determine cardinal direction of viewing
+  let viewingFrom = '';
+  let lookingToward = '';
+  
+  if (viewAngle >= -22.5 && viewAngle < 22.5) {
+    viewingFrom = 'SOUTH';
+    lookingToward = 'NORTH';
+  } else if (viewAngle >= 22.5 && viewAngle < 67.5) {
+    viewingFrom = 'SOUTHWEST';
+    lookingToward = 'NORTHEAST';
+  } else if (viewAngle >= 67.5 && viewAngle < 112.5) {
+    viewingFrom = 'WEST';
+    lookingToward = 'EAST';
+  } else if (viewAngle >= 112.5 && viewAngle < 157.5) {
+    viewingFrom = 'NORTHWEST';
+    lookingToward = 'SOUTHEAST';
+  } else if (viewAngle >= 157.5 || viewAngle < -157.5) {
+    viewingFrom = 'NORTH';
+    lookingToward = 'SOUTH';
+  } else if (viewAngle >= -157.5 && viewAngle < -112.5) {
+    viewingFrom = 'NORTHEAST';
+    lookingToward = 'SOUTHWEST';
+  } else if (viewAngle >= -112.5 && viewAngle < -67.5) {
+    viewingFrom = 'EAST';
+    lookingToward = 'WEST';
+  } else if (viewAngle >= -67.5 && viewAngle < -22.5) {
+    viewingFrom = 'SOUTHEAST';
+    lookingToward = 'NORTHWEST';
+  }
+  
+  // Build explicit perspective description
+  return `VIEWING DIRECTION: Camera at (${camPos.x.toFixed(1)}, ${camPos.y.toFixed(1)}, ${camPos.z.toFixed(1)})m
+You are viewing from the ${viewingFrom} looking ${lookingToward}
+From YOUR perspective:
+- Plants on YOUR LEFT are at LOWER X coordinates (more negative X)
+- Plants on YOUR RIGHT are at HIGHER X coordinates (more positive X)
+- DO NOT mirror or flip the scene - maintain this exact left-right orientation
+Viewing angle: ${viewAngle.toFixed(0)}° from north`;
 }
 
 /**
@@ -733,13 +791,15 @@ export function buildPhotorealizationPrompt(context: PhotorealizationContext): s
 
 [CRITICAL REQUIREMENTS - NON-NEGOTIABLE]
 PLANT COUNT: EXACTLY ${plants.length} plants - NO MORE, NO LESS
-ORIENTATION: NO MIRRORING - left stays left, right stays right
+ORIENTATION: NO MIRRORING - left stays left, right stays right from YOUR viewing position
 BOUNDARIES: Visible garden bed edges (stone/mulch/lawn edge)
 COORDINATE SYSTEM: Origin at top-left (0,0), X increases right, Y increases down
+CAMERA LOCKED: You are viewing from EXACTLY the position shown in reference image
 
 [SPATIAL REFERENCE]
 VIEWING: Eye-level 1.6m, ${sceneState?.camera?.position?.z?.toFixed(1) || '4'}m from bed front
 GRID: 10×10 reference, cells ${gridCellW}×${gridCellH}m
+${getCameraViewingPerspective(sceneState)}
 MARKERS: GREEN=left, RED=right, BLUE=back, YELLOW=front
 
 [GARDEN SPECIFICATIONS]
@@ -801,14 +861,15 @@ COLORS: Greens #2E7D32-#66BB6A, Soil #3E2723-#5D4037
 × NO extra plants beyond ${plants.length}
 × NO ornaments, structures, tools
 × NO people, animals, insects  
-× NO position changes or mirroring
+× NO position changes or mirroring - maintain exact left-right orientation
 × Background <10% of image
+× DO NOT flip or mirror the scene horizontally
 
 [VERIFICATION CHECKLIST]
 □ COUNT: Exactly ${plants.length} plants visible
 □ SPECIES: ${plants.map(p => p.commonName).join(', ')}
 □ POSITIONS: As specified in matrix
-□ NO MIRRORING: Orientation preserved
+□ NO MIRRORING: Left-right orientation EXACTLY as in reference
 
 GENERATE: ${dimensions.width}×${dimensions.length}m ${garden.shape} bed, ${plants.length} plants at exact positions, photorealistic July garden`;
 
