@@ -107,9 +107,13 @@ interface ProvidedPlant {
     scientificName?: string;
     cultivar?: string; // Critical for cultivar support
     type?: string;
+    heightMinCm?: number;
     heightMaxCm?: number;
+    heightMin?: number;
     heightMax?: number;
+    spreadMinCm?: number;
     spreadMaxCm?: number;
+    spreadMin?: number;
     spreadMax?: number;
     foliage?: string;
     // Frontend field names
@@ -162,7 +166,9 @@ export async function buildPhotorealizationContext(
         scientificName: placedPlant.plantDetails.scientificName || placedPlant.scientificName || '',
         cultivar: placedPlant.plantDetails.cultivar || null, // CRITICAL: Include cultivar from plantDetails
         type: placedPlant.plantDetails.type || 'perennial',
+        heightMinCm: placedPlant.plantDetails.heightMinCm || placedPlant.plantDetails.heightMin || 30,
         heightMaxCm: placedPlant.plantDetails.heightMaxCm || placedPlant.plantDetails.heightMax || 60,
+        spreadMinCm: placedPlant.plantDetails.spreadMinCm || placedPlant.plantDetails.spreadMin || 20,
         spreadMaxCm: placedPlant.plantDetails.spreadMaxCm || placedPlant.plantDetails.spreadMax || 40,
         foliage: placedPlant.plantDetails.foliage || 'deciduous',
         // Map frontend field names to backend expected field names
@@ -186,7 +192,9 @@ export async function buildPhotorealizationContext(
         scientificName: placedPlant.scientificName || '',
         cultivar: null, // No cultivar in fallback
         type: 'perennial',
+        heightMinCm: 30,
         heightMaxCm: 60,
+        spreadMinCm: 20,
         spreadMaxCm: 40,
         foliage: 'deciduous',
         flowerColors: [],
@@ -229,8 +237,9 @@ export async function buildPhotorealizationContext(
           y: parseFloat(gardenPlant.position_y || '50')
         },
         size: {
-          height: (plant!.heightMaxCm || 60) / 100, // Convert cm to meters
-          spread: (plant!.spreadMaxCm || 40) / 100
+          // Calculate median values from min and max
+          height: ((plant!.heightMinCm || 30) + (plant!.heightMaxCm || 60)) / 2 / 100, // Median in meters
+          spread: ((plant!.spreadMinCm || 20) + (plant!.spreadMaxCm || 40)) / 2 / 100  // Median in meters
         },
         seasonalState,
         type: plant!.type || 'perennial',

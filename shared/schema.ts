@@ -991,8 +991,9 @@ export function convertPlantTo3D(
   const seasonalFactor = season === 'spring' ? 0.8 : season === 'summer' ? 1.0 : 
                         season === 'autumn' ? 0.9 : 0.7; // winter
   
-  const heightCurrent = (heightMin + (heightMax - heightMin) * 0.7) * maturityFactor * seasonalFactor;
-  const spreadCurrent = (spreadMin + (spreadMax - spreadMin) * 0.7) * maturityFactor;
+  // Use median (0.5) instead of 70% for more realistic plant sizes
+  const heightCurrent = (heightMin + (heightMax - heightMin) * 0.5) * maturityFactor * seasonalFactor;
+  const spreadCurrent = (spreadMin + (spreadMax - spreadMin) * 0.5) * maturityFactor;
   
   return {
     id: placedPlant.id,
