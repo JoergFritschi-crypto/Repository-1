@@ -330,9 +330,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: error.message 
       });
       
-      res.status(500).json({ 
-        message: "Failed to generate photorealistic view", 
-        error: error.message 
+      // Determine appropriate status code and user message
+      const errorMessage = error.message?.toLowerCase() || '';
+      let statusCode = 500;
+      let userMessage = error.message; // Default to the error message from Gemini generator
+      
+      // The Gemini generator already provides user-friendly messages, but let's check for specific cases
+      if (errorMessage.includes('temporarily unavailable') || errorMessage.includes('internal error')) {
+        statusCode = 503;
+        // Keep the user-friendly message from the generator
+      } else if (errorMessage.includes('rate limit')) {
+        statusCode = 429;
+        // Keep the user-friendly message from the generator
+      } else if (errorMessage.includes('api key') || errorMessage.includes('not configured')) {
+        statusCode = 503;
+        userMessage = 'Image generation service is not available. Please contact support.';
+      } else if (errorMessage.includes('invalid') || errorMessage.includes('bad request')) {
+        statusCode = 400;
+        // Keep the user-friendly message from the generator
+      }
+      
+      res.status(statusCode).json({ 
+        message: userMessage,
+        retryable: statusCode === 503 || statusCode === 429
       });
     }
   });
@@ -450,9 +470,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating garden visualization:", error);
-      res.status(500).json({ 
-        message: "Failed to generate garden visualization", 
-        error: (error as Error).message 
+      
+      // Determine appropriate status code and user message
+      const errorMessage = (error as Error).message?.toLowerCase() || '';
+      let statusCode = 500;
+      let userMessage = (error as Error).message; // Default to the error message from generators
+      
+      // The Gemini/Runware generators already provide user-friendly messages
+      if (errorMessage.includes('temporarily unavailable') || errorMessage.includes('internal error')) {
+        statusCode = 503;
+        // Keep the user-friendly message from the generator
+      } else if (errorMessage.includes('rate limit')) {
+        statusCode = 429;
+        // Keep the user-friendly message from the generator
+      } else if (errorMessage.includes('api key') || errorMessage.includes('not configured')) {
+        statusCode = 503;
+        userMessage = 'Image generation service is not available. Please contact support.';
+      } else if (errorMessage.includes('invalid') || errorMessage.includes('bad request')) {
+        statusCode = 400;
+        // Keep the user-friendly message from the generator
+      } else if (!userMessage || userMessage === 'Unknown error') {
+        // Fallback for generic errors
+        userMessage = 'Unable to generate garden visualization at this time. Please try again later.';
+      }
+      
+      res.status(statusCode).json({ 
+        message: userMessage,
+        retryable: statusCode === 503 || statusCode === 429
       });
     }
   });
