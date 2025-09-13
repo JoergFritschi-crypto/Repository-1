@@ -28,7 +28,7 @@ import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cl
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import GardenRenderer3D from '@/components/garden/garden-renderer-3d';
-import Garden3DView from '@/components/garden/garden-3d-view';
+import Garden3DView, { type Garden3DViewRef } from '@/components/garden/garden-3d-view';
 import PlantSearchModal from '@/components/plant/plant-search-modal';
 import ClimateReportModal from '@/components/garden/climate-report-modal';
 import SoilTestingModal from '@/components/garden/soil-testing-modal';
@@ -245,6 +245,7 @@ export default function GardenProperties() {
   const [seasonalProgress, setSeasonalProgress] = useState(0);
   const [photorealizationMode, setPhotorealizationMode] = useState(false);
   const [, setLocation] = useLocation();
+  const garden3DViewRef = useRef<Garden3DViewRef | null>(null);
   
   // Get user data and design generation history
   const { user } = useAuthWithTesting();
@@ -2650,6 +2651,7 @@ export default function GardenProperties() {
 
                     {/* Three.js 3D Garden View */}
                     <Garden3DView
+                      ref={garden3DViewRef}
                       gardenId={gardenId || 'temp-garden'}
                       gardenName={watchedName || 'My Garden'}
                       gardenData={{
@@ -3069,6 +3071,7 @@ export default function GardenProperties() {
         <VisualizationGenerationModal
           isOpen={showVisualizationModal}
           onClose={() => setShowVisualizationModal(false)}
+          garden3DViewRef={garden3DViewRef}
           onComplete={(imageUrl?: string) => {
             if (imageUrl) {
               setGeneratedVisualization(imageUrl);

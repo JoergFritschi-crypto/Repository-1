@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,13 +87,21 @@ const pointOfViewToCamera = (pov?: string | null): { distance: number; height: n
   }
 };
 
-export default function Garden3DView({
-  gardenId,
-  gardenName,
-  gardenData,
-  placedPlants,
-  photorealizationMode = false
-}: Garden3DViewProps) {
+// Export type for ref methods
+export interface Garden3DViewRef {
+  captureCanvas: () => Promise<string | null>;
+}
+
+const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
+  {
+    gardenId,
+    gardenName,
+    gardenData,
+    placedPlants,
+    photorealizationMode = false
+  },
+  ref
+) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -135,6 +143,36 @@ export default function Garden3DView({
   
   const { toast } = useToast();
   const [isGeneratingArtistic, setIsGeneratingArtistic] = useState(false);
+  
+  // Expose canvas capture method via ref
+  useImperativeHandle(ref, () => ({
+    captureCanvas: async (): Promise<string | null> => {
+      try {
+        if (!canvasRef.current || !rendererRef.current) {
+          console.error('Canvas or renderer not ready for capture');
+          return null;
+        }
+        
+        // Ensure the scene is fully rendered
+        if (rendererRef.current && sceneRef.current && cameraRef.current) {
+          // Force a render to ensure latest state
+          rendererRef.current.render(sceneRef.current, cameraRef.current);
+        }
+        
+        // Wait for next animation frame to ensure render is complete
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        
+        // Capture the canvas as base64 PNG
+        const dataUrl = canvasRef.current.toDataURL('image/png', 1.0);
+        console.log('Canvas captured successfully in photorealization mode');
+        
+        return dataUrl;
+      } catch (error) {
+        console.error('Error capturing canvas:', error);
+        return null;
+      }
+    }
+  }), []);
   
   // Fetch plant data for placed plants
   const { data: plants } = useQuery<Plant[]>({
@@ -1679,4 +1717,8 @@ export default function Garden3DView({
       </CardContent>
     </Card>
   );
-}
+});
+
+Garden3DView.displayName = 'Garden3DView';
+
+export default Garden3DView;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -9,6 +9,7 @@ import { Loader2, Sparkles, Check, AlertCircle, Eye, TreePine, Flower2, ArrowRig
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { PlacedPlant } from './garden-layout-canvas';
+import type { Garden3DViewRef } from '@/components/garden/garden-3d-view';
 
 interface VisualizationGenerationModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ interface VisualizationGenerationModalProps {
   };
   placedPlants: PlacedPlant[];
   onPhotorealizationModeChange?: (enabled: boolean) => void;
+  garden3DViewRef?: React.RefObject<Garden3DViewRef | null>;
 }
 
 export default function VisualizationGenerationModal({
@@ -35,7 +37,8 @@ export default function VisualizationGenerationModal({
   onComplete,
   gardenData,
   placedPlants,
-  onPhotorealizationModeChange
+  onPhotorealizationModeChange,
+  garden3DViewRef
 }: VisualizationGenerationModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -109,11 +112,29 @@ export default function VisualizationGenerationModal({
       setStatusMessage('Capturing 3D scene for AI processing...');
       
       // Brief delay to ensure photorealization mode is fully rendered
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Capture the canvas from Garden3DView
+      let canvasImage: string | null = null;
+      if (garden3DViewRef?.current) {
+        try {
+          canvasImage = await garden3DViewRef.current.captureCanvas();
+          if (canvasImage) {
+            console.log('Successfully captured canvas image for AI processing');
+          } else {
+            console.warn('Canvas capture returned null, continuing without image');
+          }
+        } catch (captureError) {
+          console.error('Error capturing canvas:', captureError);
+          // Continue without the canvas image
+        }
+      } else {
+        console.warn('Garden3DView ref not available for canvas capture');
+      }
       
       setStatusMessage('Generating 3D visualization with AI...');
 
-      // Call API to generate visualization
+      // Call API to generate visualization with canvas image
       const response = await apiRequest('POST', '/api/gardens/generate-visualization', {
         gardenDescription,
         plantList,
@@ -121,7 +142,8 @@ export default function VisualizationGenerationModal({
         style: gardenData.style || 'cottage',
         season: gardenData.season || 'summer',
         sunExposure: gardenData.sunExposure,
-        gardenId: gardenData.gardenId
+        gardenId: gardenData.gardenId,
+        canvasImage // Include the captured canvas image
       });
 
       // Parse the JSON response
