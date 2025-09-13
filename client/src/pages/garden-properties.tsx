@@ -24,7 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye, Info, ChevronRight, MousePointer, Check, Loader2 } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye, Info, ChevronRight, MousePointer, Check, Loader2, Search, Database, Filter, Lightbulb } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import GardenRenderer3D from '@/components/garden/garden-renderer-3d';
@@ -42,6 +42,10 @@ import { useAuthWithTesting } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { Lock, Crown, CreditCard } from 'lucide-react';
 import { GardenDesignIcon } from '@/components/ui/brand-icons';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { PlantAdvancedSearch } from '@/components/plant/plant-advanced-search';
+import PlantSearchResults from '@/components/plant/plant-search-results';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const gardenSchema = z.object({
@@ -120,14 +124,9 @@ const stepDetails = [
     description: 'Shape, dimensions, photos & soil'
   },
   { 
-    title: 'Design Approach', 
-    subtitle: 'Choose your path',
-    description: 'AI-powered or manual design'
-  },
-  { 
-    title: 'Garden Design', 
-    subtitle: 'Create your layout',
-    description: 'Interactive canvas for plant placement'
+    title: 'Interactive Design', 
+    subtitle: 'Choose and place your plants',
+    description: 'Browse plant library and design your garden'
   },
   { 
     title: '3D Garden View', 
@@ -249,6 +248,11 @@ export default function GardenProperties() {
   const [showSeasonalDateSelector, setShowSeasonalDateSelector] = useState(false);
   const [, setLocation] = useLocation();
   const garden3DViewRef = useRef<Garden3DViewRef | null>(null);
+  
+  // New states for unified Interactive Design step
+  const [plantFilters, setPlantFilters] = useState<any>({});
+  const [showPlantResults, setShowPlantResults] = useState(false);
+  const [searchSource, setSearchSource] = useState<'database' | 'collection'>('database');
   
   // Get user data and design generation history
   const { user } = useAuthWithTesting();
@@ -2134,102 +2138,314 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 3: Choose Your Design Approach - Workflow Decision Point */}
+            {/* Step 3: Interactive Design - Unified Plant Selection and Placement */}
             {currentStep === 3 && (
               <div className="space-y-3">
-                {/* If user selected a style from AI in Step 2, show it and ask how to proceed */}
-                {selectedStyleFromAI ? (
-                  <>
-                    {/* Show the selected style */}
-                    <Card className="border-2 border-indigo-500 bg-indigo-50/30 shadow-sm" data-testid="selected-ai-style">
+                <Card className="border-2 border-primary shadow-sm" data-testid="step-interactive-design">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <PenTool className="w-4 h-4 text-primary" />
+                      Interactive Garden Design
+                    </CardTitle>
+                    <CardDescription>
+                      Browse plants on the left, design your garden on the right
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {/* Split-panel layout with plant library and canvas */}
+                    <ResizablePanelGroup direction="horizontal" className="h-[750px] border-t">
+                      {/* Left Panel: Plant Search and Filters */}
+                      <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
+                        <div className="h-full flex flex-col border-r bg-gray-50/50">
+                          {/* Plant Search Header */}
+                          <div className="p-4 border-b bg-white">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Search className="w-5 h-5 text-primary" />
+                              <h3 className="font-semibold">Plant Library</h3>
+                              <Badge variant="outline" className="ml-auto">
+                                {inventoryPlants.length} plants selected
+                              </Badge>
+                            </div>
+                            
+                            {/* Tabs for Database vs Collection */}
+                            <Tabs value={searchSource} onValueChange={(value: any) => setSearchSource(value)} className="w-full">
+                              <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="database" className="flex items-center gap-1">
+                                  <Database className="w-3 h-3" />
+                                  Database
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                  value="collection" 
+                                  disabled={user?.userTier !== 'premium'}
+                                  className="flex items-center gap-1"
+                                >
+                                  <TreePine className="w-3 h-3" />
+                                  My Collection
+                                </TabsTrigger>
+                              </TabsList>
+                            </Tabs>
+                          </div>
+                          
+                          {/* Plant Filters and Search */}
+                          <div className="flex-1 overflow-y-auto p-4">
+                            {!showPlantResults ? (
+                              <div className="space-y-4">
+                                <PlantAdvancedSearch 
+                                  onSearch={(filters) => {
+                                    setPlantFilters(filters);
+                                    setShowPlantResults(true);
+                                  }}
+                                />
+                                
+                                {/* Quick Tips */}
+                                <Alert className="border-primary/20">
+                                  <Lightbulb className="h-4 w-4" />
+                                  <AlertTitle>Quick Tips</AlertTitle>
+                                  <AlertDescription className="text-xs">
+                                    • Use filters to find plants by size, color, or type<br/>
+                                    • Add plants to your inventory, then drag them onto the canvas<br/>
+                                    • Right-click plants on the canvas to remove them
+                                  </AlertDescription>
+                                </Alert>
+                              </div>
+                            ) : (
+                              <PlantSearchResults
+                                filters={plantFilters}
+                                searchSource={searchSource}
+                                onSelectPlants={(plantsMap) => {
+                                  // Add selected plants to inventory
+                                  plantsMap.forEach(({ plant, quantity }) => {
+                                    for (let i = 0; i < quantity; i++) {
+                                      setInventoryPlants(prev => [...prev, plant]);
+                                    }
+                                  });
+                                  
+                                  toast({
+                                    title: "Plants Added",
+                                    description: `Added ${plantsMap.size} plant type(s) to your inventory`
+                                  });
+                                  
+                                  setShowPlantResults(false);
+                                  setPlantFilters({});
+                                }}
+                                onBack={() => {
+                                  setShowPlantResults(false);
+                                  setPlantFilters({});
+                                }}
+                                userTier={user?.userTier || 'free'}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </ResizablePanel>
+                      
+                      {/* Resize Handle */}
+                      <ResizableHandle withHandle />
+                      
+                      {/* Right Panel: Garden Canvas */}
+                      <ResizablePanel defaultSize={65} minSize={50}>
+                        <div className="h-full flex flex-col">
+                          {/* Canvas Header with AI Options */}
+                          <div className="p-3 border-b bg-white">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Palette className="w-4 h-4 text-primary" />
+                                <h3 className="font-semibold text-sm">Garden Canvas</h3>
+                                {completeDesign && (
+                                  <Badge className="ml-2" variant="secondary">
+                                    AI Design Loaded
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              {/* AI Design Options */}
+                              <div className="flex items-center gap-2">
+                                {selectedStyleFromAI || selectedGardenStyle ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={async () => {
+                                      setIsGeneratingDesign(true);
+                                      try {
+                                        const styleToUse = selectedStyleFromAI || (selectedGardenStyle ? GARDEN_STYLES[selectedGardenStyle as keyof typeof GARDEN_STYLES] : null);
+                                        
+                                        if (!styleToUse) {
+                                          toast({
+                                            title: "No Style Selected",
+                                            description: "Please select a garden style first",
+                                            variant: "destructive"
+                                          });
+                                          return;
+                                        }
+                                        
+                                        const response = await apiRequest('POST', '/api/generate-complete-design', {
+                                          selectedStyle: styleToUse,
+                                          gardenData: form.getValues(),
+                                          safetyPreferences: {
+                                            toxicityLevel: watchedToxicityLevel,
+                                            plantAvailability: watchedPlantAvailability
+                                          }
+                                        });
+                                        
+                                        const design = await response.json();
+                                        setCompleteDesign(design);
+                                        
+                                        toast({
+                                          title: 'AI Design Generated!',
+                                          description: `Your ${design.styleName} garden is ready with ${design.plantPlacements.length} plants.`
+                                        });
+                                      } catch (error) {
+                                        console.error('Failed to generate design:', error);
+                                        toast({
+                                          title: 'Generation Failed',
+                                          description: 'Could not generate garden design. Please try again.',
+                                          variant: 'destructive'
+                                        });
+                                      } finally {
+                                        setIsGeneratingDesign(false);
+                                      }
+                                    }}
+                                    disabled={isGeneratingDesign}
+                                    data-testid="button-generate-ai-design"
+                                  >
+                                    {isGeneratingDesign ? (
+                                      <>
+                                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                        Generating...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Wand2 className="w-3 h-3 mr-1" />
+                                        Generate AI Design
+                                      </>
+                                    )}
+                                  </Button>
+                                ) : (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            toast({
+                                              title: "Style Selection Required",
+                                              description: "Upload garden photos in Step 2 or select a style to enable AI design",
+                                              variant: "destructive"
+                                            });
+                                          }}
+                                          data-testid="button-ai-design-disabled"
+                                        >
+                                          <Wand2 className="w-3 h-3 mr-1" />
+                                          AI Design
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Upload photos or select a style first</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Garden Canvas Component */}
+                          <div className="flex-1 overflow-auto bg-gray-50">
+                            <GardenLayoutCanvas
+                              shape={watchedShape}
+                              dimensions={watchedDimensions}
+                              units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
+                              gardenName={watchedName}
+                              aiDesign={completeDesign}
+                              inventoryPlants={inventoryPlants}
+                              onOpenPlantSearch={() => {
+                                // Instead of opening modal, focus on left panel
+                                setShowPlantResults(false);
+                                setPlantFilters({});
+                              }}
+                              onPlacedPlantsChange={setPlacedPlants}
+                            />
+                          </div>
+                        </div>
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
+                  </CardContent>
+                </Card>
+                
+                {/* Design Summary Card (if AI design was generated) */}
+                {completeDesign && (
+                  <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="design-details">
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <TreePine className="w-4 h-4 text-primary" />
+                        Your {completeDesign.styleName} Garden Design
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-0">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="p-3 bg-white rounded-lg border">
+                          <h4 className="font-semibold text-sm mb-2">Plant Count</h4>
+                          <p className="text-2xl font-bold text-primary">
+                            {completeDesign.plantPlacements.length} plants
+                          </p>
+                        </div>
+                        <div className="p-3 bg-white rounded-lg border">
+                          <h4 className="font-semibold text-sm mb-2">Design Zones</h4>
+                          <p className="text-xs">
+                            {completeDesign.designZones.map((zone: any) => zone.name).join(', ')}
+                          </p>
+                        </div>
+                        <div className="p-3 bg-white rounded-lg border">
+                          <h4 className="font-semibold text-sm mb-2">Color Palette</h4>
+                          <div className="flex gap-1 flex-wrap">
+                            {completeDesign.colorPalette.slice(0, 3).map((color: string, i: number) => (
+                              <Badge key={i} variant="outline" className="text-xs">{color}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* Step 4: Hidden 3D Technical View for AI Reference */}
+            {/* This step is now invisible - used only for generating reference images */}
+            {currentStep === 4 && (
                       <CardHeader className="py-3">
                         <CardTitle className="text-base flex items-center gap-2">
                           <Flower2 className="w-4 h-4 text-indigo-600" />
                           Your Selected Design Style
                         </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3 pt-0">
-                        <div className="p-3 bg-white rounded-lg border-2 border-indigo-300">
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-semibold text-sm">{selectedStyleFromAI.styleName}</h4>
-                            <Badge className="bg-indigo-100 text-indigo-700">
-                              Match: {selectedStyleFromAI.suitabilityScore}/10
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-gray-600 mb-2">{selectedStyleFromAI.description}</p>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="p-2 bg-gray-50 rounded">
-                              <span className="font-medium">Maintenance:</span> {selectedStyleFromAI.maintenanceLevel}
-                            </div>
-                            <div className="p-2 bg-gray-50 rounded">
-                              <span className="font-medium">Colors:</span> {selectedStyleFromAI.colorScheme?.join(', ')}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Ask how to proceed with this style */}
-                    <Card className="border-2 border-primary shadow-sm" data-testid="step-design-approach">
-                      <CardHeader className="py-7 flower-band-green rounded-t-lg">
-                        <CardTitle className="text-base">How would you like to proceed?</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4 pt-0">
-                        <FormField
-                          control={form.control}
-                          name="design_approach"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Choose how to create your garden layout</FormLabel>
-                              <FormControl>
-                                <RadioGroup
-                                  value={localDesignApproach || field.value || ""}
-                                  onValueChange={(value) => {
-                                    const typedValue = value as "ai" | "manual";
-                                    setLocalDesignApproach(typedValue);
-                                    field.onChange(typedValue);
-                                    form.setValue("design_approach", typedValue);
-                                  }}
-                                  className="space-y-3"
-                                >
-                                  <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="ai" id="ai" />
-                                    <div>
-                                      <Label htmlFor="ai" className="font-medium">
-                                        Continue with AI Layout Generation
-                                      </Label>
-                                      <p className="text-sm text-muted-foreground">
-                                        Let AI create the complete garden layout using the {selectedStyleFromAI.styleName} style, with plant placement and design details
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="manual" id="manual" />
-                                    <div>
-                                      <Label htmlFor="manual" className="font-medium">
-                                        Switch to Manual Design
-                                      </Label>
-                                      <p className="text-sm text-muted-foreground">
-                                        Use the style as inspiration but manually place plants and design your garden on the interactive canvas
-                                      </p>
-                                    </div>
-                                  </div>
-                                </RadioGroup>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </CardContent>
-                    </Card>
-
-                    {/* Safety Preferences for AI approach with selected style */}
-                    {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
-                      <SafetyPreferences form={form} showAvailabilityPreference={true} />
-                    )}
-                    
-                    {/* Plant Spacing Preference for AI approach */}
-                    {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
+              <div className="hidden">
+                <Card className="border-2 border-primary shadow-sm" data-testid="step-3d-technical-view">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Eye className="w-4 h-4 text-primary" />
+                      3D Garden View - Technical Rendering
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Hidden 3D Garden View for AI Reference */}
+                    <Garden3DView
+                      ref={garden3DViewRef}
+                      gardenId={gardenId || 'temp-garden'}
+                      gardenName={watchedName || 'My Garden'}
+                      gardenData={{
+                        shape: watchedShape,
+                        dimensions: watchedDimensions,
+                        units: watchedUnits,
+                        slopeDirection: watchedSlopeDirection,
+                        slopePercentage: watchedSlopePercentage,
+                        northOrientation: watchedSlopeDirection,
+                        pointOfView: watchedPointOfView || 'bird_eye'
+                      } as any}
+                      placedPlants={placedPlants}
+                      photorealizationMode={true}
+                      hiddenMode={true}
+                    />
                       <Card className="border-2 border-primary shadow-sm" data-testid="spacing-preference">
                         <CardHeader className="py-3">
                           <CardTitle className="text-base flex items-center gap-2">
@@ -2331,62 +2547,6 @@ export default function GardenProperties() {
                         </CardContent>
                       </Card>
                     )}
-                  </>
-                ) : (
-                  /* Original flow if no AI style was selected */
-                  <Card className="border-2 border-primary shadow-sm" data-testid="step-design-approach">
-                    <CardHeader className="py-7 flower-band-green rounded-t-lg">
-                      <CardTitle className="text-base">Choose Your Design Approach</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-0">
-                      <FormField
-                        control={form.control}
-                        name="design_approach"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>How would you like to design your garden?</FormLabel>
-                            <FormControl>
-                              <RadioGroup
-                                value={localDesignApproach || field.value || ""}
-                                onValueChange={(value) => {
-                                  const typedValue = value as "ai" | "manual";
-                                  setLocalDesignApproach(typedValue);
-                                  field.onChange(typedValue);
-                                  form.setValue("design_approach", typedValue);
-                                }}
-                                className="space-y-3"
-                              >
-                                <div className="flex items-start space-x-3">
-                                  <RadioGroupItem value="ai" id="ai" />
-                                  <div>
-                                    <Label htmlFor="ai" className="font-medium">
-                                      AI-Powered Design
-                                    </Label>
-                                    <p className="text-sm text-muted-foreground">
-                                      Choose from our curated garden styles and let AI create your complete design
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-start space-x-3">
-                                  <RadioGroupItem value="manual" id="manual" />
-                                  <div>
-                                    <Label htmlFor="manual" className="font-medium">
-                                      Manual Design
-                                    </Label>
-                                    <p className="text-sm text-muted-foreground">
-                                      Full control: Choose plants yourself and design your garden on the interactive canvas
-                                    </p>
-                                  </div>
-                                </div>
-                              </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
 
                 {/* Show AI Style options only if AI approach is chosen AND no style selected from Step 2 */}
                 {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && !selectedStyleFromAI && (
@@ -2524,77 +2684,39 @@ export default function GardenProperties() {
                   </>
                 )}
 
-                {/* Show button to proceed to manual design - NO safety preferences needed */}
-                {(localDesignApproach === "manual" || watchedDesignApproach === "manual") && (
-                  <Card className="border-2 border-primary bg-primary/10 shadow-sm">
-                    <CardContent className="py-6">
-                      <div className="text-center space-y-3">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <Palette className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-primary">
-                            Ready to Design Your Garden!
-                          </h3>
-                        </div>
-                        <p className="text-sm text-gray-600 max-w-md mx-auto">
-                          You've chosen manual design mode.
-                          Click below to proceed to the interactive garden canvas where you can place plants and design your garden.
-                        </p>
-                        <Button
-                          type="button"
-                          size="lg"
-                          className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
-                          onClick={() => {
-                            // Advance to Step 4 for manual design
-                            setCurrentStep(4);
-                          }}
-                          data-testid="button-proceed-to-canvas"
-                        >
-                          <Palette className="w-5 h-5 mr-2" />
-                          Proceed to Garden Canvas
-                        </Button>
-                        <p className="text-xs text-gray-500">
-                          You'll have full control to manually place plants and design your garden layout.
-                          You can filter plants by safety criteria directly in the plant search.
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
               </div>
             )}
 
-            {/* Step 4: Interactive Design Canvas (2D Canvas Only) */}
+            {/* Step 4: Hidden 3D Technical View for AI Reference */}
+            {/* This step is now invisible - used only for generating reference images */}
             {currentStep === 4 && (
-              <div className="space-y-3">
-                {/* Generate Design Button for AI approach */}
-                {watchedDesignApproach === "ai" && selectedGardenStyle && (
-                  <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="generate-ai-design-card">
-                    <CardHeader className="py-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Flower2 className="w-4 h-4 text-primary" />
-                        Ready to Generate AI Design
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-0">
-                      <p className="text-sm text-gray-600">
-                        Your safety preferences have been set in Step 3. Click below to generate your AI garden design.
-                      </p>
-                      <Button 
-                        type="button"
-                        className="w-full bg-gradient-to-r from-primary to-secondary"
-                        onClick={async () => {
-                          setIsGeneratingDesign(true);
-                          try {
-                            const selectedStyle = GARDEN_STYLES[selectedGardenStyle as keyof typeof GARDEN_STYLES];
-                            
-                            const response = await apiRequest('POST', '/api/generate-complete-design', {
-                              selectedStyle: selectedStyle,
-                              gardenData: form.getValues(),
-                              safetyPreferences: {
-                                toxicityLevel: watchedToxicityLevel,
-                                plantAvailability: watchedPlantAvailability
-                              }
-                            });
+              <div className="hidden">
+                <Card className="border-2 border-primary shadow-sm" data-testid="step-3d-technical-view">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Eye className="w-4 h-4 text-primary" />
+                      3D Garden View - Technical Rendering
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Hidden 3D Garden View for AI Reference */}
+                    <Garden3DView
+                      ref={garden3DViewRef}
+                      gardenId={gardenId || 'temp-garden'}
+                      gardenName={watchedName || 'My Garden'}
+                      gardenData={{
+                        shape: watchedShape,
+                        dimensions: watchedDimensions,
+                        units: watchedUnits,
+                        slopeDirection: watchedSlopeDirection,
+                        slopePercentage: watchedSlopePercentage,
+                        northOrientation: watchedSlopeDirection,
+                        pointOfView: watchedPointOfView || 'bird_eye'
+                      } as any}
+                      placedPlants={placedPlants}
+                      photorealizationMode={true}
+                      hiddenMode={true}
+                    />
                             
                             const design = await response.json();
                             setCompleteDesign(design);
@@ -2748,8 +2870,7 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 5: Hidden 3D Technical View for AI Reference */}
-            {/* This step is now invisible - used only for generating reference images */}
+            {/* Step 5: Seasonal Garden Generation (Direct from plants) */}
             {currentStep === 5 && (
               <div className="hidden">
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-3d-technical-view">
@@ -2840,7 +2961,7 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 6: Seasonal Garden Generation (Direct from plants) */}
+            {/* Step 6: Review & Finalize */}
             {currentStep === 6 && (
               <div className="space-y-3">
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-seasonal-generation">
