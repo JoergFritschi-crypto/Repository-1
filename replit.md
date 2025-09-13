@@ -33,6 +33,10 @@ Preferred communication style: Simple, everyday language.
 - Result: AI has maximum freedom to generate plants from botanical text descriptions without geometric bias
 - **Fixed scene clearing issue**: Properly removes old meshes when switching to photorealization mode
 - **Black background enforced**: Photorealization mode now shows ONLY white dots on pure black background
+- **Fixed orientation mirroring**: Added explicit coordinate system instructions to prevent left-right flipping
+- **Enforced exact plant counts**: Multiple verification points prevent AI from inventing extra plants
+- **Added garden bed boundaries**: Visible edge/border requirements for clear garden definition
+- **Improved background blur**: Heavy blur with 90/10 garden-to-background ratio for minimal distraction
 
 ### Database Restructuring for Numeric Dimensions (September 2025)
 - Added numeric dimension fields to plant schema for precise measurements
