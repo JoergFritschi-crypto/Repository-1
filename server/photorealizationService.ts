@@ -889,110 +889,65 @@ GENERATE: ${dimensions.width}×${dimensions.length}m ${garden.shape} bed, ${plan
 }
 
 /**
- * Normalize bloom months for a plant using database bloom data or taxonomy-based defaults
+ * Helper function to convert day-of-year to month
+ */
+function dayOfYearToMonth(dayOfYear: number): number {
+  // Array of cumulative days at end of each month (non-leap year)
+  const monthEnds = [31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
+  
+  for (let month = 0; month < 12; month++) {
+    if (dayOfYear <= monthEnds[month]) {
+      return month + 1; // Return 1-based month
+    }
+  }
+  return 12; // Day 366 = December in leap years
+}
+
+/**
+ * Normalize bloom months for a plant using ONLY database bloom data
+ * Completely database-driven with no hardcoded defaults
  */
 function normalizeBloomMonths(plant: any): Set<number> {
   const months = new Set<number>();
+  const commonName = plant.commonName || 'Unknown';
   const scientificName = plant.scientificName || '';
-  const commonName = plant.commonName || '';
   const cultivar = plant.cultivar || '';
   
-  // PRIORITY 1: Use actual database bloom months if available
-  if (plant.bloomStartMonth && plant.bloomEndMonth) {
-    // Handle cases where bloom might wrap around year (e.g., Dec-Feb)
-    if (plant.bloomEndMonth < plant.bloomStartMonth) {
-      // Add months from start to December
-      for (let m = plant.bloomStartMonth; m <= 12; m++) {
-        months.add(m);
-      }
-      // Add months from January to end
-      for (let m = 1; m <= plant.bloomEndMonth; m++) {
-        months.add(m);
-      }
-      console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using DATABASE months ${plant.bloomStartMonth}-12,1-${plant.bloomEndMonth} (wraps around year)`);
+  // PRIORITY 1: Use day-of-year fields if available
+  if (plant.bloomStartDayOfYear && plant.bloomEndDayOfYear) {
+    const startMonth = dayOfYearToMonth(plant.bloomStartDayOfYear);
+    const endMonth = dayOfYearToMonth(plant.bloomEndDayOfYear);
+    
+    // Handle wrap-around (e.g., Nov-Feb)
+    if (startMonth <= endMonth) {
+      for (let m = startMonth; m <= endMonth; m++) months.add(m);
     } else {
-      // Normal case: bloom within the same year
+      // Wrap around year
+      for (let m = startMonth; m <= 12; m++) months.add(m);
+      for (let m = 1; m <= endMonth; m++) months.add(m);
+    }
+    console.log(`[Bloom Data] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Day ${plant.bloomStartDayOfYear}-${plant.bloomEndDayOfYear} = months ${Array.from(months).sort((a,b) => a-b).join(',')}`);
+    return months;
+  }
+  
+  // PRIORITY 2: Use legacy month fields if available
+  if (plant.bloomStartMonth && plant.bloomEndMonth) {
+    if (plant.bloomStartMonth <= plant.bloomEndMonth) {
       for (let m = plant.bloomStartMonth; m <= plant.bloomEndMonth; m++) {
         months.add(m);
       }
-      console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using DATABASE months ${plant.bloomStartMonth}-${plant.bloomEndMonth}`);
+    } else {
+      // Handle wrap-around
+      for (let m = plant.bloomStartMonth; m <= 12; m++) months.add(m);
+      for (let m = 1; m <= plant.bloomEndMonth; m++) months.add(m);
     }
+    console.log(`[Bloom Data] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Months ${plant.bloomStartMonth}-${plant.bloomEndMonth}`);
     return months;
   }
   
-  // PRIORITY 2: Check for explicit bloom time data in text fields
-  const bloomTime = plant.bloomTime || plant.floweringSeason || [];
-  const bloomArray = Array.isArray(bloomTime) ? bloomTime : [bloomTime];
-  
-  bloomArray.forEach((season: string) => {
-    const seasonLower = (season || '').toLowerCase();
-    if (seasonLower.includes('spring') || seasonLower.includes('march') || seasonLower.includes('april') || seasonLower.includes('may')) {
-      months.add(3).add(4).add(5);
-    }
-    if (seasonLower.includes('summer') || seasonLower.includes('june') || seasonLower.includes('july') || seasonLower.includes('august')) {
-      months.add(6).add(7).add(8);
-    }
-    if (seasonLower.includes('fall') || seasonLower.includes('autumn') || seasonLower.includes('september') || seasonLower.includes('october')) {
-      months.add(9).add(10);
-    }
-    if (seasonLower.includes('winter')) {
-      months.add(1).add(2).add(11).add(12);
-    }
-  });
-  
-  if (months.size > 0) {
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using bloom time text: ${bloomArray.join(', ')} -> months ${Array.from(months).sort((a, b) => a - b).join(',')}`);
-    return months;
-  }
-  
-  // PRIORITY 3: Apply taxonomy-based defaults ONLY if no explicit bloom data
-  const commonNameLower = commonName.toLowerCase();
-  const genus = scientificName.split(' ')[0];
-  
-  // Rosa (Roses) - bloom May through October, peak in June-July
-  if (genus === 'Rosa' || commonNameLower.includes('rose')) {
-    for (let m = 5; m <= 10; m++) months.add(m);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Rosa): months 5-10`);
-  }
-  // Lavandula (Lavender) - bloom June through September
-  else if (genus === 'Lavandula' || commonNameLower.includes('lavender')) {
-    for (let m = 6; m <= 9; m++) months.add(m);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Lavandula): months 6-9`);
-  }
-  // Phlox - bloom July through September
-  else if (genus === 'Phlox' || commonNameLower.includes('phlox')) {
-    for (let m = 7; m <= 9; m++) months.add(m);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Phlox): months 7-9`);
-  }
-  // Helianthus (Sunflowers) - bloom July through September
-  else if (genus === 'Helianthus' || commonNameLower.includes('sunflower')) {
-    for (let m = 7; m <= 9; m++) months.add(m);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Helianthus): months 7-9`);
-  }
-  // Delphinium - bloom June through July, sometimes second flush in September
-  else if (genus === 'Delphinium' || commonNameLower.includes('delphinium')) {
-    months.add(6).add(7).add(9);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Delphinium): months 6,7,9`);
-  }
-  // Echinacea (Coneflower) - bloom July through September
-  else if (genus === 'Echinacea' || commonNameLower.includes('coneflower')) {
-    for (let m = 7; m <= 9; m++) months.add(m);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Echinacea): months 7-9`);
-  }
-  // Rudbeckia (Black-eyed Susan) - bloom July through October
-  else if (genus === 'Rudbeckia' || commonNameLower.includes('black-eyed susan') || commonNameLower.includes('rudbeckia')) {
-    for (let m = 7; m <= 10; m++) months.add(m);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Rudbeckia): months 7-10`);
-  }
-  // Peony - bloom May through June
-  else if (genus === 'Paeonia' || commonNameLower.includes('peony')) {
-    months.add(5).add(6);
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Paeonia): months 5-6`);
-  }
-  
-  // If still no bloom months, log as non-blooming plant
+  // NO HARDCODED DEFAULTS - if no database data, return empty set
   if (months.size === 0) {
-    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): No bloom data found - treating as foliage plant`);
+    console.log(`[Bloom Data] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): No bloom data in database`);
   }
   
   return months;
@@ -1000,115 +955,95 @@ function normalizeBloomMonths(plant: any): Set<number> {
 
 /**
  * Get seasonal state description for a plant in a specific month
+ * Database-driven with generic descriptions
  */
 function getSeasonalState(plant: Plant, month: number): string {
   const type = plant.type || 'perennial';
   const foliage = plant.foliage || 'deciduous';
   const bloomMonths = normalizeBloomMonths(plant);
-  const scientificName = plant.scientificName || '';
-  const genus = scientificName.split(' ')[0];
   
-  if (month === 7) { // July
-    // Check if this plant is blooming in July
-    if (bloomMonths.has(7)) {
-      if (genus === 'Rosa') {
-        return 'at peak summer flowering flush with multiple blooms and buds';
-      } else if (genus === 'Lavandula') {
-        return 'in full bloom with fragrant purple flower spikes';
-      } else if (genus === 'Phlox') {
-        return 'displaying showy flower clusters at peak bloom';
-      } else {
-        return 'actively flowering at summer peak, vibrant blooms visible';
-      }
-    } else if (type.includes('evergreen') || foliage === 'evergreen') {
-      return 'at peak summer growth, full dense foliage, vibrant green color';
-    } else if (type.includes('perennial') || type.includes('shrub')) {
-      return 'at full summer maturity, lush healthy growth, peak seasonal form';
-    } else if (type.includes('annual')) {
-      return 'at mid-season growth, actively growing and flowering';
-    } else {
-      return 'in full summer growth, healthy and vigorous';
+  // Check if plant is currently blooming
+  if (bloomMonths.has(month)) {
+    return 'actively flowering, displaying seasonal blooms';
+  }
+  
+  // Check bloom timing relative to current month
+  const bloomArray = Array.from(bloomMonths).sort((a, b) => a - b);
+  if (bloomArray.length > 0) {
+    const minBloom = Math.min(...bloomArray);
+    const maxBloom = Math.max(...bloomArray);
+    
+    if (month < minBloom) {
+      return 'pre-bloom phase, developing foliage and flower buds';
+    } else if (month > maxBloom) {
+      return 'post-bloom phase, seed development and foliage maturation';
     }
   }
   
-  return 'in typical seasonal state';
+  // Generic seasonal descriptions based on plant type
+  if (type.includes('evergreen') || foliage === 'evergreen') {
+    return 'displaying evergreen foliage at seasonal peak';
+  } else if (type.includes('perennial') || type.includes('shrub')) {
+    return 'in vegetative growth phase with healthy foliage';
+  } else if (type.includes('annual')) {
+    return 'in active growing season';
+  } else if (type.includes('tree')) {
+    return 'displaying mature canopy with seasonal foliage';
+  }
+  
+  return 'in typical seasonal growth phase';
 }
 
 /**
  * Get bloom status for a plant in a specific month
+ * Completely database-driven with generic descriptions
  */
 function getBloomStatus(plant: Plant, month: number): string {
   const bloomMonths = normalizeBloomMonths(plant);
-  const scientificName = plant.scientificName || '';
-  const cultivar = plant.cultivar || '';
-  const genus = scientificName.split(' ')[0];
-  const commonName = (plant.commonName || '').toLowerCase();
   
-  // Enhanced logging with data source
-  const dataSource = plant.bloomStartMonth && plant.bloomEndMonth ? 'DATABASE' : 
-                     (plant.bloomTime || plant.floweringSeason ? 'TEXT' : 'DEFAULTS');
-  console.log(`[Bloom Status] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Month ${month}, Source: ${dataSource}`);
-  console.log(`[Bloom Status] Bloom months from ${dataSource}:`, Array.from(bloomMonths).sort((a, b) => a - b));
+  // Log bloom data source
+  const dataSource = plant.bloomStartDayOfYear ? 'DAY_OF_YEAR' : 
+                     (plant.bloomStartMonth ? 'MONTH' : 'NONE');
+  console.log(`[Bloom Status] ${plant.commonName || 'Unknown'}: Month ${month}, Source: ${dataSource}`);
   
-  if (month === 7) { // July
-    if (bloomMonths.has(7)) {
-      // Specific cultivar descriptions for July blooming
-      if (genus === 'Rosa') {
-        if (cultivar === 'Mister Lincoln') {
-          return 'flowering profusely with large velvety deep red hybrid tea blooms, exceptionally fragrant';
-        } else if (cultivar === 'Chrysler Imperial') {
-          return 'displaying dark crimson-red blooms with classic high-centered form and damask fragrance';
-        } else if (cultivar === 'Double Delight') {
-          return 'showing cream and red bicolor blooms, color intensifying in summer sun';
-        } else if (cultivar === 'Ingrid Bergman') {
-          return 'producing bright red perfect-form blooms continuously through summer';
-        } else {
-          return 'in full bloom with multiple open flowers and developing buds';
-        }
-      } else if (genus === 'Lavandula') {
-        if (cultivar === 'Hidcote') {
-          return 'covered in deep purple flower spikes, highly aromatic';
-        } else if (cultivar === 'Munstead') {
-          return 'displaying lavender-blue flower spikes above gray-green foliage';
-        } else {
-          return 'bearing upright purple flower spikes, peak bloom period';
-        }
-      } else if (genus === 'Phlox') {
-        if (cultivar === 'David') {
-          return 'covered in pure white flower clusters, fragrant and showy';
-        } else if (cultivar === 'Starfire') {
-          return 'displaying brilliant red flower clusters atop dark foliage';
-        } else {
-          return 'showing dense terminal flower clusters at peak bloom';
-        }
-      } else if (genus === 'Helianthus') {
-        return 'producing cheerful daisy-like blooms with prominent centers';
-      } else if (genus === 'Echinacea' || commonName.includes('coneflower')) {
-        return 'displaying daisy-like flowers with raised central cones';
-      } else if (genus === 'Rudbeckia' || commonName.includes('black-eyed susan')) {
-        return 'covered in bright golden flowers with dark centers';
-      } else {
-        return 'actively flowering, showing peak summer blooms';
-      }
-    } else if (bloomMonths.has(5) || bloomMonths.has(6)) {
-      // Spring/early summer bloomers in July
-      return 'post-bloom, focusing on foliage growth and seed development';
-    } else if (bloomMonths.has(8) || bloomMonths.has(9)) {
-      // Late summer/fall bloomers in July
-      return 'developing flower buds for late summer bloom';
+  if (bloomMonths.has(month)) {
+    // Plant is blooming in this month - use generic description with colors if available
+    const flowerColors = plant.flowerColors || plant.flowerColor || [];
+    const colorArray = Array.isArray(flowerColors) ? flowerColors : [flowerColors];
+    
+    if (colorArray.length > 0) {
+      const colorStr = colorArray.filter(c => c).join(' and ');
+      return `actively flowering with ${colorStr} blooms`;
     } else {
-      // No bloom time data - check if it's a foliage plant
-      if (genus === 'Hosta') {
-        return 'displaying lush foliage mounds, possible flower stalks forming';
-      } else if (commonName.includes('fern')) {
-        return 'showing fresh fronds at peak foliage display';
+      return 'actively flowering';
+    }
+  }
+  
+  // Check bloom timing relative to current month
+  const bloomArray = Array.from(bloomMonths).sort((a, b) => a - b);
+  if (bloomArray.length > 0) {
+    const minBloom = Math.min(...bloomArray);
+    const maxBloom = Math.max(...bloomArray);
+    
+    if (month < minBloom) {
+      const monthsUntilBloom = minBloom - month;
+      if (monthsUntilBloom === 1) {
+        return 'flower buds forming, bloom imminent';
       } else {
-        return 'in vegetative growth phase, healthy foliage';
+        return 'pre-bloom vegetative growth';
+      }
+    } else if (month > maxBloom) {
+      const monthsSinceBloom = month - maxBloom;
+      if (monthsSinceBloom === 1) {
+        return 'finishing bloom cycle, seed heads forming';
+      } else {
+        return 'post-bloom phase, seed development';
       }
     }
   }
   
-  return 'typical seasonal bloom status';
+  // No bloom data - return foliage-focused description
+  return 'displaying foliage only, no current blooms';
 }
 
 /**
@@ -1248,155 +1183,35 @@ function describeSkyCondition(hour: number): string {
 }
 
 /**
- * Get detailed botanical morphology for a plant - trait-driven approach
+ * Get botanical morphology description for a plant - completely database-driven
+ * No hardcoded genus-specific descriptions
  */
 function getBotanicalMorphology(scientificName: string, commonName: string, cultivar?: string): string {
-  const genus = scientificName.split(' ')[0];
   const plantNameUpper = commonName.toUpperCase();
   const cultivarLabel = cultivar ? ` '${cultivar}'` : '';
   
-  // Build trait-based descriptions based on genus and common characteristics
-  const genusTraits: Record<string, any> = {
-    'Rosa': {
-      base: 'ROSE',
-      leafType: 'compound pinnate leaves with 5-7 glossy leaflets, serrated margins',
-      stems: 'thorny green stems',
-      growth: 'bushy upright growth habit',
-      flowers: 'multiple blooms visible in July',
-      cultivarMap: {
-        'Mister Lincoln': 'DEEP VELVETY RED flowers, high-centered blooms 5-6 inches across, exceptionally fragrant, tall upright growth to 2m',
-        'Chrysler Imperial': 'DARK CRIMSON-RED flowers, classic high-centered form, velvety petals, strong damask fragrance, upright bush 1.5m tall',
-        'Oklahoma': 'BLACK-RED velvety flowers, very fragrant, large blooms on long stems, vigorous upright growth to 1.8m',
-        'Ingrid Bergman': 'BRIGHT RED flowers, perfect form, minimal fragrance, excellent disease resistance, compact growth 1.2m',
-        'Double Delight': 'CREAM flowers edged in RED, color intensifies in sun, spicy fragrance, bushy growth to 1.5m, unique bicolor blooms'
-      }
-    },
-    'Hosta': {
-      base: 'HOSTA',
-      leafType: 'large broad ovate leaves with prominent parallel venation',
-      growth: 'clumping herbaceous perennial forming dense mounds',
-      defaultColor: 'green to blue-green foliage',
-      cultivarMap: {
-        'Sum and Substance': 'ENORMOUS chartreuse-gold leaves up to 50cm wide, giant mounding form to 90cm tall',
-        'Patriot': 'dark green leaves with broad white margins, medium mounding habit 60cm tall',
-        'Blue Angel': 'huge blue-gray leaves with heavy texture, large mounding form to 80cm tall'
-      }
-    },
-    'Lavandula': {
-      base: 'LAVENDER',
-      leafType: 'narrow linear gray-green aromatic leaves',
-      growth: 'compact Mediterranean shrub',
-      flowers: 'upright PURPLE flower spikes rising above foliage',
-      cultivarMap: {
-        'Hidcote': 'deep purple flowers, compact form to 40cm, silvery foliage',
-        'Munstead': 'lavender-blue flowers, dwarf habit to 45cm, gray-green foliage',
-        'Grosso': 'long purple flower spikes, vigorous growth to 80cm, highly fragrant'
-      }
-    },
-    'Phlox': {
-      base: 'PHLOX',
-      leafType: 'opposite lanceolate leaves',
-      growth: 'upright herbaceous perennial',
-      flowers: 'terminal clusters of fragrant flowers in July',
-      cultivarMap: {
-        'David': 'pure WHITE flower clusters, tall upright growth to 1.2m, mildew resistant',
-        'Starfire': 'brilliant RED flower clusters, dark green foliage, compact growth to 80cm',
-        'Blue Paradise': 'LAVENDER-BLUE flower clusters, sturdy stems to 90cm'
-      }
-    },
-    'Helianthus': {
-      base: 'SUNFLOWER',
-      leafType: 'large rough-textured ovate to lanceolate leaves',
-      growth: 'tall upright perennial or annual',
-      flowers: 'daisy-like flowers with prominent centers',
-      cultivarMap: {
-        'Lemon Queen': 'pale LEMON-YELLOW flowers, multiple blooms, tall growth to 2m',
-        'Prairie Gold': 'golden YELLOW flowers along stems, prairie native, 2.5m tall',
-        'Italian White': 'creamy WHITE flowers with dark centers, multi-branched to 1.5m'
-      }
-    },
-    'Delphinium': {
-      base: 'DELPHINIUM',
-      leafType: 'deeply lobed palmate leaves',
-      growth: 'tall herbaceous perennial',
-      flowers: 'tall dense flower spikes',
-      cultivarMap: {
-        'Blue Bird': 'bright BLUE flowers with white bee, tall spikes to 1.8m',
-        'Galahad': 'pure WHITE flower spikes, sturdy stems to 2m',
-        'Black Knight': 'deep PURPLE-BLACK flowers, imposing spikes to 1.8m'
-      }
-    },
-    'Echinacea': {
-      base: 'CONEFLOWER',
-      leafType: 'rough lanceolate leaves',
-      growth: 'upright herbaceous perennial',
-      flowers: 'daisy-like flowers with prominent raised centers',
-      cultivarMap: {
-        'Magnus': 'large ROSE-PINK flowers, horizontal petals, sturdy growth to 90cm',
-        'White Swan': 'pure WHITE flowers with golden centers, compact to 60cm',
-        'Cheyenne Spirit': 'mixed colors from YELLOW to ORANGE to RED, 60cm tall'
-      }
-    },
-    'Rudbeckia': {
-      base: 'BLACK-EYED SUSAN',
-      leafType: 'rough hairy ovate to lanceolate leaves',
-      growth: 'upright herbaceous perennial',
-      flowers: 'bright daisy-like flowers with dark centers',
-      cultivarMap: {
-        'Goldsturm': 'golden YELLOW flowers with black centers, compact to 60cm',
-        'Cherokee Sunset': 'warm ORANGE-RED-BRONZE flowers, double blooms, 60cm tall',
-        'Prairie Sun': 'YELLOW flowers with green centers, tall growth to 90cm'
-      }
-    }
-  };
+  // Build a generic but botanically accurate description
+  // AI models will use scientific name to render appropriate characteristics
+  let description = `${plantNameUpper}${cultivarLabel} (${scientificName}): `;
   
-  // Check if we have specific traits for this genus
-  const traits = genusTraits[genus];
+  // Generic botanical accuracy statement
+  description += 'Botanically accurate representation displaying species-appropriate morphology, ';
+  description += 'leaf structure, growth habit, and seasonal characteristics as found in nature';
   
-  if (traits) {
-    let description = `${traits.base}${cultivarLabel}: `;
-    
-    // Check for specific cultivar description
-    if (cultivar && traits.cultivarMap && traits.cultivarMap[cultivar]) {
-      description += traits.cultivarMap[cultivar] + ', ';
-    } else if (traits.flowers) {
-      // Generic flower description if no specific cultivar
-      description += traits.flowers + ', ';
-    }
-    
-    // Add common traits
-    description += traits.leafType;
-    if (traits.stems) description += ', ' + traits.stems;
-    description += ', ' + traits.growth;
-    
-    return description;
-  }
-  
-  // Fallback for plants not in our trait system
-  // Try to build description from common name patterns
-  if (commonName.toLowerCase().includes('maple')) {
-    return `${plantNameUpper}${cultivarLabel}: Palmate lobed leaves with 5-7 points, opposite arrangement, ornamental tree or large shrub form`;
-  } else if (commonName.toLowerCase().includes('grass')) {
-    return `${plantNameUpper}${cultivarLabel}: Ornamental grass with linear leaves, clumping or spreading habit, graceful texture`;
-  } else if (commonName.toLowerCase().includes('fern')) {
-    return `${plantNameUpper}${cultivarLabel}: Divided fronds with pinnate structure, shade-tolerant, spreading or clumping habit`;
-  }
-  
-  // Generic fallback with cultivar name if present
-  return `${plantNameUpper}${cultivarLabel}: Botanically accurate representation with species-specific leaf shape and growth habit`;
+  return description;
 }
 
 /**
- * Get list of excluded species to prevent confusion
+ * Get list of plant count requirements to ensure accuracy
+ * Database-driven without hardcoded species knowledge
  */
 function getExcludedSpeciesForPlants(plants: PlantSeasonalData[]): string {
   const exclusions: string[] = [];
   
-  // Add explicit plant count first with strong emphasis
-  exclusions.push(`- CRITICAL PLANT COUNT: Show EXACTLY ${plants.length} plants - NO MORE, NO LESS`);
-  exclusions.push(`- REQUIRED PLANTS ONLY: ${plants.map(p => p.commonName).join(', ')} = EXACTLY ${plants.length} plants total`);
-  exclusions.push('- FORBIDDEN: Background plants, filler plants, extra vegetation, duplicates');
-  exclusions.push('- COUNT VERIFICATION: If you see more than ${plants.length} plants in your generation, STOP and regenerate');
+  // Add explicit plant count requirements
+  exclusions.push(`- EXACT COUNT REQUIRED: ${plants.length} plants total`);
+  exclusions.push(`- PLANT LIST: ${plants.map(p => p.commonName).join(', ')}`);
+  exclusions.push('- NO additional plants, background vegetation, or duplicates');
   
   // Count each species type
   const speciesCount: { [key: string]: number } = {};
@@ -1407,28 +1222,12 @@ function getExcludedSpeciesForPlants(plants: PlantSeasonalData[]): string {
   
   // Add specific counts per species
   Object.entries(speciesCount).forEach(([species, count]) => {
-    exclusions.push(`- EXACTLY ${count} ${species}${count > 1 ? 's' : ''} - no more, no less`);
+    exclusions.push(`- ${count} × ${species}`);
   });
   
-  plants.forEach(plant => {
-    if (plant.scientificName.includes('Hosta')) {
-      exclusions.push('- NO Hydrangea, NO Brunnera, NO Ligularia - show TRUE HOSTA with broad parallel-veined leaves in mounding clumps');
-    }
-    if (plant.scientificName.includes('Rosa')) {
-      exclusions.push('- NO Paeonia (peony), NO Camellia, NO Hibiscus, NO generic shrubs - show TRUE ROSE BUSH with visible FLOWERS, compound leaves and thorny stems');
-      exclusions.push('- ROSES MUST SHOW BLOOMS in July - not just green foliage');
-    }
-    if (plant.scientificName.includes('Lavandula')) {
-      exclusions.push('- NO Salvia, NO Perovskia, NO ornamental grasses - show TRUE LAVENDER with purple flower spikes and gray-green narrow leaves');
-    }
-    if (plant.scientificName.includes('Acer')) {
-      exclusions.push('- NO Liquidambar, NO Platanus - show TRUE Japanese Maple (Acer palmatum) with distinctive palmate leaves');
-    }
-  });
+  // Generic botanical accuracy requirement
+  exclusions.push('- Each plant must be botanically accurate based on its scientific name');
+  exclusions.push('- Maintain species-specific characteristics and growth habits');
   
-  // Add counting reminder at the end
-  exclusions.push(`- FINAL PLANT COUNT CHECK: Must show EXACTLY ${plants.length} plants - count them before finalizing`);
-  exclusions.push('- NO INVENTED PLANTS: Do not add any plants not explicitly listed above');
-  
-  return Array.from(new Set(exclusions)).join('\n');
+  return exclusions.join('\n');
 }

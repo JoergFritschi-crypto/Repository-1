@@ -199,8 +199,29 @@ export const plants = pgTable("plants", {
   floweringSeason: varchar("flowering_season"), // When it blooms
   fruitColor: jsonb("fruit_color"), // v2 API - Array of fruit colors
   harvestSeason: varchar("harvest_season"), // v2 API - When to harvest fruit
-  bloomStartMonth: integer("bloom_start_month"), // 1-12 (January-December)
-  bloomEndMonth: integer("bloom_end_month"), // 1-12 (January-December)
+  
+  // Legacy bloom timing fields - kept for backward compatibility
+  bloomStartMonth: integer("bloom_start_month"), // LEGACY - 1-12 (January-December) - use bloomStartDayOfYear instead
+  bloomEndMonth: integer("bloom_end_month"), // LEGACY - 1-12 (January-December) - use bloomEndDayOfYear instead
+  
+  // Precise bloom timing (day-of-year: 1-366)
+  // Half-month to day-of-year mapping reference:
+  // Jan 1-15: days 1-15,    Jan 16-31: days 16-31
+  // Feb 1-15: days 32-46,   Feb 16-28/29: days 47-59
+  // Mar 1-15: days 60-74,   Mar 16-31: days 75-90
+  // Apr 1-15: days 91-105,  Apr 16-30: days 106-120
+  // May 1-15: days 121-135, May 16-31: days 136-151
+  // Jun 1-15: days 152-166, Jun 16-30: days 167-181
+  // Jul 1-15: days 182-196, Jul 16-31: days 197-212
+  // Aug 1-15: days 213-227, Aug 16-31: days 228-243
+  // Sep 1-15: days 244-258, Sep 16-30: days 259-273
+  // Oct 1-15: days 274-288, Oct 16-31: days 289-304
+  // Nov 1-15: days 305-319, Nov 16-30: days 320-334
+  // Dec 1-15: days 335-349, Dec 16-31: days 350-365/366
+  bloomStartDayOfYear: integer("bloom_start_day_of_year"), // 1-366 (precise bloom start)
+  bloomEndDayOfYear: integer("bloom_end_day_of_year"), // 1-366 (precise bloom end)
+  bloomWindows: jsonb("bloom_windows"), // Array of bloom periods for multi-season bloomers
+  bloomPrecision: varchar("bloom_precision"), // 'day', 'half_month', or 'month'
   
   // Safety - VERY IMPORTANT - Using RHS/HTA 3-tier classification
   toxicityCategory: varchar("toxicity_category").default("low"), // high, moderate, low
