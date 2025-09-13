@@ -38,6 +38,7 @@ function Router() {
       {isAuthenticated && (
         <>
           <Route path="/home" component={Home} />
+          <Route path="/garden-setup" component={GardenProperties} />
           <Route path="/garden-properties/:id?" component={GardenProperties} />
           <Route path="/garden-design/:id?" component={GardenDesign} />
           <Route path="/garden/:id/design" component={GardenDesign} />
