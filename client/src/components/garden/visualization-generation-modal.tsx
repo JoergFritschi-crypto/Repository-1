@@ -45,6 +45,8 @@ export default function VisualizationGenerationModal({
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [canvasReady, setCanvasReady] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(0);
   const { toast } = useToast();
 
   // Progress simulation
@@ -64,16 +66,41 @@ export default function VisualizationGenerationModal({
       setError(null);
       setProgress(0);
       setStatusMessage('');
+      setCanvasReady(false);
+      setAttemptCount(0);
       
       // Enable photorealization mode for AI capture
       if (onPhotorealizationModeChange) {
         onPhotorealizationModeChange(true);
       }
       
-      // Auto-start generation when modal opens
-      handleGenerateVisualization();
+      // Check if canvas is ready after a delay
+      const checkCanvasTimer = setTimeout(async () => {
+        if (garden3DViewRef?.current) {
+          try {
+            // Try to capture canvas to verify it's ready
+            const testCapture = await garden3DViewRef.current.captureCanvas();
+            if (testCapture) {
+              setCanvasReady(true);
+              setStatusMessage('3D view ready for visualization');
+            } else {
+              setCanvasReady(false);
+              setStatusMessage('Preparing 3D view...');
+            }
+          } catch (error) {
+            console.log('Canvas not ready yet:', error);
+            setCanvasReady(false);
+            setStatusMessage('Waiting for 3D view to load...');
+          }
+        } else {
+          setCanvasReady(false);
+          setStatusMessage('Initializing 3D view...');
+        }
+      }, 1500);
+      
+      return () => clearTimeout(checkCanvasTimer);
     }
-  }, [isOpen]);
+  }, [isOpen, garden3DViewRef, onPhotorealizationModeChange]);
 
   const handleGenerateVisualization = async () => {
     if (placedPlants.length === 0) {
@@ -85,6 +112,7 @@ export default function VisualizationGenerationModal({
     setError(null);
     setProgress(10);
     setStatusMessage('Preparing garden data...');
+    setAttemptCount(prev => prev + 1);
 
     try {
       // Prepare plant list with names and positions
@@ -109,30 +137,50 @@ export default function VisualizationGenerationModal({
       const plantNames = Array.from(new Set(placedPlants.map(p => p.plantName))).join(', ');
 
       setProgress(40);
-      setStatusMessage('Capturing 3D scene for AI processing...');
       
-      // Brief delay to ensure photorealization mode is fully rendered
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Capture the canvas from Garden3DView
+      // Try to capture canvas but don't fail if it's not available
       let canvasImage: string | null = null;
-      if (garden3DViewRef?.current) {
+      let canvasCaptureWarning = false;
+      
+      if (garden3DViewRef?.current && canvasReady) {
+        setStatusMessage('Capturing 3D scene for enhanced visualization...');
+        
+        // Brief delay to ensure photorealization mode is fully rendered
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
         try {
           canvasImage = await garden3DViewRef.current.captureCanvas();
           if (canvasImage) {
             console.log('Successfully captured canvas image for AI processing');
+            setStatusMessage('3D scene captured successfully');
           } else {
-            console.warn('Canvas capture returned null, continuing without image');
+            console.warn('Canvas capture returned null, continuing without enhanced view');
+            canvasCaptureWarning = true;
           }
         } catch (captureError) {
           console.error('Error capturing canvas:', captureError);
-          // Continue without the canvas image
+          canvasCaptureWarning = true;
         }
       } else {
-        console.warn('Garden3DView ref not available for canvas capture');
+        console.log('3D view not ready, generating visualization without enhanced capture');
+        canvasCaptureWarning = true;
       }
       
-      setStatusMessage('Generating 3D visualization with AI...');
+      // Show appropriate message based on capture status
+      if (canvasCaptureWarning) {
+        setStatusMessage('Generating visualization (basic mode - 3D view not captured)...');
+        
+        // Only show toast on first attempt
+        if (attemptCount === 1) {
+          toast({
+            title: "Generating Basic Visualization",
+            description: "Creating visualization without 3D enhancement. For best results, wait for the 3D view to load fully before generating.",
+            duration: 5000
+          });
+        }
+      } else {
+        setStatusMessage('Generating enhanced 3D visualization with AI...');
+      }
 
       // Call API to generate visualization with canvas image
       const response = await apiRequest('POST', '/api/gardens/generate-visualization', {
@@ -229,12 +277,15 @@ export default function VisualizationGenerationModal({
                   <div className="flex items-center gap-3">
                     {isGenerating ? (
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    ) : canvasReady ? (
+                      <Check className="h-5 w-5 text-green-600" />
                     ) : (
-                      <Sparkles className="h-5 w-5 text-primary" />
+                      <Sparkles className="h-5 w-5 text-primary animate-pulse" />
                     )}
                     <div>
                       <p className="font-semibold">
-                        {isGenerating ? 'Generating Visualization' : 'Ready to Generate'}
+                        {isGenerating ? 'Generating Visualization' : 
+                         canvasReady ? '3D View Ready' : 'Preparing 3D View'}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {statusMessage || `${placedPlants.length} plants to visualize`}
@@ -244,6 +295,11 @@ export default function VisualizationGenerationModal({
                   {isGenerating && (
                     <Badge variant="secondary" className="animate-pulse">
                       Processing
+                    </Badge>
+                  )}
+                  {!isGenerating && !canvasReady && (
+                    <Badge variant="outline" className="animate-pulse">
+                      Loading 3D View
                     </Badge>
                   )}
                 </div>
@@ -267,18 +323,84 @@ export default function VisualizationGenerationModal({
                     </div>
                   </>
                 )}
+                
+                {/* Action Buttons */}
+                {!isGenerating && (
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      onClick={handleGenerateVisualization}
+                      className="flex-1"
+                      size="lg"
+                      disabled={placedPlants.length === 0}
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate Visualization
+                    </Button>
+                    {!canvasReady && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          // Retry canvas check
+                          if (garden3DViewRef?.current) {
+                            garden3DViewRef.current.captureCanvas().then(result => {
+                              if (result) {
+                                setCanvasReady(true);
+                                setStatusMessage('3D view ready for enhanced visualization');
+                              }
+                            }).catch(() => {
+                              setStatusMessage('Still waiting for 3D view...');
+                            });
+                          }
+                        }}
+                      >
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        Check 3D View
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
+                {/* Information Alert */}
+                {!canvasReady && !isGenerating && (
+                  <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-800 dark:text-blue-200">
+                      <strong>Tip:</strong> For the best visualization quality, wait for the 3D view to fully load. 
+                      You can still generate a visualization now, but the enhanced 3D capture provides better results.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </Card>
           )}
 
           {/* Error State */}
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="ml-2">
-                {error}
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-3">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="ml-2">
+                  {error}
+                </AlertDescription>
+              </Alert>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleRetry} 
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Try Again
+                </Button>
+                <Button
+                  onClick={handleCloseModal}
+                  variant="ghost"
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
           )}
 
           {/* Generated Image Display */}
@@ -341,50 +463,27 @@ export default function VisualizationGenerationModal({
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            {!generatedImage && !isGenerating && error && (
+          {/* Action Buttons - Only show for generated image */}
+          {generatedImage && (
+            <div className="flex justify-end gap-3 pt-4 border-t">
               <Button
                 onClick={handleRetry}
                 variant="outline"
-                data-testid="button-retry-visualization"
+                data-testid="button-regenerate"
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                Retry Generation
+                Regenerate
               </Button>
-            )}
-            
-            {!generatedImage && !error && !isGenerating && (
               <Button
-                onClick={handleGenerateVisualization}
-                data-testid="button-generate-visualization"
+                onClick={handleContinue}
+                className="bg-gradient-to-r from-primary to-accent"
+                data-testid="button-continue-next-step"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate Visualization
+                Continue to Next Step
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
-            )}
-
-            {generatedImage && (
-              <>
-                <Button
-                  onClick={handleRetry}
-                  variant="outline"
-                  data-testid="button-regenerate"
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Regenerate
-                </Button>
-                <Button
-                  onClick={handleContinue}
-                  className="bg-gradient-to-r from-primary to-accent"
-                  data-testid="button-continue-to-step-5"
-                >
-                  Continue to Step 5
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
