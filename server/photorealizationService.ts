@@ -94,7 +94,8 @@ interface PhotorealizationContext {
  */
 export async function buildPhotorealizationContext(
   gardenId: string, 
-  sceneState: SceneState
+  sceneState: SceneState,
+  providedPlants?: any[] // Optional plants provided from frontend
 ): Promise<PhotorealizationContext> {
   // Get garden data
   const garden = await storage.getGarden(gardenId);
@@ -102,19 +103,53 @@ export async function buildPhotorealizationContext(
     throw new Error(`Garden ${gardenId} not found`);
   }
 
-  // Get all plants in this garden with their positions
-  const gardenPlants = await storage.getGardenPlants(gardenId);
+  // Use provided plants if available, otherwise fetch from database
+  let plantsWithDetails: Array<{ gardenPlant: any; plant: any }> = [];
   
-  // Fetch detailed plant data
-  const plantsWithDetails = await Promise.all(
-    gardenPlants.map(async (gp) => {
-      const plant = await storage.getPlant(gp.plantId);
-      return {
-        gardenPlant: gp,
-        plant
-      };
-    })
-  );
+  if (providedPlants && providedPlants.length > 0) {
+    // Use plants provided from frontend (not yet saved to database)
+    console.log(`[Photorealization] Using ${providedPlants.length} plants provided from frontend`);
+    
+    plantsWithDetails = providedPlants.map(placedPlant => ({
+      gardenPlant: {
+        id: placedPlant.id,
+        gardenId: gardenId,
+        plantId: placedPlant.plantId,
+        quantity: 1,
+        position_x: placedPlant.x?.toString() || '50', // Convert percentage to string
+        position_y: placedPlant.y?.toString() || '50',
+        notes: null
+      },
+      plant: placedPlant.plantDetails || {
+        id: placedPlant.plantId,
+        commonName: placedPlant.plantName || 'Unknown Plant',
+        scientificName: placedPlant.scientificName || '',
+        type: placedPlant.plantDetails?.type || 'perennial',
+        heightMaxCm: placedPlant.plantDetails?.heightMaxCm || 60,
+        spreadMaxCm: placedPlant.plantDetails?.spreadMaxCm || 40,
+        foliage: placedPlant.plantDetails?.foliage || 'deciduous',
+        flowerColors: placedPlant.plantDetails?.flowerColors || [],
+        bloomTime: placedPlant.plantDetails?.bloomTime || [],
+        sunExposure: placedPlant.plantDetails?.sunExposure || 'full sun',
+        soilType: placedPlant.plantDetails?.soilType || 'well-drained',
+        waterNeeds: placedPlant.plantDetails?.waterNeeds || 'moderate'
+      }
+    }));
+  } else {
+    // Fallback to fetching from database
+    console.log('[Photorealization] No plants provided, fetching from database');
+    const gardenPlants = await storage.getGardenPlants(gardenId);
+    
+    plantsWithDetails = await Promise.all(
+      gardenPlants.map(async (gp) => {
+        const plant = await storage.getPlant(gp.plantId);
+        return {
+          gardenPlant: gp,
+          plant
+        };
+      })
+    );
+  }
 
   // Convert plants to seasonal data for July (month 7)
   const plantsData: PlantSeasonalData[] = plantsWithDetails
@@ -142,6 +177,15 @@ export async function buildPhotorealizationContext(
         maintenanceState
       };
     });
+    
+  // Log plant data for debugging
+  console.log(`[Photorealization] Processing ${plantsData.length} plants for garden ${gardenId}:`, 
+    plantsData.map(p => ({
+      name: p.commonName,
+      position: `(${p.position.x.toFixed(1)}%, ${p.position.y.toFixed(1)}%)`,
+      size: `${p.size.height}m x ${p.size.spread}m`
+    }))
+  );
 
   // Extract detailed geometry from layout_data
   const geometry = extractLayoutGeometry(garden);

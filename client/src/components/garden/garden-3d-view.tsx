@@ -1381,6 +1381,31 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
       toggleUIElementsForCapture(true);
       rendererRef.current.render(sceneRef.current, cameraRef.current);
       
+      // Prepare plant data with details from query
+      const plantsForBackend = placedPlants.map(placedPlant => {
+        const plantDetail = plants?.find(p => p.id === placedPlant.plantId);
+        return {
+          ...placedPlant,
+          // Include full plant details if available
+          plantDetails: plantDetail ? {
+            commonName: plantDetail.commonName,
+            scientificName: plantDetail.scientificName,
+            type: plantDetail.type,
+            heightMaxCm: plantDetail.heightMaxCm,
+            spreadMaxCm: plantDetail.spreadMaxCm,
+            foliage: plantDetail.foliage,
+            flowerColors: plantDetail.flowerColors,
+            bloomTime: plantDetail.bloomTime,
+            sunExposure: plantDetail.sunExposure,
+            soilType: plantDetail.soilType,
+            waterNeeds: plantDetail.waterNeeds,
+            // Add other relevant properties
+          } : null
+        };
+      });
+      
+      console.log(`Sending ${plantsForBackend.length} plants to photorealization endpoint`);
+      
       // Send comprehensive data to the photorealization endpoint
       const response = await fetch('/api/gardens/generate-artistic-view', {
         method: 'POST',
@@ -1392,6 +1417,7 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
           gardenId,
           gardenName,
           sceneState, // Complete scene context for comprehensive prompting
+          placedPlants: plantsForBackend, // Include placed plants with their details
           // customPrompt can be added here if user wants to override
         }),
       });

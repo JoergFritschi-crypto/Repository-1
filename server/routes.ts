@@ -234,6 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         gardenId, 
         gardenName, 
         sceneState,
+        placedPlants, // New: Accept placed plants from frontend
         customPrompt 
       } = req.body;
       
@@ -276,11 +277,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         gardenId, 
         gardenName,
         sceneCamera: sceneState.camera,
-        sceneLighting: sceneState.lighting
+        sceneLighting: sceneState.lighting,
+        providedPlants: placedPlants?.length || 0 // Log how many plants were provided
       });
       
-      // Build comprehensive photorealization context
-      const context = await buildPhotorealizationContext(gardenId, sceneState);
+      // Build comprehensive photorealization context with provided plants
+      const context = await buildPhotorealizationContext(gardenId, sceneState, placedPlants);
       
       // Generate structured prompt with complete context
       const photorealizationPrompt = customPrompt || buildPhotorealizationPrompt(context);
