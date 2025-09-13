@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### AI Photorealization Optimization - Minimal Markers (September 2025)
+- Implemented "AI Mode" toggle in 3D renderer for improved photorealization accuracy
+- Replaced complex 3D geometries (cones, spheres) with minimal white dot markers
+- Research showed complex shapes were causing AI to preserve geometric forms instead of generating accurate botanical species
+- Minimal markers: pure white dots on black background with no other visual elements
+- Technical implementation: 16x16 pixel sprites, NearestFilter, depthTest=false, renderOrder=999
+- Result: AI has maximum freedom to generate plants from botanical text descriptions without geometric bias
+
 ### Database Restructuring for Numeric Dimensions (September 2025)
 - Added numeric dimension fields to plant schema for precise measurements
 - Primary storage in metric units (centimeters) with secondary Imperial units (inches)
