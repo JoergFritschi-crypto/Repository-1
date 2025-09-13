@@ -113,38 +113,54 @@ const gardenSchema = z.object({
 
 type GardenFormValues = z.infer<typeof gardenSchema>;
 
-const stepDetails = [
+// Internal step details (all 7 steps including hidden Step 4)
+const allStepDetails = [
   { 
     title: 'Welcome', 
     subtitle: 'Start your garden journey',
-    description: 'Enter location and climate information'
+    description: 'Tell us about your garden location',
+    visible: true,
+    buttonLabel: 'Next: Site Details'
   },
   { 
     title: 'Site Details', 
     subtitle: 'Define your space',
-    description: 'Shape, dimensions, photos & soil'
+    description: 'Define your garden space',
+    visible: true,
+    buttonLabel: 'Next: Design Your Garden'
   },
   { 
     title: 'Interactive Design', 
     subtitle: 'Choose and place your plants',
-    description: 'Browse plant library and design your garden'
+    description: 'Choose and place your plants',
+    visible: true,
+    buttonLabel: 'Next: Generate Seasonal Views'
   },
   { 
     title: '3D Garden View', 
     subtitle: 'Technical preview',
-    description: 'Precise 3D rendering with exact positions'
+    description: 'Precise 3D rendering with exact positions',
+    visible: false, // Hidden from user view
+    buttonLabel: 'Processing...'
   },
   { 
-    title: 'Seasonal Generation', 
+    title: 'Seasonal Garden', 
     subtitle: 'Year-round garden views',
-    description: 'See your garden through all seasons'
+    description: 'Generate your seasonal visualization',
+    visible: true,
+    buttonLabel: 'Next: Review & Download'
   },
   { 
-    title: 'Final Review', 
+    title: 'Review & Download', 
     subtitle: 'Complete your design',
-    description: 'Download blueprint & plant list'
+    description: 'Save and share your garden',
+    visible: true,
+    buttonLabel: 'Complete Garden Design'
   }
 ];
+
+// Visible step details for UI (filters out hidden steps)
+const stepDetails = allStepDetails.filter(step => step.visible);
 
 // Component to automatically remove white background from AI-generated garden spade
 function TransparentGardenSpadeComponent({ className }: { className?: string }) {
@@ -374,16 +390,29 @@ export default function GardenProperties() {
   }, [currentStep]);
 
   const nextStep = async () => {
-    // Skip step 5 (3D Technical View) - go directly from plant placement to seasonal generation
-    if (currentStep === 4) {
+    // Skip step 4 (3D Technical View) - go directly from plant placement to seasonal generation
+    if (currentStep === 3) {
+      // Skip validation for admin users
+      const isAdmin = user?.isAdmin === true;
+      
+      // Save garden data before skipping to step 5
+      const shouldAutoSave = isPaidUser || autoSaveEnabled;
+      if (shouldAutoSave && gardenId && user) {
+        try {
+          const values = form.getValues();
+          await updateGardenMutation.mutateAsync({ 
+            id: gardenId, 
+            data: values 
+          });
+        } catch (error) {
+          console.error("Failed to update garden:", error);
+        }
+      }
+      
+      // Jump directly to step 5, skipping the hidden step 4
+      setCurrentStep(5);
       // Open the seasonal date selector modal directly
       setShowSeasonalDateSelector(true);
-      return;
-    }
-    
-    // Skip the old step 5 entirely
-    if (currentStep === 5) {
-      setCurrentStep(6);
       return;
     }
     
@@ -474,7 +503,12 @@ export default function GardenProperties() {
   };
 
   const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+    // Skip step 4 when going backward from step 5
+    if (currentStep === 5) {
+      setCurrentStep(3);
+    } else {
+      setCurrentStep(prev => Math.max(prev - 1, 1));
+    }
   };
 
   // Function to handle seasonal image generation
@@ -652,42 +686,50 @@ export default function GardenProperties() {
         {/* Progress Indicator */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            {stepDetails.map((step, index) => (
-              <div 
-                key={index} 
-                className={`flex-1 text-center ${index < stepDetails.length - 1 ? 'relative' : ''}`}
-              >
+            {stepDetails.map((step, visibleIndex) => {
+              // Map visible index to actual step number (accounting for hidden step 4)
+              const actualStepNumber = visibleIndex < 3 ? visibleIndex + 1 : visibleIndex + 2;
+              const isActive = currentStep === actualStepNumber;
+              const isCompleted = currentStep > actualStepNumber;
+              const displayNumber = visibleIndex + 1; // Show 1-6 to users
+              
+              return (
                 <div 
-                  className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-all duration-300 transform relative z-10 ${
-                    currentStep > index + 1 
-                      ? 'bg-[#004025] text-white ring-2 ring-[#FFD700] ring-offset-2 ring-offset-white scale-100' 
-                      : currentStep === index + 1 
-                      ? 'bg-[#004025] text-white ring-4 ring-[#FFD700] ring-offset-2 ring-offset-white scale-110' 
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
-                  data-testid={`step-indicator-${index + 1}`}
+                  key={visibleIndex} 
+                  className={`flex-1 text-center ${visibleIndex < stepDetails.length - 1 ? 'relative' : ''}`}
                 >
-                  {currentStep > index + 1 ? (
-                    <Check className="w-4 h-4 md:w-5 md:h-5" />
-                  ) : (
-                    <span>{index + 1}</span>
+                  <div 
+                    className={`w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm md:text-base font-semibold transition-all duration-300 transform relative z-10 ${
+                      isCompleted 
+                        ? 'bg-[#004025] text-white ring-2 ring-[#FFD700] ring-offset-2 ring-offset-white scale-100' 
+                        : isActive 
+                        ? 'bg-[#004025] text-white ring-4 ring-[#FFD700] ring-offset-2 ring-offset-white scale-110' 
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
+                    data-testid={`step-indicator-${displayNumber}`}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-4 h-4 md:w-5 md:h-5" />
+                    ) : (
+                      <span>{displayNumber}</span>
+                    )}
+                  </div>
+                  <div className="hidden md:block mt-1 min-h-[2.5rem] lg:min-h-[3.5rem]">
+                    <p className={`text-xs font-medium transition-colors duration-200 ${
+                      isActive ? 'text-[#004025] font-semibold' : 'text-gray-600'
+                    }`}>{step.title}</p>
+                    <p className="text-xs text-gray-500 hidden lg:block">{step.subtitle}</p>
+                  </div>
+                  {visibleIndex < stepDetails.length - 1 && (
+                    <div 
+                      className={`absolute top-4 md:top-5 left-[calc(50%+20px)] right-0 h-0.5 transition-all duration-500 -z-10 ${
+                        isCompleted ? 'bg-[#004025]' : 'bg-gray-300'
+                      }`} 
+                    />
                   )}
                 </div>
-                <div className="hidden md:block mt-1 min-h-[2.5rem] lg:min-h-[3.5rem]">
-                  <p className={`text-xs font-medium transition-colors duration-200 ${
-                    index + 1 === currentStep ? 'text-[#004025] font-semibold' : 'text-gray-600'
-                  }`}>{step.title}</p>
-                  <p className="text-xs text-gray-500 hidden lg:block">{step.subtitle}</p>
-                </div>
-                {index < stepDetails.length - 1 && (
-                  <div 
-                    className={`absolute top-4 md:top-5 left-[calc(50%+20px)] right-0 h-0.5 transition-all duration-500 -z-10 ${
-                      currentStep > index + 1 ? 'bg-[#004025]' : 'bg-gray-300'
-                    }`} 
-                  />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -698,13 +740,23 @@ export default function GardenProperties() {
             currentStep === 2 ? 'flower-band-tropical' :
             currentStep === 3 ? 'flower-band-cottage' :
             currentStep === 4 ? 'flower-band-modern' :
-            'flower-band-zen'
+            currentStep === 5 ? 'flower-band-zen' :
+            'flower-band-studio'
           } rounded-t-lg`}>
             <CardTitle className="text-base md:text-lg">
-              Step {currentStep}: {stepDetails[currentStep - 1].title}
+              {(() => {
+                // Get the current step details from allStepDetails
+                const stepDetail = allStepDetails[currentStep - 1];
+                // Display step number (1-6 for visible steps)
+                const displayNumber = currentStep <= 3 ? currentStep : currentStep - 1;
+                return stepDetail ? `Step ${displayNumber}: ${stepDetail.title}` : '';
+              })()}
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              {stepDetails[currentStep - 1].description}
+              {(() => {
+                const stepDetail = allStepDetails[currentStep - 1];
+                return stepDetail ? stepDetail.description : '';
+              })()}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -2726,14 +2778,25 @@ export default function GardenProperties() {
               >
                 {createGardenMutation.isPending ? (
                   "Creating..."
-                ) : currentStep === 6 ? (
-                  "Generate Garden Design"
-                ) : (
-                  <>
-                    Next
-                    <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-                  </>
-                )}
+                ) : (() => {
+                  // Get button label from allStepDetails
+                  const stepDetail = allStepDetails[currentStep - 1];
+                  if (stepDetail?.buttonLabel) {
+                    return (
+                      <>
+                        {stepDetail.buttonLabel}
+                        {currentStep < 6 && <ArrowRight className="w-3.5 h-3.5 ml-1.5" />}
+                      </>
+                    );
+                  }
+                  // Fallback
+                  return currentStep === 6 ? "Complete Garden Design" : (
+                    <>
+                      Next
+                      <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                    </>
+                  );
+                })()}
               </Button>
             </div>
           </form>
