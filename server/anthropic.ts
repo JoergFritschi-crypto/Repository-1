@@ -327,6 +327,9 @@ Selected Style:
 Safety Requirements:
 - Pet Safe: ${safetyPreferences.petSafe ? 'Yes - NO toxic plants' : 'No restriction'}
 - Child Safe: ${safetyPreferences.childSafe ? 'Yes - NO toxic plants' : 'No restriction'}
+
+Spacing Preference:
+- ${gardenData.spacingPreference === 'minimum' ? 'Minimum Spacing: Place plants closer together for immediate visual impact. Garden will look full in 1-2 years but may require thinning as plants mature.' : gardenData.spacingPreference === 'maximum' ? 'Maximum Spacing: Space plants for their full mature size. Garden will take 3-5 years to fill in but requires no thinning.' : 'Balanced Spacing: Use optimal spacing that balances immediate appearance with long-term growth. Garden fills in within 2-3 years with minimal maintenance.'}
 `;
 
     const response = await anthropic.messages.create({
@@ -338,11 +341,30 @@ Safety Requirements:
       ${safetyPreferences.petSafe ? '- ONLY use pet-safe, non-toxic plants. Absolutely NO plants toxic to dogs or cats.' : ''}
       ${safetyPreferences.childSafe ? '- ONLY use child-safe, non-toxic plants. Absolutely NO poisonous or harmful plants.' : ''}
       
+      SPACING INSTRUCTIONS:
+      ${gardenData.spacingPreference === 'minimum' ? 
+        `- Use MINIMUM spacing between plants (closer than typical recommendations)
+      - Space plants at 60-70% of their mature spread
+      - Create an immediately full, lush appearance
+      - Plan for some plants to be thinned or relocated in 2-3 years
+      - Prioritize quick visual impact over long-term maintenance` : 
+      gardenData.spacingPreference === 'maximum' ? 
+        `- Use MAXIMUM spacing between plants (full mature size consideration)
+      - Space plants at 100-120% of their mature spread
+      - Leave room for each plant to reach its full potential without crowding
+      - Accept that the garden will look sparse initially (3-5 years to fill in)
+      - No thinning or transplanting will be needed` : 
+        `- Use BALANCED spacing between plants (optimal for growth and appearance)
+      - Space plants at 80-90% of their mature spread
+      - Balance immediate visual appeal with sustainable growth
+      - Minimal thinning needed as plants mature
+      - Garden will look established in 2-3 years`}
+      
       For plant placement:
       - Use percentage-based positioning (0-100 for x,y) to work with any garden size
       - Layer plants appropriately (tall in back, short in front)
-      - Consider mature plant sizes for spacing
-      - Group plants for visual impact
+      - Apply the specified spacing preference consistently throughout the design
+      - Group plants for visual impact while respecting spacing requirements
       - Ensure year-round interest
       
       Output as JSON with this structure:

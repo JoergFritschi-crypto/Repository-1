@@ -64,6 +64,7 @@ const gardenSchema = z.object({
   design_approach: z.enum(['ai', 'manual']).optional(),
   selectedStyle: z.string().optional(),
   soilTestId: z.string().optional(),
+  spacingPreference: z.enum(['minimum', 'maximum', 'balanced']).default('balanced').optional(),
   soilAnalysis: z.object({
     ph: z.number().optional(),
     texture: z.string().optional(),
@@ -2216,6 +2217,74 @@ export default function GardenProperties() {
                       <SafetyPreferences form={form} showAvailabilityPreference={true} />
                     )}
                     
+                    {/* Plant Spacing Preference for AI approach */}
+                    {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
+                      <Card className="border-2 border-primary shadow-sm" data-testid="spacing-preference">
+                        <CardHeader className="py-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Compass className="w-4 h-4 text-primary" />
+                            Plant Spacing Preference
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 pt-0">
+                          <FormField
+                            control={form.control}
+                            name="spacingPreference"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>How would you like your plants spaced?</FormLabel>
+                                <FormDescription className="text-xs mb-3">
+                                  This affects how your garden will look over time
+                                </FormDescription>
+                                <FormControl>
+                                  <RadioGroup
+                                    value={field.value || "balanced"}
+                                    onValueChange={field.onChange}
+                                    className="space-y-3"
+                                  >
+                                    <div className="flex items-start space-x-3">
+                                      <RadioGroupItem value="minimum" id="minimum" />
+                                      <div>
+                                        <Label htmlFor="minimum" className="font-medium">
+                                          Minimum Spacing (Dense Planting)
+                                        </Label>
+                                        <p className="text-sm text-muted-foreground">
+                                          Plants closer together for immediate full appearance. Looks lush in 1-2 years but may need thinning as plants mature.
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-start space-x-3">
+                                      <RadioGroupItem value="balanced" id="balanced" />
+                                      <div>
+                                        <Label htmlFor="balanced" className="font-medium">
+                                          Balanced Spacing (Recommended)
+                                        </Label>
+                                        <p className="text-sm text-muted-foreground">
+                                          Optimal spacing that balances immediate impact with long-term growth. Garden fills in within 2-3 years.
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-start space-x-3">
+                                      <RadioGroupItem value="maximum" id="maximum" />
+                                      <div>
+                                        <Label htmlFor="maximum" className="font-medium">
+                                          Maximum Spacing (Mature Size)
+                                        </Label>
+                                        <p className="text-sm text-muted-foreground">
+                                          Plants spaced for their full mature size. Takes 3-5 years to fill in but no thinning required.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </CardContent>
+                      </Card>
+                    )}
+                    
                     {/* Generate Design Button when style was selected from AI analysis */}
                     {(localDesignApproach === "ai" || watchedDesignApproach === "ai") && (
                       <Card className="border-2 border-primary bg-primary/10 shadow-sm">
@@ -2336,6 +2405,74 @@ export default function GardenProperties() {
                   {/* Safety Preferences for AI approach (after selecting a style from predefined list) */}
                   {selectedGardenStyle && (
                     <SafetyPreferences form={form} showAvailabilityPreference={true} />
+                  )}
+                  
+                  {/* Plant Spacing Preference for AI approach (after selecting a style from predefined list) */}
+                  {selectedGardenStyle && (
+                    <Card className="border-2 border-primary shadow-sm" data-testid="spacing-preference">
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Compass className="w-4 h-4 text-primary" />
+                          Plant Spacing Preference
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-0">
+                        <FormField
+                          control={form.control}
+                          name="spacingPreference"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>How would you like your plants spaced?</FormLabel>
+                              <FormDescription className="text-xs mb-3">
+                                This affects how your garden will look over time
+                              </FormDescription>
+                              <FormControl>
+                                <RadioGroup
+                                  value={field.value || "balanced"}
+                                  onValueChange={field.onChange}
+                                  className="space-y-3"
+                                >
+                                  <div className="flex items-start space-x-3">
+                                    <RadioGroupItem value="minimum" id="minimum2" />
+                                    <div>
+                                      <Label htmlFor="minimum2" className="font-medium">
+                                        Minimum Spacing (Dense Planting)
+                                      </Label>
+                                      <p className="text-sm text-muted-foreground">
+                                        Plants closer together for immediate full appearance. Looks lush in 1-2 years but may need thinning as plants mature.
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-start space-x-3">
+                                    <RadioGroupItem value="balanced" id="balanced2" />
+                                    <div>
+                                      <Label htmlFor="balanced2" className="font-medium">
+                                        Balanced Spacing (Recommended)
+                                      </Label>
+                                      <p className="text-sm text-muted-foreground">
+                                        Optimal spacing that balances immediate impact with long-term growth. Garden fills in within 2-3 years.
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-start space-x-3">
+                                    <RadioGroupItem value="maximum" id="maximum2" />
+                                    <div>
+                                      <Label htmlFor="maximum2" className="font-medium">
+                                        Maximum Spacing (Mature Size)
+                                      </Label>
+                                      <p className="text-sm text-muted-foreground">
+                                        Plants spaced for their full mature size. Takes 3-5 years to fill in but no thinning required.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
                   )}
                   
                   {/* Generate Design Button - Manual trigger to proceed to Step 4 */}
