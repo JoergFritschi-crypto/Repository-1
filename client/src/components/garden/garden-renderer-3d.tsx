@@ -91,9 +91,17 @@ export default function GardenRenderer3D({
   const [showSeasonalDialog, setShowSeasonalDialog] = useState(false);
   const [currentSeasonGenerating, setCurrentSeasonGenerating] = useState<string | null>(null);
   
-  // Time period selection state  
-  const [startPeriod, setStartPeriod] = useState<{ month: number; half: 'first' | 'second' }>({ month: 3, half: 'first' });
-  const [endPeriod, setEndPeriod] = useState<{ month: number; half: 'first' | 'second' }>({ month: 11, half: 'second' });
+  // Enhanced time period selection state for daily precision
+  const [seasonalViewerImages, setSeasonalViewerImages] = useState<any[]>([]);
+  const [currentDateRange, setCurrentDateRange] = useState({
+    startDay: 75,  // Mid March
+    endDay: 335,   // Late November
+    totalDays: 260,
+    isWrapAround: false,
+    rangeId: 'primary-range',
+    color: '#10B981' // emerald-500
+  });
+  const [additionalDateRanges, setAdditionalDateRanges] = useState<any[]>([]);
   const [showSeasonalViewer, setShowSeasonalViewer] = useState(false);
   
   const { toast } = useToast();
@@ -2088,7 +2096,7 @@ export default function GardenRenderer3D({
                 </Button>
                 <Button
                   onClick={generateSeasonalVariations}
-                  disabled={isGeneratingSeasons || !startPeriod || !endPeriod}
+                  disabled={isGeneratingSeasons || !currentDateRange.startDay || !currentDateRange.endDay}
                   variant="default"
                   className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
                   data-testid="button-generate-seasons"
@@ -2426,6 +2434,39 @@ export default function GardenRenderer3D({
                   Close
                 </Button>
                 <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Convert seasonal images to daily precision format and open viewer
+                    const viewerImages = Object.entries(seasonalImages).map(([season, url], index) => {
+                      // Map seasons to approximate day of year
+                      const seasonDays = {
+                        spring: 105, // Mid April
+                        summer: 182, // July 1st
+                        autumn: 288, // Mid October  
+                        winter: 15   // Mid January
+                      };
+                      
+                      return {
+                        dayOfYear: seasonDays[season as keyof typeof seasonDays] || 182,
+                        date: new Date(new Date().getFullYear(), 0, seasonDays[season as keyof typeof seasonDays] || 182).toISOString().split('T')[0],
+                        imageUrl: url,
+                        season: season as 'spring' | 'summer' | 'autumn' | 'winter',
+                        description: `${season.charAt(0).toUpperCase() + season.slice(1)} garden visualization`,
+                        bloomingPlants: [],
+                        weatherCondition: `Typical ${season} conditions`
+                      };
+                    }).sort((a, b) => a.dayOfYear - b.dayOfYear);
+                    
+                    setSeasonalViewerImages(viewerImages);
+                    setShowSeasonalViewer(true);
+                    setShowSeasonalDialog(false);
+                  }}
+                  data-testid="button-view-seasonal-timeline"
+                >
+                  <PlayCircle className="h-4 w-4 mr-2" />
+                  View Timeline
+                </Button>
+                <Button
                   onClick={() => {
                     // Download all seasonal images
                     Object.entries(seasonalImages).forEach(([season, url]) => {
@@ -2445,6 +2486,35 @@ export default function GardenRenderer3D({
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Enhanced Seasonal Viewer with Daily Precision */}
+      <SeasonalViewer
+        isOpen={showSeasonalViewer}
+        onClose={() => setShowSeasonalViewer(false)}
+        gardenName={gardenData.gardenName}
+        gardenId={gardenData.gardenId}
+        images={seasonalViewerImages}
+        dateRange={currentDateRange}
+        additionalRanges={additionalDateRanges}
+        onAddDateRange={(startDay, endDay) => {
+          const newRange = {
+            startDay,
+            endDay,
+            totalDays: endDay >= startDay ? endDay - startDay + 1 : (365 - startDay + 1) + endDay,
+            isWrapAround: endDay < startDay,
+            rangeId: `range-${Date.now()}`,
+            color: `#${Math.floor(Math.random()*16777215).toString(16)}`
+          };
+          setAdditionalDateRanges(prev => [...prev, newRange]);
+        }}
+        onImagesGenerated={(newImages) => {
+          setSeasonalViewerImages(prev => {
+            // Merge and sort by dayOfYear
+            const combined = [...prev, ...newImages];
+            return combined.sort((a, b) => a.dayOfYear - b.dayOfYear);
+          });
+        }}
+      />
     </div>
   );
 }
