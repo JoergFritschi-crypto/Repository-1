@@ -17,6 +17,7 @@ import Admin from "@/pages/admin";
 import AdminTestVisualization from "@/pages/admin-test-visualization";
 import AdminSpriteTest from "@/pages/admin-sprite-test";
 import InpaintingComparison from "@/pages/inpainting-comparison";
+import TestSeasonalSelector from "@/pages/test-seasonal-selector";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
 import Contact from "@/pages/contact";
@@ -47,6 +48,7 @@ function Router() {
           <Route path="/admin/test-visualization" component={AdminTestVisualization} />
           <Route path="/admin/sprite-test" component={AdminSpriteTest} />
           <Route path="/admin/inpainting-comparison" component={InpaintingComparison} />
+          <Route path="/test-seasonal-selector" component={TestSeasonalSelector} />
         </>
       )}
       <Route component={NotFound} />
