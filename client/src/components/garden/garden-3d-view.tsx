@@ -51,6 +51,7 @@ interface Garden3DViewProps {
   gardenName: string;
   gardenData: Garden;
   placedPlants: PlacedPlant[];
+  photorealizationMode?: boolean; // Added for AI photorealization
 }
 
 // Convert north orientation enum to degrees
@@ -90,7 +91,8 @@ export default function Garden3DView({
   gardenId,
   gardenName,
   gardenData,
-  placedPlants
+  placedPlants,
+  photorealizationMode = false
 }: Garden3DViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,6 +110,7 @@ export default function Garden3DView({
   const targetCameraPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
   const targetCameraTargetRef = useRef<THREE.Vector3>(new THREE.Vector3());
   const smoothTransitionRef = useRef<boolean>(false);
+  const textureCache = useRef<Map<string, THREE.Texture>>(new Map()); // Added for texture caching
   
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [scene3D, setScene3D] = useState<GardenScene3D | null>(null);
@@ -146,6 +149,79 @@ export default function Garden3DView({
     enabled: placedPlants.length > 0
   });
 
+  // Create minimal dot marker for photorealization mode
+  const createMinimalPlantMarker = useCallback((plant: PlantInstance3D): THREE.Sprite => {
+    // CRITICAL: For photorealization, use pure white dots only
+    const cacheKey = 'minimal-marker-white';
+    
+    // Check texture cache first
+    let texture = textureCache.current.get(cacheKey);
+    
+    if (!texture) {
+      // Create TINY circular marker (16x16 pixels for minimal size)
+      const canvas = document.createElement('canvas');
+      const size = 16; // Tiny texture for minimal dots
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      
+      // Clear canvas with transparent background
+      ctx.clearRect(0, 0, size, size);
+      
+      // Draw pure white filled circle
+      ctx.fillStyle = '#FFFFFF'; // Pure white
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Create texture from canvas
+      texture = new THREE.CanvasTexture(canvas);
+      // CRITICAL: Use NearestFilter to avoid halos
+      texture.minFilter = THREE.NearestFilter;
+      texture.magFilter = THREE.NearestFilter;
+      texture.needsUpdate = true;
+      
+      // Cache the texture for reuse
+      textureCache.current.set(cacheKey, texture);
+    }
+    
+    // Create sprite material with specific settings for photorealization
+    const material = new THREE.SpriteMaterial({ 
+      map: texture,
+      color: 0xffffff, // Pure white
+      transparent: true,
+      opacity: 1, // Full opacity
+      depthTest: false, // Always render on top
+      depthWrite: false, // Don't write to depth buffer
+      sizeAttenuation: false // Constant size regardless of distance
+    });
+    
+    // Create sprite
+    const sprite = new THREE.Sprite(material);
+    
+    // Center sprite at its center (standard positioning)
+    sprite.center.set(0.5, 0.5);
+    
+    // Position sprite at plant position (directly on ground)
+    sprite.position.set(plant.position.x, plant.position.y, 0.01);
+    
+    // Very small fixed size for minimal dots
+    const scaleFactor = 0.2; // Tiny fixed size for all plants
+    sprite.scale.set(scaleFactor, scaleFactor, 1);
+    
+    // Set high render order so dots always draw on top
+    sprite.renderOrder = 999;
+    
+    // Store minimal plant data
+    sprite.userData = {
+      plantId: plant.id,
+      plantName: plant.plantName,
+      isMinimalMarker: true
+    };
+    
+    return sprite;
+  }, []);
+
   // Initialize Three.js scene
   const initScene = useCallback(() => {
     if (!canvasRef.current || !containerRef.current) {
@@ -182,8 +258,14 @@ export default function Garden3DView({
     
     // Create scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87ceeb); // Sky blue
-    scene.fog = new THREE.Fog(0x87ceeb, 20, 100);
+    // Use black background for photorealization mode, sky blue for normal mode
+    if (photorealizationMode) {
+      scene.background = new THREE.Color(0x000000); // Pure black for photorealization
+      // No fog in photorealization mode
+    } else {
+      scene.background = new THREE.Color(0x87ceeb); // Sky blue for normal mode
+      scene.fog = new THREE.Fog(0x87ceeb, 20, 100);
+    }
     
     // Create renderer
     const renderer = new THREE.WebGLRenderer({
@@ -192,7 +274,8 @@ export default function Garden3DView({
       alpha: true,
       preserveDrawingBuffer: true // For reliable canvas capture
     });
-    renderer.shadowMap.enabled = renderSettings.shadowsEnabled;
+    // Disable shadows in photorealization mode
+    renderer.shadowMap.enabled = photorealizationMode ? false : renderSettings.shadowsEnabled;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
@@ -298,7 +381,7 @@ export default function Garden3DView({
     console.log('=== INIT SCENE END ===');
     
     setIsSceneReady(true);
-  }, [gardenData, cardinalRotation]);
+  }, [gardenData, cardinalRotation, photorealizationMode]);
 
   // Handle shadow settings changes without rebuilding scene
   useEffect(() => {
@@ -326,7 +409,24 @@ export default function Garden3DView({
       sceneRef.current.remove(existingGround);
     }
     
-    // Calculate dimensions
+    // Skip decorations and use simple black ground in photorealization mode
+    if (photorealizationMode) {
+      const width = bounds.maxX - bounds.minX;
+      const depth = bounds.maxY - bounds.minY;
+      const groundGeometry = new THREE.PlaneGeometry(width, depth);
+      groundGeometry.rotateX(-Math.PI / 2);
+      const groundMaterial = new THREE.MeshBasicMaterial({
+        color: 0x000000, // Pure black
+        side: THREE.DoubleSide
+      });
+      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.name = 'garden-ground';
+      ground.position.set(bounds.center.x, 0, bounds.center.y);
+      sceneRef.current.add(ground);
+      return; // Skip all decorations
+    }
+    
+    // Calculate dimensions (normal mode)
     const width = bounds.maxX - bounds.minX;
     const depth = bounds.maxY - bounds.minY;
     
@@ -507,7 +607,7 @@ export default function Garden3DView({
     
     compassRef.current = compassGroup;
     sceneRef.current.add(compassGroup);
-  }, [renderSettings, cardinalRotation]);
+  }, [renderSettings, cardinalRotation, photorealizationMode]);
 
   // Create plant representations
   const createPlants = useCallback((plants3D: PlantInstance3D[]) => {
@@ -533,7 +633,15 @@ export default function Garden3DView({
       : 1;
     
     plants3D.forEach(plant => {
-      // Apply proportional scaling to all plants
+      // Use minimal markers in photorealization mode
+      if (photorealizationMode) {
+        const sprite = createMinimalPlantMarker(plant);
+        plantMeshesRef.current.add(sprite);
+        console.log(`Added minimal marker for ${plant.plantName}`);
+        return;
+      }
+      
+      // Apply proportional scaling to all plants (normal mode)
       const scaledHeight = plant.dimensions.heightCurrent * scaleFactor;
       const scaledSpread = plant.dimensions.spreadCurrent * scaleFactor;
       
@@ -633,7 +741,7 @@ export default function Garden3DView({
       console.log(`Added ${plant.plantName} to scene`);
     });
     console.log('Total plants in scene:', plantMeshesRef.current.children.length);
-  }, [gardenData]);
+  }, [gardenData, photorealizationMode, createMinimalPlantMarker]);
 
   // Update lighting based on settings
   const updateLighting = useCallback(() => {
