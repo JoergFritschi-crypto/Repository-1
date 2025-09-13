@@ -269,37 +269,8 @@ export default function Garden3DView({
     // Add to scene
     scene.add(plantMeshesRef.current);
     
-    // Add garden dimensions display
-    const gardenWidth = gardenData.dimensions?.width || 10;
-    const gardenHeight = gardenData.dimensions?.length || 10;
-    const dimensionText = `${gardenWidth}m × ${gardenHeight}m`;
-    
-    // Create a plane to display dimensions
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      ctx.fillRect(0, 0, 256, 64);
-      ctx.fillStyle = '#333';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(dimensionText, 128, 32);
-    }
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    const dimensionSprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({ 
-        map: texture,
-        fog: false
-      })
-    );
-    dimensionSprite.scale.set(2, 0.5, 1);
-    dimensionSprite.position.set(0, 0.1, -Math.max(gardenWidth, gardenHeight) / 2 - 1);
-    dimensionSprite.name = 'dimension-sprite';
-    scene.add(dimensionSprite);
+    // Note: Garden dimensions display has been moved below the canvas
+    // to prevent interference with AI image generation
     
     // Add brighter ambient lighting immediately to ensure visibility
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -1388,6 +1359,16 @@ export default function Garden3DView({
               </div>
             </div>
           )}
+        </div>
+        
+        {/* Garden Dimensions Display */}
+        <div className="text-center py-2 bg-muted/50 rounded-md">
+          <p className="text-sm font-medium text-foreground">
+            Garden Dimensions: <span className="font-bold">{gardenData.dimensions?.width || 10}m × {gardenData.dimensions?.length || 10}m</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Total Area: {((gardenData.dimensions?.width || 10) * (gardenData.dimensions?.length || 10)).toFixed(1)}m²
+          </p>
         </div>
         
         {/* Control Panel */}

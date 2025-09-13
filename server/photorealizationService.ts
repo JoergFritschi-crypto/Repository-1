@@ -365,15 +365,19 @@ LIGHTING (JULY):
 - Light quality: ${lighting.lightQuality}
 - Sky: ${describeSkyCondition(sceneState.lighting.timeOfDay)}
 
-PLANT LIST (EXACT POSITIONS - JULY SEASON):
-${plants.map((plant, idx) => `
-Plant ${idx + 1} at position (${plant.position.x.toFixed(1)}%, ${plant.position.y.toFixed(1)}%):
-  ${plant.commonName} [${plant.scientificName}]
-  Size: Height ${plant.size.height.toFixed(1)}m, Spread ${plant.size.spread.toFixed(1)}m
-  Type: ${plant.type}, ${plant.foliage}
-  July state: ${plant.seasonalState}
-  Bloom status: ${plant.bloomStatus}
-  Maintenance: ${plant.maintenanceState}`).join('')}
+BOTANICAL SPECIMEN LIST (HERBARIUM-QUALITY IDENTIFICATION - JULY):
+${plants.map((plant, idx) => {
+  const botanicalDetails = getBotanicalMorphology(plant.scientificName, plant.commonName);
+  return `
+Specimen ${idx + 1}: ${plant.scientificName} [common: ${plant.commonName}]
+  CRITICAL IDENTIFICATION: ${botanicalDetails}
+  Position: (${plant.position.x.toFixed(1)}%, ${plant.position.y.toFixed(1)}%) = (${((plant.position.x * geometry.coordinateSystem.bounds.width) / 100).toFixed(1)}m, ${((plant.position.y * geometry.coordinateSystem.bounds.height) / 100).toFixed(1)}m)
+  Mature size: ${plant.size.height.toFixed(1)}m tall × ${plant.size.spread.toFixed(1)}m spread
+  Growth type: ${plant.type}, ${plant.foliage}
+  July phenology: ${plant.seasonalState}
+  Flowering status: ${plant.bloomStatus}
+  Cultivation state: ${plant.maintenanceState}`;
+}).join('')}
 
 SURROUNDINGS:
 - Context: ${environment.surroundings}
@@ -382,12 +386,14 @@ SURROUNDINGS:
 - No artificial structures unless specified
 
 OUTPUT STYLE:
-- Professional landscape architecture visualization
-- Photorealistic quality - could be mistaken for actual photograph
-- Natural color palette appropriate for July in ${garden.location || 'temperate climate'}
-- Professional garden photography aesthetic
-- Sharp focus on foreground plants, gentle depth of field to background
-- Natural textures: soil, grass, plant materials, organic surfaces
+- Botanical specimen photography - Royal Horticultural Society standard
+- Professional landscape architecture with botanical accuracy
+- Herbarium-quality plant identification - each species clearly recognizable
+- Natural color palette for July in ${garden.location || 'temperate climate'}
+- Botanical garden photography aesthetic - educational quality
+- Sharp botanical detail: visible leaf venation, accurate flower structure, correct growth habit
+- Scientific accuracy: authentic plant morphology, no artistic interpretation
+- Reference: Chelsea Flower Show photography, Kew Gardens documentation
 
 CRITICAL CONSTRAINTS (ABSOLUTE REQUIREMENTS):
 
@@ -420,13 +426,21 @@ PLANT SPECIFICATIONS (NO DEVIATIONS):
 - REALISTIC SCALE - plants sized according to specified dimensions
 - July seasonal state ONLY - no other seasonal appearance
 
-FORBIDDEN ADDITIONS:
+FORBIDDEN ADDITIONS & BOTANICAL ACCURACY REQUIREMENTS:
 - NO decorative elements not mentioned (statues, furniture, arbors, ornaments)
 - NO people, animals, or artificial objects anywhere in scene
 - NO water features, lighting, or structures not explicitly specified
 - NO creative liberties with composition, framing, or artistic interpretation
 
-Transform the provided 3D garden layout into a stunning photorealistic image that looks like it was photographed by a professional landscape photographer in July, maintaining absolute fidelity to the specified plant list, positions, and seasonal state.
+CRITICAL BOTANICAL CONSTRAINTS - SPECIES ACCURACY:
+${getExcludedSpeciesForPlants(plants)}
+- NO generic "garden plants" - each plant must be its EXACT scientific species
+- NO hybrid interpretations - pure species characteristics only
+- NO mixing plant features - maintain distinct species identity
+- NO seasonal confusion - July appearance only, no spring bulbs or autumn colors
+- MANDATORY: Each plant must be identifiable by a botanist to genus and species level
+
+Create a botanically accurate photorealistic garden documentation image that meets scientific identification standards. This should look like it was photographed for a botanical journal or RHS plant identification guide in July. Each plant specimen must be recognizable to its exact scientific species with correct morphological features - as if being documented for a botanical survey. Maintain absolute fidelity to the specified plant list, exact positions, and July seasonal phenology. Think herbarium-quality accuracy in a garden setting.
 `;
 
   return prompt.trim();
@@ -614,4 +628,69 @@ function describeSkyCondition(hour: number): string {
     return 'Clear sky with warm golden tones';
   }
   return 'Clear blue sky with some natural cloud formations';
+}
+
+/**
+ * Get detailed botanical morphology for a plant
+ */
+function getBotanicalMorphology(scientificName: string, commonName: string): string {
+  const botanicalDescriptions: Record<string, string> = {
+    'Hosta sieboldiana': 'Large broad ovate leaves with prominent parallel venation, blue-green color, clumping herbaceous perennial, NO flower spikes in July',
+    'Hosta plantaginea': 'Large heart-shaped leaves, glossy green, deep parallel veins, thick texture, mounding habit, fragrant white flowers if blooming',
+    'Rosa': 'Compound pinnate leaves with 5-7 leaflets, serrated margins, thorny stems, shrub form',
+    'Rosa × damascena': 'Compound leaves, thorny canes, double flowers if blooming, bushy shrub habit',
+    'Lavandula angustifolia': 'Linear gray-green leaves, opposite arrangement, aromatic, purple flower spikes on square stems, compact shrub',
+    'Lavandula': 'Narrow silvery-gray leaves, Mediterranean shrub, upright purple flower spikes, woody base',
+    'Acer palmatum': 'Palmate leaves with 5-7 pointed lobes, opposite leaf arrangement, small tree form, smooth gray bark',
+    'Helianthus': 'Large rough-textured ovate leaves, tall upright stems, large daisy-like flowers with brown centers',
+    'Helianthus maximiliani': 'Narrow lanceolate leaves, tall prairie perennial, multiple yellow flowers along stem'
+  };
+  
+  // Try exact match first
+  if (botanicalDescriptions[scientificName]) {
+    return botanicalDescriptions[scientificName];
+  }
+  
+  // Try genus match
+  const genus = scientificName.split(' ')[0];
+  if (botanicalDescriptions[genus]) {
+    return botanicalDescriptions[genus];
+  }
+  
+  // Default botanical description based on common name patterns
+  if (commonName.toLowerCase().includes('hosta')) {
+    return 'Large broad leaves with parallel venation, clumping perennial habit, shade garden plant';
+  } else if (commonName.toLowerCase().includes('rose')) {
+    return 'Compound pinnate leaves, thorny stems, shrub form with showy flowers';
+  } else if (commonName.toLowerCase().includes('lavender')) {
+    return 'Narrow gray-green aromatic leaves, upright flower spikes, Mediterranean shrub';
+  } else if (commonName.toLowerCase().includes('maple')) {
+    return 'Palmate lobed leaves, opposite arrangement, tree or large shrub form';
+  }
+  
+  return 'Botanically accurate representation with species-specific leaf shape and growth habit';
+}
+
+/**
+ * Get list of excluded species to prevent confusion
+ */
+function getExcludedSpeciesForPlants(plants: PlantSeasonalData[]): string {
+  const exclusions: string[] = [];
+  
+  plants.forEach(plant => {
+    if (plant.scientificName.includes('Hosta')) {
+      exclusions.push('- NO Hydrangea, NO Brunnera, NO Ligularia - show TRUE Hosta with parallel-veined leaves');
+    }
+    if (plant.scientificName.includes('Rosa')) {
+      exclusions.push('- NO Paeonia (peony), NO Camellia, NO Hibiscus - show TRUE Rosa with compound leaves and thorns');
+    }
+    if (plant.scientificName.includes('Lavandula')) {
+      exclusions.push('- NO Salvia, NO Perovskia, NO ornamental grasses - show TRUE Lavandula with gray-green narrow leaves');
+    }
+    if (plant.scientificName.includes('Acer')) {
+      exclusions.push('- NO Liquidambar, NO Platanus - show TRUE Acer palmatum with palmate leaves');
+    }
+  });
+  
+  return Array.from(new Set(exclusions)).join('\n');
 }
