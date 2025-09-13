@@ -323,7 +323,7 @@ export default function GardenProperties() {
   const watchedSelectedStyle = form.watch("selectedStyle");
   const watchedToxicityLevel = form.watch("preferences.toxicityLevel");
   const watchedPlantAvailability = form.watch("preferences.plantAvailability");
-  const watchedPointOfView = form.watch("pointOfView");
+  // const watchedPointOfView = form.watch("pointOfView"); // Commented out - field not in schema
 
   // Populate form when existing garden is loaded
   useEffect(() => {
@@ -2243,14 +2243,14 @@ export default function GardenProperties() {
                         <div className="space-y-2">
                           <Label>Garden Style</Label>
                           <StyleSelector
+                            gardenStyles={generatedStyles}
                             selectedStyle={selectedGardenStyle || watchedSelectedStyle || ''}
-                            onStyleChange={(styleId) => {
+                            onStyleSelect={(styleId) => {
                               setSelectedGardenStyle(styleId);
                               form.setValue('selectedStyle', styleId);
                             }}
-                            analysis={analysis}
-                            recommendedStyleIds={recommendedStyleIds}
-                            generatedStyles={generatedStyles}
+                            analysisData={analysis}
+                            showAIRecommendations={true}
                           />
                         </div>
 
@@ -2259,8 +2259,7 @@ export default function GardenProperties() {
                           <Label>Safety & Accessibility</Label>
                           <SafetyPreferences
                             form={form}
-                            watchedToxicityLevel={watchedToxicityLevel}
-                            watchedPlantAvailability={watchedPlantAvailability}
+                            showAvailabilityPreference={true}
                           />
                         </div>
 
@@ -2738,7 +2737,7 @@ export default function GardenProperties() {
                       slopeDirection: watchedSlopeDirection,
                       slopePercentage: watchedSlopePercentage,
                       northOrientation: watchedSlopeDirection,
-                      pointOfView: watchedPointOfView || 'bird_eye'
+                      pointOfView: 'bird_eye' // Default view
                     } as any}
                     placedPlants={placedPlants}
                     photorealizationMode={true}
@@ -2762,7 +2761,7 @@ export default function GardenProperties() {
                     slopeDirection: watchedSlopeDirection,
                     slopePercentage: watchedSlopePercentage,
                     northOrientation: watchedSlopeDirection,
-                    pointOfView: watchedPointOfView || 'bird_eye'
+                    pointOfView: 'bird_eye' // Default view
                   } as any}
                   placedPlants={placedPlants}
                   photorealizationMode={true}
