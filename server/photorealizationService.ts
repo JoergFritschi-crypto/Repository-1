@@ -409,18 +409,27 @@ LIGHTING (JULY):
 - Light quality: ${lighting.lightQuality}
 - Sky: ${describeSkyCondition(sceneState.lighting.timeOfDay)}
 
+CRITICAL PLANT COUNT VERIFICATION:
+- EXACT COUNT: ${plants.length} plants total - NO MORE, NO LESS
+- SPECIES LIST: ${plants.map(p => p.commonName).join(', ')}
+- VERIFICATION: Count exactly ${plants.length} distinct plants in final image
+- NO background plants, NO filler vegetation, NO extras
+
 BOTANICAL SPECIMEN LIST (HERBARIUM-QUALITY IDENTIFICATION - JULY):
 ${plants.map((plant, idx) => {
   const botanicalDetails = getBotanicalMorphology(plant.scientificName, plant.commonName);
+  const plantNumber = idx + 1;
+  const totalPlants = plants.length;
   return `
-Specimen ${idx + 1}: ${plant.scientificName} [common: ${plant.commonName}]
+Specimen ${plantNumber} of ${totalPlants}: ${plant.scientificName} [common: ${plant.commonName}]
   CRITICAL IDENTIFICATION: ${botanicalDetails}
   Position: (${plant.position.x.toFixed(1)}%, ${plant.position.y.toFixed(1)}%) = (${((plant.position.x * geometry.coordinateSystem.bounds.width) / 100).toFixed(1)}m, ${((plant.position.y * geometry.coordinateSystem.bounds.height) / 100).toFixed(1)}m)
   Mature size: ${plant.size.height.toFixed(1)}m tall × ${plant.size.spread.toFixed(1)}m spread
   Growth type: ${plant.type}, ${plant.foliage}
   July phenology: ${plant.seasonalState}
   Flowering status: ${plant.bloomStatus}
-  Cultivation state: ${plant.maintenanceState}`;
+  Cultivation state: ${plant.maintenanceState}
+  UNIQUE PLACEMENT: This is plant ${plantNumber} of exactly ${totalPlants} plants`;
 }).join('')}
 
 SURROUNDINGS:
@@ -691,15 +700,17 @@ function describeSkyCondition(hour: number): string {
  */
 function getBotanicalMorphology(scientificName: string, commonName: string): string {
   const botanicalDescriptions: Record<string, string> = {
-    'Hosta sieboldiana': 'Large broad ovate leaves with prominent parallel venation, blue-green color, clumping herbaceous perennial, NO flower spikes in July',
-    'Hosta plantaginea': 'Large heart-shaped leaves, glossy green, deep parallel veins, thick texture, mounding habit, fragrant white flowers if blooming',
-    'Rosa': 'Compound pinnate leaves with 5-7 leaflets, serrated margins, thorny stems, shrub form',
-    'Rosa × damascena': 'Compound leaves, thorny canes, double flowers if blooming, bushy shrub habit',
-    'Lavandula angustifolia': 'Linear gray-green leaves, opposite arrangement, aromatic, purple flower spikes on square stems, compact shrub',
-    'Lavandula': 'Narrow silvery-gray leaves, Mediterranean shrub, upright purple flower spikes, woody base',
-    'Acer palmatum': 'Palmate leaves with 5-7 pointed lobes, opposite leaf arrangement, small tree form, smooth gray bark',
-    'Helianthus': 'Large rough-textured ovate leaves, tall upright stems, large daisy-like flowers with brown centers',
-    'Helianthus maximiliani': 'Narrow lanceolate leaves, tall prairie perennial, multiple yellow flowers along stem'
+    'Hosta sieboldiana': 'HOSTA: Large broad ovate leaves with prominent parallel venation, blue-green color, clumping herbaceous perennial forming dense mounds, smooth leaf texture, NO flower spikes in July, shade-tolerant plant',
+    'Hosta plantaginea': 'HOSTA: Large heart-shaped leaves, glossy green, deep parallel veins, thick texture, mounding habit 60cm tall, fragrant white flowers if blooming',
+    'Rosa': 'ROSE BUSH: Flowering shrub with RED or PINK FLOWERS (multiple blooms visible in July), compound pinnate leaves with 5-7 glossy leaflets, serrated margins, thorny green stems, bushy upright growth habit 1-2m tall, MUST show flowers',
+    'Rosa × damascena': 'DAMASK ROSE: Bushy shrub with fragrant DOUBLE PINK FLOWERS, compound leaves with 5-7 leaflets, thorny canes, multiple blooms in July, 1.5m tall flowering bush',
+    'Rosa rugosa': 'RUGOSA ROSE: Shrub with large SINGLE PINK/RED FLOWERS, wrinkled dark green compound leaves, very thorny stems, showing multiple blooms in July, robust bush form',
+    'Rosa gallica': 'FRENCH ROSE: Compact shrub with DEEP PINK/RED FLOWERS, compound leaves, thorny stems, multiple fragrant blooms visible in July, bushy growth to 1.2m',
+    'Lavandula angustifolia': 'ENGLISH LAVENDER: Linear gray-green leaves, opposite arrangement, aromatic, PURPLE flower spikes on square stems above foliage, compact Mediterranean shrub 60cm tall',
+    'Lavandula': 'LAVENDER: Narrow silvery-gray leaves, Mediterranean shrub, upright PURPLE flower spikes rising above foliage, woody base, aromatic plant',
+    'Acer palmatum': 'JAPANESE MAPLE: Palmate leaves with 5-7 pointed lobes, opposite leaf arrangement, small ornamental tree, smooth gray bark, graceful branching',
+    'Helianthus': 'SUNFLOWER: Large rough-textured ovate leaves, tall upright stems, large daisy-like YELLOW flowers with brown centers, 2-3m tall',
+    'Helianthus maximiliani': 'MAXIMILIAN SUNFLOWER: Narrow lanceolate leaves, tall prairie perennial, multiple YELLOW flowers along stem, 2.5m tall'
   };
   
   // Try exact match first
@@ -715,13 +726,13 @@ function getBotanicalMorphology(scientificName: string, commonName: string): str
   
   // Default botanical description based on common name patterns
   if (commonName.toLowerCase().includes('hosta')) {
-    return 'Large broad leaves with parallel venation, clumping perennial habit, shade garden plant';
+    return 'HOSTA: Large broad leaves with parallel venation, clumping perennial habit forming dense mounds, shade garden plant with smooth leaves';
   } else if (commonName.toLowerCase().includes('rose')) {
-    return 'Compound pinnate leaves, thorny stems, shrub form with showy flowers';
+    return 'ROSE BUSH: FLOWERING shrub showing RED/PINK BLOOMS in July, compound pinnate leaves with 5-7 leaflets, thorny stems, bushy growth 1-2m tall, MUST display multiple flowers';
   } else if (commonName.toLowerCase().includes('lavender')) {
-    return 'Narrow gray-green aromatic leaves, upright flower spikes, Mediterranean shrub';
+    return 'LAVENDER: Narrow gray-green aromatic leaves, upright PURPLE flower spikes rising above foliage, Mediterranean shrub 60cm tall';
   } else if (commonName.toLowerCase().includes('maple')) {
-    return 'Palmate lobed leaves, opposite arrangement, tree or large shrub form';
+    return 'JAPANESE MAPLE: Palmate lobed leaves with 5-7 points, opposite arrangement, small ornamental tree or large shrub form';
   }
   
   return 'Botanically accurate representation with species-specific leaf shape and growth habit';
@@ -733,20 +744,29 @@ function getBotanicalMorphology(scientificName: string, commonName: string): str
 function getExcludedSpeciesForPlants(plants: PlantSeasonalData[]): string {
   const exclusions: string[] = [];
   
+  // Add explicit plant count first
+  exclusions.push(`- CRITICAL: Show EXACTLY ${plants.length} plants - no more, no less`);
+  exclusions.push(`- PLANT COUNT VERIFICATION: ${plants.map(p => p.commonName).join(', ')} = ${plants.length} plants total`);
+  exclusions.push('- DO NOT add background plants, filler plants, or any vegetation not explicitly listed');
+  
   plants.forEach(plant => {
     if (plant.scientificName.includes('Hosta')) {
-      exclusions.push('- NO Hydrangea, NO Brunnera, NO Ligularia - show TRUE Hosta with parallel-veined leaves');
+      exclusions.push('- NO Hydrangea, NO Brunnera, NO Ligularia - show TRUE HOSTA with broad parallel-veined leaves in mounding clumps');
     }
     if (plant.scientificName.includes('Rosa')) {
-      exclusions.push('- NO Paeonia (peony), NO Camellia, NO Hibiscus - show TRUE Rosa with compound leaves and thorns');
+      exclusions.push('- NO Paeonia (peony), NO Camellia, NO Hibiscus, NO generic shrubs - show TRUE ROSE BUSH with visible FLOWERS, compound leaves and thorny stems');
+      exclusions.push('- ROSES MUST SHOW BLOOMS in July - not just green foliage');
     }
     if (plant.scientificName.includes('Lavandula')) {
-      exclusions.push('- NO Salvia, NO Perovskia, NO ornamental grasses - show TRUE Lavandula with gray-green narrow leaves');
+      exclusions.push('- NO Salvia, NO Perovskia, NO ornamental grasses - show TRUE LAVENDER with purple flower spikes and gray-green narrow leaves');
     }
     if (plant.scientificName.includes('Acer')) {
-      exclusions.push('- NO Liquidambar, NO Platanus - show TRUE Acer palmatum with palmate leaves');
+      exclusions.push('- NO Liquidambar, NO Platanus - show TRUE Japanese Maple (Acer palmatum) with distinctive palmate leaves');
     }
   });
+  
+  // Add counting reminder at the end
+  exclusions.push(`- FINAL CHECK: Count ${plants.length} distinct plants in image - no extras in background`);
   
   return Array.from(new Set(exclusions)).join('\n');
 }

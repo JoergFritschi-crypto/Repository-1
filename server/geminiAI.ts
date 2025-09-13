@@ -245,6 +245,25 @@ class GeminiAI {
     botanicalContext?: string;
   }): Promise<string | null> {
     try {
+      // Enhanced botanical identification for common plants
+      const getBotanicalFeatures = (plantName: string, scientificName?: string): string => {
+        const name = plantName.toLowerCase();
+        const sciName = scientificName?.toLowerCase() || '';
+        
+        if (name.includes('rose') || sciName.includes('rosa')) {
+          return 'ROSE BUSH with RED/PINK FLOWERS (multiple blooms visible), compound pinnate leaves with 5-7 leaflets, thorny green stems, bushy shrub form';
+        } else if (name.includes('hosta') || sciName.includes('hosta')) {
+          return 'HOSTA with large broad leaves showing parallel venation, clumping perennial forming dense mounds, shade-tolerant plant';
+        } else if (name.includes('lavender') || sciName.includes('lavandula')) {
+          return 'LAVENDER with narrow gray-green leaves, purple flower spikes rising above foliage, Mediterranean shrub';
+        } else if (name.includes('maple') || sciName.includes('acer')) {
+          return 'JAPANESE MAPLE with palmate leaves (5-7 lobes), small ornamental tree, graceful branching';
+        } else if (name.includes('sunflower') || sciName.includes('helianthus')) {
+          return 'SUNFLOWER with large rough leaves, tall stems, yellow daisy-like flowers with brown centers';
+        }
+        return '';
+      };
+      
       // Create detailed plant descriptions with botanical accuracy
       const plantDescriptions = options.plants.map((p, idx) => {
         const height = p.height ? `${p.height.toFixed(1)}m` : 
@@ -254,14 +273,26 @@ class GeminiAI {
         const botanical = p.scientificName ? ` [${p.scientificName}]` : '';
         const bloom = p.bloomStatus === 'blooming' ? ' (currently flowering)' : '';
         const foliage = p.foliageType ? `, ${p.foliageType} foliage` : '';
+        const features = getBotanicalFeatures(p.plantName, p.scientificName);
+        const plantNumber = idx + 1;
+        const totalPlants = options.plants.length;
         
-        return `${idx + 1}. ${p.plantName}${botanical} at (${p.x}%, ${p.y}%): Height ${height}, Spread ${spread}${bloom}${foliage}`;
+        return `Plant ${plantNumber} of ${totalPlants}: ${p.plantName}${botanical} at EXACT position (${p.x}%, ${p.y}%)
+  Identification: ${features || 'Specific botanical features'}
+  Size: Height ${height}, Spread ${spread}${bloom}${foliage}
+  UNIQUE SPECIMEN: This is plant ${plantNumber} of exactly ${totalPlants} plants`;
       }).join('\n');
       
       // If botanical context is provided, use it for the main description
       const botanicalInfo = options.botanicalContext || plantDescriptions;
       
       const prompt = `Transform this garden layout into a photorealistic ${options.season} garden photograph.
+
+CRITICAL PLANT COUNT:
+- EXACT COUNT: ${options.plants.length} plants total - NO MORE, NO LESS
+- SPECIES LIST: ${options.plants.map(p => p.plantName).join(', ')}
+- VERIFICATION: Must show exactly ${options.plants.length} distinct plants
+- NO background plants, NO filler vegetation, NO extras
 
 GARDEN SPECIFICATIONS:
 - Size: ${options.gardenSize}
@@ -272,12 +303,22 @@ BOTANICAL ACCURACY REQUIREMENTS:
 ${botanicalInfo}
 
 CRITICAL INSTRUCTIONS:
-1. EXACT POSITIONING: Each plant must remain at its specified percentage coordinates
-2. BOTANICAL ACCURACY: Render each plant with correct size, form, and seasonal appearance
-3. SEASONAL REALISM: Show appropriate bloom status, foliage color, and growth stage for ${options.season}
-4. PHOTOGRAPHIC QUALITY: Natural lighting, realistic shadows, environmental integration
-5. NO ADDITIONS: Do not add any plants not listed above
-6. MAINTAIN COMPOSITION: Keep the exact spatial arrangement from the reference image
+1. PLANT COUNT: Show EXACTLY ${options.plants.length} plants - count them to verify
+2. EXACT POSITIONING: Each plant must remain at its specified percentage coordinates
+3. BOTANICAL ACCURACY: Render each plant with correct identifying features
+   - ROSES: Must show flowers/blooms, compound leaves, thorny stems
+   - HOSTAS: Large broad leaves with parallel veins, clumping form
+   - LAVENDER: Purple flower spikes, gray-green narrow leaves
+4. SEASONAL REALISM: Show appropriate bloom status, foliage color, and growth stage for ${options.season}
+5. NO ADDITIONS: Do not add ANY plants not listed above
+6. NO DUPLICATES: Each plant appears exactly once at its specified position
+7. MAINTAIN COMPOSITION: Keep the exact spatial arrangement from the reference image
+
+VERIFICATION CHECKLIST:
+- Count plants: Should be exactly ${options.plants.length}
+- Rose identification: Shows flowers and compound leaves
+- Hosta identification: Shows broad leaves with parallel veins
+- No extra plants in background or edges
 
 The plants should look naturally established in the garden, not like overlaid sprites.
 Create a cohesive, photorealistic garden scene while maintaining precise plant positions.`;
