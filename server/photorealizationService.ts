@@ -24,6 +24,7 @@ interface SceneState {
 interface PlantSeasonalData {
   commonName: string;
   scientificName: string;
+  cultivar?: string;
   position: { x: number; y: number };
   size: { height: number; spread: number };
   seasonalState: string;
@@ -162,6 +163,7 @@ export async function buildPhotorealizationContext(
       return {
         commonName: plant!.commonName,
         scientificName: plant!.scientificName,
+        cultivar: plant!.cultivar,
         position: {
           x: parseFloat(gardenPlant.position_x || '50'),
           y: parseFloat(gardenPlant.position_y || '50')
@@ -423,7 +425,7 @@ CRITICAL PLANT COUNT VERIFICATION:
 
 BOTANICAL SPECIMEN LIST (HERBARIUM-QUALITY IDENTIFICATION - JULY):
 ${plants.map((plant, idx) => {
-  const botanicalDetails = getBotanicalMorphology(plant.scientificName, plant.commonName);
+  const botanicalDetails = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
   const plantNumber = idx + 1;
   const totalPlants = plants.length;
   return `
@@ -532,7 +534,7 @@ export function buildPhotorealizationPrompt(context: PhotorealizationContext): s
   // Build a much simpler prompt that's under 5000 characters
   const plantList = plants.map((plant, idx) => {
     const num = idx + 1;
-    const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName);
+    const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
     return `${num}. ${plant.commonName} at position ${plant.position.x.toFixed(0)}%, ${plant.position.y.toFixed(0)}% - ${morphology}`;
   }).join('\n');
   
@@ -736,7 +738,7 @@ function describeSkyCondition(hour: number): string {
 /**
  * Get detailed botanical morphology for a plant
  */
-function getBotanicalMorphology(scientificName: string, commonName: string): string {
+function getBotanicalMorphology(scientificName: string, commonName: string, cultivar?: string): string {
   const botanicalDescriptions: Record<string, string> = {
     'Hosta sieboldiana': 'HOSTA: Large broad ovate leaves with prominent parallel venation, blue-green color, clumping herbaceous perennial forming dense mounds, smooth leaf texture, NO flower spikes in July, shade-tolerant plant',
     'Hosta plantaginea': 'HOSTA: Large heart-shaped leaves, glossy green, deep parallel veins, thick texture, mounding habit 60cm tall, fragrant white flowers if blooming',
@@ -744,6 +746,12 @@ function getBotanicalMorphology(scientificName: string, commonName: string): str
     'Rosa × damascena': 'DAMASK ROSE: Bushy shrub with fragrant DOUBLE PINK FLOWERS, compound leaves with 5-7 leaflets, thorny canes, multiple blooms in July, 1.5m tall flowering bush',
     'Rosa rugosa': 'RUGOSA ROSE: Shrub with large SINGLE PINK/RED FLOWERS, wrinkled dark green compound leaves, very thorny stems, showing multiple blooms in July, robust bush form',
     'Rosa gallica': 'FRENCH ROSE: Compact shrub with DEEP PINK/RED FLOWERS, compound leaves, thorny stems, multiple fragrant blooms visible in July, bushy growth to 1.2m',
+    "Rosa 'Mister Lincoln'": "MISTER LINCOLN ROSE: Classic hybrid tea rose with DEEP VELVETY RED flowers, high-centered blooms 5-6 inches across, long cutting stems, dark green glossy foliage, tall upright growth to 2m, exceptionally fragrant, multiple large blooms in July",
+    "Rosa 'Chrysler Imperial'": "CHRYSLER IMPERIAL ROSE: Hybrid tea with DARK CRIMSON-RED flowers, classic high-centered form, velvety petals, strong damask fragrance, dark green foliage, upright bush 1.5m tall",
+    "Rosa 'Oklahoma'": "OKLAHOMA ROSE: Hybrid tea with BLACK-RED velvety flowers, very fragrant, large blooms on long stems, dark green foliage, vigorous upright growth to 1.8m",
+    "Rosa 'Ingrid Bergman'": "INGRID BERGMAN ROSE: Hybrid tea with classic BRIGHT RED flowers, perfect form, minimal fragrance, excellent disease resistance, glossy dark green foliage, compact growth 1.2m",
+    "Rosa 'Double Delight'": "DOUBLE DELIGHT ROSE: Hybrid tea with CREAM flowers edged in RED, color intensifies in sun, spicy fragrance, glossy green foliage, bushy growth to 1.5m, unique bicolor blooms",
+    'Rosa hybrida': 'HYBRID ROSE: Modern rose bush with large RED or PINK flowers, high-centered blooms, compound leaves with 5-7 leaflets, thorny stems, upright growth 1-2m, multiple blooms in July',
     'Lavandula angustifolia': 'ENGLISH LAVENDER: Linear gray-green leaves, opposite arrangement, aromatic, PURPLE flower spikes on square stems above foliage, compact Mediterranean shrub 60cm tall',
     'Lavandula': 'LAVENDER: Narrow silvery-gray leaves, Mediterranean shrub, upright PURPLE flower spikes rising above foliage, woody base, aromatic plant',
     'Acer palmatum': 'JAPANESE MAPLE: Palmate leaves with 5-7 pointed lobes, opposite leaf arrangement, small ornamental tree, smooth gray bark, graceful branching',
@@ -751,7 +759,15 @@ function getBotanicalMorphology(scientificName: string, commonName: string): str
     'Helianthus maximiliani': 'MAXIMILIAN SUNFLOWER: Narrow lanceolate leaves, tall prairie perennial, multiple YELLOW flowers along stem, 2.5m tall'
   };
   
-  // Try exact match first
+  // Try cultivar-specific match first (e.g., "Rosa 'Mister Lincoln'")
+  if (cultivar && scientificName) {
+    const cultivarKey = `${scientificName.split(' ')[0]} '${cultivar}'`;
+    if (botanicalDescriptions[cultivarKey]) {
+      return botanicalDescriptions[cultivarKey];
+    }
+  }
+  
+  // Try exact scientific name match
   if (botanicalDescriptions[scientificName]) {
     return botanicalDescriptions[scientificName];
   }
@@ -766,6 +782,10 @@ function getBotanicalMorphology(scientificName: string, commonName: string): str
   if (commonName.toLowerCase().includes('hosta')) {
     return 'HOSTA: Large broad leaves with parallel venation, clumping perennial habit forming dense mounds, shade garden plant with smooth leaves';
   } else if (commonName.toLowerCase().includes('rose')) {
+    // If it's a rose with a specific cultivar, provide cultivar-specific description
+    if (cultivar && cultivar !== 'Red') {
+      return `ROSE CULTIVAR '${cultivar}': Hybrid tea rose with characteristic blooms, compound leaves with 5-7 leaflets, thorny stems, showing multiple flowers in July, specific cultivar traits`;
+    }
     return 'ROSE BUSH: FLOWERING shrub showing RED/PINK BLOOMS in July, compound pinnate leaves with 5-7 leaflets, thorny stems, bushy growth 1-2m tall, MUST display multiple flowers';
   } else if (commonName.toLowerCase().includes('lavender')) {
     return 'LAVENDER: Narrow gray-green aromatic leaves, upright PURPLE flower spikes rising above foliage, Mediterranean shrub 60cm tall';
