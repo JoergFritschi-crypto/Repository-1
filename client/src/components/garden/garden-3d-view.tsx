@@ -1371,11 +1371,137 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
       // Hide UI elements during capture
       toggleUIElementsForCapture(false);
       
-      // Render the scene first
+      // CRITICAL FIX: Save current renderer size and camera aspect
+      const originalSize = rendererRef.current.getSize(new THREE.Vector2());
+      const originalAspect = cameraRef.current.aspect;
+      
+      // CRITICAL FIX: Force 16:9 aspect ratio for capture (1280x720)
+      const captureWidth = 1280;
+      const captureHeight = 720;
+      rendererRef.current.setSize(captureWidth, captureHeight);
+      cameraRef.current.aspect = captureWidth / captureHeight;
+      cameraRef.current.updateProjectionMatrix();
+      
+      // Add orientation markers and garden boundaries
+      const orientationGroup = new THREE.Group();
+      orientationGroup.name = 'orientation-markers';
+      
+      // Add visible garden boundary outline
+      const gardenBounds = gardenBoundsRef.current;
+      if (gardenBounds) {
+        const boundaryGeometry = new THREE.BufferGeometry();
+        const boundaryPoints = [];
+        
+        // Create boundary based on garden shape
+        if (gardenData.shape === 'circle') {
+          const radius = (gardenBounds.maxX - gardenBounds.minX) / 2;
+          const centerX = (gardenBounds.maxX + gardenBounds.minX) / 2;
+          const centerY = (gardenBounds.maxY + gardenBounds.minY) / 2;
+          for (let i = 0; i <= 32; i++) {
+            const angle = (i / 32) * Math.PI * 2;
+            boundaryPoints.push(
+              centerX + radius * Math.cos(angle),
+              centerY + radius * Math.sin(angle),
+              0.01
+            );
+          }
+        } else {
+          // Rectangle or square boundary
+          boundaryPoints.push(
+            gardenBounds.minX, gardenBounds.minY, 0.01,
+            gardenBounds.maxX, gardenBounds.minY, 0.01,
+            gardenBounds.maxX, gardenBounds.maxY, 0.01,
+            gardenBounds.minX, gardenBounds.maxY, 0.01,
+            gardenBounds.minX, gardenBounds.minY, 0.01
+          );
+        }
+        
+        boundaryGeometry.setAttribute('position', new THREE.Float32BufferAttribute(boundaryPoints, 3));
+        const boundaryMaterial = new THREE.LineBasicMaterial({ 
+          color: 0x8B4513, // Brown color for garden edge
+          linewidth: 3,
+          opacity: 1,
+          transparent: false
+        });
+        const boundaryLine = new THREE.Line(boundaryGeometry, boundaryMaterial);
+        orientationGroup.add(boundaryLine);
+      }
+      
+      // Add LEFT orientation marker (green square)
+      const leftMarkerGeometry = new THREE.PlaneGeometry(0.3, 0.3);
+      const leftMarkerMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x00FF00, // Bright green
+        side: THREE.DoubleSide
+      });
+      const leftMarker = new THREE.Mesh(leftMarkerGeometry, leftMarkerMaterial);
+      leftMarker.position.set(gardenBounds ? gardenBounds.minX - 0.5 : -2.5, 0, 0.02);
+      orientationGroup.add(leftMarker);
+      
+      // Add RIGHT orientation marker (red square)
+      const rightMarkerGeometry = new THREE.PlaneGeometry(0.3, 0.3);
+      const rightMarkerMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xFF0000, // Bright red
+        side: THREE.DoubleSide
+      });
+      const rightMarker = new THREE.Mesh(rightMarkerGeometry, rightMarkerMaterial);
+      rightMarker.position.set(gardenBounds ? gardenBounds.maxX + 0.5 : 2.5, 0, 0.02);
+      orientationGroup.add(rightMarker);
+      
+      // Add North arrow or indicator
+      const northGroup = new THREE.Group();
+      const arrowShape = new THREE.Shape();
+      arrowShape.moveTo(0, 0.2);
+      arrowShape.lineTo(-0.1, -0.1);
+      arrowShape.lineTo(0, 0);
+      arrowShape.lineTo(0.1, -0.1);
+      arrowShape.lineTo(0, 0.2);
+      
+      const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
+      const arrowMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x0000FF, // Blue for North
+        side: THREE.DoubleSide
+      });
+      const northArrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+      northArrow.position.set(0, gardenBounds ? gardenBounds.maxY + 0.5 : 2, 0.02);
+      northGroup.add(northArrow);
+      
+      // Add "N" text (simplified as a blue circle for now)
+      const nMarkerGeometry = new THREE.CircleGeometry(0.15, 16);
+      const nMarkerMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x0000FF,
+        side: THREE.DoubleSide
+      });
+      const nMarker = new THREE.Mesh(nMarkerGeometry, nMarkerMaterial);
+      nMarker.position.set(0, gardenBounds ? gardenBounds.maxY + 0.8 : 2.3, 0.02);
+      northGroup.add(nMarker);
+      orientationGroup.add(northGroup);
+      
+      // Add orientation markers to scene
+      sceneRef.current.add(orientationGroup);
+      
+      // Render the scene with orientation markers
       rendererRef.current.render(sceneRef.current, cameraRef.current);
       
-      // Capture the current canvas as base64
-      const dataURL = rendererRef.current.domElement.toDataURL('image/png');
+      // Capture the current canvas as base64 at 16:9 aspect ratio
+      const dataURL = rendererRef.current.domElement.toDataURL('image/png', 1.0);
+      
+      // Remove orientation markers after capture
+      sceneRef.current.remove(orientationGroup);
+      
+      // Clean up marker geometries and materials
+      leftMarkerGeometry.dispose();
+      leftMarkerMaterial.dispose();
+      rightMarkerGeometry.dispose();
+      rightMarkerMaterial.dispose();
+      arrowGeometry.dispose();
+      arrowMaterial.dispose();
+      nMarkerGeometry.dispose();
+      nMarkerMaterial.dispose();
+      
+      // CRITICAL FIX: Restore original renderer size and camera aspect
+      rendererRef.current.setSize(originalSize.x, originalSize.y);
+      cameraRef.current.aspect = originalAspect;
+      cameraRef.current.updateProjectionMatrix();
       
       // Restore UI elements after capture
       toggleUIElementsForCapture(true);

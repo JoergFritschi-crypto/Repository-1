@@ -350,6 +350,12 @@ function buildDetailedPhotorealizationPrompt(context: PhotorealizationContext): 
   const prompt = `
 === PHOTOREALISTIC GARDEN VISUALIZATION ===
 
+IMAGE REQUIREMENTS:
+- ASPECT RATIO: Generate a landscape 16:9 image (1280x720 pixels). Do not crop or change aspect ratio.
+- ORIENTATION: Preserve exact orientation from reference. Green marker on LEFT edge, red marker on RIGHT edge. Blue/N marker at TOP. Do NOT mirror, flip, or rotate the image.
+- BOUNDARIES: Show garden bed boundaries/edges as clearly visible natural borders (stone edging, mulch edge, or lawn edge) around the planting area.
+- COORDINATE PRESERVATION: Origin at top-left (0,0), x increases rightward, y increases downward. Maintain exact plant positions from reference.
+
 COORDINATE SYSTEM & SCALE:
 - Origin: Top-left corner (0%, 0%) = (0m, 0m) in real coordinates
 - Scale: ${geometry.coordinateSystem.scale} positioning (0-100% canvas) = ${geometry.coordinateSystem.bounds.width}m × ${geometry.coordinateSystem.bounds.height}m real space
