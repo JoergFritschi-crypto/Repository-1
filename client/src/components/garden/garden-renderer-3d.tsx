@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SeasonalViewer from './seasonal-viewer';
+import SeasonalDateSelector from './seasonal-date-selector';
 import { 
   createGardenScene3D, 
   type GardenScene3D, 
@@ -103,6 +104,15 @@ export default function GardenRenderer3D({
   });
   const [additionalDateRanges, setAdditionalDateRanges] = useState<any[]>([]);
   const [showSeasonalViewer, setShowSeasonalViewer] = useState(false);
+  
+  // Standalone seasonal generation state (independent of photorealization)
+  const [showSeasonalDateSelector, setShowSeasonalDateSelector] = useState(false);
+  const [isGeneratingStandaloneSeasonal, setIsGeneratingStandaloneSeasonal] = useState(false);
+  const [standaloneSeasonalProgress, setStandaloneSeasonalProgress] = useState({
+    currentImageIndex: 0,
+    totalImages: 0,
+    message: ''
+  });
   
   const { toast } = useToast();
 
@@ -1638,6 +1648,151 @@ export default function GardenRenderer3D({
     }
   }, [photorealizedImage, placedPlants, inventoryPlants, gardenData, toast]);
 
+  // Standalone seasonal generation from date range (independent of photorealization)
+  const generateSeasonalImagesFromRange = useCallback(async (startDay: number, endDay: number) => {
+    if (!isSceneReady || !canvasRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) {
+      toast({
+        title: "Scene Not Ready",
+        description: "Please ensure the 3D garden scene is generated before creating seasonal images.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (placedPlants.length === 0) {
+      toast({
+        title: "No Plants",
+        description: "Please add plants to your garden before generating seasonal variations.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingStandaloneSeasonal(true);
+    setShowSeasonalDateSelector(false);
+    setStandaloneSeasonalProgress({
+      currentImageIndex: 0,
+      totalImages: 0,
+      message: 'Preparing seasonal generation...'
+    });
+
+    try {
+      // Capture current 3D scene as base image
+      const canvas = canvasRef.current;
+      const baseImageDataUrl = canvas.toDataURL('image/png', 1.0);
+      
+      // Prepare plant data for seasonal generation
+      const plantData = placedPlants.map(plant => {
+        const plantInfo = inventoryPlants.find(p => p.id === plant.plantId);
+        return {
+          plantName: plantInfo?.name || plant.plantName || 'Unknown Plant',
+          scientificName: plantInfo?.scientificName,
+          x: plant.x,
+          y: plant.y,
+          size: plantInfo?.matureSize?.includes('tree') || 
+                (plantInfo?.heightMax && plantInfo.heightMax > 300) ? 'large' : 
+                (plantInfo?.heightMax && plantInfo.heightMax < 50) ? 'small' : 'medium',
+          plantType: plantInfo?.plantType,
+          bloomingSeason: plantInfo?.bloomingSeason
+        };
+      });
+
+      setStandaloneSeasonalProgress({
+        currentImageIndex: 1,
+        totalImages: Math.ceil((endDay - startDay + 1) / 30), // Estimate based on range
+        message: 'Generating seasonal timeline...'
+      });
+
+      // Call the enhanced seasonal generation API with date range
+      const response = await fetch(`/api/gardens/${gardenData.gardenId}/generate-seasonal-images`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          referenceImage: baseImageDataUrl,
+          gardenId: gardenData.gardenId,
+          gardenName: gardenData.gardenName,
+          plants: plantData,
+          gardenSize: `${gardenData.dimensions.width || 10}x${gardenData.dimensions.length || 10}m`,
+          dateRange: {
+            startDay,
+            endDay,
+            totalDays: endDay >= startDay ? endDay - startDay + 1 : (365 - startDay + 1) + endDay,
+            isWrapAround: endDay < startDay
+          },
+          style: "Natural photorealistic garden photography",
+          sceneMetadata: {
+            camera: {
+              position: cameraRef.current.position.toArray(),
+              target: [0, 0, 0], // Assuming center target
+              fov: cameraRef.current.fov
+            },
+            lighting: {
+              timeOfDay: renderSettings.timeOfDay,
+              season: renderSettings.season
+            }
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.seasonalImages && result.seasonalImages.length > 0) {
+        // Convert API result to SeasonalViewer format
+        const viewerImages = result.seasonalImages.map((img: any) => ({
+          dayOfYear: img.dayOfYear,
+          date: img.date,
+          imageUrl: img.imageUrl,
+          season: img.season,
+          description: img.description || `Garden view for ${img.date}`,
+          bloomingPlants: img.bloomingPlants || [],
+          weatherCondition: img.weatherCondition || `Typical ${img.season} conditions`
+        }));
+
+        // Update seasonal viewer state and open viewer
+        setSeasonalViewerImages(viewerImages);
+        setCurrentDateRange({
+          startDay,
+          endDay,
+          totalDays: endDay >= startDay ? endDay - startDay + 1 : (365 - startDay + 1) + endDay,
+          isWrapAround: endDay < startDay,
+          rangeId: `range-${Date.now()}`,
+          color: '#10B981'
+        });
+        
+        // Open the SeasonalViewer with the generated images
+        setShowSeasonalViewer(true);
+
+        toast({
+          title: "Seasonal Timeline Generated",
+          description: `Successfully generated ${viewerImages.length} seasonal images for your selected date range.`,
+        });
+      } else {
+        throw new Error(result.error || 'No images generated');
+      }
+
+    } catch (error) {
+      console.error('Standalone seasonal generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate seasonal timeline. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingStandaloneSeasonal(false);
+      setStandaloneSeasonalProgress({
+        currentImageIndex: 0,
+        totalImages: 0,
+        message: ''
+      });
+    }
+  }, [isSceneReady, placedPlants, inventoryPlants, gardenData, renderSettings, toast]);
+
   // Cleanup on unmount with comprehensive resource disposal
   useEffect(() => {
     return () => {
@@ -1890,6 +2045,25 @@ export default function GardenRenderer3D({
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export 4K
+                </Button>
+                
+                <Button 
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-2 border-green-500/50 hover:border-emerald-400 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowSeasonalDateSelector(true)}
+                  disabled={isGeneratingStandaloneSeasonal || placedPlants.length === 0}
+                  data-testid="button-generate-seasonal"
+                >
+                  {isGeneratingStandaloneSeasonal ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating {standaloneSeasonalProgress.message}...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Generate Seasonal Images
+                    </>
+                  )}
                 </Button>
                 
                 <TooltipProvider>
@@ -2483,6 +2657,84 @@ export default function GardenRenderer3D({
                 </Button>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Standalone Seasonal Date Selector Dialog */}
+      <Dialog open={showSeasonalDateSelector} onOpenChange={setShowSeasonalDateSelector}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-green-600" />
+              Select Date Range for Seasonal Garden Timeline
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <Alert className="border-primary/30 bg-primary/5">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-sm">
+                <p className="mb-2">
+                  Create a seasonal timeline of your garden by selecting the date range you'd like to visualize. 
+                  The AI will generate botanically accurate images showing how your plants develop, bloom, and change throughout the selected period.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <strong>Examples:</strong> "Spring Awakening" (March-May), "Peak Bloom" (April-June), "Summer Glory" (May-August), or custom ranges for specific plant growth periods.
+                </p>
+              </AlertDescription>
+            </Alert>
+            
+            <SeasonalDateSelector
+              onDateRangeSelected={generateSeasonalImagesFromRange}
+              isLoading={isGeneratingStandaloneSeasonal}
+              className="border-0 shadow-none p-0"
+            />
+            
+            {isGeneratingStandaloneSeasonal && (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Loader2 className="h-5 w-5 text-green-600 dark:text-green-400 animate-spin mt-0.5" />
+                  <div className="space-y-2 flex-1">
+                    <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                      Generating Seasonal Timeline...
+                    </p>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      {standaloneSeasonalProgress.message}
+                    </p>
+                    {standaloneSeasonalProgress.totalImages > 0 && (
+                      <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                        <div className="w-24 bg-green-200 dark:bg-green-800 rounded-full h-1.5">
+                          <div 
+                            className="bg-green-600 dark:bg-green-400 h-1.5 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${(standaloneSeasonalProgress.currentImageIndex / standaloneSeasonalProgress.totalImages) * 100}%` 
+                            }}
+                          />
+                        </div>
+                        <span>
+                          {standaloneSeasonalProgress.currentImageIndex} / {standaloneSeasonalProgress.totalImages} images
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-between items-center mt-6 pt-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              💡 Tip: Select shorter ranges (30-90 days) for more detailed seasonal progression
+            </div>
+            <Button 
+              variant="ghost"
+              onClick={() => setShowSeasonalDateSelector(false)}
+              disabled={isGeneratingStandaloneSeasonal}
+              data-testid="button-close-seasonal-selector"
+            >
+              {isGeneratingStandaloneSeasonal ? 'Generating...' : 'Cancel'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
