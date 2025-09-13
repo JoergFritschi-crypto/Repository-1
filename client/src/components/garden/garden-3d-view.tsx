@@ -1361,15 +1361,81 @@ export default function Garden3DView({
           )}
         </div>
         
-        {/* Garden Dimensions Display */}
-        <div className="text-center py-2 bg-muted/50 rounded-md">
-          <p className="text-sm font-medium text-foreground">
-            Garden Dimensions: <span className="font-bold">{gardenData.dimensions?.width || 10}m × {gardenData.dimensions?.length || 10}m</span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Total Area: {((gardenData.dimensions?.width || 10) * (gardenData.dimensions?.length || 10)).toFixed(1)}m²
-          </p>
-        </div>
+        {/* Garden Information Card */}
+        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200">
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {/* Dimensions & Area */}
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">Dimensions</p>
+                <p className="text-sm font-bold text-gray-900">
+                  {gardenData.dimensions?.width || 10}m × {gardenData.dimensions?.length || 10}m
+                </p>
+                <p className="text-xs text-gray-600">
+                  Area: {((gardenData.dimensions?.width || 10) * (gardenData.dimensions?.length || 10)).toFixed(1)}m²
+                </p>
+              </div>
+              
+              {/* Shape & Slope */}
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">Terrain</p>
+                <p className="text-sm font-bold text-gray-900 capitalize">
+                  {gardenData.shape || 'Rectangle'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {gardenData.slopePercentage && Number(gardenData.slopePercentage) > 0 
+                    ? `${gardenData.slopePercentage}% slope ${gardenData.slopeDirection || 'S'}`
+                    : 'Level ground'}
+                </p>
+              </div>
+              
+              {/* Plants */}
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">Plants</p>
+                <p className="text-sm font-bold text-gray-900">
+                  {placedPlants.length} {placedPlants.length === 1 ? 'Plant' : 'Plants'}
+                </p>
+                <p className="text-xs text-gray-600 truncate" title={Array.from(new Set(placedPlants.map(p => p.plantName))).join(', ')}>
+                  {Array.from(new Set(placedPlants.map(p => p.plantName))).slice(0, 3).join(', ')}
+                  {Array.from(new Set(placedPlants.map(p => p.plantName))).length > 3 && '...'}
+                </p>
+              </div>
+              
+              {/* Location & Climate */}
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">Location</p>
+                <p className="text-sm font-bold text-gray-900 truncate" title={gardenData.location}>
+                  {gardenData.location || 'Not specified'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  Zone: {gardenData.hardiness_zone || 'Not set'}
+                </p>
+              </div>
+              
+              {/* Sun & Orientation */}
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">Orientation</p>
+                <p className="text-sm font-bold text-gray-900">
+                  North: {gardenData.northOrientation || 'N'}
+                </p>
+                <p className="text-xs text-gray-600 capitalize">
+                  {gardenData.sunExposure ? gardenData.sunExposure.replace('_', ' ') : 'Full sun'}
+                </p>
+              </div>
+              
+              {/* Soil */}
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">Soil</p>
+                <p className="text-sm font-bold text-gray-900 capitalize">
+                  {gardenData.soilType ? gardenData.soilType.replace('_', ' ') : 'Loam'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  pH: {gardenData.soilPh || 'Not tested'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
         {/* Control Panel */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
