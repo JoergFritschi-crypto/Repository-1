@@ -10,12 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### AI Photorealization Optimization - Minimal Markers (September 2025)
-- Implemented "AI Mode" toggle in 3D renderer for improved photorealization accuracy
+### AI Photorealization Optimization - Automatic Minimal Markers (September 2025)
+- Implemented automatic photorealization mode in Garden3DView for improved AI accuracy
 - Replaced complex 3D geometries (cones, spheres) with minimal white dot markers
 - Research showed complex shapes were causing AI to preserve geometric forms instead of generating accurate botanical species
 - Minimal markers: pure white dots on black background with no other visual elements
 - Technical implementation: 16x16 pixel sprites, NearestFilter, depthTest=false, renderOrder=999
+- Automatic activation: Mode enables automatically when generating AI visualizations
+- Canvas capture: System captures minimal marker image and sends to Gemini for reference
+- User transparency: Mode is completely hidden from users - no visible toggle or indication
 - Result: AI has maximum freedom to generate plants from botanical text descriptions without geometric bias
 
 ### Database Restructuring for Numeric Dimensions (September 2025)
