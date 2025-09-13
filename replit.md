@@ -10,6 +10,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### AI Design System Architecture & Safety Fixes (September 2025)
+- **AI Implementation**: Uses Anthropic Claude API for garden design generation (not in-house solution)
+- **Fixed Logic Error**: Moved safety preferences from manual design to AI design approach
+  - AI design now properly asks for plant safety preferences (toxic, thorny, irritant avoidance)
+  - Manual design no longer shows safety preferences (users can filter themselves)
+- **Added Abuse Prevention**: Implemented reasonable limits for premium tier
+  - Free tier: 1 design total
+  - Pay-per-design tier: 1 design per style
+  - Premium tier: 50 designs/month, max 10/day (was previously unlimited and vulnerable to abuse)
+- **Fixed Navigation Alignment**: Step numbers now align horizontally with consistent min-height containers
+
 ### AI Photorealization Optimization - Automatic Minimal Markers (September 2025)
 - Implemented automatic photorealization mode in Garden3DView for improved AI accuracy
 - Replaced complex 3D geometries (cones, spheres) with minimal white dot markers
