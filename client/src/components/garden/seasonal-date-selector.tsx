@@ -149,10 +149,10 @@ export default function SeasonalDateSelector({
   className 
 }: SeasonalDateSelectorProps) {
   // Slider values (always ascending for UI consistency)
-  const [sliderRange, setSliderRange] = useState<[number, number]>([105, 165]); // Default: Peak Bloom
+  const [sliderRange, setSliderRange] = useState<[number, number]>([60, 300]); // Default: March-October (peak growing season)
   
   // Semantic range (can wrap around for winter ranges)
-  const [semanticRange, setSemanticRange] = useState<[number, number]>([105, 165]);
+  const [semanticRange, setSemanticRange] = useState<[number, number]>([60, 300]); // Default: March-October (peak growing season)
   
   // Track if current range wraps around year boundary
   const [isWrapAround, setIsWrapAround] = useState<boolean>(false);
