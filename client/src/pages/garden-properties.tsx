@@ -113,54 +113,45 @@ const gardenSchema = z.object({
 
 type GardenFormValues = z.infer<typeof gardenSchema>;
 
-// Internal step details (all 7 steps including hidden Step 4)
-const allStepDetails = [
+// Step details - clean 6-step workflow
+const stepDetails = [
   { 
     title: 'Welcome', 
     subtitle: 'Start your garden journey',
     description: 'Tell us about your garden location',
-    visible: true,
     buttonLabel: 'Next: Site Details'
   },
   { 
     title: 'Site Details', 
     subtitle: 'Define your space',
     description: 'Define your garden space',
-    visible: true,
+    buttonLabel: 'Next: Design Approach'
+  },
+  { 
+    title: 'Design Approach', 
+    subtitle: 'Choose your design method',
+    description: 'AI-assisted or manual design',
     buttonLabel: 'Next: Design Your Garden'
   },
   { 
     title: 'Interactive Design', 
     subtitle: 'Choose and place your plants',
     description: 'Choose and place your plants',
-    visible: true,
     buttonLabel: 'Next: Generate Seasonal Views'
-  },
-  { 
-    title: '3D Garden View', 
-    subtitle: 'Technical preview',
-    description: 'Precise 3D rendering with exact positions',
-    visible: false, // Hidden from user view
-    buttonLabel: 'Processing...'
   },
   { 
     title: 'Seasonal Garden', 
     subtitle: 'Year-round garden views',
     description: 'Generate your seasonal visualization',
-    visible: true,
     buttonLabel: 'Next: Review & Download'
   },
   { 
     title: 'Review & Download', 
     subtitle: 'Complete your design',
     description: 'Save and share your garden',
-    visible: true,
     buttonLabel: 'Complete Garden Design'
   }
 ];
-
-// Visible step details for UI (filters out hidden steps)
-const stepDetails = allStepDetails.filter(step => step.visible);
 
 // Component to automatically remove white background from AI-generated garden spade
 function TransparentGardenSpadeComponent({ className }: { className?: string }) {
@@ -377,9 +368,9 @@ export default function GardenProperties() {
         setPlacedPlants(existingGarden.layout_data.plantPlacements);
       }
       
-      // Jump to step 5 if editing an existing garden to see the 3D view
-      if (urlGardenId === '0ed224de-6416-47d6-aafc-c166deb2d474') {
-        setCurrentStep(5); // Go directly to 3D view for Test Garden 2
+      // Set design approach if available
+      if (existingGarden.design_approach) {
+        setLocalDesignApproach(existingGarden.design_approach);
       }
     }
   }, [existingGarden, form, urlGardenId]);
@@ -390,12 +381,12 @@ export default function GardenProperties() {
   }, [currentStep]);
 
   const nextStep = async () => {
-    // Skip step 4 (3D Technical View) - go directly from plant placement to seasonal generation
-    if (currentStep === 3) {
+    // Handle transition from Step 4 (Interactive Design) to Step 5 (Seasonal)
+    if (currentStep === 4) {
       // Skip validation for admin users
       const isAdmin = user?.isAdmin === true;
       
-      // Save garden data before skipping to step 5
+      // Save garden data before moving to Step 5
       const shouldAutoSave = isPaidUser || autoSaveEnabled;
       if (shouldAutoSave && gardenId && user) {
         try {
@@ -409,9 +400,8 @@ export default function GardenProperties() {
         }
       }
       
-      // Jump directly to step 5, skipping the hidden step 4
+      // Move to step 5 and open seasonal date selector
       setCurrentStep(5);
-      // Open the seasonal date selector modal directly
       setShowSeasonalDateSelector(true);
       return;
     }
@@ -499,16 +489,11 @@ export default function GardenProperties() {
     //   return;
     // }
     
-    setCurrentStep(prev => Math.min(prev + 1, 6)); // Now only 6 steps total
+    setCurrentStep(prev => Math.min(prev + 1, 6)); // 6 steps total
   };
 
   const prevStep = () => {
-    // Skip step 4 when going backward from step 5
-    if (currentStep === 5) {
-      setCurrentStep(3);
-    } else {
-      setCurrentStep(prev => Math.max(prev - 1, 1));
-    }
+    setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
   // Function to handle seasonal image generation
@@ -745,16 +730,16 @@ export default function GardenProperties() {
           } rounded-t-lg`}>
             <CardTitle className="text-base md:text-lg">
               {(() => {
-                // Get the current step details from allStepDetails
-                const stepDetail = allStepDetails[currentStep - 1];
+                // Get the current step details from stepDetails
+                const stepDetail = stepDetails[currentStep - 1];
                 // Display step number (1-6 for visible steps)
-                const displayNumber = currentStep <= 3 ? currentStep : currentStep - 1;
+                const displayNumber = currentStep;
                 return stepDetail ? `Step ${displayNumber}: ${stepDetail.title}` : '';
               })()}
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
               {(() => {
-                const stepDetail = allStepDetails[currentStep - 1];
+                const stepDetail = stepDetails[currentStep - 1];
                 return stepDetail ? stepDetail.description : '';
               })()}
             </CardDescription>
@@ -2186,8 +2171,151 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 3: Interactive Design - Unified Plant Selection and Placement */}
+            {/* Step 3: Design Approach - Choose AI or Manual Design */}
             {currentStep === 3 && (
+              <div className="space-y-3">
+                <Card className="border-2 border-primary shadow-sm" data-testid="step-design-approach">
+                  <CardHeader className="py-7 flower-band-cottage rounded-t-lg">
+                    <CardTitle className="text-base">Choose Your Design Approach</CardTitle>
+                    <CardDescription>
+                      Select how you'd like to create your garden design
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-0">
+                    {/* Design Approach Selection */}
+                    <FormField
+                      control={form.control}
+                      name="design_approach"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Design Method <span className="text-red-500">*</span></FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              value={field.value || localDesignApproach || undefined}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setLocalDesignApproach(value as "ai" | "manual");
+                              }}
+                              className="space-y-4"
+                            >
+                              <div className="flex items-start space-x-3 p-4 border-2 border-primary/20 rounded-lg hover:border-primary/40 transition-colors cursor-pointer">
+                                <RadioGroupItem value="ai" id="ai-design" className="mt-1" data-testid="radio-ai-design" />
+                                <label htmlFor="ai-design" className="flex-1 cursor-pointer">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Wand2 className="w-4 h-4 text-primary" />
+                                    <span className="font-semibold">AI-Generated Design</span>
+                                    <Badge variant="secondary" className="text-xs">Recommended</Badge>
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    Let our AI create a professional garden design based on your preferences, climate, and selected style. Perfect for beginners and those seeking expert guidance.
+                                  </p>
+                                </label>
+                              </div>
+                              
+                              <div className="flex items-start space-x-3 p-4 border-2 border-primary/20 rounded-lg hover:border-primary/40 transition-colors cursor-pointer">
+                                <RadioGroupItem value="manual" id="manual-design" className="mt-1" data-testid="radio-manual-design" />
+                                <label htmlFor="manual-design" className="flex-1 cursor-pointer">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <PenTool className="w-4 h-4 text-primary" />
+                                    <span className="font-semibold">Manual Design</span>
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    Create your garden from scratch using our interactive design canvas. Full creative control for experienced gardeners or those with specific visions.
+                                  </p>
+                                </label>
+                              </div>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* AI Design Preferences - Only shown when AI is selected */}
+                    {(watchedDesignApproach === 'ai' || localDesignApproach === 'ai') && (
+                      <div className="space-y-4 pt-4 border-t">
+                        <h3 className="font-semibold text-sm flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-primary" />
+                          AI Design Preferences
+                        </h3>
+                        
+                        {/* Garden Style Selection */}
+                        <div className="space-y-2">
+                          <Label>Garden Style</Label>
+                          <StyleSelector
+                            selectedStyle={selectedGardenStyle || watchedSelectedStyle || ''}
+                            onStyleChange={(styleId) => {
+                              setSelectedGardenStyle(styleId);
+                              form.setValue('selectedStyle', styleId);
+                            }}
+                            analysis={analysis}
+                            recommendedStyleIds={recommendedStyleIds}
+                            generatedStyles={generatedStyles}
+                          />
+                        </div>
+
+                        {/* Safety Preferences */}
+                        <div className="space-y-2">
+                          <Label>Safety & Accessibility</Label>
+                          <SafetyPreferences
+                            form={form}
+                            watchedToxicityLevel={watchedToxicityLevel}
+                            watchedPlantAvailability={watchedPlantAvailability}
+                          />
+                        </div>
+
+                        {/* Spacing Preference */}
+                        <FormField
+                          control={form.control}
+                          name="spacingPreference"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Plant Spacing Preference</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value || 'balanced'}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-spacing">
+                                    <SelectValue placeholder="Select spacing preference" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="minimum">Minimum (Dense, lush garden)</SelectItem>
+                                  <SelectItem value="balanced">Balanced (Recommended spacing)</SelectItem>
+                                  <SelectItem value="maximum">Maximum (Open, spacious garden)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription className="text-xs">
+                                How closely plants should be placed together
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {/* Manual Design Info - Only shown when Manual is selected */}
+                    {(watchedDesignApproach === 'manual' || localDesignApproach === 'manual') && (
+                      <Alert className="mt-4">
+                        <Lightbulb className="h-4 w-4" />
+                        <AlertTitle>Manual Design Mode</AlertTitle>
+                        <AlertDescription>
+                          In the next step, you'll have access to our interactive garden canvas where you can:
+                          <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>Search and browse our plant database</li>
+                            <li>Drag and drop plants onto your garden</li>
+                            <li>Arrange plants exactly as you envision</li>
+                            <li>See real-time spacing and compatibility feedback</li>
+                          </ul>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Step 4: Interactive Design - Unified Plant Selection and Placement */}
+            {currentStep === 4 && (
               <div className="space-y-3">
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-interactive-design">
                   <CardHeader className="py-3">
@@ -2459,40 +2587,6 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 4: Hidden 3D Technical View for AI Reference */}
-            {/* This step is now invisible - used only for generating reference images */}
-            {currentStep === 4 && (
-              <div className="hidden">
-                <Card className="border-2 border-primary shadow-sm" data-testid="step-3d-technical-view">
-                  <CardHeader className="py-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-primary" />
-                      3D Garden View - Technical Rendering
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Hidden 3D Garden View for AI Reference */}
-                    <Garden3DView
-                      ref={garden3DViewRef}
-                      gardenId={gardenId || 'temp-garden'}
-                      gardenName={watchedName || 'My Garden'}
-                      gardenData={{
-                        shape: watchedShape,
-                        dimensions: watchedDimensions,
-                        units: watchedUnits,
-                        slopeDirection: watchedSlopeDirection,
-                        slopePercentage: watchedSlopePercentage,
-                        northOrientation: watchedSlopeDirection,
-                        pointOfView: watchedPointOfView || 'bird_eye'
-                      } as any}
-                      placedPlants={placedPlants}
-                      photorealizationMode={true}
-                      hiddenMode={true}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            )}
 
             {/* Step 5: Seasonal Garden Generation - Integrated Experience */}
             {currentStep === 5 && (
@@ -2779,8 +2873,8 @@ export default function GardenProperties() {
                 {createGardenMutation.isPending ? (
                   "Creating..."
                 ) : (() => {
-                  // Get button label from allStepDetails
-                  const stepDetail = allStepDetails[currentStep - 1];
+                  // Get button label from stepDetails
+                  const stepDetail = stepDetails[currentStep - 1];
                   if (stepDetail?.buttonLabel) {
                     return (
                       <>
