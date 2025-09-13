@@ -1516,6 +1516,7 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
           plantDetails: plantDetail ? {
             commonName: plantDetail.commonName,
             scientificName: plantDetail.scientificName,
+            cultivar: plantDetail.cultivar,
             type: plantDetail.type,
             heightMaxCm: plantDetail.heightMaxCm,
             spreadMaxCm: plantDetail.spreadMaxCm,

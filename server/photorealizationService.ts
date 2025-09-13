@@ -429,7 +429,7 @@ ${plants.map((plant, idx) => {
   const plantNumber = idx + 1;
   const totalPlants = plants.length;
   return `
-Specimen ${plantNumber} of ${totalPlants}: ${plant.scientificName} [common: ${plant.commonName}]
+Specimen ${plantNumber} of ${totalPlants}: ${plant.scientificName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} [common: ${plant.commonName}]
   CRITICAL IDENTIFICATION: ${botanicalDetails}
   Position: (${plant.position.x.toFixed(1)}%, ${plant.position.y.toFixed(1)}%) = (${((plant.position.x * geometry.coordinateSystem.bounds.width) / 100).toFixed(1)}m, ${((plant.position.y * geometry.coordinateSystem.bounds.height) / 100).toFixed(1)}m)
   Mature size: ${plant.size.height.toFixed(1)}m tall × ${plant.size.spread.toFixed(1)}m spread
@@ -535,7 +535,7 @@ export function buildPhotorealizationPrompt(context: PhotorealizationContext): s
   const plantList = plants.map((plant, idx) => {
     const num = idx + 1;
     const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
-    return `${num}. ${plant.commonName} at position ${plant.position.x.toFixed(0)}%, ${plant.position.y.toFixed(0)}% - ${morphology}`;
+    return `${num}. ${plant.commonName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} at position ${plant.position.x.toFixed(0)}%, ${plant.position.y.toFixed(0)}% - ${morphology}`;
   }).join('\n');
   
   const prompt = `Create a photorealistic garden image.
