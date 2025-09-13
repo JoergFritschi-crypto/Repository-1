@@ -609,7 +609,7 @@ Generate a photorealistic garden image showing exactly ${plants.length} plants: 
 
 /**
  * Builds an enhanced, highly detailed prompt for accurate photorealization
- * Target: 5000-6000 characters for maximum clarity and precision
+ * Optimized for gardens with 1-50+ plants with tiered detail levels
  */
 export function buildPhotorealizationPrompt(context: PhotorealizationContext): string {
   const { garden, plants, sceneState } = context;
@@ -619,64 +619,38 @@ export function buildPhotorealizationPrompt(context: PhotorealizationContext): s
   const gridCellW = (dimensions.width / 10).toFixed(2);
   const gridCellH = (dimensions.length / 10).toFixed(2);
   
-  // Build detailed plant placement matrix - optimized for 5000-6000 char target
-  const plantMatrix = plants.map((plant, idx) => {
-    const num = idx + 1;
-    const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
-    const gridX = Math.floor(plant.position.x / 10);
-    const gridY = Math.floor(plant.position.y / 10);
-    const mX = (plant.position.x * dimensions.width / 100).toFixed(1);
-    const mY = (plant.position.y * dimensions.length / 100).toFixed(1);
-    
-    // Dynamic morphology length to maintain 5000-6000 char target
-    // With 4 plants, aim for ~120 chars per plant description
-    const targetLength = plants.length <= 3 ? 140 : plants.length <= 5 ? 120 : 100;
-    const shortMorph = morphology.length > targetLength ? morphology.substring(0, targetLength - 3) + '...' : morphology;
-    
-    return `P${num}: ${plant.commonName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} @ [${gridX},${gridY}] (${plant.position.x}%L,${plant.position.y}%T=${mX}m,${mY}m)
-  ${plant.size.height.toFixed(1)}m×${plant.size.spread.toFixed(1)}m | ${shortMorph}`;
-  }).join('\n');
+  // Determine detail level based on plant count
+  const plantCount = plants.length;
+  const detailLevel = plantCount <= 10 ? 'full' : plantCount <= 20 ? 'medium' : 'compact';
   
-  // Calculate plant spacing and relationships
-  const plantSpacing = plants.map((p1, i) => {
-    return plants.slice(i + 1).map(p2 => {
-      const dx = Math.abs(p1.position.x - p2.position.x) * dimensions.width / 100;
-      const dy = Math.abs(p1.position.y - p2.position.y) * dimensions.length / 100;
-      return Math.sqrt(dx * dx + dy * dy);
-    });
-  }).flat();
-  const minSpace = plantSpacing.length > 0 ? Math.min(...plantSpacing).toFixed(2) : 'N/A';
-  const avgSpace = plantSpacing.length > 0 ? (plantSpacing.reduce((a,b) => a+b, 0) / plantSpacing.length).toFixed(2) : 'N/A';
+  // Character budget allocation
+  const MAX_PROMPT_LENGTH = 45000; // Well under 50K limit
+  const FIXED_SECTIONS_LENGTH = 2500; // Core requirements that never change
+  const availablePlantBudget = MAX_PROMPT_LENGTH - FIXED_SECTIONS_LENGTH;
+  const perPlantBudget = Math.floor(availablePlantBudget / Math.max(plantCount, 1));
   
-  // Calculate size groups for hierarchy
-  const tallPlants = plants.filter(p => p.size.height > 1).map(p => `${p.commonName}(${p.size.height.toFixed(1)}m)`).join(', ');
-  const medPlants = plants.filter(p => p.size.height >= 0.5 && p.size.height <= 1).map(p => `${p.commonName}(${p.size.height.toFixed(1)}m)`).join(', ');
-  const shortPlants = plants.filter(p => p.size.height < 0.5).map(p => `${p.commonName}(${p.size.height.toFixed(1)}m)`).join(', ');
+  // Build plant descriptions based on detail level
+  let plantDescriptions = '';
   
-  // Build comprehensive prompt targeting 5000-6000 characters
-  // Dynamic sections adjust based on plant count to maintain target size
-  const basePromptSize = 4200; // Base structure without plants
-  const perPlantAllocation = Math.floor((5500 - basePromptSize) / Math.max(plants.length, 1));
-  
-  // Build comprehensive plant descriptions for 5000-6000 character target
-  const plantDescriptions = plants.map((plant, idx) => {
-    const num = idx + 1;
-    const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
-    const gridX = Math.floor(plant.position.x / 10);
-    const gridY = Math.floor(plant.position.y / 10);
-    const mX = (plant.position.x * dimensions.width / 100).toFixed(1);
-    const mY = (plant.position.y * dimensions.length / 100).toFixed(1);
-    
-    // Expanded descriptions to help reach 5000-6000 character target
-    const typeDesc = plant.type === 'perennial' ? 'herbaceous perennial' : 
-                     plant.type === 'shrub' ? 'woody shrub' : 
-                     plant.type === 'tree' ? 'deciduous tree' : plant.type;
-    const bloomDesc = plant.bloomStatus.includes('flowering') 
-      ? `Displaying characteristic ${plant.scientificName.includes('Rosa') ? 'rose blooms' : 
-         plant.scientificName.includes('Lavandula') ? 'lavender flower spikes' : 'flowers'} during July`
-      : 'Rich green foliage only, no flowering in July';
-    
-    return `PLANT ${num}: ${plant.commonName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} (${plant.scientificName})
+  if (detailLevel === 'full') {
+    // 1-10 plants: Full detail (~600 chars per plant)
+    plantDescriptions = plants.map((plant, idx) => {
+      const num = idx + 1;
+      const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
+      const gridX = Math.floor(plant.position.x / 10);
+      const gridY = Math.floor(plant.position.y / 10);
+      const mX = (plant.position.x * dimensions.width / 100).toFixed(1);
+      const mY = (plant.position.y * dimensions.length / 100).toFixed(1);
+      
+      const typeDesc = plant.type === 'perennial' ? 'herbaceous perennial' : 
+                       plant.type === 'shrub' ? 'woody shrub' : 
+                       plant.type === 'tree' ? 'deciduous tree' : plant.type;
+      const bloomDesc = plant.bloomStatus.includes('flowering') 
+        ? `Displaying characteristic ${plant.scientificName.includes('Rosa') ? 'rose blooms' : 
+           plant.scientificName.includes('Lavandula') ? 'lavender flower spikes' : 'flowers'} during July`
+        : 'Rich green foliage only, no flowering in July';
+      
+      return `PLANT ${num}: ${plant.commonName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} (${plant.scientificName})
   Grid Position: Cell [${gridX},${gridY}] = ${plant.position.x}% from left edge, ${plant.position.y}% from top edge
   Physical Location: ${mX} meters from left boundary, ${mY} meters from back boundary
   Mature Size: ${plant.size.height.toFixed(1)} meters tall × ${plant.size.spread.toFixed(1)} meters wide spread
@@ -684,81 +658,169 @@ export function buildPhotorealizationPrompt(context: PhotorealizationContext): s
   Botanical Details: ${morphology}
   July Appearance: ${bloomDesc}
   Spacing: Maintain clear soil visible around base, no overlapping with adjacent plants`;
-  }).join('\n\n');
+    }).join('\n\n');
+    
+  } else if (detailLevel === 'medium') {
+    // 11-20 plants: Medium detail (~300 chars per plant)
+    plantDescriptions = `PLANT MATRIX (${plantCount} specimens):\n` + 
+      plants.map((plant, idx) => {
+        const num = idx + 1;
+        const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
+        const shortMorph = morphology.substring(0, 80) + (morphology.length > 80 ? '...' : '');
+        const mX = (plant.position.x * dimensions.width / 100).toFixed(1);
+        const mY = (plant.position.y * dimensions.length / 100).toFixed(1);
+        
+        return `P${num}: ${plant.commonName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} (${plant.scientificName})
+  Position: (${plant.position.x}%,${plant.position.y}%) = ${mX}m×${mY}m from origin
+  Size: ${plant.size.height.toFixed(1)}m tall × ${plant.size.spread.toFixed(1)}m wide
+  July: ${shortMorph}, ${plant.bloomStatus}`;
+      }).join('\n');
+      
+  } else {
+    // 21+ plants: Compact detail (~150 chars per plant)
+    // Group plants by zones for efficiency
+    const zones: { [key: string]: typeof plants } = {};
+    
+    // Divide garden into zones (front, middle, back)
+    plants.forEach(plant => {
+      const zone = plant.position.y < 33 ? 'FRONT' : 
+                   plant.position.y < 66 ? 'MIDDLE' : 'BACK';
+      if (!zones[zone]) zones[zone] = [];
+      zones[zone].push(plant);
+    });
+    
+    plantDescriptions = `PLANT MATRIX (${plantCount} total plants):\n`;
+    
+    // First list all plants in compact format
+    plantDescriptions += plants.map((plant, idx) => {
+      const num = idx + 1;
+      const mX = (plant.position.x * dimensions.width / 100).toFixed(1);
+      const mY = (plant.position.y * dimensions.length / 100).toFixed(1);
+      const cultivarText = plant.cultivar ? ` '${plant.cultivar}'` : '';
+      
+      return `#${num}: ${plant.commonName}${cultivarText} @ (${plant.position.x.toFixed(0)}%,${plant.position.y.toFixed(0)}%) = ${mX}×${mY}m | ${plant.size.height.toFixed(1)}m ${plant.type}`;
+    }).join('\n');
+    
+    // Then add zone summary for better organization
+    plantDescriptions += '\n\nZONE DISTRIBUTION:\n';
+    Object.entries(zones).forEach(([zone, zonePlants]) => {
+      const plantNames = zonePlants.map(p => p.commonName).join(', ');
+      plantDescriptions += `${zone} (${zonePlants.length} plants): ${plantNames}\n`;
+    });
+  }
+  
+  // Calculate plant spacing for all detail levels
+  const plantSpacing = plants.length > 1 ? plants.map((p1, i) => {
+    return plants.slice(i + 1).map(p2 => {
+      const dx = Math.abs(p1.position.x - p2.position.x) * dimensions.width / 100;
+      const dy = Math.abs(p1.position.y - p2.position.y) * dimensions.length / 100;
+      return Math.sqrt(dx * dx + dy * dy);
+    });
+  }).flat() : [];
+  
+  const minSpace = plantSpacing.length > 0 ? Math.min(...plantSpacing).toFixed(2) : 'N/A';
+  const avgSpace = plantSpacing.length > 0 ? (plantSpacing.reduce((a,b) => a+b, 0) / plantSpacing.length).toFixed(2) : 'N/A';
+  
+  // Build size groups for better organization
+  const sizeGroups = detailLevel !== 'compact' ? {
+    tall: plants.filter(p => p.size.height > 1).map(p => `${p.commonName}(${p.size.height.toFixed(1)}m)`).join(', ') || 'none',
+    medium: plants.filter(p => p.size.height >= 0.5 && p.size.height <= 1).map(p => `${p.commonName}(${p.size.height.toFixed(1)}m)`).join(', ') || 'none', 
+    short: plants.filter(p => p.size.height < 0.5).map(p => `${p.commonName}(${p.size.height.toFixed(1)}m)`).join(', ') || 'none'
+  } : null;
+  
+  // Build base prompt with critical requirements (these NEVER change)
+  const criticalRequirements = `=== PHOTOREALISTIC GARDEN BED VISUALIZATION - PRECISE BOTANICAL PLACEMENT (JULY) ===
 
-  // Create comprehensive prompt targeting exactly 5000-6000 characters
-  const addPadding = (text: string, targetLength: number): string => {
-    // Add descriptive padding to reach target length if needed
-    const currentLength = text.length;
-    if (currentLength < targetLength) {
-      const padding = `\n\nADDITIONAL EMPHASIS: This garden visualization must be photorealistic with exact plant placement. Each plant's position is critical for garden planning. Maintain professional photography standards throughout. Verify all specifications are met before finalizing the image. The garden should appear natural yet precisely planned.`.substring(0, targetLength - currentLength);
-      return text + padding;
-    }
-    return text;
-  };
+[CRITICAL REQUIREMENTS - NON-NEGOTIABLE]
+PLANT COUNT: EXACTLY ${plants.length} plants - NO MORE, NO LESS
+ORIENTATION: NO MIRRORING - left stays left, right stays right
+BOUNDARIES: Visible garden bed edges (stone/mulch/lawn edge)
+COORDINATE SYSTEM: Origin at top-left (0,0), X increases right, Y increases down
 
-  const basePrompt = `=== PHOTOREALISTIC GARDEN BED VISUALIZATION - PRECISE BOTANICAL PLACEMENT (JULY) ===
-
-[SPATIAL REFERENCE SYSTEM & COORDINATE MAPPING]
-VIEWING ANGLE: Professional garden photography - eye-level 1.6m, ${sceneState?.camera?.position?.z?.toFixed(1) || '4'}m from bed front
-GRID OVERLAY: Visualize precise 10×10 reference grid on bed surface
-- Cells: ${gridCellW}m × ${gridCellH}m each
-- Origin: TOP-LEFT corner (0,0)
-- X-axis: LEFT(0%) to RIGHT(100%)
-- Y-axis: TOP(0%) to BOTTOM(100%)
+[SPATIAL REFERENCE]
+VIEWING: Eye-level 1.6m, ${sceneState?.camera?.position?.z?.toFixed(1) || '4'}m from bed front
+GRID: 10×10 reference, cells ${gridCellW}×${gridCellH}m
 MARKERS: GREEN=left, RED=right, BLUE=back, YELLOW=front
-CRITICAL: NO MIRRORING - left stays left, right stays right
 
-[GARDEN BED SPECIFICATIONS]
+[GARDEN SPECIFICATIONS]
 SHAPE: ${garden.shape === 'rectangle' ? 'Rectangular' : garden.shape === 'circle' ? 'Circular' : 'Oval'} raised bed
 DIMENSIONS: ${dimensions.width}×${dimensions.length}m = ${dimensions.area.toFixed(1)}m²
-SOIL: Dark chocolate brown #3E2723, fine tilth, moist
-- Natural undulations, mounding at plants
-EDGES: ${garden.shape === 'rectangle' ? 'Straight 90°' : 'Curved'}, 10-15cm drop
-MULCH: 2-3cm aged bark at plant bases only
+SOIL: Dark chocolate brown #3E2723, fine tilth, visible between plants
+EDGES: ${garden.shape === 'rectangle' ? 'Straight 90°' : 'Curved'}, 10-15cm drop`;
 
-[PLANT PLACEMENT - EXACTLY ${plants.length} PLANTS]
+  // Build variable detail sections based on plant count
+  let variableDetail = '';
+  
+  if (detailLevel === 'full') {
+    variableDetail = `
+
+[DETAILED PLANT PLACEMENT - ${plants.length} SPECIMENS]
 ${plantDescriptions}
 
 SPACING: Min ${minSpace}m, avg ${avgSpace}m between plants
-Soil patches visible between plantings
+Clear soil patches visible between all plantings
 
-[BOTANICAL ACCURACY - JULY]
-STATE: Peak summer growth, full foliage
-FLOWERING: Summer bloomers only
-SIZES: Tall(>1m): ${tallPlants || 'none'} | Med(0.5-1m): ${medPlants || 'none'} | Short(<0.5m): ${shortPlants || 'none'}
-Each plant identifiable to species level
+[BOTANICAL ACCURACY - JULY STATE]
+Peak summer growth, full foliage density
+SIZES: Tall(>1m): ${sizeGroups?.tall} | Med(0.5-1m): ${sizeGroups?.medium} | Short(<0.5m): ${sizeGroups?.short}
+Each plant must be identifiable to species level by botanical features`;
+    
+  } else if (detailLevel === 'medium') {
+    variableDetail = `
+
+[PLANT PLACEMENT - ${plants.length} SPECIMENS]
+${plantDescriptions}
+
+SPACING: Min ${minSpace}m, avg ${avgSpace}m
+Soil visible between plants
+
+[JULY APPEARANCE]
+Summer growth state, appropriate flowering
+Height distribution maintained as specified`;
+    
+  } else {
+    // Compact for 21+ plants
+    variableDetail = `
+
+[PLANT PLACEMENT - ${plants.length} SPECIMENS]
+${plantDescriptions}
+
+SPACING: Min ${minSpace}m avg, maintain separation
+All ${plants.length} plants clearly visible and distinct`;
+  }
+  
+  // Common ending for all detail levels
+  const commonEnding = `
 
 [COMPOSITION & LIGHTING]
-CAMERA: ${sceneState?.camera?.position?.z?.toFixed(1) || '4'}m distance, 35-50mm, f/5.6-8
-FOCUS: Entire bed sharp, background blurred
-LIGHT: 2-3PM July, high SW sun (60-70°)
-- Short shadows forward-right
-- Greens #2E7D32-#66BB6A
-- Soil #3E2723-#5D4037
+CAMERA: ${sceneState?.camera?.position?.z?.toFixed(1) || '4'}m distance, 35-50mm lens
+LIGHT: 2-3PM July sun, shadows forward-right
+COLORS: Greens #2E7D32-#66BB6A, Soil #3E2723-#5D4037
 
 [STRICT PROHIBITIONS]
-FORBIDDEN:
-× NO ornaments, structures, paths
-× NO water features, tools
-× NO people, animals, insects
 × NO extra plants beyond ${plants.length}
-× NO weeds, fillers
-× NO mirroring or position changes
-Background <10% of image
+× NO ornaments, structures, tools
+× NO people, animals, insects  
+× NO position changes or mirroring
+× Background <10% of image
 
-[VERIFICATION]
-□ COUNT: EXACTLY ${plants.length} plants (${plants.map(p => p.commonName).join(', ')})
-□ POSITIONS: Grid coordinates exact
-□ SIZES: Match specifications
-□ SPECIES: Botanically accurate
-□ SEASON: July appearance
-□ NO MIRRORING: Left=left, right=right
+[VERIFICATION CHECKLIST]
+□ COUNT: Exactly ${plants.length} plants visible
+□ SPECIES: ${plants.map(p => p.commonName).join(', ')}
+□ POSITIONS: As specified in matrix
+□ NO MIRRORING: Orientation preserved
 
 GENERATE: ${dimensions.width}×${dimensions.length}m ${garden.shape} bed, ${plants.length} plants at exact positions, photorealistic July garden`;
 
-  const prompt = addPadding(basePrompt, 5500); // Target middle of 5000-6000 range
-
+  const prompt = criticalRequirements + variableDetail + commonEnding;
+  
+  // Log prompt efficiency metrics for debugging
+  console.log(`[Photorealization] Prompt generated for ${plantCount} plants:
+    Detail level: ${detailLevel}
+    Prompt length: ${prompt.length} chars (max: ${MAX_PROMPT_LENGTH})
+    Per-plant budget: ${perPlantBudget} chars
+    Efficiency: ${((prompt.length / MAX_PROMPT_LENGTH) * 100).toFixed(1)}% of max`);
+  
   return prompt.trim();
 }
 
