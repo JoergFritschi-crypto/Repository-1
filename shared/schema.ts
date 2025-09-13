@@ -762,8 +762,15 @@ export function createGardenBounds(
   dimensions: Record<string, number>,
   units: 'metric' | 'imperial'
 ): GardenBounds {
+  // Debug logging
+  console.log('=== GARDEN BOUNDS CALCULATION ===');
+  console.log('Shape:', shape);
+  console.log('Dimensions:', dimensions);
+  console.log('Units:', units);
+  
   // Convert to meters if needed
   const metersMultiplier = units === 'metric' ? 1 : 0.3048; // feet to meters
+  console.log('Meters multiplier:', metersMultiplier);
   
   let width: number, height: number, radius: number;
   let boundaryGeometry: GardenBounds['boundaryGeometry'] = {};
@@ -772,6 +779,8 @@ export function createGardenBounds(
     case 'rectangle':
       width = (dimensions.width || 10) * metersMultiplier;
       height = (dimensions.height || dimensions.length || 8) * metersMultiplier;
+      console.log('Calculated width:', width, 'meters');
+      console.log('Calculated height:', height, 'meters');
       boundaryGeometry.corners = [
         { x: -width/2, y: -height/2, z: 0 },
         { x: width/2, y: -height/2, z: 0 },

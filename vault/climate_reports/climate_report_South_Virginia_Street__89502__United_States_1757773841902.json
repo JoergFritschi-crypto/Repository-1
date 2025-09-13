@@ -1,0 +1,138 @@
+{
+  "usda_zone": "7b",
+  "rhs_zone": "H5",
+  "hardiness_category": "Hardy",
+  "temperature_range": "-15.0°C average minimum",
+  "ahs_heat_zone": 7,
+  "koppen_climate": "BSk - Cold steppe",
+  "annual_rainfall": 206.8,
+  "avg_temp_min": -15,
+  "avg_temp_max": 20.3,
+  "avg_humidity": 43,
+  "avg_wind_speed": 26.5,
+  "sunshine_percent": 52.9,
+  "sunshine_hours": 6.3,
+  "wettest_month": "January",
+  "wettest_month_precip": 40.2,
+  "driest_month": "June",
+  "driest_month_precip": 4.3,
+  "monthly_precip_pattern": [
+    40.2,
+    32.7,
+    27.2,
+    10.2,
+    17.1,
+    4.3,
+    7.6,
+    7.5,
+    6.2,
+    18.6,
+    16.2,
+    36.2
+  ],
+  "frost_dates": {
+    "last_frost": "2024-04-17",
+    "first_frost": "2024-10-16",
+    "last_frost_formatted": "April 17, 2024",
+    "first_frost_formatted": "October 16, 2024"
+  },
+  "growing_season": {
+    "start": "2025-03-14",
+    "end": "2025-11-17",
+    "length_days": 169,
+    "start_formatted": "March 14, 2025",
+    "end_formatted": "November 17, 2025"
+  },
+  "monthly_data": {
+    "0": {
+      "temp_avg": 3.138548387096777,
+      "precip_total": 415.67800000000017,
+      "days_count": 310
+    },
+    "1": {
+      "temp_avg": 4.392402826855125,
+      "precip_total": 308.92299999999994,
+      "days_count": 283
+    },
+    "2": {
+      "temp_avg": 7.04677419354839,
+      "precip_total": 280.914,
+      "days_count": 310
+    },
+    "3": {
+      "temp_avg": 11.705333333333344,
+      "precip_total": 101.57900000000002,
+      "days_count": 300
+    },
+    "4": {
+      "temp_avg": 15.803548387096775,
+      "precip_total": 177.157,
+      "days_count": 310
+    },
+    "5": {
+      "temp_avg": 21.832666666666668,
+      "precip_total": 43.499,
+      "days_count": 300
+    },
+    "6": {
+      "temp_avg": 26.190645161290306,
+      "precip_total": 78.855,
+      "days_count": 310
+    },
+    "7": {
+      "temp_avg": 24.764999999999983,
+      "precip_total": 77.04799999999999,
+      "days_count": 310
+    },
+    "8": {
+      "temp_avg": 19.80897009966777,
+      "precip_total": 62.39000000000001,
+      "days_count": 301
+    },
+    "9": {
+      "temp_avg": 13.21354838709677,
+      "precip_total": 192.666,
+      "days_count": 310
+    },
+    "10": {
+      "temp_avg": 6.512500000000003,
+      "precip_total": 162.45099999999994,
+      "days_count": 300
+    },
+    "11": {
+      "temp_avg": 2.9235483870967753,
+      "precip_total": 373.90399999999994,
+      "days_count": 310
+    }
+  },
+  "gardening_advice": "Temperate Climate: Zone 7 supports diverse plantings year-round. Ideal for roses, lavender Hidcote, delphiniums, tomatoes Cherokee Purple, and fruit trees. Focus on succession planting for continuous harvests.\n\nLow Rainfall (227.3mm/year): Install drip irrigation and harvest rainwater. Choose drought-tolerant plants: lavender, Russian sage, sedums, native grasses. Apply 3-4 inch mulch layer to retain moisture.\n\nFrost Management: With 106 frost days annually, use row covers and position plants near south walls. Choose frost-hardy varieties and wait for soil to reach 60°F before planting tender crops.\n\nHeat Management: 91 days above 30°C annually. Use 30-50% shade cloth, water early morning, and select heat-tolerant varieties like Sun Gold tomatoes and Armenian cucumbers.\n\nSoil Improvement: Add 2-3 inches of compost annually. Test pH and adjust: add lime for acid soils, sulfur for alkaline. Maintain organic mulch year-round for moisture retention and weed suppression.",
+  "data_source": "visual_crossing_with_mapbox",
+  "data_range": {
+    "years_included": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "total_years": 11,
+    "date_range": "historical data 2015 - 2025",
+    "total_days": 3654
+  },
+  "coordinates": {
+    "latitude": 39.461548,
+    "longitude": -119.78168,
+    "placeName": "South Virginia Street, Reno, Nevada 89502, United States",
+    "country": "United States",
+    "region": "Nevada"
+  },
+  "location": "South Virginia Street, 89502, United States",
+  "generated_at": "2025-09-13T14:30:41.902Z",
+  "report_version": "1.0"
+}
