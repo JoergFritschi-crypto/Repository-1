@@ -182,6 +182,9 @@ export async function buildPhotorealizationContext(
             placedPlant.plantDetails.floweringSeason : 
             [placedPlant.plantDetails.floweringSeason]) : 
           (placedPlant.plantDetails.bloomTime || []),
+        // CRITICAL: Include bloom months from database for proper photorealization
+        bloomStartMonth: placedPlant.plantDetails.bloomStartMonth || null,
+        bloomEndMonth: placedPlant.plantDetails.bloomEndMonth || null,
         sunExposure: placedPlant.plantDetails.sunlight || placedPlant.plantDetails.sunExposure || 'full sun',
         soilType: placedPlant.plantDetails.soil || placedPlant.plantDetails.soilType || 'well-drained',
         waterNeeds: placedPlant.plantDetails.watering || placedPlant.plantDetails.waterNeeds || 'moderate'
@@ -886,12 +889,38 @@ GENERATE: ${dimensions.width}×${dimensions.length}m ${garden.shape} bed, ${plan
 }
 
 /**
- * Normalize bloom months for a plant using explicit data or taxonomy-based defaults
+ * Normalize bloom months for a plant using database bloom data or taxonomy-based defaults
  */
 function normalizeBloomMonths(plant: any): Set<number> {
   const months = new Set<number>();
+  const scientificName = plant.scientificName || '';
+  const commonName = plant.commonName || '';
+  const cultivar = plant.cultivar || '';
   
-  // First check for explicit bloom time data
+  // PRIORITY 1: Use actual database bloom months if available
+  if (plant.bloomStartMonth && plant.bloomEndMonth) {
+    // Handle cases where bloom might wrap around year (e.g., Dec-Feb)
+    if (plant.bloomEndMonth < plant.bloomStartMonth) {
+      // Add months from start to December
+      for (let m = plant.bloomStartMonth; m <= 12; m++) {
+        months.add(m);
+      }
+      // Add months from January to end
+      for (let m = 1; m <= plant.bloomEndMonth; m++) {
+        months.add(m);
+      }
+      console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using DATABASE months ${plant.bloomStartMonth}-12,1-${plant.bloomEndMonth} (wraps around year)`);
+    } else {
+      // Normal case: bloom within the same year
+      for (let m = plant.bloomStartMonth; m <= plant.bloomEndMonth; m++) {
+        months.add(m);
+      }
+      console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using DATABASE months ${plant.bloomStartMonth}-${plant.bloomEndMonth}`);
+    }
+    return months;
+  }
+  
+  // PRIORITY 2: Check for explicit bloom time data in text fields
   const bloomTime = plant.bloomTime || plant.floweringSeason || [];
   const bloomArray = Array.isArray(bloomTime) ? bloomTime : [bloomTime];
   
@@ -911,52 +940,59 @@ function normalizeBloomMonths(plant: any): Set<number> {
     }
   });
   
-  // Apply taxonomy-based defaults if no explicit bloom time
+  if (months.size > 0) {
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using bloom time text: ${bloomArray.join(', ')} -> months ${Array.from(months).sort((a, b) => a - b).join(',')}`);
+    return months;
+  }
+  
+  // PRIORITY 3: Apply taxonomy-based defaults ONLY if no explicit bloom data
+  const commonNameLower = commonName.toLowerCase();
+  const genus = scientificName.split(' ')[0];
+  
+  // Rosa (Roses) - bloom May through October, peak in June-July
+  if (genus === 'Rosa' || commonNameLower.includes('rose')) {
+    for (let m = 5; m <= 10; m++) months.add(m);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Rosa): months 5-10`);
+  }
+  // Lavandula (Lavender) - bloom June through September
+  else if (genus === 'Lavandula' || commonNameLower.includes('lavender')) {
+    for (let m = 6; m <= 9; m++) months.add(m);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Lavandula): months 6-9`);
+  }
+  // Phlox - bloom July through September
+  else if (genus === 'Phlox' || commonNameLower.includes('phlox')) {
+    for (let m = 7; m <= 9; m++) months.add(m);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Phlox): months 7-9`);
+  }
+  // Helianthus (Sunflowers) - bloom July through September
+  else if (genus === 'Helianthus' || commonNameLower.includes('sunflower')) {
+    for (let m = 7; m <= 9; m++) months.add(m);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Helianthus): months 7-9`);
+  }
+  // Delphinium - bloom June through July, sometimes second flush in September
+  else if (genus === 'Delphinium' || commonNameLower.includes('delphinium')) {
+    months.add(6).add(7).add(9);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Delphinium): months 6,7,9`);
+  }
+  // Echinacea (Coneflower) - bloom July through September
+  else if (genus === 'Echinacea' || commonNameLower.includes('coneflower')) {
+    for (let m = 7; m <= 9; m++) months.add(m);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Echinacea): months 7-9`);
+  }
+  // Rudbeckia (Black-eyed Susan) - bloom July through October
+  else if (genus === 'Rudbeckia' || commonNameLower.includes('black-eyed susan') || commonNameLower.includes('rudbeckia')) {
+    for (let m = 7; m <= 10; m++) months.add(m);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Rudbeckia): months 7-10`);
+  }
+  // Peony - bloom May through June
+  else if (genus === 'Paeonia' || commonNameLower.includes('peony')) {
+    months.add(5).add(6);
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Using GENUS DEFAULT (Paeonia): months 5-6`);
+  }
+  
+  // If still no bloom months, log as non-blooming plant
   if (months.size === 0) {
-    const scientificName = plant.scientificName || '';
-    const commonName = (plant.commonName || '').toLowerCase();
-    const genus = scientificName.split(' ')[0];
-    
-    // Rosa (Roses) - bloom May through October, peak in June-July
-    if (genus === 'Rosa' || commonName.includes('rose')) {
-      for (let m = 5; m <= 10; m++) months.add(m);
-      console.log(`[Bloom Normalization] Applied Rosa defaults for ${scientificName}: months 5-10`);
-    }
-    // Lavandula (Lavender) - bloom June through September
-    else if (genus === 'Lavandula' || commonName.includes('lavender')) {
-      for (let m = 6; m <= 9; m++) months.add(m);
-      console.log(`[Bloom Normalization] Applied Lavandula defaults for ${scientificName}: months 6-9`);
-    }
-    // Phlox - bloom July through September
-    else if (genus === 'Phlox' || commonName.includes('phlox')) {
-      for (let m = 7; m <= 9; m++) months.add(m);
-      console.log(`[Bloom Normalization] Applied Phlox defaults for ${scientificName}: months 7-9`);
-    }
-    // Helianthus (Sunflowers) - bloom July through September
-    else if (genus === 'Helianthus' || commonName.includes('sunflower')) {
-      for (let m = 7; m <= 9; m++) months.add(m);
-      console.log(`[Bloom Normalization] Applied Helianthus defaults for ${scientificName}: months 7-9`);
-    }
-    // Delphinium - bloom June through July, sometimes second flush in September
-    else if (genus === 'Delphinium' || commonName.includes('delphinium')) {
-      months.add(6).add(7).add(9);
-      console.log(`[Bloom Normalization] Applied Delphinium defaults for ${scientificName}: months 6,7,9`);
-    }
-    // Echinacea (Coneflower) - bloom July through September
-    else if (genus === 'Echinacea' || commonName.includes('coneflower')) {
-      for (let m = 7; m <= 9; m++) months.add(m);
-      console.log(`[Bloom Normalization] Applied Echinacea defaults for ${scientificName}: months 7-9`);
-    }
-    // Rudbeckia (Black-eyed Susan) - bloom July through October
-    else if (genus === 'Rudbeckia' || commonName.includes('black-eyed susan') || commonName.includes('rudbeckia')) {
-      for (let m = 7; m <= 10; m++) months.add(m);
-      console.log(`[Bloom Normalization] Applied Rudbeckia defaults for ${scientificName}: months 7-10`);
-    }
-    // Peony - bloom May through June
-    else if (genus === 'Paeonia' || commonName.includes('peony')) {
-      months.add(5).add(6);
-      console.log(`[Bloom Normalization] Applied Paeonia defaults for ${scientificName}: months 5-6`);
-    }
+    console.log(`[Bloom Normalization] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): No bloom data found - treating as foliage plant`);
   }
   
   return months;
@@ -1008,9 +1044,11 @@ function getBloomStatus(plant: Plant, month: number): string {
   const genus = scientificName.split(' ')[0];
   const commonName = (plant.commonName || '').toLowerCase();
   
-  // Log for debugging
-  console.log(`[Bloom Status] Checking ${scientificName}${cultivar ? ` '${cultivar}'` : ''} for month ${month}`);
-  console.log(`[Bloom Status] Bloom months:`, Array.from(bloomMonths));
+  // Enhanced logging with data source
+  const dataSource = plant.bloomStartMonth && plant.bloomEndMonth ? 'DATABASE' : 
+                     (plant.bloomTime || plant.floweringSeason ? 'TEXT' : 'DEFAULTS');
+  console.log(`[Bloom Status] ${commonName}${cultivar ? ` '${cultivar}'` : ''} (${scientificName}): Month ${month}, Source: ${dataSource}`);
+  console.log(`[Bloom Status] Bloom months from ${dataSource}:`, Array.from(bloomMonths).sort((a, b) => a - b));
   
   if (month === 7) { // July
     if (bloomMonths.has(7)) {
