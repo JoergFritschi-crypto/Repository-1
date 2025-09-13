@@ -245,6 +245,8 @@ export default function GardenProperties() {
   const [isGeneratingSeasonalImages, setIsGeneratingSeasonalImages] = useState(false);
   const [seasonalProgress, setSeasonalProgress] = useState(0);
   const [photorealizationMode, setPhotorealizationMode] = useState(false);
+  const [showSeasonalViewer, setShowSeasonalViewer] = useState(false);
+  const [showSeasonalDateSelector, setShowSeasonalDateSelector] = useState(false);
   const [, setLocation] = useLocation();
   const garden3DViewRef = useRef<Garden3DViewRef | null>(null);
   
@@ -314,6 +316,7 @@ export default function GardenProperties() {
   const watchedSelectedStyle = form.watch("selectedStyle");
   const watchedToxicityLevel = form.watch("preferences.toxicityLevel");
   const watchedPlantAvailability = form.watch("preferences.plantAvailability");
+  const watchedPointOfView = form.watch("pointOfView");
 
   // Populate form when existing garden is loaded
   useEffect(() => {
@@ -371,10 +374,16 @@ export default function GardenProperties() {
   }, [currentStep]);
 
   const nextStep = async () => {
-    // Show visualization modal when moving from step 5 to step 6
+    // Skip step 5 (3D Technical View) - go directly from plant placement to seasonal generation
+    if (currentStep === 4) {
+      // Open the seasonal date selector modal directly
+      setShowSeasonalDateSelector(true);
+      return;
+    }
+    
+    // Skip the old step 5 entirely
     if (currentStep === 5) {
-      // Open the visualization generation modal instead of proceeding directly
-      setShowVisualizationModal(true);
+      setCurrentStep(6);
       return;
     }
     
@@ -461,7 +470,7 @@ export default function GardenProperties() {
     //   return;
     // }
     
-    setCurrentStep(prev => Math.min(prev + 1, 8));
+    setCurrentStep(prev => Math.min(prev + 1, 6)); // Now only 6 steps total
   };
 
   const prevStep = () => {
@@ -2739,9 +2748,10 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 5: Three.js 3D Technical View */}
+            {/* Step 5: Hidden 3D Technical View for AI Reference */}
+            {/* This step is now invisible - used only for generating reference images */}
             {currentStep === 5 && (
-              <div className="space-y-3">
+              <div className="hidden">
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-3d-technical-view">
                   <CardHeader className="py-3">
                     <CardTitle className="text-base flex items-center gap-2">
@@ -2784,7 +2794,7 @@ export default function GardenProperties() {
                       </p>
                     </div>
 
-                    {/* Three.js 3D Garden View */}
+                    {/* Hidden 3D Garden View for AI Reference */}
                     <Garden3DView
                       ref={garden3DViewRef}
                       gardenId={gardenId || 'temp-garden'}
@@ -2796,130 +2806,172 @@ export default function GardenProperties() {
                         slopeDirection: watchedSlopeDirection,
                         slopePercentage: watchedSlopePercentage,
                         northOrientation: watchedSlopeDirection,
-                        pointOfView: 'bird_eye'
+                        pointOfView: watchedPointOfView || 'bird_eye'
                       } as any}
                       placedPlants={placedPlants}
-                      photorealizationMode={photorealizationMode}
+                      photorealizationMode={true}
+                      hiddenMode={true}
                     />
                   </CardContent>
                 </Card>
               </div>
             )}
 
-            {/* Step 6: Runware Artistic Visualization */}
+            {/* Always render hidden 3D for AI reference when plants are placed */}
+            {placedPlants.length > 0 && (
+              <div style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+                <Garden3DView
+                  ref={garden3DViewRef}
+                  gardenId={gardenId || 'temp-garden'}
+                  gardenName={watchedName || 'My Garden'}
+                  gardenData={{
+                    shape: watchedShape,
+                    dimensions: watchedDimensions,
+                    units: watchedUnits,
+                    slopeDirection: watchedSlopeDirection,
+                    slopePercentage: watchedSlopePercentage,
+                    northOrientation: watchedSlopeDirection,
+                    pointOfView: watchedPointOfView || 'bird_eye'
+                  } as any}
+                  placedPlants={placedPlants}
+                  photorealizationMode={true}
+                  hiddenMode={true}
+                />
+              </div>
+            )}
+
+            {/* Step 6: Seasonal Garden Generation (Direct from plants) */}
             {currentStep === 6 && (
               <div className="space-y-3">
-                <Card className="border-2 border-primary shadow-sm" data-testid="step-artistic-visualization">
+                <Card className="border-2 border-primary shadow-sm" data-testid="step-seasonal-generation">
                   <CardHeader className="py-3">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      Garden Visualization - Artistic Rendering
+                      <Flower2 className="w-4 h-4 text-primary" />
+                      Generate Seasonal Garden Views
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Workflow Progress Indicator */}
+                    {/* Simplified Workflow Progress Indicator */}
                     <div className="mb-6 p-4 bg-gradient-to-r from-primary/5 to-canary/5 rounded-lg border-2 border-primary/30">
                       <div className="flex items-center justify-center space-x-2 text-sm">
                         <div className="flex items-center">
                           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/30 text-primary">
                             <Check className="h-3 w-3" />
-                            Canvas Design
+                            Garden Design
                           </div>
                           <ChevronRight className="h-4 w-4 mx-2 text-primary" />
                         </div>
                         <div className="flex items-center">
                           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/30 text-primary">
                             <Check className="h-3 w-3" />
-                            3D Technical
+                            Plant Placement
                           </div>
                           <ChevronRight className="h-4 w-4 mx-2 text-primary" />
                         </div>
                         <div className="flex items-center">
                           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-white font-medium">
-                            <Sparkles className="h-3 w-3" />
-                            Artistic View
-                          </div>
-                          <ChevronRight className="h-4 w-4 mx-2 text-primary" />
-                        </div>
-                        <div className="flex items-center">
-                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/20 text-muted-foreground">
                             <Flower2 className="h-3 w-3" />
-                            Seasonal
+                            Seasonal Views
                           </div>
-                          <ChevronRight className="h-4 w-4 mx-2 text-primary/30" />
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border-2 border-primary/20 text-muted-foreground">
-                          <Check className="h-3 w-3" />
-                          Finalize
                         </div>
                       </div>
                       <p className="text-xs text-center text-muted-foreground mt-2">
-                        Generate a photorealistic artistic view of your garden
+                        Generate beautiful seasonal views of your garden throughout the year
                       </p>
                     </div>
 
-                    {/* Generate 3D Visualization Button */}
-                    {!generatedVisualization && (
+                    {/* Generate Seasonal Views Button */}
+                    {!seasonalImages && (
                       <div className="text-center space-y-3">
                         <p className="text-sm text-muted-foreground">
-                          Transform your 2D design into a stunning 3D visualization
+                          See how your garden will look throughout the seasons
                         </p>
                         <Button
                           type="button"
                           size="lg"
                           className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
-                          onClick={() => setShowVisualizationModal(true)}
+                          onClick={() => setShowSeasonalDateSelector(true)}
                           disabled={placedPlants.length === 0}
-                          data-testid="button-generate-3d"
+                          data-testid="button-generate-seasonal"
                         >
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          Generate Artistic Visualization
+                          <Flower2 className="w-5 h-5 mr-2" />
+                          Generate Seasonal Garden
                         </Button>
                         {placedPlants.length === 0 && (
                           <p className="text-xs text-red-500">
-                            Please place at least one plant on the canvas before generating visualization
+                            Please place at least one plant on the canvas before generating seasonal views
                           </p>
                         )}
                       </div>
                     )}
 
-                    {/* Display Generated Visualization */}
-                    {generatedVisualization && (
+                    {/* Display Seasonal Generation Progress */}
+                    {isGeneratingSeasonalImages && (
                       <div className="space-y-4">
-                        <div className="relative">
-                          <img
-                            src={generatedVisualization}
-                            alt="3D Garden Visualization"
-                            className="w-full h-auto rounded-lg shadow-lg"
-                          />
-                          <Badge className="absolute top-2 right-2 bg-green-600">
-                            <Check className="h-3 w-3 mr-1" />
-                            Generated
-                          </Badge>
+                        <div className="text-center">
+                          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
+                          <p className="text-sm font-medium">Generating seasonal views...</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {seasonalProgress > 0 ? `${Math.round(seasonalProgress)}% complete` : 'Preparing your garden...'}
+                          </p>
+                        </div>
+                        <Progress value={seasonalProgress} className="h-2" />
+                      </div>
+                    )}
+
+                    {/* Display Generated Seasonal Images */}
+                    {seasonalImages && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {Object.entries(seasonalImages).slice(0, 4).map(([season, imageUrl]) => (
+                            <div key={season} className="relative group">
+                              <img
+                                src={imageUrl as string}
+                                alt={`${season} garden view`}
+                                className="w-full h-32 object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+                                onClick={() => setShowSeasonalViewer(true)}
+                              />
+                              <Badge className="absolute top-2 left-2 bg-black/70 text-white capitalize">
+                                {season}
+                              </Badge>
+                            </div>
+                          ))}
                         </div>
                         <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
                           <div className="flex items-start gap-3">
                             <Check className="h-5 w-5 text-green-600 mt-0.5" />
                             <div className="flex-1">
                               <p className="font-semibold text-green-900 dark:text-green-100">
-                                3D Visualization Complete!
+                                Seasonal Views Complete!
                               </p>
                               <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                                Your garden has been rendered in photorealistic 3D. Proceed to the next step to see seasonal variations.
+                                Your garden has been generated for all seasons. Click any image to view the full seasonal progression.
                               </p>
                             </div>
                           </div>
                         </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowVisualizationModal(true)}
-                          className="w-full"
-                          data-testid="button-regenerate-3d"
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Regenerate Visualization
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="default"
+                            onClick={() => setShowSeasonalViewer(true)}
+                            className="flex-1"
+                            data-testid="button-view-seasonal"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Seasonal Gallery
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowSeasonalDateSelector(true)}
+                            className="flex-1"
+                            data-testid="button-regenerate-seasonal"
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Regenerate
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
@@ -2927,8 +2979,8 @@ export default function GardenProperties() {
               </div>
             )}
 
-            {/* Step 7: Seasonal Imaging with Gemini */}
-            {currentStep === 7 && (
+            {/* Step 7 is now removed - seasonal generation is integrated into step 6 */}
+            {currentStep === 7 && false && (
               <div className="space-y-3">
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-seasonal-imaging">
                   <CardHeader className="py-3">

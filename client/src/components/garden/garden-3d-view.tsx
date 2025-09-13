@@ -52,6 +52,7 @@ interface Garden3DViewProps {
   gardenData: Garden;
   placedPlants: PlacedPlant[];
   photorealizationMode?: boolean; // Added for AI photorealization
+  hiddenMode?: boolean; // New: render invisibly for reference generation only
 }
 
 // Convert north orientation enum to degrees
@@ -98,7 +99,8 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
     gardenName,
     gardenData,
     placedPlants,
-    photorealizationMode = false
+    photorealizationMode = false,
+    hiddenMode = false
   },
   ref
 ) => {
@@ -1598,6 +1600,27 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
     }
   };
 
+  // If in hidden mode, render only the canvas without any UI
+  if (hiddenMode) {
+    return (
+      <div 
+        ref={containerRef}
+        className="sr-only" // Screen reader only - visually hidden
+        style={{ position: 'absolute', left: '-9999px', width: '1920px', height: '1080px' }}
+        data-testid="hidden-3d-canvas-container"
+      >
+        <canvas 
+          ref={canvasRef}
+          width={1920}
+          height={1080}
+          style={{ display: 'block', width: '1920px', height: '1080px' }}
+          data-testid="hidden-3d-canvas"
+        />
+      </div>
+    );
+  }
+
+  // Normal visible mode with full UI
   return (
     <Card className="border-2 border-gray-200">
       <CardHeader className="pb-4">
