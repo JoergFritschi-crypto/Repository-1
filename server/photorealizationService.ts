@@ -618,23 +618,44 @@ export function buildPhotorealizationPrompt(context: PhotorealizationContext): s
   const plantList = plants.map((plant, idx) => {
     const num = idx + 1;
     const morphology = getBotanicalMorphology(plant.scientificName, plant.commonName, plant.cultivar);
-    return `${num}. ${plant.commonName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} at position ${plant.position.x.toFixed(0)}%, ${plant.position.y.toFixed(0)}% - ${morphology}`;
+    // Note: X coordinate represents left-to-right position (0% = left edge, 100% = right edge)
+    // Y coordinate represents top-to-bottom position (0% = top edge, 100% = bottom edge)
+    return `${num}. ${plant.commonName}${plant.cultivar ? ` '${plant.cultivar}'` : ''} at LEFT-RIGHT position ${plant.position.x.toFixed(0)}%, TOP-BOTTOM position ${plant.position.y.toFixed(0)}% - ${morphology}`;
   }).join('\n');
   
   const prompt = `Create a photorealistic garden image.
 
-GARDEN: ${garden.shape} bed, ${dimensions.width}m × ${dimensions.length}m
+IMAGE ORIENTATION:
+- MAINTAIN EXACT ORIENTATION - DO NOT MIRROR OR FLIP
+- Left edge = 0% X position, Right edge = 100% X position
+- Top edge = 0% Y position, Bottom edge = 100% Y position
 
-EXACTLY ${plants.length} PLANTS (no extras):
+GARDEN BED:
+- Shape: ${garden.shape} bed, ${dimensions.width}m × ${dimensions.length}m
+- VISIBLE EDGES: Show clear garden bed border/edge (mulch line, stone edging, or soil boundary)
+- Planting area should have defined boundaries
+
+EXACTLY ${plants.length} PLANTS - NO MORE, NO LESS:
 ${plantList}
 
-REQUIREMENTS:
-- Show exactly ${plants.length} plants: ${plants.map(p => p.commonName).join(', ')}
-- Each plant must match its botanical description
+CRITICAL REQUIREMENTS:
+- COUNT: Show EXACTLY ${plants.length} plants ONLY: ${plants.map(p => p.commonName).join(', ')}
+- NO EXTRA PLANTS in background, no fillers, no additional vegetation
+- Each plant must match its botanical description precisely
+- Positions must match coordinates exactly (DO NOT MIRROR)
 - July summer appearance with appropriate blooms
-- Soft blurred background
-- No decorations, people, or extra plants
-- Focus on the garden bed itself`;
+
+BACKGROUND:
+- HEAVILY BLURRED soft-focus background
+- Minimal detail beyond garden bed edges
+- Neutral tones, no specific structures or features
+- Maximum 10% of image, garden bed fills 90%
+
+FORBIDDEN:
+- NO decorations, people, animals, or extra plants
+- NO mirroring or flipping of positions
+- NO plants beyond the ${plants.length} specified
+- NO specific background details`;
 
   return prompt.trim();
 }
@@ -963,10 +984,23 @@ function getBotanicalMorphology(scientificName: string, commonName: string, cult
 function getExcludedSpeciesForPlants(plants: PlantSeasonalData[]): string {
   const exclusions: string[] = [];
   
-  // Add explicit plant count first
-  exclusions.push(`- CRITICAL: Show EXACTLY ${plants.length} plants - no more, no less`);
-  exclusions.push(`- PLANT COUNT VERIFICATION: ${plants.map(p => p.commonName).join(', ')} = ${plants.length} plants total`);
-  exclusions.push('- DO NOT add background plants, filler plants, or any vegetation not explicitly listed');
+  // Add explicit plant count first with strong emphasis
+  exclusions.push(`- CRITICAL PLANT COUNT: Show EXACTLY ${plants.length} plants - NO MORE, NO LESS`);
+  exclusions.push(`- REQUIRED PLANTS ONLY: ${plants.map(p => p.commonName).join(', ')} = EXACTLY ${plants.length} plants total`);
+  exclusions.push('- FORBIDDEN: Background plants, filler plants, extra vegetation, duplicates');
+  exclusions.push('- COUNT VERIFICATION: If you see more than ${plants.length} plants in your generation, STOP and regenerate');
+  
+  // Count each species type
+  const speciesCount: { [key: string]: number } = {};
+  plants.forEach(plant => {
+    const species = plant.commonName;
+    speciesCount[species] = (speciesCount[species] || 0) + 1;
+  });
+  
+  // Add specific counts per species
+  Object.entries(speciesCount).forEach(([species, count]) => {
+    exclusions.push(`- EXACTLY ${count} ${species}${count > 1 ? 's' : ''} - no more, no less`);
+  });
   
   plants.forEach(plant => {
     if (plant.scientificName.includes('Hosta')) {
@@ -985,7 +1019,8 @@ function getExcludedSpeciesForPlants(plants: PlantSeasonalData[]): string {
   });
   
   // Add counting reminder at the end
-  exclusions.push(`- FINAL CHECK: Count ${plants.length} distinct plants in image - no extras in background`);
+  exclusions.push(`- FINAL PLANT COUNT CHECK: Must show EXACTLY ${plants.length} plants - count them before finalizing`);
+  exclusions.push('- NO INVENTED PLANTS: Do not add any plants not explicitly listed above');
   
   return Array.from(new Set(exclusions)).join('\n');
 }
