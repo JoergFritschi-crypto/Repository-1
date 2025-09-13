@@ -71,7 +71,8 @@ export default function GardenRenderer3D({
     viewingHeight: 5,
     showGrid: true,
     shadowsEnabled: true,
-    levelOfDetail: 'medium' as 'low' | 'medium' | 'high' | 'ultra'
+    levelOfDetail: 'medium' as 'low' | 'medium' | 'high' | 'ultra',
+    photorealizationMode: false // New mode for minimal markers
   });
   
   // Photorealization state - NEW flow with intermediate step
@@ -829,8 +830,92 @@ export default function GardenRenderer3D({
     return { scene, renderer, camera };
   }, [renderSettings.showGrid, renderSettings.shadowsEnabled, resetScene]);
 
+  // Create minimal dot marker for photorealization mode
+  const createMinimalPlantMarker = useCallback((plant: PlantInstance3D): THREE.Sprite => {
+    // Simple color logic: green for foliage, colored for flowering plants
+    const hasFlowers = plant.properties.flowerColor && 
+                      plant.properties.flowerColor !== '#90EE90' && 
+                      plant.properties.flowerColor !== 'none';
+    const markerColor = hasFlowers ? (plant.properties.flowerColor || '#4CAF50') : '#4CAF50';
+    
+    // Create cache key for texture reuse
+    const cacheKey = `minimal-marker-${markerColor}`;
+    
+    // Check texture cache first
+    let texture = textureCache.current.get(cacheKey);
+    
+    if (!texture) {
+      // Create simple circular marker
+      const canvas = document.createElement('canvas');
+      const size = 128; // Smaller texture for simple dots
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      
+      // Clear canvas with transparent background
+      ctx.clearRect(0, 0, size, size);
+      
+      // Draw simple filled circle
+      ctx.fillStyle = markerColor;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Add subtle white center dot for visibility
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Create texture from canvas
+      texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+      
+      // Cache the texture for reuse
+      textureCache.current.set(cacheKey, texture);
+    }
+    
+    // Create sprite material
+    const material = new THREE.SpriteMaterial({ 
+      map: texture,
+      transparent: true,
+      alphaTest: 0.1,
+      opacity: 0.8 // Slightly transparent for subtle appearance
+    });
+    
+    // Create sprite
+    const sprite = new THREE.Sprite(material);
+    
+    // Center sprite at its center (standard positioning)
+    sprite.center.set(0.5, 0.5);
+    
+    // Position sprite slightly above ground for visibility
+    sprite.position.set(plant.position.x, plant.position.y, 0.05);
+    
+    // Scale based on plant spread - simple sizing
+    const spreadCurrent = Math.max(0.2, plant.dimensions.spreadCurrent || 0.5);
+    const scaleFactor = spreadCurrent * 0.8; // Make dots proportional to plant spread
+    sprite.scale.set(scaleFactor, scaleFactor, 1);
+    
+    // Store minimal plant data
+    sprite.userData = {
+      plantId: plant.id,
+      plantName: plant.plantName,
+      isMinimalMarker: true
+    };
+    
+    return sprite;
+  }, []);
+
   // Create plant billboard sprite based on plant type and dimensions
   const createPlantBillboard = useCallback((plant: PlantInstance3D): THREE.Sprite => {
+    // Use minimal markers in photorealization mode
+    if (renderSettings.photorealizationMode) {
+      return createMinimalPlantMarker(plant);
+    }
+    
     // Determine plant visual style based on type
     const plantType = plant.properties.type?.toLowerCase() || 'perennial';
     const flowerColor = plant.properties.flowerColor || '#90EE90';
@@ -960,7 +1045,7 @@ export default function GardenRenderer3D({
     };
     
     return sprite;
-  }, []);
+  }, [renderSettings.photorealizationMode, createMinimalPlantMarker]);
 
   // Update all billboards to face the camera
   const updateBillboardRotations = useCallback(() => {
@@ -1655,6 +1740,35 @@ export default function GardenRenderer3D({
                   <SelectItem value="ultra">Ultra</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="photorealization-mode"
+                  checked={renderSettings.photorealizationMode}
+                  onCheckedChange={(checked) =>
+                    setRenderSettings(prev => ({ ...prev, photorealizationMode: checked }))
+                  }
+                  data-testid="switch-photorealization-mode"
+                />
+                <Label htmlFor="photorealization-mode" className="cursor-pointer">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="flex items-center gap-1">
+                        <MousePointer className="h-4 w-4" />
+                        <span>AI Mode</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Use minimal dot markers instead of detailed plants.</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Optimized for AI photorealization - provides better results.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+              </div>
             </div>
           </div>
           
