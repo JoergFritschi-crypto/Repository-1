@@ -664,10 +664,12 @@ export default function GardenProperties() {
                     <span>{index + 1}</span>
                   )}
                 </div>
-                <p className={`text-xs mt-1 font-medium hidden md:block transition-colors duration-200 ${
-                  index + 1 === currentStep ? 'text-[#004025] font-semibold' : 'text-gray-600'
-                }`}>{step.title}</p>
-                <p className="text-xs text-gray-500 hidden lg:block">{step.subtitle}</p>
+                <div className="hidden md:block mt-1 min-h-[2.5rem] lg:min-h-[3.5rem]">
+                  <p className={`text-xs font-medium transition-colors duration-200 ${
+                    index + 1 === currentStep ? 'text-[#004025] font-semibold' : 'text-gray-600'
+                  }`}>{step.title}</p>
+                  <p className="text-xs text-gray-500 hidden lg:block">{step.subtitle}</p>
+                </div>
                 {index < stepDetails.length - 1 && (
                   <div 
                     className={`absolute top-4 md:top-5 left-[calc(50%+20px)] right-0 h-0.5 transition-all duration-500 -z-10 ${
