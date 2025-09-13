@@ -45,6 +45,8 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { PlantAdvancedSearch } from '@/components/plant/plant-advanced-search';
 import PlantSearchResults from '@/components/plant/plant-search-results';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import FinalReviewGallery from '@/components/garden/final-review-gallery';
+import SeasonalViewer from '@/components/garden/seasonal-viewer';
 
 
 const gardenSchema = z.object({
@@ -2625,114 +2627,79 @@ export default function GardenProperties() {
 
             {/* Step 6: Final Review & Downloads */}
             {currentStep === 6 && (
-              <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="step-final-review">
-                <CardHeader className="py-7 flower-band-review rounded-t-lg">
-                  <CardTitle className="text-base">Final Review & Downloads</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center py-4">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full mb-4">
-                      <Check className="w-8 h-8 text-green-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">Your Garden Design is Complete!</h3>
-                    <p className="text-sm text-muted-foreground mb-6">
-                      Download your garden blueprint and plant list for reference
-                    </p>
-                  </div>
-
-                  {/* Garden Summary */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-white dark:bg-background rounded-lg border">
-                      <h4 className="font-semibold text-sm mb-2">Garden Details</h4>
-                      <div className="space-y-1 text-xs">
-                        <p><span className="font-medium">Name:</span> {watchedName || 'My Garden'}</p>
-                        <p><span className="font-medium">Location:</span> {watchedCity}, {watchedCountry}</p>
-                        <p><span className="font-medium">Shape:</span> {watchedShape}</p>
-                        <p><span className="font-medium">Size:</span> {Object.values(watchedDimensions || {}).join(' x ')} {watchedUnits}</p>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-white dark:bg-background rounded-lg border">
-                      <h4 className="font-semibold text-sm mb-2">Plant Summary</h4>
-                      <div className="space-y-1 text-xs">
-                        <p><span className="font-medium">Total Plants:</span> {placedPlants.length}</p>
-                        <p><span className="font-medium">Unique Species:</span> {new Set(placedPlants.map(p => p.plantName)).size}</p>
-                        <p><span className="font-medium">Style:</span> {selectedGardenStyle || watchedSelectedStyle || 'Custom'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Download Actions */}
-                  <div className="space-y-3">
-                    <Button
-                      type="button"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => {
-                        // TODO: Implement blueprint generation
-                        toast({
-                          title: 'Blueprint Downloaded',
-                          description: 'Your garden blueprint has been saved',
-                        });
-                      }}
-                      data-testid="button-download-blueprint"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Garden Blueprint
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => {
-                        // TODO: Implement plant list export
-                        toast({
-                          title: 'Plant List Downloaded',
-                          description: 'Your plant list has been saved as CSV',
-                        });
-                      }}
-                      data-testid="button-download-plant-list"
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      Download Plant List
-                    </Button>
-                  </div>
-
-                  {/* Seasonal Images if Available */}
-                  {seasonalImages && (
-                    <div className="mt-6 p-4 bg-gradient-to-r from-primary/5 to-canary/5 rounded-lg border">
-                      <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                        <Flower2 className="w-4 h-4 text-primary" />
-                        Your Seasonal Garden Views
-                      </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        {Object.entries(seasonalImages).slice(0, 4).map(([season, imageUrl]) => (
-                          <div key={season} className="relative">
-                            <img
-                              src={imageUrl as string}
-                              alt={`${season} garden view`}
-                              className="w-full h-20 object-cover rounded"
-                            />
-                            <Badge className="absolute top-1 left-1 text-xs bg-black/70 text-white capitalize">
-                              {season}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="w-full mt-2"
-                        onClick={() => setShowSeasonalViewer(true)}
-                      >
-                        <Eye className="w-3 h-3 mr-1" />
-                        View Full Gallery
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <FinalReviewGallery
+                seasonalImages={seasonalImages || []}
+                gardenSummary={{
+                  gardenId: gardenId || undefined,
+                  gardenName: watchedName || 'My Garden',
+                  city: watchedCity,
+                  country: watchedCountry,
+                  shape: watchedShape,
+                  dimensions: watchedDimensions || {},
+                  units: watchedUnits,
+                  totalPlants: placedPlants.length,
+                  uniqueSpecies: new Set(placedPlants.map(p => p.plantName)).size,
+                  gardenStyle: selectedGardenStyle || watchedSelectedStyle || 'Custom',
+                  usdaZone: watchedUsdaZone,
+                  rhsZone: watchedRhsZone,
+                  sunExposure: watchedSunExposure,
+                  soilType: watchedSoilType,
+                  createdAt: new Date().toISOString()
+                }}
+                placedPlants={placedPlants}
+                onStartNewGarden={() => {
+                  // Reset form and go to step 1
+                  form.reset();
+                  setCurrentStep(1);
+                  setPlacedPlants([]);
+                  setInventoryPlants([]);
+                  setSeasonalImages(null);
+                  setGardenId(null);
+                  setCompleteDesign(null);
+                  toast({
+                    title: "Starting New Garden",
+                    description: "Ready to create your next garden design!",
+                  });
+                }}
+                onEditGarden={() => {
+                  // Go back to step 3 (Interactive Design)
+                  setCurrentStep(3);
+                  toast({
+                    title: "Editing Garden",
+                    description: "You can now modify your plant placement",
+                  });
+                }}
+                onSaveGarden={async () => {
+                  // Save garden if not already saved
+                  if (!gardenId && user) {
+                    try {
+                      const gardenData = {
+                        ...form.getValues(),
+                        layout_data: {
+                          plantPlacements: placedPlants,
+                          seasonalImages
+                        }
+                      };
+                      
+                      const response = await apiRequest('POST', '/api/gardens', gardenData);
+                      const savedGarden = await response.json();
+                      setGardenId(savedGarden.id);
+                      
+                      toast({
+                        title: "Garden Saved",
+                        description: "Your garden has been saved to your account",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Save Failed",
+                        description: "Could not save your garden. Please try again.",
+                        variant: "destructive"
+                      });
+                    }
+                  }
+                }}
+                isSaved={!!gardenId}
+              />
             )}
 
 
@@ -2796,6 +2763,26 @@ export default function GardenProperties() {
         />
         
         {/* Visualization Generation Modal removed - using streamlined seasonal generation flow */}
+        
+        {/* Seasonal Viewer Modal */}
+        {showSeasonalViewer && seasonalImages && (
+          <SeasonalViewer
+            isOpen={showSeasonalViewer}
+            onClose={() => setShowSeasonalViewer(false)}
+            gardenName={watchedName || 'My Garden'}
+            gardenId={gardenId || 'temp-garden'}
+            images={seasonalImages}
+            dateRange={{
+              startDay: 1,
+              endDay: 365,
+              totalDays: 365,
+              isWrapAround: false,
+              rangeId: 'full-year',
+              color: '#10B981',
+              label: 'Full Year'
+            }}
+          />
+        )}
       </div>
     </div>
   );
