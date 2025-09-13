@@ -19,13 +19,14 @@ import { PlantImportService } from "./plantImportService";
 import { generateAllGardenToolIcons, generateGardenToolIcon } from "./aiIconGenerator";
 import { geminiImageGenerator } from "./geminiImageGenerator";
 import { buildPhotorealizationContext, buildPhotorealizationPrompt } from "./photorealizationService";
+import { calculateDayRange, selectDaysForImages, dayToDateInfo, getPlantsBloomingOnDay, generateWeatherDescription } from "./dayRangeUtils";
 import path from "path";
 
 // Initialize Stripe if API key is available
 let stripe: Stripe | null = null;
 if (process.env.STRIPE_SECRET_KEY) {
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2023-10-16",
+    apiVersion: "2025-08-27.basil",
   });
 }
 
@@ -303,7 +304,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Optionally save to file vault
       if (fileVaultService) {
         try {
-          await fileVaultService.saveGardenImage(gardenId, imageUrl, 'photorealistic-view');
+          // Note: saveGardenImage requires userId, gardenName, imageBuffer, mimeType
+          // For now, skip saving to vault until proper image handling is implemented
+          console.log('Vault save skipped - saveGardenImage needs imageBuffer, not URL');
         } catch (vaultError) {
           console.error('Error saving photorealistic view to vault:', vaultError);
           // Don't fail the request if vault save fails
@@ -351,6 +354,262 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(statusCode).json({ 
+        message: userMessage,
+        retryable: statusCode === 503 || statusCode === 429
+      });
+    }
+  });
+  
+  // Generate seasonal images with day-of-year precision
+  app.post('/api/gardens/:gardenId/generate-seasonal', isAuthenticated, async (req: any, res) => {
+    try {
+      const gardenId = req.params.gardenId;
+      const { 
+        startDay, 
+        endDay, 
+        imageCount, 
+        season,
+        canvasImage,
+        sceneState,
+        placedPlants 
+      } = req.body;
+      
+      // Validate required fields
+      if (!startDay || !endDay) {
+        return res.status(400).json({ 
+          message: "startDay and endDay are required (1-365)" 
+        });
+      }
+      
+      if (startDay < 1 || startDay > 365 || endDay < 1 || endDay > 365) {
+        return res.status(400).json({
+          message: "Day values must be between 1 and 365"
+        });
+      }
+      
+      if (!canvasImage) {
+        return res.status(400).json({ 
+          message: "Canvas image is required for seasonal generation" 
+        });
+      }
+      
+      if (!sceneState) {
+        return res.status(400).json({ 
+          message: "Scene state is required (camera, lighting, bounds)" 
+        });
+      }
+      
+      if (!geminiImageGenerator) {
+        return res.status(503).json({ 
+          message: "Gemini image generation service not configured. Please add GEMINI_API_KEY." 
+        });
+      }
+      
+      // Verify garden ownership
+      const garden = await storage.getGarden(gardenId);
+      if (!garden) {
+        return res.status(404).json({ message: "Garden not found" });
+      }
+      
+      if (garden.userId !== req.user.claims.sub) {
+        return res.status(403).json({ message: "Unauthorized - you can only generate seasonal images for your own gardens" });
+      }
+      
+      // Calculate day range and select optimal days
+      const dayRange = calculateDayRange(startDay, endDay);
+      const selectedDays = selectDaysForImages(dayRange, imageCount);
+      
+      console.log(`[Seasonal Generation] Generating ${selectedDays.length} images for garden ${gardenId}`, {
+        range: `${startDay}-${endDay}`,
+        totalDays: dayRange.totalDays,
+        isWrapAround: dayRange.isWrapAround,
+        selectedDays
+      });
+      
+      // Get plant data for bloom calculations
+      let plantsWithDetails: Array<{ gardenPlant: any; plant: any }> = [];
+      
+      if (placedPlants && placedPlants.length > 0) {
+        // Use plants provided from frontend
+        plantsWithDetails = placedPlants.map((placedPlant: any) => ({
+          gardenPlant: {
+            id: placedPlant.id,
+            gardenId: gardenId,
+            plantId: placedPlant.plantId,
+            quantity: 1,
+            position_x: placedPlant.x?.toString() || '50',
+            position_y: placedPlant.y?.toString() || '50',
+            notes: null
+          },
+          plant: placedPlant.plantDetails || {
+            id: placedPlant.plantId,
+            commonName: placedPlant.plantName || 'Unknown Plant',
+            scientificName: placedPlant.scientificName || '',
+            cultivar: null,
+            type: 'perennial',
+            heightMinCm: 30,
+            heightMaxCm: 60,
+            spreadMinCm: 20,
+            spreadMaxCm: 40,
+            foliage: 'deciduous',
+            flowerColors: [],
+            bloomTime: [],
+            bloomStartDayOfYear: null,
+            bloomEndDayOfYear: null,
+            bloomStartMonth: null,
+            bloomEndMonth: null,
+            sunExposure: 'full sun',
+            soilType: 'well-drained',
+            waterNeeds: 'moderate'
+          }
+        }));
+      } else {
+        // Fallback to database plants
+        const gardenPlants = await storage.getGardenPlants(gardenId);
+        plantsWithDetails = await Promise.all(
+          gardenPlants.map(async (gp) => {
+            const plant = await storage.getPlant(gp.plantId);
+            return { gardenPlant: gp, plant };
+          })
+        );
+      }
+      
+      // Generate images for each selected day
+      const images = [];
+      const errors = [];
+      
+      for (let i = 0; i < selectedDays.length; i++) {
+        const dayOfYear = selectedDays[i];
+        const dayInfo = dayToDateInfo(dayOfYear, 2024);
+        
+        try {
+          console.log(`[Seasonal Generation] Generating image ${i + 1}/${selectedDays.length} for day ${dayOfYear} (${dayInfo.date})`);
+          
+          // Calculate month for photorealization service
+          const month = dayInfo.month;
+          
+          // Update scene state with correct month and season
+          const seasonalSceneState = {
+            ...sceneState,
+            season: dayInfo.season,
+            month: month,
+            lighting: {
+              ...sceneState.lighting,
+              timeOfDay: sceneState.lighting?.timeOfDay || 14 // Default to 2 PM
+            }
+          };
+          
+          // Build photorealization context with day-specific month
+          const context = await buildPhotorealizationContext(gardenId, seasonalSceneState, placedPlants);
+          
+          // Modify the context to reflect the specific day
+          const seasonalPrompt = `${buildPhotorealizationPrompt(context)}
+
+SEASONAL TIMING (DAY ${dayOfYear} - ${dayInfo.date}):
+- Exact date: ${dayInfo.date} (day ${dayOfYear} of year)
+- Season: ${dayInfo.season}
+- Weather: ${generateWeatherDescription(dayOfYear, dayInfo.season)}
+- Monthly bloom status: Plants should reflect their exact bloom status for ${dayInfo.date}
+
+CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.date}, with accurate seasonal plant states and bloom timing.`;
+          
+          // Generate the image
+          const imageUrl = await geminiImageGenerator.generateImageWithReference({
+            referenceImage: canvasImage,
+            prompt: seasonalPrompt,
+            outputFileName: `seasonal-garden-${gardenId}-day${dayOfYear}-${Date.now()}.png`
+          });
+          
+          // Get plants blooming on this specific day
+          const bloomingPlants = getPlantsBloomingOnDay(plantsWithDetails, dayOfYear);
+          
+          // Add image result
+          images.push({
+            dayOfYear,
+            date: dayInfo.date,
+            imageUrl,
+            season: dayInfo.season,
+            bloomingPlants,
+            description: `Garden on ${dayInfo.date} (${dayInfo.season})${bloomingPlants.length > 0 ? ` - Blooming: ${bloomingPlants.slice(0, 3).join(', ')}${bloomingPlants.length > 3 ? ` and ${bloomingPlants.length - 3} more` : ''}` : ''}`,
+            weatherCondition: generateWeatherDescription(dayOfYear, dayInfo.season)
+          });
+          
+          // Optionally save to file vault
+          if (fileVaultService) {
+            try {
+              // Note: saveGardenImage requires userId, gardenName, imageBuffer, mimeType
+              // For now, skip saving to vault until proper image handling is implemented
+              console.log(`Vault save skipped for day ${dayOfYear} - saveGardenImage needs imageBuffer, not URL`);
+            } catch (vaultError) {
+              console.error(`Error saving seasonal image for day ${dayOfYear} to vault:`, vaultError);
+              // Don't fail the request if vault save fails
+            }
+          }
+          
+        } catch (imageError: any) {
+          console.error(`Error generating image for day ${dayOfYear}:`, imageError);
+          errors.push({
+            dayOfYear,
+            date: dayInfo.date,
+            error: imageError.message
+          });
+        }
+      }
+      
+      // Return results
+      const response = {
+        images,
+        dateRange: {
+          startDay,
+          endDay,
+          totalDays: dayRange.totalDays,
+          isWrapAround: dayRange.isWrapAround
+        },
+        summary: {
+          requested: selectedDays.length,
+          successful: images.length,
+          failed: errors.length
+        }
+      };
+      
+      const finalResponse = {
+        ...response,
+        ...(errors.length > 0 && { errors })
+      };
+      
+      if (images.length === 0) {
+        return res.status(503).json({
+          message: "Failed to generate any seasonal images",
+          ...finalResponse
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: `Generated ${images.length} seasonal images across ${dayRange.totalDays} days`,
+        ...finalResponse
+      });
+      
+    } catch (error: any) {
+      console.error('Error generating seasonal images:', error);
+      
+      // Determine appropriate status code and user message
+      const errorMessage = error.message?.toLowerCase() || '';
+      let statusCode = 500;
+      let userMessage = error.message;
+      
+      if (errorMessage.includes('temporarily unavailable') || errorMessage.includes('internal error')) {
+        statusCode = 503;
+      } else if (errorMessage.includes('rate limit')) {
+        statusCode = 429;
+      } else if (errorMessage.includes('api key') || errorMessage.includes('not configured')) {
+        statusCode = 503;
+        userMessage = 'Image generation service is not available. Please contact support.';
+      } else if (errorMessage.includes('invalid') || errorMessage.includes('bad request')) {
+        statusCode = 400;
+      }
+      
+      res.status(statusCode).json({
         message: userMessage,
         retryable: statusCode === 503 || statusCode === 429
       });
@@ -406,7 +665,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Optionally save to file vault
           if (gardenId && fileVaultService) {
-            await fileVaultService.saveGardenImage(gardenId, imageUrl, 'visualization');
+            // Note: saveGardenImage requires userId, gardenName, imageBuffer, mimeType
+            // For now, skip saving to vault until proper image handling is implemented
+            console.log('Vault save skipped - saveGardenImage needs imageBuffer, not URL');
           }
 
           return res.json({ 
@@ -430,7 +691,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
 
             if (gardenId && fileVaultService) {
-              await fileVaultService.saveGardenImage(gardenId, imageUrl, 'visualization');
+              // Note: saveGardenImage requires userId, gardenName, imageBuffer, mimeType
+              // For now, skip saving to vault until proper image handling is implemented
+              console.log('Vault save skipped - saveGardenImage needs imageBuffer, not URL');
             }
 
             return res.json({ 
@@ -452,7 +715,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Optionally save to file vault
           if (gardenId && fileVaultService) {
-            await fileVaultService.saveGardenImage(gardenId, imageUrl, 'visualization');
+            // Note: saveGardenImage requires userId, gardenName, imageBuffer, mimeType
+            // For now, skip saving to vault until proper image handling is implemented
+            console.log('Vault save skipped - saveGardenImage needs imageBuffer, not URL');
           }
 
           return res.json({ 
@@ -697,6 +962,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Count generations this month
         const monthlyGenerations = generations.filter(gen => {
+          if (!gen.createdAt) return false;
           const genDate = new Date(gen.createdAt);
           return genDate >= startOfMonth;
         });
@@ -713,6 +979,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Count generations today
         const dailyGenerations = generations.filter(gen => {
+          if (!gen.createdAt) return false;
           const genDate = new Date(gen.createdAt);
           return genDate >= startOfDay;
         });
@@ -1379,7 +1646,7 @@ Rules:
       console.error('Validation pipeline test error:', error);
       res.status(500).json({ 
         error: 'Failed to test validation pipeline', 
-        details: error.message 
+        details: (error as Error).message 
       });
     }
   });
@@ -1471,7 +1738,7 @@ Rules:
       res.status(500).json({ 
         success: false, 
         message: 'Failed to generate garden tool icons',
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -1503,7 +1770,7 @@ Rules:
       res.status(500).json({ 
         success: false, 
         message: 'Failed to generate icon',
-        error: error.message 
+        error: (error as Error).message 
       });
     }
   });
@@ -2609,7 +2876,7 @@ Rules:
         console.error("AI analysis failed:", aiError);
         aiAnalysis = {
           error: "AI analysis failed",
-          message: aiError.message
+          message: (aiError as Error).message
         };
       }
 
@@ -3515,7 +3782,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       
       let climateData = await storage.getClimateData(location);
       
-      if (!climateData || isClimateDataStale(climateData.lastUpdated)) {
+      if (!climateData || isClimateDataStale(climateData.lastUpdated || new Date(0))) {
         // Get coordinates if we have Mapbox
         let coordinates = null;
         if (mapboxAPI) {

@@ -125,6 +125,8 @@ interface ProvidedPlant {
     // Backend field names (might also be present)
     flowerColors?: string[];
     bloomTime?: string[];
+    bloomStartMonth?: number;
+    bloomEndMonth?: number;
     sunExposure?: string;
     soilType?: string;
     waterNeeds?: string;
@@ -172,7 +174,7 @@ export async function buildPhotorealizationContext(
         spreadMaxCm: placedPlant.plantDetails.spreadMaxCm || placedPlant.plantDetails.spreadMax || 40,
         foliage: placedPlant.plantDetails.foliage || 'deciduous',
         // Map frontend field names to backend expected field names
-        flowerColors: placedPlant.plantDetails.flowerColor ? 
+        flowerColor: placedPlant.plantDetails.flowerColor ? 
           (Array.isArray(placedPlant.plantDetails.flowerColor) ? 
             placedPlant.plantDetails.flowerColor : 
             [placedPlant.plantDetails.flowerColor]) : 
@@ -200,7 +202,7 @@ export async function buildPhotorealizationContext(
         spreadMinCm: 20,
         spreadMaxCm: 40,
         foliage: 'deciduous',
-        flowerColors: [],
+        flowerColor: [],
         bloomTime: [],
         sunExposure: 'full sun',
         soilType: 'well-drained',
@@ -1008,7 +1010,7 @@ function getBloomStatus(plant: Plant, month: number): string {
   
   if (bloomMonths.has(month)) {
     // Plant is blooming in this month - use generic description with colors if available
-    const flowerColors = plant.flowerColors || plant.flowerColor || [];
+    const flowerColors = plant.flowerColor || [];
     const colorArray = Array.isArray(flowerColors) ? flowerColors : [flowerColors];
     
     if (colorArray.length > 0) {
