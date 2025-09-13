@@ -393,17 +393,22 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
     // Note: Garden dimensions display has been moved below the canvas
     // to prevent interference with AI image generation
     
-    // Add brighter ambient lighting immediately to ensure visibility
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    ambientLight.name = 'ambient-light-initial';
-    scene.add(ambientLight);
-    
-    // Add a brighter directional light for initial visibility
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    directionalLight.position.set(5, 10, 5);
-    directionalLight.name = 'directional-light-initial';
-    scene.add(directionalLight);
-    console.log('Added initial lighting');
+    // Skip lighting in photorealization mode for clean capture
+    if (!photorealizationMode) {
+      // Add brighter ambient lighting immediately to ensure visibility
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+      ambientLight.name = 'ambient-light-initial';
+      scene.add(ambientLight);
+      
+      // Add a brighter directional light for initial visibility
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight.position.set(5, 10, 5);
+      directionalLight.name = 'directional-light-initial';
+      scene.add(directionalLight);
+      console.log('Added initial lighting');
+    } else {
+      console.log('Skipped initial lighting for photorealization mode');
+    }
     
     // Start animation loop immediately
     if (!animationFrameRef.current) {
@@ -650,7 +655,14 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
   // Create plant representations
   const createPlants = useCallback((plants3D: PlantInstance3D[]) => {
     console.log('createPlants called with:', plants3D.length, 'plants');
-    // Clear existing plants
+    // CRITICAL: Properly remove existing plants from scene before clearing
+    if (sceneRef.current && plantMeshesRef.current) {
+      // Remove each child from the scene first
+      plantMeshesRef.current.children.forEach(child => {
+        sceneRef.current?.remove(child);
+      });
+    }
+    // Now clear the group reference
     plantMeshesRef.current.clear();
     
     // Calculate garden dimensions for proportional scaling
@@ -784,6 +796,12 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
   // Update lighting based on settings
   const updateLighting = useCallback(() => {
     if (!sceneRef.current || !gardenBoundsRef.current) return;
+    
+    // Skip lighting in photorealization mode - keep minimal scene
+    if (photorealizationMode) {
+      console.log('Skipping lighting in photorealization mode');
+      return;
+    }
     
     // Remove existing sun light
     if (sunLightRef.current) {
@@ -936,7 +954,7 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
     pathLine.visible = renderSettings.showSunPath;
     
     sceneRef.current.add(pathLine);
-  }, [renderSettings, cardinalRotation]);
+  }, [renderSettings, cardinalRotation, photorealizationMode]);
 
   // Update camera position with smooth transitions
   const updateCamera = useCallback(() => {
@@ -981,8 +999,8 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
     cameraRef.current.fov = camera.fov;
     cameraRef.current.updateProjectionMatrix();
     
-    // Create or update viewer position marker
-    if (!viewerMarkerRef.current) {
+    // Create or update viewer position marker (skip in photorealization mode)
+    if (!viewerMarkerRef.current && !photorealizationMode) {
       // Create viewer marker group
       const viewerGroup = new THREE.Group();
       viewerGroup.name = 'viewer-marker';
@@ -1038,10 +1056,10 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
         viewerMarkerRef.current.userData.positionSet = true;
       }
       
-      // Only update visibility, not position
-      viewerMarkerRef.current.visible = renderSettings.showViewerMarker;
+      // Only update visibility, not position (hide in photorealization mode)
+      viewerMarkerRef.current.visible = renderSettings.showViewerMarker && !photorealizationMode;
     }
-  }, [renderSettings, cardinalRotation]);
+  }, [renderSettings, cardinalRotation, photorealizationMode]);
 
   // Smooth animation loop optimized for 60 FPS with camera transitions
   const animate = useCallback(() => {
@@ -1163,6 +1181,7 @@ const Garden3DView = forwardRef<Garden3DViewRef, Garden3DViewProps>((
     placedPlants,
     cardinalRotation,
     renderSettings,
+    photorealizationMode, // CRITICAL: Rebuild scene when mode changes
     createGardenTerrain,
     createPlants,
     updateLighting,
