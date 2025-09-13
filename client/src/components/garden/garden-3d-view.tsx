@@ -379,8 +379,9 @@ export default function Garden3DView({
         break;
         
       default:
-        // Rectangle/square
-        groundGeometry = new THREE.PlaneGeometry(width, depth, 20, 20);
+        // Rectangle/square - only subdivide if there's a slope
+        const subdivisions = (slope?.percentage && slope.percentage > 0) ? 20 : 1;
+        groundGeometry = new THREE.PlaneGeometry(width, depth, subdivisions, subdivisions);
         groundGeometry.rotateX(-Math.PI / 2);
     }
     
