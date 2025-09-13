@@ -645,6 +645,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Premium tier limits: 50 per month, 10 per day
+      if (userTier === 'premium') {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        // Count generations this month
+        const monthlyGenerations = generations.filter(gen => {
+          const genDate = new Date(gen.createdAt);
+          return genDate >= startOfMonth;
+        });
+        
+        if (monthlyGenerations.length >= 50) {
+          return res.status(403).json({ 
+            message: 'Premium tier limit reached: 50 designs per month. Your limit will reset at the start of next month.',
+            tierLimit: true,
+            limitType: 'monthly',
+            currentCount: monthlyGenerations.length,
+            maxLimit: 50
+          });
+        }
+        
+        // Count generations today
+        const dailyGenerations = generations.filter(gen => {
+          const genDate = new Date(gen.createdAt);
+          return genDate >= startOfDay;
+        });
+        
+        if (dailyGenerations.length >= 10) {
+          return res.status(403).json({ 
+            message: 'Daily limit reached: 10 designs per day for premium users. Try again tomorrow.',
+            tierLimit: true,
+            limitType: 'daily',
+            currentCount: dailyGenerations.length,
+            maxLimit: 10
+          });
+        }
+      }
+
       // Track the generation attempt
       const generationTracking = await storage.createDesignGeneration({
         userId,

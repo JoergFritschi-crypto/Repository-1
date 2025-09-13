@@ -728,7 +728,7 @@ export default function GardenProperties() {
                           <ul className="text-xs text-gray-600 mt-1 ml-4 list-disc">
                             <li>Return anytime to continue where you left off</li>
                             <li>Keep your designs and access them later</li>
-                            <li>Upgrade to premium for unlimited design iterations</li>
+                            <li>Upgrade to premium for 50 designs per month</li>
                           </ul>
                           <p className="text-xs text-gray-500 mt-2 italic">
                             Uncheck this if you prefer to keep data only in your browser for this session
@@ -2513,12 +2513,8 @@ export default function GardenProperties() {
                   </>
                 )}
 
-                {/* Show Safety Preferences if Manual approach is chosen */}
+                {/* Show button to proceed to manual design - NO safety preferences needed */}
                 {(localDesignApproach === "manual" || watchedDesignApproach === "manual") && (
-                  <>
-                    <SafetyPreferences form={form} showAvailabilityPreference={true} />
-                  
-                  {/* Generate Design Button for Manual approach */}
                   <Card className="border-2 border-primary bg-primary/10 shadow-sm">
                     <CardContent className="py-6">
                       <div className="text-center space-y-3">
@@ -2547,11 +2543,11 @@ export default function GardenProperties() {
                         </Button>
                         <p className="text-xs text-gray-500">
                           You'll have full control to manually place plants and design your garden layout.
+                          You can filter plants by safety criteria directly in the plant search.
                         </p>
                       </div>
                     </CardContent>
                   </Card>
-                  </>
                 )}
               </div>
             )}

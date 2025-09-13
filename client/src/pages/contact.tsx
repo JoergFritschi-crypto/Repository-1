@@ -66,7 +66,7 @@ export default function Contact() {
             <div>
               <h3 className="font-semibold text-foreground mb-2">What's included in the premium plans?</h3>
               <p className="text-muted-foreground text-sm">
-                Premium plans include unlimited designs, advanced plant database access, seasonal garden imagery, 
+                Premium plans include 50 designs per month, advanced plant database access, seasonal garden imagery, 
                 and priority support. Check our pricing page for detailed comparisons.
               </p>
             </div>

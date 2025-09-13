@@ -125,7 +125,7 @@ export default function PremiumDashboard() {
                   <div>
                     <h3 className="font-semibold text-lg" data-testid="text-upgrade-title">Unlock Premium Features</h3>
                     <p className="text-muted-foreground" data-testid="text-upgrade-subtitle">
-                      Get unlimited designs, advanced 3D visualization, and priority support
+                      Get 50 designs per month, advanced 3D visualization, and priority support
                     </p>
                   </div>
                 </div>
@@ -282,7 +282,7 @@ export default function PremiumDashboard() {
                       <span className="text-sm font-medium">Collection Status</span>
                       {collectionLimits.userTier === 'premium' ? (
                         <Badge variant="default" className="bg-canary text-primary">
-                          Unlimited
+                          Premium
                         </Badge>
                       ) : (
                         <Badge variant="secondary">
@@ -421,7 +421,7 @@ export default function PremiumDashboard() {
                 <CardContent className="space-y-3 text-sm">
                   <div className="flex items-center">
                     <Star className="w-4 h-4 text-canary mr-2" />
-                    <span>Unlimited garden designs</span>
+                    <span>50 garden designs per month</span>
                   </div>
                   <div className="flex items-center">
                     <Star className="w-4 h-4 text-canary mr-2" />
@@ -461,7 +461,7 @@ export default function PremiumDashboard() {
                     <Progress value={(stats.plantDoctorUses / 5) * 100} className="h-2" />
                   </div>
                   <Button className="w-full bg-canary text-primary hover:bg-gold" size="sm" data-testid="button-upgrade-for-unlimited">
-                    Upgrade for Unlimited
+                    Upgrade to Premium
                   </Button>
                 </CardContent>
               </Card>

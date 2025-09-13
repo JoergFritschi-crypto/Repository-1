@@ -249,7 +249,7 @@ export default function Landing() {
                 <ul className="space-y-1 mb-4 flex-1">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Unlimited designs</span>
+                    <span className="text-xs">50 designs/month</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />

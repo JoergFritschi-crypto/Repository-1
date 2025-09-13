@@ -366,7 +366,7 @@ export default function StyleSelector({
         <Alert className="border-primary bg-primary/10">
           <Flower2 className="h-4 w-4 text-primary" />
           <AlertDescription>
-            <strong>Want unlimited designs?</strong> Upgrade to Premium for unlimited iterations on all styles, 
+            <strong>Want more designs?</strong> Upgrade to Premium for 50 designs per month across all styles, 
             plus exclusive features like advanced plant recommendations and seasonal planning.
           </AlertDescription>
         </Alert>
