@@ -886,14 +886,105 @@ GENERATE: ${dimensions.width}×${dimensions.length}m ${garden.shape} bed, ${plan
 }
 
 /**
+ * Normalize bloom months for a plant using explicit data or taxonomy-based defaults
+ */
+function normalizeBloomMonths(plant: any): Set<number> {
+  const months = new Set<number>();
+  
+  // First check for explicit bloom time data
+  const bloomTime = plant.bloomTime || plant.floweringSeason || [];
+  const bloomArray = Array.isArray(bloomTime) ? bloomTime : [bloomTime];
+  
+  bloomArray.forEach((season: string) => {
+    const seasonLower = (season || '').toLowerCase();
+    if (seasonLower.includes('spring') || seasonLower.includes('march') || seasonLower.includes('april') || seasonLower.includes('may')) {
+      months.add(3).add(4).add(5);
+    }
+    if (seasonLower.includes('summer') || seasonLower.includes('june') || seasonLower.includes('july') || seasonLower.includes('august')) {
+      months.add(6).add(7).add(8);
+    }
+    if (seasonLower.includes('fall') || seasonLower.includes('autumn') || seasonLower.includes('september') || seasonLower.includes('october')) {
+      months.add(9).add(10);
+    }
+    if (seasonLower.includes('winter')) {
+      months.add(1).add(2).add(11).add(12);
+    }
+  });
+  
+  // Apply taxonomy-based defaults if no explicit bloom time
+  if (months.size === 0) {
+    const scientificName = plant.scientificName || '';
+    const commonName = (plant.commonName || '').toLowerCase();
+    const genus = scientificName.split(' ')[0];
+    
+    // Rosa (Roses) - bloom May through October, peak in June-July
+    if (genus === 'Rosa' || commonName.includes('rose')) {
+      for (let m = 5; m <= 10; m++) months.add(m);
+      console.log(`[Bloom Normalization] Applied Rosa defaults for ${scientificName}: months 5-10`);
+    }
+    // Lavandula (Lavender) - bloom June through September
+    else if (genus === 'Lavandula' || commonName.includes('lavender')) {
+      for (let m = 6; m <= 9; m++) months.add(m);
+      console.log(`[Bloom Normalization] Applied Lavandula defaults for ${scientificName}: months 6-9`);
+    }
+    // Phlox - bloom July through September
+    else if (genus === 'Phlox' || commonName.includes('phlox')) {
+      for (let m = 7; m <= 9; m++) months.add(m);
+      console.log(`[Bloom Normalization] Applied Phlox defaults for ${scientificName}: months 7-9`);
+    }
+    // Helianthus (Sunflowers) - bloom July through September
+    else if (genus === 'Helianthus' || commonName.includes('sunflower')) {
+      for (let m = 7; m <= 9; m++) months.add(m);
+      console.log(`[Bloom Normalization] Applied Helianthus defaults for ${scientificName}: months 7-9`);
+    }
+    // Delphinium - bloom June through July, sometimes second flush in September
+    else if (genus === 'Delphinium' || commonName.includes('delphinium')) {
+      months.add(6).add(7).add(9);
+      console.log(`[Bloom Normalization] Applied Delphinium defaults for ${scientificName}: months 6,7,9`);
+    }
+    // Echinacea (Coneflower) - bloom July through September
+    else if (genus === 'Echinacea' || commonName.includes('coneflower')) {
+      for (let m = 7; m <= 9; m++) months.add(m);
+      console.log(`[Bloom Normalization] Applied Echinacea defaults for ${scientificName}: months 7-9`);
+    }
+    // Rudbeckia (Black-eyed Susan) - bloom July through October
+    else if (genus === 'Rudbeckia' || commonName.includes('black-eyed susan') || commonName.includes('rudbeckia')) {
+      for (let m = 7; m <= 10; m++) months.add(m);
+      console.log(`[Bloom Normalization] Applied Rudbeckia defaults for ${scientificName}: months 7-10`);
+    }
+    // Peony - bloom May through June
+    else if (genus === 'Paeonia' || commonName.includes('peony')) {
+      months.add(5).add(6);
+      console.log(`[Bloom Normalization] Applied Paeonia defaults for ${scientificName}: months 5-6`);
+    }
+  }
+  
+  return months;
+}
+
+/**
  * Get seasonal state description for a plant in a specific month
  */
 function getSeasonalState(plant: Plant, month: number): string {
   const type = plant.type || 'perennial';
   const foliage = plant.foliage || 'deciduous';
+  const bloomMonths = normalizeBloomMonths(plant);
+  const scientificName = plant.scientificName || '';
+  const genus = scientificName.split(' ')[0];
   
   if (month === 7) { // July
-    if (type.includes('evergreen') || foliage === 'evergreen') {
+    // Check if this plant is blooming in July
+    if (bloomMonths.has(7)) {
+      if (genus === 'Rosa') {
+        return 'at peak summer flowering flush with multiple blooms and buds';
+      } else if (genus === 'Lavandula') {
+        return 'in full bloom with fragrant purple flower spikes';
+      } else if (genus === 'Phlox') {
+        return 'displaying showy flower clusters at peak bloom';
+      } else {
+        return 'actively flowering at summer peak, vibrant blooms visible';
+      }
+    } else if (type.includes('evergreen') || foliage === 'evergreen') {
       return 'at peak summer growth, full dense foliage, vibrant green color';
     } else if (type.includes('perennial') || type.includes('shrub')) {
       return 'at full summer maturity, lush healthy growth, peak seasonal form';
@@ -911,17 +1002,71 @@ function getSeasonalState(plant: Plant, month: number): string {
  * Get bloom status for a plant in a specific month
  */
 function getBloomStatus(plant: Plant, month: number): string {
-  const bloomTime = plant.floweringSeason || '';
+  const bloomMonths = normalizeBloomMonths(plant);
+  const scientificName = plant.scientificName || '';
+  const cultivar = plant.cultivar || '';
+  const genus = scientificName.split(' ')[0];
+  const commonName = (plant.commonName || '').toLowerCase();
+  
+  // Log for debugging
+  console.log(`[Bloom Status] Checking ${scientificName}${cultivar ? ` '${cultivar}'` : ''} for month ${month}`);
+  console.log(`[Bloom Status] Bloom months:`, Array.from(bloomMonths));
   
   if (month === 7) { // July
-    if (bloomTime.includes('summer') || bloomTime.includes('july')) {
-      return 'actively flowering, showing peak blooms';
-    } else if (bloomTime.includes('spring')) {
-      return 'post-bloom, focusing on foliage growth';
-    } else if (bloomTime.includes('autumn') || bloomTime.includes('fall')) {
-      return 'pre-bloom, building energy for later flowering';
+    if (bloomMonths.has(7)) {
+      // Specific cultivar descriptions for July blooming
+      if (genus === 'Rosa') {
+        if (cultivar === 'Mister Lincoln') {
+          return 'flowering profusely with large velvety deep red hybrid tea blooms, exceptionally fragrant';
+        } else if (cultivar === 'Chrysler Imperial') {
+          return 'displaying dark crimson-red blooms with classic high-centered form and damask fragrance';
+        } else if (cultivar === 'Double Delight') {
+          return 'showing cream and red bicolor blooms, color intensifying in summer sun';
+        } else if (cultivar === 'Ingrid Bergman') {
+          return 'producing bright red perfect-form blooms continuously through summer';
+        } else {
+          return 'in full bloom with multiple open flowers and developing buds';
+        }
+      } else if (genus === 'Lavandula') {
+        if (cultivar === 'Hidcote') {
+          return 'covered in deep purple flower spikes, highly aromatic';
+        } else if (cultivar === 'Munstead') {
+          return 'displaying lavender-blue flower spikes above gray-green foliage';
+        } else {
+          return 'bearing upright purple flower spikes, peak bloom period';
+        }
+      } else if (genus === 'Phlox') {
+        if (cultivar === 'David') {
+          return 'covered in pure white flower clusters, fragrant and showy';
+        } else if (cultivar === 'Starfire') {
+          return 'displaying brilliant red flower clusters atop dark foliage';
+        } else {
+          return 'showing dense terminal flower clusters at peak bloom';
+        }
+      } else if (genus === 'Helianthus') {
+        return 'producing cheerful daisy-like blooms with prominent centers';
+      } else if (genus === 'Echinacea' || commonName.includes('coneflower')) {
+        return 'displaying daisy-like flowers with raised central cones';
+      } else if (genus === 'Rudbeckia' || commonName.includes('black-eyed susan')) {
+        return 'covered in bright golden flowers with dark centers';
+      } else {
+        return 'actively flowering, showing peak summer blooms';
+      }
+    } else if (bloomMonths.has(5) || bloomMonths.has(6)) {
+      // Spring/early summer bloomers in July
+      return 'post-bloom, focusing on foliage growth and seed development';
+    } else if (bloomMonths.has(8) || bloomMonths.has(9)) {
+      // Late summer/fall bloomers in July
+      return 'developing flower buds for late summer bloom';
     } else {
-      return 'in seasonal foliage phase';
+      // No bloom time data - check if it's a foliage plant
+      if (genus === 'Hosta') {
+        return 'displaying lush foliage mounds, possible flower stalks forming';
+      } else if (commonName.includes('fern')) {
+        return 'showing fresh fronds at peak foliage display';
+      } else {
+        return 'in vegetative growth phase, healthy foliage';
+      }
     }
   }
   
