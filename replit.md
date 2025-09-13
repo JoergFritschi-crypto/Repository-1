@@ -31,6 +31,8 @@ Preferred communication style: Simple, everyday language.
 - Canvas capture: System captures minimal marker image and sends to Gemini for reference
 - User transparency: Mode is completely hidden from users - no visible toggle or indication
 - Result: AI has maximum freedom to generate plants from botanical text descriptions without geometric bias
+- **Fixed scene clearing issue**: Properly removes old meshes when switching to photorealization mode
+- **Black background enforced**: Photorealization mode now shows ONLY white dots on pure black background
 
 ### Database Restructuring for Numeric Dimensions (September 2025)
 - Added numeric dimension fields to plant schema for precise measurements
