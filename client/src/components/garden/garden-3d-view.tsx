@@ -1334,33 +1334,6 @@ export default function Garden3DView({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* 3D Canvas */}
-        <div 
-          ref={containerRef}
-          className="relative bg-gradient-to-b from-blue-100 to-green-50 rounded-lg overflow-hidden"
-          style={{ height: '500px' }}
-          data-testid="3d-canvas-container"
-        >
-          <canvas 
-            ref={canvasRef}
-            className="w-full h-full block"
-            style={{ display: 'block', width: '100%', height: '100%' }}
-            data-testid="3d-canvas"
-          />
-          
-          {/* Removed status indicators to clean up UI */}
-          
-          {/* Loading state */}
-          {!isSceneReady && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Loading 3D scene...</p>
-              </div>
-            </div>
-          )}
-        </div>
-        
         {/* Garden Information Card */}
         <Card className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200">
           <CardContent className="pt-4">
@@ -1436,6 +1409,33 @@ export default function Garden3DView({
             </div>
           </CardContent>
         </Card>
+        
+        {/* 3D Canvas */}
+        <div 
+          ref={containerRef}
+          className="relative bg-gradient-to-b from-blue-100 to-green-50 rounded-lg overflow-hidden"
+          style={{ height: '500px' }}
+          data-testid="3d-canvas-container"
+        >
+          <canvas 
+            ref={canvasRef}
+            className="w-full h-full block"
+            style={{ display: 'block', width: '100%', height: '100%' }}
+            data-testid="3d-canvas"
+          />
+          
+          {/* Removed status indicators to clean up UI */}
+          
+          {/* Loading state */}
+          {!isSceneReady && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Loading 3D scene...</p>
+              </div>
+            </div>
+          )}
+        </div>
         
         {/* Control Panel */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
