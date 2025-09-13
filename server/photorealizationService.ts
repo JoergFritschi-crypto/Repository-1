@@ -232,12 +232,12 @@ function extractLayoutGeometry(garden: Garden): LayoutGeometry {
     texture: 'rich dark topsoil with organic matter'
   }];
   
-  // Extract surrounding features
+  // Extract surrounding features - keep minimal
   const surroundingFeatures = layoutData.surroundings ? layoutData.surroundings.map((feature: any) => ({
-    type: feature.type || 'landscape',
+    type: feature.type || 'neutral background',
     position: feature.position || { x: 50, y: 0 },
     dimensions: feature.dimensions || { width: 100, height: 50 },
-    description: feature.description || 'natural countryside transition'
+    description: feature.description || 'soft neutral background blur'
   })) : [];
   
   return {
@@ -381,19 +381,23 @@ Specimen ${idx + 1}: ${plant.scientificName} [common: ${plant.commonName}]
 
 SURROUNDINGS:
 - Context: ${environment.surroundings}
-- Beyond garden: Natural countryside transition
-- Horizon line: Soft, natural landscape extending to distance
-- No artificial structures unless specified
+- Beyond garden: Minimal, soft-focus neutral background only
+- Horizon line: Keep very subtle, no specific landscape details
+- Background: Gentle bokeh blur, no identifiable features or structures
+- Focus: 95% on garden bed itself, 5% minimal neutral surroundings
 
 OUTPUT STYLE:
 - Botanical specimen photography - Royal Horticultural Society standard
-- Professional landscape architecture with botanical accuracy
+- Professional garden bed documentation with botanical accuracy
 - Herbarium-quality plant identification - each species clearly recognizable
 - Natural color palette for July in ${garden.location || 'temperate climate'}
 - Botanical garden photography aesthetic - educational quality
 - Sharp botanical detail: visible leaf venation, accurate flower structure, correct growth habit
 - Scientific accuracy: authentic plant morphology, no artistic interpretation
 - Reference: Chelsea Flower Show photography, Kew Gardens documentation
+- BACKGROUND TREATMENT: Minimal soft-focus blur, neutral tones, no specific details
+- DEPTH OF FIELD: Sharp focus on garden bed, background heavily blurred
+- COMPOSITION: Garden bed fills 90-95% of frame, minimal background visible
 
 CRITICAL CONSTRAINTS (ABSOLUTE REQUIREMENTS):
 
@@ -431,6 +435,9 @@ FORBIDDEN ADDITIONS & BOTANICAL ACCURACY REQUIREMENTS:
 - NO people, animals, or artificial objects anywhere in scene
 - NO water features, lighting, or structures not explicitly specified
 - NO creative liberties with composition, framing, or artistic interpretation
+- NO specific background details (buildings, fences, specific trees, landscapes)
+- MINIMAL background - only soft neutral blur beyond garden boundaries
+- NO recognizable environmental features that could conflict with actual location
 
 CRITICAL BOTANICAL CONSTRAINTS - SPECIES ACCURACY:
 ${getExcludedSpeciesForPlants(plants)}
@@ -440,7 +447,17 @@ ${getExcludedSpeciesForPlants(plants)}
 - NO seasonal confusion - July appearance only, no spring bulbs or autumn colors
 - MANDATORY: Each plant must be identifiable by a botanist to genus and species level
 
-Create a botanically accurate photorealistic garden documentation image that meets scientific identification standards. This should look like it was photographed for a botanical journal or RHS plant identification guide in July. Each plant specimen must be recognizable to its exact scientific species with correct morphological features - as if being documented for a botanical survey. Maintain absolute fidelity to the specified plant list, exact positions, and July seasonal phenology. Think herbarium-quality accuracy in a garden setting.
+BACKGROUND MINIMIZATION REQUIREMENTS:
+- BACKGROUND: Maximum 10% of image, soft bokeh blur only
+- NO specific environmental features (no buildings, fences, specific trees)
+- NO identifiable location markers (urban/rural/suburban details)
+- NEUTRAL soft-focus gradient beyond garden boundaries
+- DEPTH OF FIELD: Sharp focus on garden, background heavily blurred
+- ENVIRONMENTAL NEUTRALITY: Image should work in any real-world setting
+- SKY: Minimal, neutral tones only, no dramatic clouds or colors
+- HORIZON: Barely visible, no landscape details
+
+Create a botanically accurate photorealistic garden bed documentation image that meets scientific identification standards. Focus 90-95% on the garden bed itself with minimal, neutral background blur. This should look like it was photographed for a botanical journal or RHS plant identification guide in July, with shallow depth of field keeping attention on the plants. Each plant specimen must be recognizable to its exact scientific species with correct morphological features - as if being documented for a botanical survey. Maintain absolute fidelity to the specified plant list, exact positions, and July seasonal phenology. Think herbarium-quality accuracy in a garden setting with professional macro/portrait lens bokeh for the minimal background.
 `;
 
   return prompt.trim();
@@ -524,17 +541,11 @@ function calculateActualDimensions(garden: Garden): { width: number; length: num
 
 /**
  * Describe garden surroundings based on location and style
+ * Keep minimal and neutral to match any actual environment
  */
 function describeSurroundings(garden: Garden): string {
-  const location = garden.location || '';
-  
-  if (location.toLowerCase().includes('urban')) {
-    return 'Urban residential setting with neighboring properties visible in distance';
-  } else if (location.toLowerCase().includes('cottage') || (garden.preferences as any)?.style === 'cottage') {
-    return 'Traditional cottage garden setting with countryside backdrop';
-  } else {
-    return 'Natural residential garden setting with mature trees and shrubs in background';
-  }
+  // Return minimal, neutral background description
+  return 'Soft, neutral background with gentle blur beyond garden boundaries';
 }
 
 /**
@@ -558,7 +569,7 @@ function describePathways(garden: Garden): string[] {
  * Describe garden borders
  */
 function describeBorders(garden: Garden): string[] {
-  return ['Natural garden bed edges', 'Soft transition to surrounding landscape'];
+  return ['Natural garden bed edges', 'Clean edge definition without specific background details'];
 }
 
 /**
@@ -622,12 +633,13 @@ function describeLightQuality(hour: number, month: number, sunExposure?: string)
 
 /**
  * Describe sky condition
+ * Keep simple and neutral to avoid conflicting with actual environment
  */
 function describeSkyCondition(hour: number): string {
   if (hour >= 6 && hour < 9 || hour >= 18 && hour < 20) {
-    return 'Clear sky with warm golden tones';
+    return 'Soft, neutral sky with gentle light';
   }
-  return 'Clear blue sky with some natural cloud formations';
+  return 'Simple, neutral sky background';
 }
 
 /**
