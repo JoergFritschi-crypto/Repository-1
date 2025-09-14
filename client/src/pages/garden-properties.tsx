@@ -2588,7 +2588,7 @@ export default function GardenProperties() {
                     setInventoryPlants(prev => [...prev, plant]);
                     toast({
                       title: "Plant Added",
-                      description: `${plant.name} has been added to your inventory`,
+                      description: `${plant.commonName} has been added to your inventory`,
                     });
                   }}
                   userTier={user?.userTier || 'free'}
