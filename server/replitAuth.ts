@@ -6,11 +6,12 @@ import session from "express-session";
 import type { Express, RequestHandler, Request } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
+import MemoryStore from "memorystore";
 import { storage } from "./storage";
 import type { AuthenticatedRequest, AuthUser } from './types/auth';
 
 // Automatically construct DATABASE_URL from PG* environment variables if they exist
-function getDatabaseUrl(): string {
+function getDatabaseUrl(): string | null {
   // Check if PG* variables exist (created by create_postgresql_database_tool)
   if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
       process.env.PGPASSWORD && process.env.PGDATABASE) {
@@ -26,9 +27,8 @@ function getDatabaseUrl(): string {
     return process.env.DATABASE_URL;
   }
   
-  throw new Error(
-    "Database configuration not found for session store. Either set DATABASE_URL or provision a database.",
-  );
+  // Return null instead of throwing - will trigger fallback to MemoryStore
+  return null;
 }
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -47,13 +47,40 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days for better user experience
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: getDatabaseUrl(),
-    createTableIfMissing: true,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
+  
+  let sessionStore: any;
+  const databaseUrl = getDatabaseUrl();
+  
+  if (databaseUrl) {
+    try {
+      // Attempt to create PostgreSQL session store
+      const pgStore = connectPg(session);
+      sessionStore = new pgStore({
+        conString: databaseUrl,
+        createTableIfMissing: true,
+        ttl: sessionTtl,
+        tableName: "sessions",
+      });
+      console.log('✅ Using PostgreSQL for session storage');
+    } catch (error) {
+      console.warn('⚠️ Failed to connect to PostgreSQL for sessions:', error);
+      console.warn('⚠️ Falling back to MemoryStore (sessions will not persist across restarts)');
+      const MemStore = MemoryStore(session);
+      sessionStore = new MemStore({
+        checkPeriod: 86400000 // prune expired entries every 24h
+      });
+    }
+  } else {
+    // No database configured - use MemoryStore
+    console.warn('⚠️ No database configured for sessions');
+    console.warn('⚠️ Using MemoryStore (sessions will not persist across restarts)');
+    console.warn('⚠️ To enable persistent sessions, configure a PostgreSQL database');
+    const MemStore = MemoryStore(session);
+    sessionStore = new MemStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
+  }
+  
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
