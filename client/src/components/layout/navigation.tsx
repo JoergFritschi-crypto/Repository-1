@@ -36,7 +36,7 @@ export default function Navigation() {
 
   return (
     <nav 
-      className="sticky top-0 z-50 border-b-2 border-[#004025] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-50 border-b-2 border-[#004025] bg-white"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -95,19 +95,10 @@ export default function Navigation() {
                     aria-label={item.label}
                     aria-current={isActive ? "page" : undefined}
                   >
-                    {item.label === "Premium" ? (
-                      <div className="bg-white rounded-sm p-0.5">
-                        <Icon className={cn(
-                          "w-4 h-4 transition-transform duration-200",
-                          !isActive && "group-hover:scale-110"
-                        )} />
-                      </div>
-                    ) : (
-                      <Icon className={cn(
-                        "w-3.5 h-3.5 transition-transform duration-200",
-                        !isActive && "group-hover:scale-110"
-                      )} />
-                    )}
+                    <Icon className={cn(
+                      "w-3.5 h-3.5 transition-transform duration-200",
+                      !isActive && "group-hover:scale-110"
+                    )} />
                     <span>{item.label}</span>
                     {isActive && (
                       <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-[#FFD700] rounded-full" />

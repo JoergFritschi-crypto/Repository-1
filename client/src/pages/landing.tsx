@@ -178,9 +178,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto items-start">
             <Card className="h-full relative">
               <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <PlantLibraryIcon className="w-6 h-6" />
-                </div>
+                <PlantLibraryIcon className="w-6 h-6 mx-auto mb-3" />
                 <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-free-title">Free</h3>
                 <p className="text-xl font-bold mb-3 text-primary" data-testid="text-plan-free-price">
                   Always Free
@@ -214,9 +212,7 @@ export default function Landing() {
                 Most Popular
               </Badge>
               <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <GardenDesignIcon className="w-6 h-6" />
-                </div>
+                <GardenDesignIcon className="w-6 h-6 mx-auto mb-3" />
                 <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-design-title">Pay-per-Design</h3>
                 <p className="text-xl font-bold mb-3" data-testid="text-plan-design-price">
                   $6<span className="text-sm font-normal text-muted-foreground">/design</span>
@@ -251,9 +247,7 @@ export default function Landing() {
 
             <Card className="h-full relative">
               <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
-                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <PremiumIcon className="w-6 h-6" />
-                </div>
+                <PremiumIcon className="w-6 h-6 mx-auto mb-3" />
                 <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-premium-title">Premium</h3>
                 <p className="text-xl font-bold mb-3" data-testid="text-plan-premium-price">
                   $12<span className="text-sm font-normal text-muted-foreground">/month</span>
