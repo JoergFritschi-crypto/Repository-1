@@ -1,8 +1,41 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema, insertDesignGenerationSchema } from "@shared/schema";
+import {
+  AuthenticatedRequest,
+  validateRequestBody,
+  validateQueryParams,
+  validateRouteParams,
+  ValidationError,
+  RATE_LIMITS,
+  // Import all validation schemas
+  gardenIdParamSchema,
+  updateGardenBodySchema,
+  addPlantsToGardenSchema,
+  plantSearchQuerySchema,
+  advancedPlantSearchSchema,
+  generateArtisticViewSchema,
+  generateCompleteDesignSchema,
+  generateSeasonalImagesSchema,
+  generatePlantIconSchema,
+  analyzeGardenPhotosSchema,
+  generateDesignStylesSchema,
+  getPlantAdviceSchema,
+  generateGardeningAdviceSchema,
+  analyzeClimateSchema,
+  createCheckoutSessionSchema,
+  createPortalSessionSchema,
+  stripeWebhookHeadersSchema,
+  importPlantFromPerenualSchema,
+  scrapePlantFromUrlSchema,
+  uploadFileSchema,
+  adminUpdateUserSchema,
+  adminGenerateIconsSchema
+} from "./validation";
 import Stripe from "stripe";
 import PerplexityAI from "./perplexityAI";
 import { analyzeGardenPhotos, generateDesignStyles, generateCompleteGardenDesign, getPlantAdvice } from "./anthropic";
@@ -77,7 +110,39 @@ if (process.env.FIRECRAWL_API_KEY) {
   fireCrawlAPI = new FireCrawlAPI(process.env.FIRECRAWL_API_KEY, process.env.PERPLEXITY_API_KEY);
 }
 
+// Create rate limiters
+const aiGenerationLimiter = rateLimit(RATE_LIMITS.AI_GENERATION);
+const generalApiLimiter = rateLimit(RATE_LIMITS.GENERAL_API);
+const authLimiter = rateLimit(RATE_LIMITS.AUTH);
+
+// Error handler middleware
+function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+  if (err instanceof ValidationError) {
+    return res.status(400).json(err.toJSON());
+  }
+  console.error("Server error:", err);
+  res.status(500).json({ message: "Internal server error" });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Security headers with helmet
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+        connectSrc: ["'self'", "wss:", "ws:", "https:", "http:"],
+        fontSrc: ["'self'", "https:", "http:", "data:"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'", "https:", "http:"],
+        frameSrc: ["'self'", "https:", "http:"]
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  }));
+  
   // Auth middleware
   await setupAuth(app);
   
@@ -85,9 +150,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Increase limit to 50MB to handle multiple image uploads
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+  
+  // Apply general rate limiting to all routes
+  app.use('/api/', generalApiLimiter);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -99,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Garden routes
-  app.get('/api/gardens', isAuthenticated, async (req: any, res) => {
+  app.get('/api/gardens', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const gardens = await storage.getUserGardens(userId);
@@ -110,9 +178,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/gardens/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const garden = await storage.getGarden(req.params.id);
+      const params = validateRouteParams(gardenIdParamSchema, req.params);
+      const garden = await storage.getGarden(params.id);
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
       }
@@ -129,9 +198,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update garden design with layout data
-  app.put('/api/gardens/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const garden = await storage.getGarden(req.params.id);
+      const params = validateRouteParams(gardenIdParamSchema, req.params);
+      const body = validateRequestBody(updateGardenBodySchema, req.body);
+      const garden = await storage.getGarden(params.id);
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
       }
@@ -141,9 +212,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update garden with new layout data
-      const updatedGarden = await storage.updateGarden(req.params.id, {
-        ...req.body,
-        layout_data: req.body.layout_data || {}
+      const updatedGarden = await storage.updateGarden(params.id, {
+        ...body,
+        layout_data: body.layout_data || {}
       });
       
       res.json(updatedGarden);
@@ -154,9 +225,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get plants in a garden
-  app.get('/api/gardens/:id/plants', isAuthenticated, async (req: any, res) => {
+  app.get('/api/gardens/:id/plants', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const garden = await storage.getGarden(req.params.id);
+      const params = validateRouteParams(gardenIdParamSchema, req.params);
+      const garden = await storage.getGarden(params.id);
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
       }
@@ -165,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
-      const gardenPlants = await storage.getGardenPlants(req.params.id);
+      const gardenPlants = await storage.getGardenPlants(params.id);
       
       // Fetch plant details for each garden plant
       const plantsWithDetails = await Promise.all(
@@ -186,9 +258,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add plants to a garden
-  app.post('/api/gardens/:id/plants', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/plants', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const garden = await storage.getGarden(req.params.id);
+      const params = validateRouteParams(gardenIdParamSchema, req.params);
+      const body = validateRequestBody(addPlantsToGardenSchema, req.body);
+      const garden = await storage.getGarden(params.id);
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
       }
@@ -197,16 +271,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
-      const { plants } = req.body; // Array of { plantId, quantity, position_x?, position_y? }
-      
-      if (!Array.isArray(plants) || plants.length === 0) {
-        return res.status(400).json({ message: "Plants array is required" });
-      }
+      const { plants } = body;
       
       const addedPlants = await Promise.all(
         plants.map(async (plant) => {
           const gardenPlant = await storage.addPlantToGarden({
-            gardenId: req.params.id,
+            gardenId: params.id,
             plantId: plant.plantId,
             quantity: plant.quantity || 1,
             position_x: plant.position_x || null,
@@ -228,34 +298,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Generate artistic view from 3D canvas using comprehensive photorealization
-  app.post('/api/gardens/generate-artistic-view', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/generate-artistic-view', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
+      const body = validateRequestBody(generateArtisticViewSchema, req.body);
       const { 
         canvasImage, 
         gardenId, 
         gardenName, 
         sceneState,
-        placedPlants, // New: Accept placed plants from frontend
+        placedPlants, // Validated placed plants from frontend
         customPrompt 
-      } = req.body;
-      
-      if (!canvasImage) {
-        return res.status(400).json({ 
-          message: "Canvas image is required" 
-        });
-      }
-      
-      if (!gardenId) {
-        return res.status(400).json({ 
-          message: "Garden ID is required" 
-        });
-      }
-      
-      if (!sceneState) {
-        return res.status(400).json({ 
-          message: "Scene state is required (camera, lighting, bounds)" 
-        });
-      }
+      } = body;
       
       if (!geminiImageGenerator) {
         return res.status(503).json({ 
@@ -275,18 +328,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Log the request for monitoring
       console.log('[API Request] Comprehensive photorealization:', { 
-        gardenId, 
-        gardenName,
-        sceneCamera: sceneState.camera,
-        sceneLighting: sceneState.lighting,
-        providedPlants: placedPlants?.length || 0 // Log how many plants were provided
+        gardenId: body.gardenId, 
+        gardenName: body.gardenName,
+        sceneCamera: body.sceneState.camera,
+        sceneLighting: body.sceneState.lighting,
+        providedPlants: body.placedPlants?.length || 0 // Log how many plants were provided
       });
       
       // Build comprehensive photorealization context with provided plants
-      const context = await buildPhotorealizationContext(gardenId, sceneState, placedPlants);
+      const context = await buildPhotorealizationContext(body.gardenId, body.sceneState, body.placedPlants);
       
       // Generate structured prompt with complete context
-      const photorealizationPrompt = customPrompt || buildPhotorealizationPrompt(context);
+      const photorealizationPrompt = body.customPrompt || buildPhotorealizationPrompt(context);
       
       console.log('[Photorealization] Generated comprehensive prompt:', {
         gardenShape: context.garden.shape,
@@ -296,9 +349,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate enhanced artistic view using Gemini's image-to-image capabilities
       const imageUrl = await geminiImageGenerator.generateImageWithReference({
-        referenceImage: canvasImage,
+        referenceImage: body.canvasImage,
         prompt: photorealizationPrompt,
-        outputFileName: gardenName ? `photorealistic-${gardenName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png` : undefined
+        outputFileName: body.gardenName ? `photorealistic-${body.gardenName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png` : undefined
       });
       
       // Optionally save to file vault
@@ -361,7 +414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Generate seasonal images with day-of-year precision
-  app.post('/api/gardens/:gardenId/generate-seasonal', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:gardenId/generate-seasonal', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const gardenId = req.params.gardenId;
       const { 
@@ -617,7 +670,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
   
   // Generate 3D garden visualization using Gemini (primary) or Runware (fallback)
-  app.post('/api/gardens/generate-visualization', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/generate-visualization', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         gardenDescription,
@@ -767,7 +820,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
   
   // Design generation tracking routes
-  app.get('/api/design-generations', isAuthenticated, async (req: any, res) => {
+  app.get('/api/design-generations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const generations = await storage.getUserDesignGenerations(userId);
@@ -778,7 +831,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
   
-  app.post('/api/design-generations', isAuthenticated, async (req: any, res) => {
+  app.post('/api/design-generations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const validatedData = insertDesignGenerationSchema.parse({
@@ -794,7 +847,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Climate data endpoint with Mapbox geocoding
-  app.get('/api/climate', async (req: any, res) => {
+  app.get('/api/climate', async (req: Request, res: Response) => {
     const location = req.query.location as string;
     
     if (!location || location.length < 3) {
@@ -872,7 +925,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Garden photo analysis endpoint
-  app.post('/api/analyze-garden-photos', isAuthenticated, async (req: any, res) => {
+  app.post('/api/analyze-garden-photos', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { images, gardenInfo } = req.body;
       
@@ -892,7 +945,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Generate design styles endpoint
-  app.post('/api/generate-design-styles', isAuthenticated, async (req: any, res) => {
+  app.post('/api/generate-design-styles', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { images, gardenData, photoAnalysis } = req.body;
       
@@ -916,7 +969,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Generate complete garden design endpoint
-  app.post('/api/generate-complete-design', isAuthenticated, async (req: any, res) => {
+  app.post('/api/generate-complete-design', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { selectedStyle, gardenData, safetyPreferences } = req.body;
       const userId = req.user.claims.sub;
@@ -1046,7 +1099,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Plant advice endpoint
-  app.post('/api/plant-advice', isAuthenticated, async (req: any, res) => {
+  app.post('/api/plant-advice', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { question, context } = req.body;
       
@@ -1066,7 +1119,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Soil testing services endpoint
-  app.get('/api/soil-testing-services', async (req: any, res) => {
+  app.get('/api/soil-testing-services', async (req: Request, res: Response) => {
     const location = req.query.location as string;
     
     if (!location || location.length < 3) {
@@ -1108,7 +1161,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
 
-  app.post('/api/gardens', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const gardenData = insertGardenSchema.parse({
         ...req.body,
@@ -1138,7 +1191,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
 
-  app.put('/api/gardens/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
@@ -1173,7 +1226,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
 
-  app.delete('/api/gardens/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
@@ -1193,7 +1246,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // AI Garden Design Generation with Claude for spatial accuracy
-  app.post('/api/gardens/:id/generate-ai-design', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/generate-ai-design', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!anthropicAI) {
         return res.status(503).json({ message: "AI service not configured. Please add ANTHROPIC_API_KEY." });
@@ -1295,7 +1348,7 @@ Rules:
   });
 
   // File vault routes
-  app.get('/api/vault/items', isAuthenticated, async (req: any, res) => {
+  app.get('/api/vault/items', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const items = await storage.getUserVaultItems(userId);
@@ -1306,10 +1359,11 @@ Rules:
     }
   });
 
-  app.get('/api/vault/items/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/vault/items/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const item = await storage.getVaultItem(req.params.id);
+      const params = validateRouteParams(z.object({ id: z.string().uuid() }), req.params);
+      const item = await storage.getVaultItem(params.id);
       
       if (!item) {
         return res.status(404).json({ message: "Vault item not found" });
@@ -1321,7 +1375,7 @@ Rules:
       }
       
       // Update access time
-      await storage.updateVaultAccessTime(item.id);
+      await storage.updateVaultAccessTime(params.id);
       
       res.json(item);
     } catch (error) {
@@ -1331,42 +1385,54 @@ Rules:
   });
 
   // Plant routes
-  app.get('/api/plants/search', async (req, res) => {
+  app.get('/api/plants/search', async (req: Request, res: Response) => {
     try {
-      const query = req.query.q as string || "";
+      const queryParams = validateQueryParams(z.object({
+        q: z.string().optional(),
+        type: z.string().optional(),
+        hardiness_zone: z.string().optional(),
+        sun_requirements: z.string().optional(),
+        pet_safe: z.enum(["true", "false"]).optional(),
+        heightMin: z.coerce.number().optional(),
+        heightMax: z.coerce.number().optional(),
+        spreadMin: z.coerce.number().optional(),
+        spreadMax: z.coerce.number().optional(),
+        includeLargeSpecimens: z.enum(["true", "false"]).optional(),
+        selectedColors: z.string().optional()
+      }), req.query);
+      const query = queryParams.q || "";
       
       // Check if we have advanced filters
-      const hasAdvancedFilters = req.query.heightMin || req.query.heightMax || 
-                                 req.query.spreadMin || req.query.spreadMax || 
-                                 req.query.selectedColors;
+      const hasAdvancedFilters = queryParams.heightMin || queryParams.heightMax || 
+                                 queryParams.spreadMin || queryParams.spreadMax || 
+                                 queryParams.selectedColors;
       
       if (hasAdvancedFilters) {
         // Build advanced filters object
-        const advancedFilters: any = {};
+        const advancedFilters: Record<string, any> = {};
         
         // Range filters
-        if (req.query.heightMin) advancedFilters.minHeight = parseInt(req.query.heightMin as string);
+        if (queryParams.heightMin) advancedFilters.minHeight = queryParams.heightMin;
         // Handle includeLargeSpecimens flag - when true, don't set maxHeight (allows any height)
-        if (req.query.includeLargeSpecimens === 'true') {
+        if (queryParams.includeLargeSpecimens === 'true') {
           // Don't set maxHeight, which allows trees of any height
           advancedFilters.maxHeight = 0; // 0 means no limit in storage.ts
-        } else if (req.query.heightMax) {
-          advancedFilters.maxHeight = parseInt(req.query.heightMax as string);
+        } else if (queryParams.heightMax) {
+          advancedFilters.maxHeight = queryParams.heightMax;
         }
-        if (req.query.spreadMin) advancedFilters.minSpread = parseInt(req.query.spreadMin as string);
-        if (req.query.spreadMax) advancedFilters.maxSpread = parseInt(req.query.spreadMax as string);
+        if (queryParams.spreadMin) advancedFilters.minSpread = queryParams.spreadMin;
+        if (queryParams.spreadMax) advancedFilters.maxSpread = queryParams.spreadMax;
         
         // Color filters
-        if (req.query.selectedColors) {
-          const colors = req.query.selectedColors as string;
-          advancedFilters.colors = colors.split(',');
+        if (queryParams.selectedColors) {
+          advancedFilters.colors = queryParams.selectedColors.split(',');
         }
         
         // Include basic filters too
-        if (req.query.type) advancedFilters.plantType = req.query.type as string;
-        if (req.query.hardiness_zone) advancedFilters.hardiness = req.query.hardiness_zone as string;
-        if (req.query.sun_requirements) advancedFilters.sunlight = req.query.sun_requirements as string;
-        if (req.query.pet_safe === 'true') advancedFilters.isSafe = true;
+        if (queryParams.type) advancedFilters.plantType = queryParams.type;
+        if (queryParams.hardiness_zone) advancedFilters.hardiness = queryParams.hardiness_zone;
+        if (queryParams.sun_requirements) advancedFilters.sunlight = queryParams.sun_requirements;
+        if (queryParams.pet_safe === 'true') advancedFilters.isSafe = true;
         
         // Add query text if present
         if (query) {
@@ -1586,7 +1652,7 @@ Rules:
   });
 
   // Test endpoint for enhanced validation pipeline
-  app.post('/api/admin/test-validation-pipeline', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/test-validation-pipeline', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -1652,7 +1718,7 @@ Rules:
   });
 
   // Admin plant routes
-  app.post('/api/admin/plants', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/plants', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -1669,7 +1735,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/plants/pending', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/plants/pending', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -1685,7 +1751,7 @@ Rules:
     }
   });
 
-  app.put('/api/admin/plants/:id/verify', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/plants/:id/verify', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -1701,7 +1767,7 @@ Rules:
     }
   });
 
-  app.delete('/api/admin/plants/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/admin/plants/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -1718,7 +1784,7 @@ Rules:
   });
 
   // AI-Generated Garden Tool Icons API
-  app.post('/api/admin/generate-garden-tool-icons', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/generate-garden-tool-icons', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -1743,7 +1809,7 @@ Rules:
     }
   });
 
-  app.post('/api/admin/generate-single-icon', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/generate-single-icon', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -1776,7 +1842,7 @@ Rules:
   });
 
   // Simple image generation
-  app.post('/api/generate-simple-image', isAuthenticated, async (req: any, res) => {
+  app.post('/api/generate-simple-image', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { prompt } = req.body;
       if (!prompt) {
@@ -1800,7 +1866,7 @@ Rules:
   });
 
   // Validate plant data with Perplexity
-  app.post('/api/admin/plants/:id/validate', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/plants/:id/validate', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -1954,7 +2020,7 @@ Rules:
   });
 
   // Image generation endpoints
-  app.post('/api/admin/plants/:id/generate-images', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/plants/:id/generate-images', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -1987,7 +2053,7 @@ Rules:
   });
 
   // Bulk generate images for all plants without images
-  app.post('/api/admin/plants/generate-all-images', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/plants/generate-all-images', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -2034,7 +2100,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/image-generation/status', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/image-generation/status', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -2053,7 +2119,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/image-generation/queue', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/image-generation/queue', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -2084,7 +2150,7 @@ Rules:
   });
 
   // Clear completed and failed items from the queue
-  app.post('/api/admin/image-generation/clear-queue', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/image-generation/clear-queue', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -2107,7 +2173,7 @@ Rules:
   });
 
   // Admin route for photorealizing garden images
-  app.post('/api/admin/photorealize-garden', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/photorealize-garden', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         referenceImage,
@@ -2180,7 +2246,7 @@ Rules:
   });
   
   // NEW: Admin route for Gemini 2.5 Flash botanical enhancement (Step 2 of pipeline)
-  app.post('/api/admin/gemini-enhance-garden', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/gemini-enhance-garden', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         referenceImage,
@@ -2391,7 +2457,7 @@ Rules:
   }
 
   // Generate seasonal variations using Gemini 2.5 "nano banana"
-  app.post('/api/admin/generate-seasonal-variations', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/generate-seasonal-variations', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         referenceImage, // Base64 image from photorealization
@@ -2628,7 +2694,7 @@ Rules:
   });
   
   // Reset stuck items back to pending
-  app.post('/api/admin/image-generation/reset-stuck', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/image-generation/reset-stuck', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -2651,7 +2717,7 @@ Rules:
   });
   
   // Test endpoint for comparing different image generation approaches
-  app.post('/api/admin/test-generation', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/test-generation', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { plantName, approach, modelChoice, imageType } = req.body;
       
@@ -2696,7 +2762,7 @@ Rules:
   });
   
   // Get all test images from the generated folder
-  app.get('/api/admin/test-images', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/test-images', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const fs = await import('fs/promises');
       const imagesDir = path.join(process.cwd(), 'client', 'public', 'generated-images');
@@ -2767,7 +2833,7 @@ Rules:
   });
 
   // User plant collection routes
-  app.get('/api/my-collection', isAuthenticated, async (req: any, res) => {
+  app.get('/api/my-collection', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const collection = await storage.getUserPlantCollection(userId);
@@ -2779,7 +2845,7 @@ Rules:
   });
 
   // Get collection limits for current user
-  app.get('/api/my-collection/limits', isAuthenticated, async (req: any, res) => {
+  app.get('/api/my-collection/limits', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const limits = await storage.canAddToCollection(userId);
@@ -2794,14 +2860,19 @@ Rules:
     }
   });
 
-  app.post('/api/my-collection', isAuthenticated, async (req: any, res) => {
+  app.post('/api/my-collection', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
+      const body = validateRequestBody(z.object({ 
+        plantId: z.string().min(1), 
+        notes: z.string().optional(), 
+        isFavorite: z.boolean().optional() 
+      }), req.body);
       const collection = await storage.addToUserCollection({
         userId,
-        plantId: req.body.plantId,
-        notes: req.body.notes,
-        isFavorite: req.body.isFavorite || false
+        plantId: body.plantId,
+        notes: body.notes,
+        isFavorite: body.isFavorite || false
       });
       res.status(201).json(collection);
     } catch (error) {
@@ -2825,10 +2896,11 @@ Rules:
     }
   });
 
-  app.delete('/api/my-collection/:plantId', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/my-collection/:plantId', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      await storage.removeFromUserCollection(userId, req.params.plantId);
+      const params = validateRouteParams(z.object({ plantId: z.string().min(1) }), req.params);
+      await storage.removeFromUserCollection(userId, params.plantId);
       res.status(204).send();
     } catch (error) {
       console.error("Error removing from plant collection:", error);
@@ -2837,15 +2909,22 @@ Rules:
   });
 
   // Plant Doctor routes - Uses Anthropic for plant analysis
-  app.post('/api/plant-doctor/identify', isAuthenticated, async (req: any, res) => {
+  app.post('/api/plant-doctor/identify', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const { imageUrl, imageBase64, notes, sessionType } = req.body;
+      const body = validateRequestBody(z.object({
+        imageUrl: z.string().optional(),
+        imageBase64: z.string().optional(),
+        notes: z.string().optional(),
+        sessionType: z.enum(['identification', 'disease', 'weed']).optional(),
+        location: z.string().optional()
+      }), req.body);
+      const { imageUrl, imageBase64, notes, sessionType } = body;
       
       if (!anthropicAI) {
         // If Anthropic is not configured, still save the session but without AI analysis
         const sessionData = insertPlantDoctorSessionSchema.parse({
-          ...req.body,
+          ...body,
           userId,
           sessionType: sessionType || 'identification'
         });
@@ -2865,7 +2944,7 @@ Rules:
           aiAnalysis = await anthropicAI.analyzePlantDisease(imageBase64, notes || '');
           confidence = aiAnalysis.confidence;
         } else if (sessionType === 'weed') {
-          aiAnalysis = await anthropicAI.identifyWeed(imageBase64, req.body.location || 'UK');
+          aiAnalysis = await anthropicAI.identifyWeed(imageBase64, body.location || 'UK');
           confidence = 0.75; // Default confidence for weed ID
         } else {
           // Default to plant identification
@@ -2897,7 +2976,7 @@ Rules:
     }
   });
 
-  app.get('/api/plant-doctor/sessions', isAuthenticated, async (req: any, res) => {
+  app.get('/api/plant-doctor/sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const sessions = await storage.getUserPlantDoctorSessions(userId);
@@ -2953,7 +3032,7 @@ Rules:
   });
 
   // Generate Garden Visualization using Runware or HuggingFace
-  app.post('/api/gardens/:id/generate-visualization', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/generate-visualization', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
@@ -3004,7 +3083,7 @@ Rules:
   });
 
   // Generate seasonal images from canvas design using Gemini
-  app.post('/api/gardens/:id/generate-seasonal-images', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/generate-seasonal-images', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!geminiAI) {
         return res.status(503).json({ message: "Gemini AI not configured. Please add GEMINI_API_KEY." });
@@ -3463,7 +3542,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
 
   // AI Inpainting comparison endpoint - compare composite vs inpainting approaches
-  app.get('/api/test/inpainting-comparison', isAuthenticated, async (req: any, res) => {
+  app.get('/api/test/inpainting-comparison', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       console.log("🔬 Running inpainting comparison test...");
       
@@ -3490,7 +3569,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
 
   // AI Inpainting for garden visualization
-  app.post('/api/gardens/:id/inpaint-visualization', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/inpaint-visualization', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
@@ -3549,7 +3628,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
 
   // Test sprite generation endpoint
-  app.post('/api/test/generate-sprite', isAuthenticated, async (req: any, res) => {
+  app.post('/api/test/generate-sprite', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { plantName, season } = req.body;
       
@@ -3581,7 +3660,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
   
   // Test composite garden endpoint
-  app.post('/api/test/composite-garden', isAuthenticated, async (req: any, res) => {
+  app.post('/api/test/composite-garden', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { plants, twoPlants } = req.body;
       const { spriteCompositor } = await import('./spriteCompositor');
@@ -3614,7 +3693,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
   
   // Test Gemini enhancement of composite
-  app.post('/api/test/gemini-enhance-composite', isAuthenticated, async (req: any, res) => {
+  app.post('/api/test/gemini-enhance-composite', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { compositeUrl } = req.body;
       
@@ -3689,7 +3768,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Gemini AI endpoints for additional features
-  app.post('/api/gardens/:id/companion-plants', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/companion-plants', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!geminiAI) {
         return res.status(503).json({ message: "Gemini AI not configured" });
@@ -3713,7 +3792,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/gardens/:id/planting-calendar', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/planting-calendar', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!geminiAI) {
         return res.status(503).json({ message: "Gemini AI not configured" });
@@ -3908,7 +3987,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Admin API Monitoring Routes
-  app.get('/api/admin/api-health', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/api-health', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -3924,7 +4003,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/api-health/check', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/api-health/check', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -3940,7 +4019,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.get('/api/admin/api-usage', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/api-usage', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -3963,7 +4042,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.get('/api/admin/api-config', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/api-config', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -3980,7 +4059,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Test Runware connectivity directly
-  app.get('/api/admin/test-runware', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/test-runware', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4056,7 +4135,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // API Key Management Routes
-  app.get('/api/admin/api-keys/status', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/api-keys/status', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4129,7 +4208,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/api-keys/test/:service', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/api-keys/test/:service', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4166,7 +4245,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Set user as admin - secured endpoint for bootstrap only
-  app.post('/api/admin/make-admin', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/make-admin', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -4210,7 +4289,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Create test garden for quick testing
-  app.post('/api/admin/create-test-garden', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/create-test-garden', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4268,7 +4347,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Combined validation with Perenual first, then Perplexity for gaps
-  app.post('/api/admin/validate-plants-combined', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/validate-plants-combined', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4623,7 +4702,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Validate plants with Perplexity AI to fill missing data
-  app.post('/api/admin/validate-plants-perplexity', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/validate-plants-perplexity', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4738,7 +4817,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // FireCrawl Plant Data Scraping Endpoint
-  app.post('/api/admin/scrape-plant-data', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/scrape-plant-data', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4811,7 +4890,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get scraping progress endpoint (database)
-  app.get('/api/admin/scraping-progress', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/scraping-progress', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4842,7 +4921,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get real-time scraping progress endpoint
-  app.get('/api/admin/scraping-progress-realtime', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/scraping-progress-realtime', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4887,7 +4966,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Generate photorealistic garden tool icons using Gemini AI
-  app.post("/api/admin/generate-garden-icons", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/generate-garden-icons", isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -4926,9 +5005,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
 
   // Stripe payment routes (if Stripe is configured)
   if (stripe) {
-    app.post("/api/create-payment-intent", async (req, res) => {
+    app.post("/api/create-payment-intent", isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const { amount } = req.body;
+        const body = validateRequestBody(z.object({ amount: z.number().positive().max(100000) }), req.body);
+        const { amount } = body;
         const paymentIntent = await stripe!.paymentIntents.create({
           amount: Math.round(amount * 100), // Convert to cents
           currency: "gbp", // British pounds for British Heritage theme
@@ -4939,7 +5019,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       }
     });
 
-    app.post('/api/get-or-create-subscription', isAuthenticated, async (req: any, res) => {
+    app.post('/api/get-or-create-subscription', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
       try {
         let user = await storage.getUser(req.user.claims.sub);
         if (!user) {
@@ -4987,7 +5067,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   }
 
   // Todo task routes for admin dashboard
-  app.get('/api/admin/todo-tasks', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/todo-tasks', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -5003,7 +5083,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/todo-tasks', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/todo-tasks', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -5011,12 +5091,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      const { task } = req.body;
-      if (!task || task.trim().length === 0) {
-        return res.status(400).json({ message: "Task text is required" });
-      }
+      const body = validateRequestBody(z.object({ task: z.string().min(1).max(500) }), req.body);
+      const { task } = body;
       
-      const newTask = await storage.createTodoTask({ task: task.trim() });
+      const newTask = await storage.createTodoTask({ task: body.task.trim() });
       res.json(newTask);
     } catch (error) {
       console.error("Error creating todo task:", error);
@@ -5024,7 +5102,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.delete('/api/admin/todo-tasks/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/admin/todo-tasks/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -5032,7 +5110,8 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      await storage.deleteTodoTask(req.params.id);
+      const params = validateRouteParams(z.object({ id: z.string().uuid() }), req.params);
+      await storage.deleteTodoTask(params.id);
       res.json({ message: "Task deleted successfully" });
     } catch (error) {
       console.error("Error deleting todo task:", error);
@@ -5041,7 +5120,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Populate Test Garden 1 with sample plants
-  app.post('/api/admin/populate-test-garden', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/populate-test-garden', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       // Check if user is admin
       const user = await storage.getUser(req.user.claims.sub);
@@ -5164,7 +5243,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Get visualization data (iteration count, saved images, etc)
-  app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req: any, res) => {
+  app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const gardenId = req.params.id;
       const garden = await storage.getGarden(gardenId);
@@ -5188,7 +5267,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Update visualization data
-  app.post('/api/gardens/:id/update-visualization-data', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/update-visualization-data', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const gardenId = req.params.id;
       const garden = await storage.getGarden(gardenId);
@@ -5212,10 +5291,11 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Save seasonal images to garden
-  app.post('/api/gardens/:id/save-seasonal-images', isAuthenticated, async (req: any, res) => {
+  app.post('/api/gardens/:id/save-seasonal-images', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const gardenId = req.params.id;
-      const garden = await storage.getGarden(gardenId);
+      const params = validateRouteParams(gardenIdParamSchema, req.params);
+      const body = validateRequestBody(z.object({ images: z.array(z.any()) }), req.body);
+      const garden = await storage.getGarden(params.id);
       
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
@@ -5226,15 +5306,15 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(403).json({ message: "Unauthorized" });
       }
       
-      const { images } = req.body;
+      const { images } = body;
       
       // Get current visualization data
-      const currentVizData = await storage.getVisualizationData(gardenId) || { iterationCount: 0 };
+      const currentVizData = await storage.getVisualizationData(params.id) || { iterationCount: 0 };
       
       // Update with saved images
-      await storage.updateVisualizationData(gardenId, {
+      await storage.updateVisualizationData(params.id, {
         ...currentVizData,
-        savedImages: images,
+        savedImages: body.images,
         lastSaved: new Date().toISOString()
       });
       
@@ -5244,6 +5324,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       res.status(500).json({ message: "Failed to save seasonal images" });
     }
   });
+
+  // Error handler middleware (must be last)
+  app.use(errorHandler);
 
   const httpServer = createServer(app);
   return httpServer;

@@ -62,7 +62,26 @@ export interface IStorage {
     sun_requirements?: string;
     pet_safe?: boolean;
   }): Promise<Plant[]>;
-  advancedSearchPlants(filters: any): Promise<Plant[]>;
+  advancedSearchPlants(filters: {
+    genus?: string;
+    species?: string;
+    cultivar?: string;
+    plantType?: string;
+    sunlight?: string;
+    soilType?: string;
+    maintenance?: string;
+    watering?: string;
+    minHeight?: number;
+    maxHeight?: number;
+    minSpread?: number;
+    maxSpread?: number;
+    isSafe?: boolean;
+    specialFeatures?: string[];
+    attractsWildlife?: string[];
+    bloomMonths?: string[];
+    colors?: string[];
+    [key: string]: any; // Allow additional properties for future expansion
+  }): Promise<Plant[]>;
   createPlant(plant: InsertPlant): Promise<Plant>;
   updatePlant(id: string, plant: Partial<InsertPlant>): Promise<Plant>;
   getPendingPlants(): Promise<Plant[]>;
@@ -105,8 +124,8 @@ export interface IStorage {
   deleteExpiredVaultItems(): Promise<number>;
   
   // Visualization data operations
-  getVisualizationData(gardenId: string): Promise<any | undefined>;
-  updateVisualizationData(gardenId: string, data: any): Promise<void>;
+  getVisualizationData(gardenId: string): Promise<Record<string, any> | undefined>;
+  updateVisualizationData(gardenId: string, data: Record<string, any>): Promise<void>;
   
   // Scraping progress operations
   getScrapingProgress(url: string): Promise<ScrapingProgress | undefined>;
@@ -251,7 +270,26 @@ export class DatabaseStorage implements IStorage {
     return await queryBuilder.orderBy(plants.commonName);
   }
 
-  async advancedSearchPlants(filters: any): Promise<Plant[]> {
+  async advancedSearchPlants(filters: {
+    genus?: string;
+    species?: string;
+    cultivar?: string;
+    plantType?: string;
+    sunlight?: string;
+    soilType?: string;
+    maintenance?: string;
+    watering?: string;
+    minHeight?: number;
+    maxHeight?: number;
+    minSpread?: number;
+    maxSpread?: number;
+    isSafe?: boolean;
+    specialFeatures?: string[];
+    attractsWildlife?: string[];
+    bloomMonths?: string[];
+    colors?: string[];
+    [key: string]: any; // Allow additional properties for future expansion
+  }): Promise<Plant[]> {
     const conditions = [];
     
     // Text fields - Modified to search across ALL name fields for flexibility
@@ -363,7 +401,7 @@ export class DatabaseStorage implements IStorage {
     // Wildlife attractants - attracts is stored as JSONB array
     if (filters.attractsWildlife && filters.attractsWildlife.length > 0) {
       const wildlifeConditions = filters.attractsWildlife.map((wildlife: string) => {
-        const wildlifeMap: any = {
+        const wildlifeMap: Record<string, string> = {
           'Butterflies': 'butterflies',
           'Birds': 'birds', 
           'Bees': 'bees',
@@ -379,7 +417,7 @@ export class DatabaseStorage implements IStorage {
     
     // Bloom months - using bloomStartMonth and bloomEndMonth integer fields
     if (filters.bloomMonths && filters.bloomMonths.length > 0) {
-      const monthMap: any = {
+      const monthMap: Record<string, number> = {
         'January': 1, 'February': 2, 'March': 3, 'April': 4,
         'May': 5, 'June': 6, 'July': 7, 'August': 8,
         'September': 9, 'October': 10, 'November': 11, 'December': 12
