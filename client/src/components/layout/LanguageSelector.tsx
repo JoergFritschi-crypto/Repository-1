@@ -75,14 +75,14 @@ export default function LanguageSelector({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 text-xs border-2 border-transparent text-[#004025] hover:bg-[#004025]/10 hover:border-[#004025] transition-all duration-200 hover:scale-105 hover:shadow-sm"
+          className="h-8 text-sm font-medium text-muted-foreground hover:text-primary border-2 border-transparent hover:bg-[#004025]/10 hover:border-[#004025] transition-all duration-200 hover:scale-105 hover:shadow-sm"
           data-testid="button-language-selector"
           aria-label={t('mainNavigation.languageSelector')}
           aria-expanded="false"
         >
-          <Globe className="w-3.5 h-3.5 mr-1" />
-          <span className="hidden sm:inline">{currentLanguageName}</span>
-          <span className="sm:hidden">{currentLanguage.toUpperCase()}</span>
+          <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
+          <span className="hidden sm:inline font-medium">{currentLanguageName}</span>
+          <span className="sm:hidden font-medium">{currentLanguage.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
