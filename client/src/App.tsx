@@ -30,6 +30,7 @@ const AdminTestVisualization = lazy(() => import("@/pages/admin-test-visualizati
 const AdminSpriteTest = lazy(() => import("@/pages/admin-sprite-test"));
 const InpaintingComparison = lazy(() => import("@/pages/inpainting-comparison"));
 const TestSeasonalSelector = lazy(() => import("@/pages/test-seasonal-selector"));
+const TestI18n = lazy(() => import("@/pages/test-i18n"));
 
 // Loading fallback component for lazy-loaded routes
 const PageLoader = () => (
@@ -97,6 +98,9 @@ function Router() {
             </Route>
             <Route path="/test-seasonal-selector">
               {(params) => <LazyRoute component={TestSeasonalSelector} {...params} />}
+            </Route>
+            <Route path="/test-i18n">
+              {(params) => <LazyRoute component={TestI18n} {...params} />}
             </Route>
           </>
         )}
