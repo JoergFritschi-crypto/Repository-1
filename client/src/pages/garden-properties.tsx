@@ -28,6 +28,7 @@ import Step3DesignApproach from '@/components/garden/steps/Step3DesignApproach';
 import Step4InteractiveDesign from '@/components/garden/steps/Step4InteractiveDesign';
 import Step5SeasonalGeneration from '@/components/garden/steps/Step5SeasonalGeneration';
 import Step6FinalReview from '@/components/garden/steps/Step6FinalReview';
+import { GardenDesignErrorBoundary, CanvasErrorBoundary, SeasonalViewerErrorBoundary } from '@/components/ui/error-boundary';
 
 // Garden form schema
 const gardenSchema = z.object({
@@ -615,46 +616,50 @@ export default function GardenProperties() {
 
             {/* Step 4: Interactive Design */}
             {currentStep === 4 && (
-              <Step4InteractiveDesign
-                form={form}
-                inventoryPlants={inventoryPlants}
-                setInventoryPlants={setInventoryPlants}
-                placedPlants={placedPlants}
-                setPlacedPlants={setPlacedPlants}
-                showPlantSearch={showPlantSearch}
-                setShowPlantSearch={setShowPlantSearch}
-                gardenId={gardenId}
-                localDesignApproach={localDesignApproach}
-                selectedGardenStyle={selectedGardenStyle}
-                user={user}
-                isGeneratingDesign={isGeneratingDesign}
-                setIsGeneratingDesign={setIsGeneratingDesign}
-                completeDesign={completeDesign}
-                setCompleteDesign={setCompleteDesign}
-                generatedVisualization={generatedVisualization}
-                setGeneratedVisualization={setGeneratedVisualization}
-              />
+              <GardenDesignErrorBoundary gardenId={gardenId}>
+                <Step4InteractiveDesign
+                  form={form}
+                  inventoryPlants={inventoryPlants}
+                  setInventoryPlants={setInventoryPlants}
+                  placedPlants={placedPlants}
+                  setPlacedPlants={setPlacedPlants}
+                  showPlantSearch={showPlantSearch}
+                  setShowPlantSearch={setShowPlantSearch}
+                  gardenId={gardenId}
+                  localDesignApproach={localDesignApproach}
+                  selectedGardenStyle={selectedGardenStyle}
+                  user={user}
+                  isGeneratingDesign={isGeneratingDesign}
+                  setIsGeneratingDesign={setIsGeneratingDesign}
+                  completeDesign={completeDesign}
+                  setCompleteDesign={setCompleteDesign}
+                  generatedVisualization={generatedVisualization}
+                  setGeneratedVisualization={setGeneratedVisualization}
+                />
+              </GardenDesignErrorBoundary>
             )}
 
             {/* Step 5: Seasonal Generation */}
             {currentStep === 5 && (
-              <Step5SeasonalGeneration
-                form={form}
-                placedPlants={placedPlants}
-                selectedGardenStyle={selectedGardenStyle}
-                generatedVisualization={generatedVisualization}
-                seasonalImages={seasonalImages}
-                setSeasonalImages={setSeasonalImages}
-                isGeneratingSeasonalImages={isGeneratingSeasonalImages}
-                setIsGeneratingSeasonalImages={setIsGeneratingSeasonalImages}
-                seasonalProgress={seasonalProgress}
-                setSeasonalProgress={setSeasonalProgress}
-                showSeasonalDateSelector={showSeasonalDateSelector}
-                setShowSeasonalDateSelector={setShowSeasonalDateSelector}
-                showSeasonalViewer={showSeasonalViewer}
-                setShowSeasonalViewer={setShowSeasonalViewer}
-                handleGenerateSeasonalImages={handleGenerateSeasonalImages}
-              />
+              <SeasonalViewerErrorBoundary>
+                <Step5SeasonalGeneration
+                  form={form}
+                  placedPlants={placedPlants}
+                  selectedGardenStyle={selectedGardenStyle}
+                  generatedVisualization={generatedVisualization}
+                  seasonalImages={seasonalImages}
+                  setSeasonalImages={setSeasonalImages}
+                  isGeneratingSeasonalImages={isGeneratingSeasonalImages}
+                  setIsGeneratingSeasonalImages={setIsGeneratingSeasonalImages}
+                  seasonalProgress={seasonalProgress}
+                  setSeasonalProgress={setSeasonalProgress}
+                  showSeasonalDateSelector={showSeasonalDateSelector}
+                  setShowSeasonalDateSelector={setShowSeasonalDateSelector}
+                  showSeasonalViewer={showSeasonalViewer}
+                  setShowSeasonalViewer={setShowSeasonalViewer}
+                  handleGenerateSeasonalImages={handleGenerateSeasonalImages}
+                />
+              </SeasonalViewerErrorBoundary>
             )}
 
             {/* Step 6: Final Review */}

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { TestingModeIndicator } from "@/components/ui/testing-mode-indicator";
 import { useAuth } from "@/hooks/useAuth";
+import ErrorBoundary from "@/components/ui/error-boundary";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
@@ -26,46 +27,54 @@ function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
-    <Switch>
-      {/* Public pages available to everyone */}
-      <Route path="/" component={Landing} />
-      <Route path="/welcome" component={Landing} />
-      <Route path="/privacy" component={Privacy} />
-      <Route path="/terms" component={Terms} />
-      <Route path="/contact" component={Contact} />
-      
-      {/* Authenticated routes */}
-      {isAuthenticated && (
-        <>
-          <Route path="/home" component={Home} />
-          <Route path="/garden-setup" component={GardenProperties} />
-          <Route path="/garden-properties/:id?" component={GardenProperties} />
-          <Route path="/garden-design/:id?" component={GardenDesign} />
-          <Route path="/garden/:id/design" component={GardenDesign} />
-          <Route path="/plant-library" component={PlantLibrary} />
-          <Route path="/plant-doctor" component={PlantDoctor} />
-          <Route path="/premium" component={PremiumDashboard} />
-          <Route path="/admin" component={Admin} />
-          <Route path="/admin/test-visualization" component={AdminTestVisualization} />
-          <Route path="/admin/sprite-test" component={AdminSpriteTest} />
-          <Route path="/admin/inpainting-comparison" component={InpaintingComparison} />
-          <Route path="/test-seasonal-selector" component={TestSeasonalSelector} />
-        </>
-      )}
-      <Route component={NotFound} />
-    </Switch>
+    <ErrorBoundary level="page" showDetails={process.env.NODE_ENV === 'development'}>
+      <Switch>
+        {/* Public pages available to everyone */}
+        <Route path="/" component={Landing} />
+        <Route path="/welcome" component={Landing} />
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/contact" component={Contact} />
+        
+        {/* Authenticated routes */}
+        {isAuthenticated && (
+          <>
+            <Route path="/home" component={Home} />
+            <Route path="/garden-setup" component={GardenProperties} />
+            <Route path="/garden-properties/:id?" component={GardenProperties} />
+            <Route path="/garden-design/:id?" component={GardenDesign} />
+            <Route path="/garden/:id/design" component={GardenDesign} />
+            <Route path="/plant-library" component={PlantLibrary} />
+            <Route path="/plant-doctor" component={PlantDoctor} />
+            <Route path="/premium" component={PremiumDashboard} />
+            <Route path="/admin" component={Admin} />
+            <Route path="/admin/test-visualization" component={AdminTestVisualization} />
+            <Route path="/admin/sprite-test" component={AdminSpriteTest} />
+            <Route path="/admin/inpainting-comparison" component={InpaintingComparison} />
+            <Route path="/test-seasonal-selector" component={TestSeasonalSelector} />
+          </>
+        )}
+        <Route component={NotFound} />
+      </Switch>
+    </ErrorBoundary>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <TestingModeIndicator />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary 
+      level="page" 
+      showDetails={process.env.NODE_ENV === 'development'}
+      onReset={() => window.location.reload()}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <TestingModeIndicator />
+          <Router />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

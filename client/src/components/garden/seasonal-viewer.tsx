@@ -42,6 +42,7 @@ import { format, parse } from 'date-fns';
 import SeasonalDateSelector from './seasonal-date-selector';
 import { LoadingSpinner, ProgressBar, LoadingSteps } from '@/components/ui/loading-spinner';
 import { ErrorMessage } from '@/components/ui/error-message';
+import { SeasonalViewerErrorBoundary } from '@/components/ui/error-boundary';
 
 interface SeasonalImage {
   dayOfYear: number;        // Day of year (1-365) - precise daily timing

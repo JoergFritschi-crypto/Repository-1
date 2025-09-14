@@ -18,6 +18,7 @@ import {
   Settings
 } from "lucide-react";
 import type { GardenDimensions } from "@/types/garden";
+import { CanvasErrorBoundary } from "@/components/ui/error-boundary";
 
 interface InteractiveCanvasProps {
   shape: string;
