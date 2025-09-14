@@ -75,13 +75,420 @@
     "height": "Wysokość",
     "width": "Szerokość",
     "waterNeeds": "Potrzeby Wodne",
-    "maintenance": "Konserwacja"
+    "maintenance": "Konserwacja",
+    "workflow": {
+      "title": "Przepływ Pracy Projektu Ogrodu",
+      "step": "Krok",
+      "of": "z",
+      "progress": "Postęp",
+      "autoSave": "Auto-zapis",
+      "enabled": "Włączony",
+      "disabled": "Wyłączony",
+      "saving": "Zapisywanie...",
+      "saved": "Zapisano",
+      "navigation": {
+        "next": "Następny Krok",
+        "back": "Poprzedni Krok",
+        "complete": "Zakończ Projekt",
+        "home": "Powrót do Strony Głównej"
+      },
+      "step1": {
+        "title": "Witamy w Projektowaniu Ogrodu",
+        "subtitle": "Stwórzmy razem Twój idealny ogród",
+        "gardenName": {
+          "label": "Nazwa Ogrodu",
+          "placeholder": "Mój Wymarzony Ogród",
+          "description": "Nadaj swojemu ogrodowi pamiętną nazwę",
+          "required": "Nazwa ogrodu jest wymagana"
+        },
+        "location": {
+          "title": "Lokalizacja",
+          "city": {
+            "label": "Miasto",
+            "placeholder": "Warszawa"
+          },
+          "zipCode": {
+            "label": "Kod Pocztowy",
+            "placeholder": "00-001"
+          },
+          "country": {
+            "label": "Kraj",
+            "placeholder": "Wybierz kraj",
+            "options": {
+              "uk": "Wielka Brytania",
+              "us": "Stany Zjednoczone",
+              "ca": "Kanada",
+              "au": "Australia",
+              "de": "Niemcy",
+              "fr": "Francja",
+              "it": "Włochy",
+              "es": "Hiszpania",
+              "nl": "Holandia",
+              "be": "Belgia",
+              "ch": "Szwajcaria",
+              "at": "Austria",
+              "se": "Szwecja",
+              "no": "Norwegia",
+              "dk": "Dania",
+              "fi": "Finlandia",
+              "ie": "Irlandia",
+              "pt": "Portugalia",
+              "gr": "Grecja",
+              "pl": "Polska",
+              "cz": "Czechy",
+              "hu": "Węgry",
+              "ro": "Rumunia",
+              "bg": "Bułgaria",
+              "hr": "Chorwacja",
+              "si": "Słowenia",
+              "sk": "Słowacja",
+              "lt": "Litwa",
+              "lv": "Łotwa",
+              "ee": "Estonia",
+              "mt": "Malta",
+              "cy": "Cypr",
+              "lu": "Luksemburg",
+              "nz": "Nowa Zelandia",
+              "jp": "Japonia",
+              "kr": "Korea Południowa",
+              "cn": "Chiny",
+              "in": "Indie",
+              "mx": "Meksyk",
+              "br": "Brazylia",
+              "ar": "Argentyna",
+              "cl": "Chile",
+              "za": "Afryka Południowa",
+              "other": "Inne"
+            }
+          }
+        },
+        "climate": {
+          "title": "Informacje Klimatyczne",
+          "description": "Pomóż nam zrozumieć lokalne warunki wzrostu",
+          "usdaZone": {
+            "label": "Strefa Mrozoodporności USDA",
+            "placeholder": "Wybierz strefę USDA",
+            "description": "Używana głównie w Ameryce Północnej"
+          },
+          "rhsZone": {
+            "label": "Strefa Mrozoodporności RHS",
+            "placeholder": "Wybierz strefę RHS",
+            "description": "Używana głównie w Europie"
+          },
+          "heatZone": {
+            "label": "Strefa Ciepła",
+            "placeholder": "Wybierz strefę ciepła",
+            "description": "Opcjonalne: Pomaga w doborze roślin w gorącym klimacie"
+          },
+          "getReport": "Pobierz Raport Klimatyczny",
+          "reportDescription": "Uzyskaj szczegółowe informacje klimatyczne dla swojej lokalizacji"
+        },
+        "siteConditions": {
+          "title": "Warunki Miejsca",
+          "sunExposure": {
+            "label": "Nasłonecznienie",
+            "placeholder": "Wybierz nasłonecznienie",
+            "options": {
+              "full_sun": "Pełne Słońce (6+ godzin bezpośredniego słońca)",
+              "partial_sun": "Częściowe Słońce (4-6 godzin bezpośredniego słońca)",
+              "partial_shade": "Częściowy Cień (2-4 godziny bezpośredniego słońca)",
+              "full_shade": "Pełny Cień (Mniej niż 2 godziny bezpośredniego słońca)"
+            }
+          },
+          "soilType": {
+            "label": "Typ Gleby",
+            "placeholder": "Wybierz typ gleby",
+            "options": {
+              "clay": "Glina (Ciężka, zatrzymuje wodę)",
+              "sand": "Piasek (Lekki, dobrze drenażowany)",
+              "loam": "Ziemia Orna (Zrównoważona, idealna)",
+              "silt": "Szlam (Drobny, zatrzymuje wilgoć)",
+              "chalk": "Kreda (Zasadowa, dobrze drenażowana)"
+            }
+          },
+          "soilPh": {
+            "label": "pH Gleby",
+            "placeholder": "Wybierz pH gleby",
+            "options": {
+              "acidic": "Kwaśny (Poniżej 6,0)",
+              "neutral": "Neutralny (6,0-7,0)",
+              "alkaline": "Zasadowy (Powyżej 7,0)"
+            }
+          },
+          "soilAnalysis": {
+            "label": "Analiza Gleby",
+            "description": "Czy przeprowadziłeś profesjonalną analizę gleby?",
+            "uploadTest": "Przekaż Wyniki Analizy Gleby",
+            "testDescription": "Przekaż swoją analizę gleby dla dokładniejszych rekomendacji roślin"
+          }
+        },
+        "validation": {
+          "requiredFields": "Brakujące Wymagane Pola",
+          "requiredFieldsList": "Proszę wypełnić następujące wymagane pola: {{fields}}",
+          "atLeastOneZone": "Przynajmniej jedna Strefa Mrozoodporności (USDA lub RHS)"
+        }
+      },
+      "step2": {
+        "title": "Szczegóły Ogrodu",
+        "subtitle": "Określ fizyczne charakterystyki swojego ogrodu",
+        "units": {
+          "label": "Jednostki Miary",
+          "description": "Wybierz preferowany system pomiarów",
+          "meters": "Metry (Metryczny)",
+          "feet": "Stopy (Imperial)"
+        },
+        "shape": {
+          "label": "Kształt Ogrodu",
+          "placeholder": "Wybierz kształt",
+          "description": "Wybierz kształt, który najlepiej pasuje do Twojego ogrodu",
+          "options": {
+            "rectangle": "Prostokąt",
+            "square": "Kwadrat",
+            "circle": "Koło",
+            "oval": "Owal",
+            "triangle": "Trójkąt",
+            "l_shaped": "Kształt L",
+            "r_shaped": "Kształt R (Odwrócone L)"
+          }
+        },
+        "dimensions": {
+          "title": "Wymiary Ogrodu",
+          "width": "Szerokość",
+          "length": "Długość",
+          "height": "Wysokość",
+          "radius": "Promień",
+          "base": "Podstawa",
+          "leg1": "Ramie 1",
+          "leg2": "Ramie 2",
+          "depth1": "Głębokość 1",
+          "depth2": "Głębokość 2"
+        },
+        "slope": {
+          "title": "Nachylenie i Orientacja",
+          "direction": {
+            "label": "Kierunek Nachylenia",
+            "description": "W którym kierunku nachyla się Twój ogród?",
+            "options": {
+              "N": "Północ",
+              "NE": "Północ-Wschód",
+              "E": "Wschód",
+              "SE": "Południe-Wschód",
+              "S": "Południe",
+              "SW": "Południe-Zachód",
+              "W": "Zachód",
+              "NW": "Północ-Zachód"
+            }
+          },
+          "percentage": {
+            "label": "Procent Nachylenia",
+            "description": "Jak strome jest nachylenie? (0% = płaskie, 100% = kąt 45°)"
+          }
+        },
+        "photos": {
+          "title": "Zdjęcia Ogrodu",
+          "description": "Przekaż zdjęcia swojej przestrzeni ogrodowej",
+          "upload": "Przekaż Zdjęcia",
+          "optional": "Opcjonalne, ale pomocne dla rekomendacji AI"
+        },
+        "orientation": {
+          "title": "Orientacja",
+          "description": "Zaznacz orientację swojego ogrodu",
+          "set": "Ustaw Orientację",
+          "notSet": "Orientacja nie ustawiona - to pomaga w rekomendacjach umieszczenia roślin"
+        }
+      },
+      "step3": {
+        "title": "Wybierz Swoje Podejście do Projektu",
+        "subtitle": "Wybierz, jak chcesz stworzyć projekt swojego ogrodu",
+        "designMethod": {
+          "label": "Metoda Projektowania",
+          "ai": {
+            "title": "Projekt Generowany przez AI",
+            "badge": "Zalecane",
+            "description": "Pozwól naszej AI stworzyć profesjonalny projekt ogrodu na podstawie Twoich preferencji, klimatu i wybranego stylu. Idealny dla początkujących i tych szukających eksperckiej porady."
+          },
+          "manual": {
+            "title": "Projekt Ręczny",
+            "description": "Stwórz swój ogród od podstaw, używając naszego interaktywnego płótna projektowego. Pełna kontrola kreatywna dla doświadczonych ogrodników lub tych ze specyficznymi wizjami."
+          }
+        },
+        "aiPreferences": {
+          "title": "Preferencje Projektu AI",
+          "gardenStyle": {
+            "label": "Styl Ogrodu"
+          },
+          "safety": {
+            "label": "Bezpieczeństwo i Dostępność"
+          },
+          "spacing": {
+            "label": "Preferencja Odstępów Roślin",
+            "placeholder": "Wybierz preferencję odstępów",
+            "description": "Jak blisko siebie powinny być umieszczone rośliny",
+            "options": {
+              "minimum": "Minimum (Gęsty, bujny ogród)",
+              "balanced": "Zrównoważony (Zalecane odstępy)",
+              "maximum": "Maksimum (Otwarty, przestronny ogród)"
+            }
+          }
+        },
+        "manualInfo": {
+          "title": "Tryb Projektu Ręcznego",
+          "description": "W następnym kroku będziesz mieć dostęp do naszego interaktywnego płótna ogrodowego, gdzie możesz:",
+          "features": [
+            "Przeszukiwać i przeglądać naszą bazę danych roślin",
+            "Przeciągać i upuszczać rośliny w swoim ogrodzie",
+            "Układać rośliny dokładnie tak, jak je sobie wyobrażasz",
+            "Widzieć opinie o odstępach i kompatybilności w czasie rzeczywistym"
+          ]
+        }
+      },
+      "step4": {
+        "title": "Płótno Projektu Ogrodu",
+        "plantSearch": {
+          "title": "Wyszukiwanie i Filtry Roślin",
+          "inventory": "{{count}} roślin w inwentarzu",
+          "filtersActive": "{{count}} aktywnych filtrów",
+          "openAdvanced": "Otwórz Zaawansowane Wyszukiwanie",
+          "myCollectionOnly": "Tylko Moja Kolekcja",
+          "clearFilters": "Wyczyść Filtry",
+          "showResults": "Pokaż Wyniki",
+          "hideResults": "Ukryj Wyniki"
+        },
+        "aiGeneration": {
+          "generate": "Generuj Projekt Ogrodu AI",
+          "generating": "Generowanie Projektu AI...",
+          "progress": {
+            "preparing": "Przygotowywanie danych ogrodu...",
+            "analyzing": "Analiza warunków...",
+            "selecting": "Wybieranie roślin...",
+            "placing": "Umieszczanie roślin...",
+            "finalizing": "Finalizowanie projektu..."
+          },
+          "success": {
+            "title": "Projekt AI Zakończony",
+            "description": "Twój ogród {{style}} został zaprojektowany z {{count}} starannie dobranymi roślinami. Możesz teraz przejrzeć i dostosować rozmieszczenie na płótnie poniżej."
+          },
+          "error": {
+            "notSaved": "Ogród Niezapisany",
+            "saveFirst": "Zapisz szczegóły swojego ogrodu przed generowaniem projektu",
+            "failed": "Generowanie Nieudane",
+            "tryAgain": "Generowanie projektu AI nie powiodło się"
+          }
+        },
+        "plantMessages": {
+          "added": "Roślina Dodana",
+          "addedToInventory": "{{name}} została dodana do Twojego inwentarza",
+          "addedFromRecent": "{{name}} dodana do inwentarza"
+        },
+        "canvas": {
+          "title": "Płótno Projektu Ogrodu"
+        },
+        "warnings": {
+          "noPlantsTitle": "Brak Umieszczonych Roślin",
+          "noPlantsAI": "Kliknij 'Generuj Projekt Ogrodu AI' powyżej, aby automatycznie zaprojektować swój ogród",
+          "noPlantsManual": "Użyj wyszukiwarki roślin, aby znaleźć i dodać rośliny do swojego płótna ogrodowego"
+        }
+      },
+      "step5": {
+        "title": "Sezonowa Wizualizacja Ogrodu",
+        "subtitle": "Generuj fotorealistyczne widoki swojego ogrodu przez cały rok",
+        "summary": {
+          "title": "Twój Projekt Ogrodu",
+          "style": "styl {{style}}",
+          "shape": "kształt {{shape}}",
+          "plants": "{{count}} roślin",
+          "including": "W tym: {{plants}}",
+          "andMore": "i {{count}} więcej"
+        },
+        "description": {
+          "intro": "Nasza AI stworzy cztery sezonowe widoki Twojego ogrodu pokazujące, jak będzie wyglądać w:",
+          "seasons": [
+            "Wiosna - Nowy wzrost i wczesne kwitnienie",
+            "Lato - Pełne kwitnienie i bujne liście",
+            "Jesień - Jesienne kolory i nasiona",
+            "Zima - Struktura i zimozielone akcenty"
+          ]
+        },
+        "generation": {
+          "button": "Generuj Widoki Sezonowe",
+          "generating": "Generowanie Widoków Sezonowych...",
+          "progress": {
+            "preparing": "Przygotowywanie danych ogrodu...",
+            "spring": "Generowanie widoku wiosennego...",
+            "variations": "Tworzenie wariacji sezonowych...",
+            "winter": "Finalizowanie widoku zimowego...",
+            "complete": "Zakończono!"
+          }
+        },
+        "success": {
+          "title": "Widoki Sezonowe Wygenerowane!",
+          "description": "Sezonowa progresja Twojego ogrodu została stworzona. Zobacz każdą porę roku, aby zobaczyć, jak Twoje rośliny będą wyglądać przez cały rok.",
+          "viewSeasonal": "Zobacz Galerię Sezonową"
+        },
+        "viewer": {
+          "title": "Sezonowa Galeria Ogrodu",
+          "selectDate": "Wybierz datę, aby zobaczyć swój ogród:",
+          "currentSeason": "Aktualna Pora Roku: {{season}}",
+          "downloadImage": "Pobierz Obraz"
+        }
+      },
+      "step6": {
+        "title": "Projekt Ogrodu Zakończony!",
+        "subtitle": "Twój projekt {{style}} jest gotowy. Przejrzyj swój projekt poniżej i pobierz lub udostępnij go.",
+        "summary": {
+          "title": "{{name}}",
+          "location": "{{city}}, {{country}}",
+          "style": "Ogród {{style}}",
+          "area": "{{area}} {{units}}",
+          "plants": "{{count}} Roślin",
+          "species": "{{count}} Gatunków",
+          "zones": "Strefy: {{zones}}",
+          "conditions": "{{sunExposure}} • {{soilType}} • {{soilPh}}"
+        },
+        "actions": {
+          "title": "Twój Ogród Jest Gotowy",
+          "downloadPDF": {
+            "button": "Pobierz Raport PDF",
+            "description": "Kompletny projekt ogrodu z listą roślin i instrukcjami pielęgnacji"
+          },
+          "share": {
+            "button": "Udostępnij Ogród",
+            "description": "Udostępnij swój projekt przyjaciołom i rodzinie"
+          },
+          "newGarden": {
+            "button": "Stwórz Nowy Ogród",
+            "description": "Rozpocznij projektowanie kolejnego ogrodu"
+          }
+        },
+        "gallery": {
+          "title": "Galeria Projektów",
+          "visualization": "Wizualizacja Ogrodu",
+          "seasonalViews": "Widoki Sezonowe",
+          "plantList": "Lista Roślin"
+        },
+        "download": {
+          "notSaved": "Ogród Niezapisany",
+          "saveFirst": "Zapisz swój ogród przed pobraniem",
+          "complete": "Pobieranie Zakończone",
+          "success": "Twój PDF projektu ogrodu został pobrany",
+          "failed": "Pobieranie Nieudane",
+          "tryAgain": "Generowanie PDF nie powiodło się. Spróbuj ponownie."
+        },
+        "share": {
+          "notSaved": "Ogród Niezapisany",
+          "saveFirst": "Zapisz swój ogród przed udostępnieniem",
+          "copied": "Link Skopiowany",
+          "success": "Link ogrodu został skopiowany do schowka"
+        }
+      }
+    }
   },
   "seasons": {
     "spring": "Wiosna",
     "summer": "Lato",
     "autumn": "Jesień",
-    "winter": "Zima"
+    "winter": "Zima",
+    "all": "Wszystkie Pory Roku"
   },
   "climate": {
     "tropical": "Tropikalny",

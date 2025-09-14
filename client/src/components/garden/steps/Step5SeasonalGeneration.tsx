@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -28,6 +29,8 @@ const Step5SeasonalGeneration = memo(({
   const watchedShape = form.watch("shape");
   const watchedSelectedStyle = form.watch("selectedStyle");
 
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       {/* Seasonal Generation Card */}
@@ -35,31 +38,31 @@ const Step5SeasonalGeneration = memo(({
         <CardHeader className="py-7 flower-band-seasonal rounded-t-lg">
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Seasonal Garden Visualization
+            {t('garden.workflow.step5.title')}
           </CardTitle>
           <CardDescription>
-            Generate photorealistic views of your garden throughout the year
+            {t('garden.workflow.step5.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Garden Summary */}
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <h3 className="font-semibold text-sm">Your Garden Design</h3>
+            <h3 className="font-semibold text-sm">{t('garden.workflow.step5.gardenSummary.title')}</h3>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">
-                {selectedGardenStyle || watchedSelectedStyle || 'cottage'} style
+                {selectedGardenStyle || watchedSelectedStyle || t('garden.workflow.step5.gardenSummary.defaultStyle')} {t('garden.workflow.step5.gardenSummary.style')}
               </Badge>
               <Badge variant="secondary">
-                {watchedShape} shape
+                {watchedShape} {t('garden.workflow.step5.gardenSummary.shape')}
               </Badge>
               <Badge variant="secondary">
-                {placedPlants.length} plants
+                {placedPlants.length} {t('garden.workflow.step5.gardenSummary.plants')}
               </Badge>
             </div>
             {placedPlants.length > 0 && (
               <p className="text-sm text-gray-600">
-                Including: {Array.from(new Set(placedPlants.map(p => p.plantName))).slice(0, 5).join(', ')}
-                {placedPlants.length > 5 && ` and ${placedPlants.length - 5} more`}
+                {t('garden.workflow.step5.gardenSummary.including')}: {Array.from(new Set(placedPlants.map(p => p.plantName))).slice(0, 5).join(', ')}
+                {placedPlants.length > 5 && ` ${t('garden.workflow.step5.gardenSummary.andMore', { count: placedPlants.length - 5 })}`}
               </p>
             )}
           </div>
@@ -68,12 +71,12 @@ const Step5SeasonalGeneration = memo(({
           {!seasonalImages && (
             <div className="space-y-4">
               <div className="text-sm text-gray-600">
-                Our AI will create four seasonal views of your garden showing how it will look in:
+                {t('garden.workflow.step5.aiDescription')}
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Spring - New growth and early blooms</li>
-                  <li>Summer - Full bloom and lush foliage</li>
-                  <li>Autumn - Fall colors and seed heads</li>
-                  <li>Winter - Structure and evergreen interest</li>
+                  <li>{t('garden.workflow.step5.seasons.spring')}</li>
+                  <li>{t('garden.workflow.step5.seasons.summer')}</li>
+                  <li>{t('garden.workflow.step5.seasons.autumn')}</li>
+                  <li>{t('garden.workflow.step5.seasons.winter')}</li>
                 </ul>
               </div>
 
@@ -87,12 +90,12 @@ const Step5SeasonalGeneration = memo(({
                 {isGeneratingSeasonalImages ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating Seasonal Views...
+                    {t('garden.workflow.step5.generating')}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Seasonal Views
+                    {t('garden.workflow.step5.generateButton')}
                   </>
                 )}
               </Button>
@@ -101,11 +104,11 @@ const Step5SeasonalGeneration = memo(({
                 <div className="space-y-2">
                   <Progress value={seasonalProgress} className="w-full" />
                   <p className="text-xs text-center text-gray-500">
-                    {seasonalProgress < 25 && "Preparing garden data..."}
-                    {seasonalProgress >= 25 && seasonalProgress < 50 && "Generating spring view..."}
-                    {seasonalProgress >= 50 && seasonalProgress < 75 && "Creating seasonal variations..."}
-                    {seasonalProgress >= 75 && seasonalProgress < 100 && "Finalizing winter view..."}
-                    {seasonalProgress === 100 && "Complete!"}
+                    {seasonalProgress < 25 && t('garden.workflow.step5.progress.preparing')}
+                    {seasonalProgress >= 25 && seasonalProgress < 50 && t('garden.workflow.step5.progress.spring')}
+                    {seasonalProgress >= 50 && seasonalProgress < 75 && t('garden.workflow.step5.progress.variations')}
+                    {seasonalProgress >= 75 && seasonalProgress < 100 && t('garden.workflow.step5.progress.winter')}
+                    {seasonalProgress === 100 && t('garden.workflow.step5.progress.complete')}
                   </p>
                 </div>
               )}
@@ -116,10 +119,9 @@ const Step5SeasonalGeneration = memo(({
           {seasonalImages && (
             <Alert className="border-green-500 bg-green-50">
               <Check className="h-4 w-4 text-green-600" />
-              <AlertTitle>Seasonal Views Generated!</AlertTitle>
+              <AlertTitle>{t('garden.workflow.step5.success.title')}</AlertTitle>
               <AlertDescription>
-                Your garden has been visualized across all four seasons. 
-                Click below to explore your year-round garden.
+                {t('garden.workflow.step5.success.description')}
               </AlertDescription>
             </Alert>
           )}
@@ -128,9 +130,9 @@ const Step5SeasonalGeneration = memo(({
           {placedPlants.length === 0 && (
             <Alert className="border-orange-400 bg-orange-50">
               <AlertCircle className="h-4 w-4 text-orange-600" />
-              <AlertTitle>No Plants in Garden</AlertTitle>
+              <AlertTitle>{t('garden.workflow.step5.warning.title')}</AlertTitle>
               <AlertDescription>
-                Please go back to the previous step and add plants to your garden before generating seasonal views.
+                {t('garden.workflow.step5.warning.description')}
               </AlertDescription>
             </Alert>
           )}
@@ -141,9 +143,9 @@ const Step5SeasonalGeneration = memo(({
       {seasonalImages && (
         <Card className="border-2 border-primary shadow-sm">
           <CardHeader className="py-7 flower-band-seasons rounded-t-lg">
-            <CardTitle className="text-base">Year-Round Garden Views</CardTitle>
+            <CardTitle className="text-base">{t('garden.workflow.step5.viewer.title')}</CardTitle>
             <CardDescription>
-              Explore how your garden will look throughout the seasons
+              {t('garden.workflow.step5.viewer.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -161,9 +163,9 @@ const Step5SeasonalGeneration = memo(({
       {showSeasonalDateSelector && (
         <Card className="border-2 border-primary/50 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">Select Viewing Date</CardTitle>
+            <CardTitle className="text-base">{t('garden.workflow.step5.dateSelector.title')}</CardTitle>
             <CardDescription>
-              Choose a specific date to see your garden at that time of year
+              {t('garden.workflow.step5.dateSelector.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -180,7 +182,7 @@ const Step5SeasonalGeneration = memo(({
                 variant="outline"
                 onClick={() => setShowSeasonalDateSelector(false)}
               >
-                Close
+                {t('garden.workflow.step5.dateSelector.close')}
               </Button>
             </div>
           </CardContent>

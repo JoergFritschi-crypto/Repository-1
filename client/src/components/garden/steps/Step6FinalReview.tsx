@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ const Step6FinalReview = memo(({
   completeDesign,
   user,
 }: Step6Props) => {
+  const { t } = useTranslation();
   const gardenData = form.getValues();
 
   // Calculate garden statistics
@@ -61,8 +63,8 @@ const Step6FinalReview = memo(({
   const handleDownloadPDF = async () => {
     if (!gardenId) {
       toast({
-        title: "Garden Not Saved",
-        description: "Please save your garden before downloading",
+        title: t('garden.workflow.step6.download.errors.notSaved'),
+        description: t('garden.workflow.step6.download.errors.saveFirst'),
         variant: "destructive"
       });
       return;
@@ -85,15 +87,15 @@ const Step6FinalReview = memo(({
         window.URL.revokeObjectURL(url);
 
         toast({
-          title: "Download Complete",
-          description: "Your garden design PDF has been downloaded",
+          title: t('garden.workflow.step6.download.success.title'),
+          description: t('garden.workflow.step6.download.success.description'),
         });
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
       toast({
-        title: "Download Failed",
-        description: "Failed to generate PDF. Please try again.",
+        title: t('garden.workflow.step6.download.errors.failed'),
+        description: t('garden.workflow.step6.download.errors.tryAgain'),
         variant: "destructive"
       });
     }
@@ -103,8 +105,8 @@ const Step6FinalReview = memo(({
   const handleShare = async () => {
     if (!gardenId) {
       toast({
-        title: "Garden Not Saved",
-        description: "Please save your garden before sharing",
+        title: t('garden.workflow.step6.share.errors.notSaved'),
+        description: t('garden.workflow.step6.share.errors.saveFirst'),
         variant: "destructive"
       });
       return;
@@ -115,8 +117,8 @@ const Step6FinalReview = memo(({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: gardenData.name || 'My Garden Design',
-          text: `Check out my ${gardenData.selectedStyle || 'garden'} design!`,
+          title: gardenData.name || t('garden.workflow.step6.share.defaultTitle'),
+          text: t('garden.workflow.step6.share.defaultText', { style: gardenData.selectedStyle || t('garden.workflow.step6.share.defaultStyle') }),
           url: shareUrl,
         });
       } catch (error) {
@@ -126,8 +128,8 @@ const Step6FinalReview = memo(({
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(shareUrl);
       toast({
-        title: "Link Copied",
-        description: "Garden link has been copied to clipboard",
+        title: t('garden.workflow.step6.share.copied.title'),
+        description: t('garden.workflow.step6.share.copied.description'),
       });
     }
   };
@@ -137,9 +139,9 @@ const Step6FinalReview = memo(({
       {/* Success Banner */}
       <Alert className="border-green-500 bg-green-50">
         <CheckCircle className="h-5 w-5 text-green-600" />
-        <AlertTitle className="text-lg">Garden Design Complete!</AlertTitle>
+        <AlertTitle className="text-lg">{t('garden.workflow.step6.complete.title')}</AlertTitle>
         <AlertDescription>
-          Your {gardenData.selectedStyle || 'garden'} design is ready. Review your design below and download or share it.
+          {t('garden.workflow.step6.complete.description', { style: gardenData.selectedStyle || t('garden.workflow.step6.complete.defaultStyle') })}
         </AlertDescription>
       </Alert>
 
@@ -148,10 +150,10 @@ const Step6FinalReview = memo(({
         <CardHeader className="py-7 flower-band-final rounded-t-lg">
           <CardTitle className="text-base flex items-center gap-2">
             <TreePine className="w-5 h-5" />
-            {gardenData.name || 'Your Garden'}
+            {gardenData.name || t('garden.workflow.step6.summary.defaultName')}
           </CardTitle>
           <CardDescription>
-            Complete garden design summary
+            {t('garden.workflow.step6.summary.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -159,27 +161,27 @@ const Step6FinalReview = memo(({
           <div>
             <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              Location & Climate
+              {t('garden.workflow.step6.summary.location.title')}
             </h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
               {gardenData.city && (
                 <div>
-                  <span className="text-gray-500">City:</span> {gardenData.city}
+                  <span className="text-gray-500">{t('garden.workflow.step6.summary.location.city')}:</span> {gardenData.city}
                 </div>
               )}
               {gardenData.country && (
                 <div>
-                  <span className="text-gray-500">Country:</span> {gardenData.country}
+                  <span className="text-gray-500">{t('garden.workflow.step6.summary.location.country')}:</span> {gardenData.country}
                 </div>
               )}
               {gardenData.usdaZone && (
                 <div>
-                  <span className="text-gray-500">USDA Zone:</span> {gardenData.usdaZone}
+                  <span className="text-gray-500">{t('garden.workflow.step6.summary.location.usdaZone')}:</span> {gardenData.usdaZone}
                 </div>
               )}
               {gardenData.rhsZone && (
                 <div>
-                  <span className="text-gray-500">RHS Zone:</span> {gardenData.rhsZone}
+                  <span className="text-gray-500">{t('garden.workflow.step6.summary.location.rhsZone')}:</span> {gardenData.rhsZone}
                 </div>
               )}
             </div>
@@ -191,20 +193,20 @@ const Step6FinalReview = memo(({
           <div>
             <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
-              Garden Specifications
+              {t('garden.workflow.step6.summary.specifications.title')}
             </h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="text-gray-500">Shape:</span> {gardenData.shape}
+                <span className="text-gray-500">{t('garden.workflow.step6.summary.specifications.shape')}:</span> {gardenData.shape}
               </div>
               <div>
-                <span className="text-gray-500">Area:</span> {gardenStats.area.toFixed(1)} {gardenStats.units}²
+                <span className="text-gray-500">{t('garden.workflow.step6.summary.specifications.area')}:</span> {gardenStats.area.toFixed(1)} {gardenStats.units}²
               </div>
               <div>
-                <span className="text-gray-500">Style:</span> {gardenData.selectedStyle || 'cottage'}
+                <span className="text-gray-500">{t('garden.workflow.step6.summary.specifications.style')}:</span> {gardenData.selectedStyle || t('garden.workflow.step6.summary.specifications.defaultStyle')}
               </div>
               <div>
-                <span className="text-gray-500">Design Method:</span> {gardenData.design_approach === 'ai' ? 'AI-Generated' : 'Manual'}
+                <span className="text-gray-500">{t('garden.workflow.step6.summary.specifications.designMethod')}:</span> {gardenData.design_approach === 'ai' ? t('garden.workflow.step6.summary.specifications.aiGenerated') : t('garden.workflow.step6.summary.specifications.manual')}
               </div>
             </div>
           </div>
@@ -213,19 +215,19 @@ const Step6FinalReview = memo(({
 
           {/* Plant Statistics */}
           <div>
-            <h3 className="font-semibold text-sm mb-2">Plant Summary</h3>
+            <h3 className="font-semibold text-sm mb-2">{t('garden.workflow.step6.summary.plants.title')}</h3>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">
-                {gardenStats.totalPlants} Total Plants
+                {gardenStats.totalPlants} {t('garden.workflow.step6.summary.plants.totalPlants')}
               </Badge>
               <Badge variant="secondary">
-                {gardenStats.uniqueSpecies} Unique Species
+                {gardenStats.uniqueSpecies} {t('garden.workflow.step6.summary.plants.uniqueSpecies')}
               </Badge>
               {gardenData.preferences?.toxicityLevel && (
                 <Badge variant="outline">
-                  {gardenData.preferences.toxicityLevel === 'low' ? 'Low Toxicity' : 
-                   gardenData.preferences.toxicityLevel === 'moderate' ? 'Moderate Toxicity' :
-                   gardenData.preferences.toxicityLevel === 'all' ? 'All Toxicity Levels' : 'No Restriction'}
+                  {gardenData.preferences.toxicityLevel === 'low' ? t('garden.workflow.step6.summary.plants.toxicity.low') : 
+                   gardenData.preferences.toxicityLevel === 'moderate' ? t('garden.workflow.step6.summary.plants.toxicity.moderate') :
+                   gardenData.preferences.toxicityLevel === 'all' ? t('garden.workflow.step6.summary.plants.toxicity.all') : t('garden.workflow.step6.summary.plants.toxicity.none')}
               </Badge>
               )}
             </div>
@@ -237,9 +239,9 @@ const Step6FinalReview = memo(({
       {(seasonalImages || generatedVisualization) && (
         <Card className="border-2 border-primary shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">Design Visualizations</CardTitle>
+            <CardTitle className="text-base">{t('garden.workflow.step6.visualizations.title')}</CardTitle>
             <CardDescription>
-              Your garden through the seasons
+              {t('garden.workflow.step6.visualizations.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -263,7 +265,7 @@ const Step6FinalReview = memo(({
               data-testid="button-download-pdf"
             >
               <Download className="w-4 h-4 mr-2" />
-              Download PDF
+              {t('garden.workflow.step6.actions.downloadPdf')}
             </Button>
             
             <Button
@@ -274,7 +276,7 @@ const Step6FinalReview = memo(({
               data-testid="button-share"
             >
               <Share2 className="w-4 h-4 mr-2" />
-              Share Design
+              {t('garden.workflow.step6.actions.shareDesign')}
             </Button>
             
             <Button
@@ -285,14 +287,14 @@ const Step6FinalReview = memo(({
               data-testid="button-go-home"
             >
               <Home className="w-4 h-4 mr-2" />
-              Go to Dashboard
+              {t('garden.workflow.step6.actions.goToDashboard')}
             </Button>
           </div>
 
           {/* Additional Options */}
           <div className="mt-4 pt-4 border-t">
             <p className="text-sm text-gray-600 text-center mb-3">
-              Want to make changes or create another design?
+              {t('garden.workflow.step6.additionalOptions.question')}
             </p>
             <div className="flex gap-3 justify-center">
               <Button
@@ -300,14 +302,14 @@ const Step6FinalReview = memo(({
                 onClick={() => window.location.href = `/garden/${gardenId}/edit`}
                 className="text-sm"
               >
-                Edit This Design
+                {t('garden.workflow.step6.additionalOptions.editDesign')}
               </Button>
               <Button
                 variant="link"
                 onClick={() => window.location.href = '/garden-design'}
                 className="text-sm"
               >
-                Create New Garden
+                {t('garden.workflow.step6.additionalOptions.createNew')}
               </Button>
             </div>
           </div>
@@ -318,11 +320,11 @@ const Step6FinalReview = memo(({
       {user?.userTier === 'free' && (
         <Alert>
           <Sparkles className="h-4 w-4" />
-          <AlertTitle>Upgrade for More Features</AlertTitle>
+          <AlertTitle>{t('garden.workflow.step6.upgrade.title')}</AlertTitle>
           <AlertDescription>
-            Premium users get unlimited designs, advanced AI features, and priority support.
+            {t('garden.workflow.step6.upgrade.description')}
             <Button variant="link" className="pl-1" onClick={() => window.location.href = '/pricing'}>
-              View Plans →
+              {t('garden.workflow.step6.upgrade.viewPlans')}
             </Button>
           </AlertDescription>
         </Alert>

@@ -75,13 +75,420 @@
     "height": "Altura",
     "width": "Ancho",
     "waterNeeds": "Necesidades de Agua",
-    "maintenance": "Mantenimiento"
+    "maintenance": "Mantenimiento",
+    "workflow": {
+      "title": "Flujo de Trabajo de Diseño de Jardín",
+      "step": "Paso",
+      "of": "de",
+      "progress": "Progreso",
+      "autoSave": "Auto-guardar",
+      "enabled": "Habilitado",
+      "disabled": "Deshabilitado",
+      "saving": "Guardando...",
+      "saved": "Guardado",
+      "navigation": {
+        "next": "Siguiente Paso",
+        "back": "Paso Anterior",
+        "complete": "Completar Diseño",
+        "home": "Volver al Inicio"
+      },
+      "step1": {
+        "title": "Bienvenido al Diseño de Jardín",
+        "subtitle": "Creemos juntos tu jardín perfecto",
+        "gardenName": {
+          "label": "Nombre del Jardín",
+          "placeholder": "Mi Jardín Soñado",
+          "description": "Dale a tu jardín un nombre memorable",
+          "required": "El nombre del jardín es obligatorio"
+        },
+        "location": {
+          "title": "Ubicación",
+          "city": {
+            "label": "Ciudad",
+            "placeholder": "Madrid"
+          },
+          "zipCode": {
+            "label": "Código Postal",
+            "placeholder": "28001"
+          },
+          "country": {
+            "label": "País",
+            "placeholder": "Seleccionar país",
+            "options": {
+              "uk": "Reino Unido",
+              "us": "Estados Unidos",
+              "ca": "Canadá",
+              "au": "Australia",
+              "de": "Alemania",
+              "fr": "Francia",
+              "it": "Italia",
+              "es": "España",
+              "nl": "Países Bajos",
+              "be": "Bélgica",
+              "ch": "Suiza",
+              "at": "Austria",
+              "se": "Suecia",
+              "no": "Noruega",
+              "dk": "Dinamarca",
+              "fi": "Finlandia",
+              "ie": "Irlanda",
+              "pt": "Portugal",
+              "gr": "Grecia",
+              "pl": "Polonia",
+              "cz": "República Checa",
+              "hu": "Hungría",
+              "ro": "Rumania",
+              "bg": "Bulgaria",
+              "hr": "Croacia",
+              "si": "Eslovenia",
+              "sk": "Eslovaquia",
+              "lt": "Lituania",
+              "lv": "Letonia",
+              "ee": "Estonia",
+              "mt": "Malta",
+              "cy": "Chipre",
+              "lu": "Luxemburgo",
+              "nz": "Nueva Zelanda",
+              "jp": "Japón",
+              "kr": "Corea del Sur",
+              "cn": "China",
+              "in": "India",
+              "mx": "México",
+              "br": "Brasil",
+              "ar": "Argentina",
+              "cl": "Chile",
+              "za": "Sudáfrica",
+              "other": "Otro"
+            }
+          }
+        },
+        "climate": {
+          "title": "Información Climática",
+          "description": "Ayúdanos a entender las condiciones de crecimiento de tu ubicación",
+          "usdaZone": {
+            "label": "Zona de Resistencia USDA",
+            "placeholder": "Seleccionar zona USDA",
+            "description": "Usado principalmente en América del Norte"
+          },
+          "rhsZone": {
+            "label": "Zona de Resistencia RHS",
+            "placeholder": "Seleccionar zona RHS",
+            "description": "Usado principalmente en Europa"
+          },
+          "heatZone": {
+            "label": "Zona de Calor",
+            "placeholder": "Seleccionar zona de calor",
+            "description": "Opcional: Ayuda con la selección de plantas en climas cálidos"
+          },
+          "getReport": "Obtener Reporte Climático",
+          "reportDescription": "Obtener información climática detallada para tu ubicación"
+        },
+        "siteConditions": {
+          "title": "Condiciones del Sitio",
+          "sunExposure": {
+            "label": "Exposición Solar",
+            "placeholder": "Seleccionar exposición solar",
+            "options": {
+              "full_sun": "Sol Pleno (6+ horas de sol directo)",
+              "partial_sun": "Sol Parcial (4-6 horas de sol directo)",
+              "partial_shade": "Sombra Parcial (2-4 horas de sol directo)",
+              "full_shade": "Sombra Completa (Menos de 2 horas de sol directo)"
+            }
+          },
+          "soilType": {
+            "label": "Tipo de Suelo",
+            "placeholder": "Seleccionar tipo de suelo",
+            "options": {
+              "clay": "Arcilla (Pesado, retiene agua)",
+              "sand": "Arena (Ligero, bien drenado)",
+              "loam": "Franco (Equilibrado, ideal)",
+              "silt": "Limo (Fino, retiene humedad)",
+              "chalk": "Caliza (Alcalino, bien drenado)"
+            }
+          },
+          "soilPh": {
+            "label": "pH del Suelo",
+            "placeholder": "Seleccionar pH del suelo",
+            "options": {
+              "acidic": "Ácido (Debajo de 6.0)",
+              "neutral": "Neutro (6.0-7.0)",
+              "alkaline": "Alcalino (Arriba de 7.0)"
+            }
+          },
+          "soilAnalysis": {
+            "label": "Análisis de Suelo",
+            "description": "¿Has hecho una prueba de suelo profesional?",
+            "uploadTest": "Subir Resultados de Prueba de Suelo",
+            "testDescription": "Sube tu prueba de suelo para recomendaciones de plantas más precisas"
+          }
+        },
+        "validation": {
+          "requiredFields": "Campos Obligatorios Faltantes",
+          "requiredFieldsList": "Por favor completa los siguientes campos obligatorios: {{fields}}",
+          "atLeastOneZone": "Al menos una Zona de Resistencia (USDA o RHS)"
+        }
+      },
+      "step2": {
+        "title": "Detalles del Jardín",
+        "subtitle": "Define las características físicas de tu jardín",
+        "units": {
+          "label": "Unidades de Medida",
+          "description": "Elige tu sistema de medición preferido",
+          "meters": "Metros (Métrico)",
+          "feet": "Pies (Imperial)"
+        },
+        "shape": {
+          "label": "Forma del Jardín",
+          "placeholder": "Seleccionar forma",
+          "description": "Selecciona la forma que mejor coincida con tu jardín",
+          "options": {
+            "rectangle": "Rectángulo",
+            "square": "Cuadrado",
+            "circle": "Círculo",
+            "oval": "Oval",
+            "triangle": "Triángulo",
+            "l_shaped": "Forma de L",
+            "r_shaped": "Forma de R (L Inversa)"
+          }
+        },
+        "dimensions": {
+          "title": "Dimensiones del Jardín",
+          "width": "Ancho",
+          "length": "Largo",
+          "height": "Alto",
+          "radius": "Radio",
+          "base": "Base",
+          "leg1": "Lado 1",
+          "leg2": "Lado 2",
+          "depth1": "Profundidad 1",
+          "depth2": "Profundidad 2"
+        },
+        "slope": {
+          "title": "Pendiente y Orientación",
+          "direction": {
+            "label": "Dirección de la Pendiente",
+            "description": "¿Hacia qué dirección se inclina tu jardín?",
+            "options": {
+              "N": "Norte",
+              "NE": "Noreste",
+              "E": "Este",
+              "SE": "Sureste",
+              "S": "Sur",
+              "SW": "Suroeste",
+              "W": "Oeste",
+              "NW": "Noroeste"
+            }
+          },
+          "percentage": {
+            "label": "Porcentaje de Pendiente",
+            "description": "¿Qué tan pronunciada es la pendiente? (0% = plano, 100% = ángulo de 45°)"
+          }
+        },
+        "photos": {
+          "title": "Fotos del Jardín",
+          "description": "Sube fotos de tu espacio de jardín",
+          "upload": "Subir Fotos",
+          "optional": "Opcional, pero útil para recomendaciones de IA"
+        },
+        "orientation": {
+          "title": "Orientación",
+          "description": "Marca la orientación de tu jardín",
+          "set": "Establecer Orientación",
+          "notSet": "Orientación no establecida - esto ayuda con las recomendaciones de colocación de plantas"
+        }
+      },
+      "step3": {
+        "title": "Elige tu Enfoque de Diseño",
+        "subtitle": "Selecciona cómo te gustaría crear tu diseño de jardín",
+        "designMethod": {
+          "label": "Método de Diseño",
+          "ai": {
+            "title": "Diseño Generado por IA",
+            "badge": "Recomendado",
+            "description": "Deja que nuestra IA cree un diseño de jardín profesional basado en tus preferencias, clima y estilo seleccionado. Perfecto para principiantes y aquellos que buscan orientación experta."
+          },
+          "manual": {
+            "title": "Diseño Manual",
+            "description": "Crea tu jardín desde cero usando nuestro lienzo de diseño interactivo. Control creativo completo para jardineros experimentados o aquellos con visiones específicas."
+          }
+        },
+        "aiPreferences": {
+          "title": "Preferencias de Diseño de IA",
+          "gardenStyle": {
+            "label": "Estilo de Jardín"
+          },
+          "safety": {
+            "label": "Seguridad y Accesibilidad"
+          },
+          "spacing": {
+            "label": "Preferencia de Espaciado de Plantas",
+            "placeholder": "Seleccionar preferencia de espaciado",
+            "description": "Qué tan cerca deben colocarse las plantas entre sí",
+            "options": {
+              "minimum": "Mínimo (Jardín denso y exuberante)",
+              "balanced": "Equilibrado (Espaciado recomendado)",
+              "maximum": "Máximo (Jardín abierto y espacioso)"
+            }
+          }
+        },
+        "manualInfo": {
+          "title": "Modo de Diseño Manual",
+          "description": "En el siguiente paso, tendrás acceso a nuestro lienzo de jardín interactivo donde puedes:",
+          "features": [
+            "Buscar y explorar nuestra base de datos de plantas",
+            "Arrastrar y soltar plantas en tu jardín",
+            "Organizar plantas exactamente como las imaginas",
+            "Ver comentarios de espaciado y compatibilidad en tiempo real"
+          ]
+        }
+      },
+      "step4": {
+        "title": "Lienzo de Diseño de Jardín",
+        "plantSearch": {
+          "title": "Búsqueda y Filtros de Plantas",
+          "inventory": "{{count}} plantas en inventario",
+          "filtersActive": "{{count}} filtros activos",
+          "openAdvanced": "Abrir Búsqueda Avanzada",
+          "myCollectionOnly": "Solo Mi Colección",
+          "clearFilters": "Limpiar Filtros",
+          "showResults": "Mostrar Resultados",
+          "hideResults": "Ocultar Resultados"
+        },
+        "aiGeneration": {
+          "generate": "Generar Diseño de Jardín IA",
+          "generating": "Generando Diseño IA...",
+          "progress": {
+            "preparing": "Preparando datos del jardín...",
+            "analyzing": "Analizando condiciones...",
+            "selecting": "Seleccionando plantas...",
+            "placing": "Colocando plantas...",
+            "finalizing": "Finalizando diseño..."
+          },
+          "success": {
+            "title": "Diseño IA Completado",
+            "description": "Tu jardín {{style}} ha sido diseñado con {{count}} plantas cuidadosamente seleccionadas. Ahora puedes revisar y ajustar la colocación en el lienzo de abajo."
+          },
+          "error": {
+            "notSaved": "Jardín No Guardado",
+            "saveFirst": "Por favor guarda los detalles de tu jardín antes de generar un diseño",
+            "failed": "Generación Fallida",
+            "tryAgain": "Falló la generación del diseño IA"
+          }
+        },
+        "plantMessages": {
+          "added": "Planta Añadida",
+          "addedToInventory": "{{name}} ha sido añadida a tu inventario",
+          "addedFromRecent": "{{name}} añadida al inventario"
+        },
+        "canvas": {
+          "title": "Lienzo de Diseño de Jardín"
+        },
+        "warnings": {
+          "noPlantsTitle": "No hay Plantas Colocadas",
+          "noPlantsAI": "Haz clic en 'Generar Diseño de Jardín IA' arriba para diseñar automáticamente tu jardín",
+          "noPlantsManual": "Usa la búsqueda de plantas para encontrar y añadir plantas a tu lienzo de jardín"
+        }
+      },
+      "step5": {
+        "title": "Visualización Estacional del Jardín",
+        "subtitle": "Genera vistas fotorrealistas de tu jardín durante todo el año",
+        "summary": {
+          "title": "Tu Diseño de Jardín",
+          "style": "estilo {{style}}",
+          "shape": "forma {{shape}}",
+          "plants": "{{count}} plantas",
+          "including": "Incluyendo: {{plants}}",
+          "andMore": "y {{count}} más"
+        },
+        "description": {
+          "intro": "Nuestra IA creará cuatro vistas estacionales de tu jardín mostrando cómo se verá en:",
+          "seasons": [
+            "Primavera - Nuevo crecimiento y primeras floraciones",
+            "Verano - Floración completa y follaje exuberante",
+            "Otoño - Colores otoñales y cabezas de semillas",
+            "Invierno - Estructura e interés perenne"
+          ]
+        },
+        "generation": {
+          "button": "Generar Vistas Estacionales",
+          "generating": "Generando Vistas Estacionales...",
+          "progress": {
+            "preparing": "Preparando datos del jardín...",
+            "spring": "Generando vista de primavera...",
+            "variations": "Creando variaciones estacionales...",
+            "winter": "Finalizando vista de invierno...",
+            "complete": "¡Completado!"
+          }
+        },
+        "success": {
+          "title": "¡Vistas Estacionales Generadas!",
+          "description": "La progresión estacional de tu jardín ha sido creada. Ve cada estación para ver cómo se verán tus plantas durante todo el año.",
+          "viewSeasonal": "Ver Galería Estacional"
+        },
+        "viewer": {
+          "title": "Galería Estacional del Jardín",
+          "selectDate": "Selecciona una fecha para ver tu jardín:",
+          "currentSeason": "Estación Actual: {{season}}",
+          "downloadImage": "Descargar Imagen"
+        }
+      },
+      "step6": {
+        "title": "¡Diseño de Jardín Completado!",
+        "subtitle": "Tu diseño {{style}} está listo. Revisa tu diseño abajo y descárgalo o compártelo.",
+        "summary": {
+          "title": "{{name}}",
+          "location": "{{city}}, {{country}}",
+          "style": "Jardín {{style}}",
+          "area": "{{area}} {{units}}",
+          "plants": "{{count}} Plantas",
+          "species": "{{count}} Especies",
+          "zones": "Zonas: {{zones}}",
+          "conditions": "{{sunExposure}} • {{soilType}} • {{soilPh}}"
+        },
+        "actions": {
+          "title": "Tu Jardín Está Listo",
+          "downloadPDF": {
+            "button": "Descargar Reporte PDF",
+            "description": "Diseño completo de jardín con lista de plantas e instrucciones de cuidado"
+          },
+          "share": {
+            "button": "Compartir Jardín",
+            "description": "Comparte tu diseño con amigos y familia"
+          },
+          "newGarden": {
+            "button": "Crear Nuevo Jardín",
+            "description": "Comenzar a diseñar otro jardín"
+          }
+        },
+        "gallery": {
+          "title": "Galería de Diseño",
+          "visualization": "Visualización del Jardín",
+          "seasonalViews": "Vistas Estacionales",
+          "plantList": "Lista de Plantas"
+        },
+        "download": {
+          "notSaved": "Jardín No Guardado",
+          "saveFirst": "Por favor guarda tu jardín antes de descargarlo",
+          "complete": "Descarga Completada",
+          "success": "Tu PDF de diseño de jardín ha sido descargado",
+          "failed": "Descarga Fallida",
+          "tryAgain": "Falló al generar PDF. Por favor intenta de nuevo."
+        },
+        "share": {
+          "notSaved": "Jardín No Guardado",
+          "saveFirst": "Por favor guarda tu jardín antes de compartirlo",
+          "copied": "Enlace Copiado",
+          "success": "El enlace del jardín ha sido copiado al portapapeles"
+        }
+      }
+    }
   },
   "seasons": {
     "spring": "Primavera",
     "summer": "Verano",
     "autumn": "Otoño",
-    "winter": "Invierno"
+    "winter": "Invierno",
+    "all": "Todas las Estaciones"
   },
   "climate": {
     "tropical": "Tropical",

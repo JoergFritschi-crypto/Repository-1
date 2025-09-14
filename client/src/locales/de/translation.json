@@ -75,13 +75,420 @@
     "height": "Höhe",
     "width": "Breite",
     "waterNeeds": "Wasserbedarf",
-    "maintenance": "Pflege"
+    "maintenance": "Pflege",
+    "workflow": {
+      "title": "Gartendesign-Workflow",
+      "step": "Schritt",
+      "of": "von",
+      "progress": "Fortschritt",
+      "autoSave": "Auto-Speichern",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "saving": "Speichern...",
+      "saved": "Gespeichert",
+      "navigation": {
+        "next": "Nächster Schritt",
+        "back": "Vorheriger Schritt",
+        "complete": "Design Abschließen",
+        "home": "Zurück zur Startseite"
+      },
+      "step1": {
+        "title": "Willkommen bei der Gartengestaltung",
+        "subtitle": "Lassen Sie uns gemeinsam Ihren perfekten Garten erstellen",
+        "gardenName": {
+          "label": "Gartenname",
+          "placeholder": "Mein Traumgarten",
+          "description": "Geben Sie Ihrem Garten einen einprägsamen Namen",
+          "required": "Gartenname ist erforderlich"
+        },
+        "location": {
+          "title": "Standort",
+          "city": {
+            "label": "Stadt",
+            "placeholder": "Berlin"
+          },
+          "zipCode": {
+            "label": "PLZ",
+            "placeholder": "10115"
+          },
+          "country": {
+            "label": "Land",
+            "placeholder": "Land auswählen",
+            "options": {
+              "uk": "Vereinigtes Königreich",
+              "us": "Vereinigte Staaten",
+              "ca": "Kanada",
+              "au": "Australien",
+              "de": "Deutschland",
+              "fr": "Frankreich",
+              "it": "Italien",
+              "es": "Spanien",
+              "nl": "Niederlande",
+              "be": "Belgien",
+              "ch": "Schweiz",
+              "at": "Österreich",
+              "se": "Schweden",
+              "no": "Norwegen",
+              "dk": "Dänemark",
+              "fi": "Finnland",
+              "ie": "Irland",
+              "pt": "Portugal",
+              "gr": "Griechenland",
+              "pl": "Polen",
+              "cz": "Tschechische Republik",
+              "hu": "Ungarn",
+              "ro": "Rumänien",
+              "bg": "Bulgarien",
+              "hr": "Kroatien",
+              "si": "Slowenien",
+              "sk": "Slowakei",
+              "lt": "Litauen",
+              "lv": "Lettland",
+              "ee": "Estland",
+              "mt": "Malta",
+              "cy": "Zypern",
+              "lu": "Luxemburg",
+              "nz": "Neuseeland",
+              "jp": "Japan",
+              "kr": "Südkorea",
+              "cn": "China",
+              "in": "Indien",
+              "mx": "Mexiko",
+              "br": "Brasilien",
+              "ar": "Argentinien",
+              "cl": "Chile",
+              "za": "Südafrika",
+              "other": "Andere"
+            }
+          }
+        },
+        "climate": {
+          "title": "Klimainformationen",
+          "description": "Helfen Sie uns, Ihre lokalen Wachstumsbedingungen zu verstehen",
+          "usdaZone": {
+            "label": "USDA-Winterhärtezone",
+            "placeholder": "USDA-Zone auswählen",
+            "description": "Wird hauptsächlich in Nordamerika verwendet"
+          },
+          "rhsZone": {
+            "label": "RHS-Winterhärtezone",
+            "placeholder": "RHS-Zone auswählen",
+            "description": "Wird hauptsächlich in Europa verwendet"
+          },
+          "heatZone": {
+            "label": "Hitzezone",
+            "placeholder": "Hitzezone auswählen",
+            "description": "Optional: Hilft bei der Pflanzenauswahl in heißen Klimazonen"
+          },
+          "getReport": "Klimabericht Abrufen",
+          "reportDescription": "Detaillierte Klimainformationen für Ihren Standort erhalten"
+        },
+        "siteConditions": {
+          "title": "Standortbedingungen",
+          "sunExposure": {
+            "label": "Sonneneinstrahlung",
+            "placeholder": "Sonneneinstrahlung auswählen",
+            "options": {
+              "full_sun": "Vollsonne (6+ Stunden direkte Sonne)",
+              "partial_sun": "Halbsonne (4-6 Stunden direkte Sonne)",
+              "partial_shade": "Halbschatten (2-4 Stunden direkte Sonne)",
+              "full_shade": "Vollschatten (Weniger als 2 Stunden direkte Sonne)"
+            }
+          },
+          "soilType": {
+            "label": "Bodentyp",
+            "placeholder": "Bodentyp auswählen",
+            "options": {
+              "clay": "Lehm (Schwer, wasserrückhaltend)",
+              "sand": "Sand (Leicht, gut drainierend)",
+              "loam": "Lehmboden (Ausgewogen, ideal)",
+              "silt": "Schluff (Fein, feuchtigkeitsrückhaltend)",
+              "chalk": "Kalk (Alkalisch, gut drainierend)"
+            }
+          },
+          "soilPh": {
+            "label": "Boden-pH",
+            "placeholder": "Boden-pH auswählen",
+            "options": {
+              "acidic": "Sauer (Unter 6,0)",
+              "neutral": "Neutral (6,0-7,0)",
+              "alkaline": "Alkalisch (Über 7,0)"
+            }
+          },
+          "soilAnalysis": {
+            "label": "Bodenanalyse",
+            "description": "Haben Sie eine professionelle Bodenuntersuchung durchgeführt?",
+            "uploadTest": "Bodentest-Ergebnisse Hochladen",
+            "testDescription": "Laden Sie Ihren Bodentest für genauere Pflanzenempfehlungen hoch"
+          }
+        },
+        "validation": {
+          "requiredFields": "Erforderliche Felder Fehlen",
+          "requiredFieldsList": "Bitte füllen Sie die folgenden erforderlichen Felder aus: {{fields}}",
+          "atLeastOneZone": "Mindestens eine Winterhärtezone (USDA oder RHS)"
+        }
+      },
+      "step2": {
+        "title": "Gartendetails",
+        "subtitle": "Definieren Sie die physischen Eigenschaften Ihres Gartens",
+        "units": {
+          "label": "Maßeinheiten",
+          "description": "Wählen Sie Ihr bevorzugtes Maßsystem",
+          "meters": "Meter (Metrisch)",
+          "feet": "Fuß (Imperial)"
+        },
+        "shape": {
+          "label": "Gartenform",
+          "placeholder": "Form auswählen",
+          "description": "Wählen Sie die Form, die am besten zu Ihrem Garten passt",
+          "options": {
+            "rectangle": "Rechteck",
+            "square": "Quadrat",
+            "circle": "Kreis",
+            "oval": "Oval",
+            "triangle": "Dreieck",
+            "l_shaped": "L-förmig",
+            "r_shaped": "R-förmig (Umgekehrtes L)"
+          }
+        },
+        "dimensions": {
+          "title": "Gartenabmessungen",
+          "width": "Breite",
+          "length": "Länge",
+          "height": "Höhe",
+          "radius": "Radius",
+          "base": "Basis",
+          "leg1": "Schenkel 1",
+          "leg2": "Schenkel 2",
+          "depth1": "Tiefe 1",
+          "depth2": "Tiefe 2"
+        },
+        "slope": {
+          "title": "Neigung & Ausrichtung",
+          "direction": {
+            "label": "Neigungsrichtung",
+            "description": "In welche Richtung neigt sich Ihr Garten?",
+            "options": {
+              "N": "Norden",
+              "NE": "Nordosten",
+              "E": "Osten",
+              "SE": "Südosten",
+              "S": "Süden",
+              "SW": "Südwesten",
+              "W": "Westen",
+              "NW": "Nordwesten"
+            }
+          },
+          "percentage": {
+            "label": "Neigungsprozent",
+            "description": "Wie steil ist die Neigung? (0% = flach, 100% = 45° Winkel)"
+          }
+        },
+        "photos": {
+          "title": "Gartenfotos",
+          "description": "Laden Sie Fotos Ihres Gartenbereichs hoch",
+          "upload": "Fotos Hochladen",
+          "optional": "Optional, aber hilfreich für KI-Empfehlungen"
+        },
+        "orientation": {
+          "title": "Ausrichtung",
+          "description": "Markieren Sie die Ausrichtung Ihres Gartens",
+          "set": "Ausrichtung Setzen",
+          "notSet": "Ausrichtung nicht gesetzt - dies hilft bei Pflanzenplatzierungsempfehlungen"
+        }
+      },
+      "step3": {
+        "title": "Wählen Sie Ihren Designansatz",
+        "subtitle": "Wählen Sie aus, wie Sie Ihr Gartendesign erstellen möchten",
+        "designMethod": {
+          "label": "Designmethode",
+          "ai": {
+            "title": "KI-generiertes Design",
+            "badge": "Empfohlen",
+            "description": "Lassen Sie unsere KI ein professionelles Gartendesign basierend auf Ihren Präferenzen, dem Klima und dem gewählten Stil erstellen. Perfekt für Anfänger und diejenigen, die Expertenberatung suchen."
+          },
+          "manual": {
+            "title": "Manuelles Design",
+            "description": "Erstellen Sie Ihren Garten von Grund auf mit unserer interaktiven Designleinwand. Vollständige kreative Kontrolle für erfahrene Gärtner oder diejenigen mit spezifischen Vorstellungen."
+          }
+        },
+        "aiPreferences": {
+          "title": "KI-Design-Präferenzen",
+          "gardenStyle": {
+            "label": "Gartenstil"
+          },
+          "safety": {
+            "label": "Sicherheit & Barrierefreiheit"
+          },
+          "spacing": {
+            "label": "Pflanzenabstands-Präferenz",
+            "placeholder": "Abstandspräferenz auswählen",
+            "description": "Wie eng Pflanzen nebeneinander platziert werden sollen",
+            "options": {
+              "minimum": "Minimum (Dichter, üppiger Garten)",
+              "balanced": "Ausgewogen (Empfohlener Abstand)",
+              "maximum": "Maximum (Offener, geräumiger Garten)"
+            }
+          }
+        },
+        "manualInfo": {
+          "title": "Manueller Designmodus",
+          "description": "Im nächsten Schritt haben Sie Zugang zu unserer interaktiven Gartenleinwand, wo Sie können:",
+          "features": [
+            "Unsere Pflanzendatenbank durchsuchen und erkunden",
+            "Pflanzen per Drag & Drop in Ihren Garten ziehen",
+            "Pflanzen genau so anordnen, wie Sie es sich vorstellen",
+            "Echtzeit-Abstand und Kompatibilitäts-Feedback sehen"
+          ]
+        }
+      },
+      "step4": {
+        "title": "Gartendesign-Leinwand",
+        "plantSearch": {
+          "title": "Pflanzensuche & Filter",
+          "inventory": "{{count}} Pflanzen im Inventar",
+          "filtersActive": "{{count}} Filter aktiv",
+          "openAdvanced": "Erweiterte Suche Öffnen",
+          "myCollectionOnly": "Nur Meine Sammlung",
+          "clearFilters": "Filter Löschen",
+          "showResults": "Ergebnisse Anzeigen",
+          "hideResults": "Ergebnisse Ausblenden"
+        },
+        "aiGeneration": {
+          "generate": "KI-Gartendesign Generieren",
+          "generating": "KI-Design wird generiert...",
+          "progress": {
+            "preparing": "Gartendaten werden vorbereitet...",
+            "analyzing": "Bedingungen werden analysiert...",
+            "selecting": "Pflanzen werden ausgewählt...",
+            "placing": "Pflanzen werden platziert...",
+            "finalizing": "Design wird finalisiert..."
+          },
+          "success": {
+            "title": "KI-Design Abgeschlossen",
+            "description": "Ihr {{style}} Garten wurde mit {{count}} sorgfältig ausgewählten Pflanzen entworfen. Sie können die Platzierung jetzt in der Leinwand unten überprüfen und anpassen."
+          },
+          "error": {
+            "notSaved": "Garten Nicht Gespeichert",
+            "saveFirst": "Bitte speichern Sie Ihre Gartendetails, bevor Sie ein Design generieren",
+            "failed": "Generierung Fehlgeschlagen",
+            "tryAgain": "KI-Design-Generierung fehlgeschlagen"
+          }
+        },
+        "plantMessages": {
+          "added": "Pflanze Hinzugefügt",
+          "addedToInventory": "{{name}} wurde zu Ihrem Inventar hinzugefügt",
+          "addedFromRecent": "{{name}} zum Inventar hinzugefügt"
+        },
+        "canvas": {
+          "title": "Gartendesign-Leinwand"
+        },
+        "warnings": {
+          "noPlantsTitle": "Keine Pflanzen Platziert",
+          "noPlantsAI": "Klicken Sie oben auf 'KI-Gartendesign Generieren', um Ihren Garten automatisch zu entwerfen",
+          "noPlantsManual": "Verwenden Sie die Pflanzensuche, um Pflanzen zu finden und zu Ihrer Gartenleinwand hinzuzufügen"
+        }
+      },
+      "step5": {
+        "title": "Saisonale Gartenvisualisierung",
+        "subtitle": "Generieren Sie fotorealistische Ansichten Ihres Gartens das ganze Jahr über",
+        "summary": {
+          "title": "Ihr Gartendesign",
+          "style": "{{style}} Stil",
+          "shape": "{{shape}} Form",
+          "plants": "{{count}} Pflanzen",
+          "including": "Inklusive: {{plants}}",
+          "andMore": "und {{count}} weitere"
+        },
+        "description": {
+          "intro": "Unsere KI erstellt vier saisonale Ansichten Ihres Gartens, die zeigen, wie er aussehen wird in:",
+          "seasons": [
+            "Frühling - Neues Wachstum und frühe Blüten",
+            "Sommer - Vollblüte und üppiges Laub",
+            "Herbst - Herbstfarben und Samenstände",
+            "Winter - Struktur und immergrünes Interesse"
+          ]
+        },
+        "generation": {
+          "button": "Saisonale Ansichten Generieren",
+          "generating": "Saisonale Ansichten werden generiert...",
+          "progress": {
+            "preparing": "Gartendaten werden vorbereitet...",
+            "spring": "Frühlingsansicht wird generiert...",
+            "variations": "Saisonale Variationen werden erstellt...",
+            "winter": "Winteransicht wird finalisiert...",
+            "complete": "Abgeschlossen!"
+          }
+        },
+        "success": {
+          "title": "Saisonale Ansichten Generiert!",
+          "description": "Die saisonale Entwicklung Ihres Gartens wurde erstellt. Betrachten Sie jede Jahreszeit, um zu sehen, wie Ihre Pflanzen das ganze Jahr über aussehen werden.",
+          "viewSeasonal": "Saisonale Galerie Anzeigen"
+        },
+        "viewer": {
+          "title": "Saisonale Gartengalerie",
+          "selectDate": "Wählen Sie ein Datum, um Ihren Garten zu sehen:",
+          "currentSeason": "Aktuelle Jahreszeit: {{season}}",
+          "downloadImage": "Bild Herunterladen"
+        }
+      },
+      "step6": {
+        "title": "Gartendesign Abgeschlossen!",
+        "subtitle": "Ihr {{style}} Design ist fertig. Überprüfen Sie Ihr Design unten und laden Sie es herunter oder teilen Sie es.",
+        "summary": {
+          "title": "{{name}}",
+          "location": "{{city}}, {{country}}",
+          "style": "{{style}} Garten",
+          "area": "{{area}} {{units}}",
+          "plants": "{{count}} Pflanzen",
+          "species": "{{count}} Arten",
+          "zones": "Zonen: {{zones}}",
+          "conditions": "{{sunExposure}} • {{soilType}} • {{soilPh}}"
+        },
+        "actions": {
+          "title": "Ihr Garten ist Bereit",
+          "downloadPDF": {
+            "button": "PDF-Bericht Herunterladen",
+            "description": "Komplettes Gartendesign mit Pflanzenliste und Pflegeanweisungen"
+          },
+          "share": {
+            "button": "Garten Teilen",
+            "description": "Teilen Sie Ihr Design mit Freunden und Familie"
+          },
+          "newGarden": {
+            "button": "Neuen Garten Erstellen",
+            "description": "Beginnen Sie mit der Gestaltung eines weiteren Gartens"
+          }
+        },
+        "gallery": {
+          "title": "Design-Galerie",
+          "visualization": "Gartenvisualisierung",
+          "seasonalViews": "Saisonale Ansichten",
+          "plantList": "Pflanzenliste"
+        },
+        "download": {
+          "notSaved": "Garten Nicht Gespeichert",
+          "saveFirst": "Bitte speichern Sie Ihren Garten vor dem Herunterladen",
+          "complete": "Download Abgeschlossen",
+          "success": "Ihr Gartendesign-PDF wurde heruntergeladen",
+          "failed": "Download Fehlgeschlagen",
+          "tryAgain": "PDF-Generierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+        },
+        "share": {
+          "notSaved": "Garten Nicht Gespeichert",
+          "saveFirst": "Bitte speichern Sie Ihren Garten vor dem Teilen",
+          "copied": "Link Kopiert",
+          "success": "Gartenlink wurde in die Zwischenablage kopiert"
+        }
+      }
+    }
   },
   "seasons": {
     "spring": "Frühling",
     "summer": "Sommer",
     "autumn": "Herbst",
-    "winter": "Winter"
+    "winter": "Winter",
+    "all": "Alle Jahreszeiten"
   },
   "climate": {
     "tropical": "Tropisch",

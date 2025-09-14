@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormControl, FormDescription, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,8 @@ const Step1Welcome = memo(({
   const watchedCountry = form.watch("country");
   const watchedCity = form.watch("city");
   const watchedZipCode = form.watch("zipCode");
+
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-3">
@@ -63,8 +66,8 @@ const Step1Welcome = memo(({
               form.setValue('soilType', data.soilType || 'loam');
               form.setValue('soilPh', data.soilPh || 'neutral');
               toast({
-                title: 'Soil Analysis Complete',
-                description: 'Your soil test results have been saved'
+                title: t('garden.workflow.step1.siteConditions.soilAnalysis.label'),
+                description: t('garden.workflow.step1.siteConditions.soilAnalysis.testDescription')
               });
             }
           }}
@@ -73,9 +76,9 @@ const Step1Welcome = memo(({
 
       <Card className="border-2 border-primary shadow-sm" data-testid="step-welcome">
         <CardHeader className="py-7 flower-band-summer rounded-t-lg">
-          <CardTitle className="text-base">Welcome to Garden Design</CardTitle>
+          <CardTitle className="text-base">{t('garden.workflow.step1.title')}</CardTitle>
           <CardDescription>
-            Let's create your perfect garden together
+            {t('garden.workflow.step1.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
@@ -84,16 +87,16 @@ const Step1Welcome = memo(({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Garden Name {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                <FormLabel>{t('garden.workflow.step1.gardenName.label')} {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="My Dream Garden" 
+                    placeholder={t('garden.workflow.step1.gardenName.placeholder')} 
                     {...field} 
                     data-testid="input-garden-name"
                   />
                 </FormControl>
                 <FormDescription className="text-xs">
-                  Give your garden a memorable name
+                  {t('garden.workflow.step1.gardenName.description')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -103,7 +106,7 @@ const Step1Welcome = memo(({
           <div className="space-y-3">
             <h3 className="font-semibold flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              Location
+              {t('garden.workflow.step1.location.title')}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,10 +115,10 @@ const Step1Welcome = memo(({
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel>{t('garden.workflow.step1.location.city.label')}</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="London" 
+                        placeholder={t('garden.workflow.step1.location.city.placeholder')} 
                         {...field} 
                         data-testid="input-city"
                       />
@@ -130,10 +133,10 @@ const Step1Welcome = memo(({
                 name="zipCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Postal/Zip Code</FormLabel>
+                    <FormLabel>{t('garden.workflow.step1.location.zipCode.label')}</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="SW1A 1AA" 
+                        placeholder={t('garden.workflow.step1.location.zipCode.placeholder')} 
                         {...field} 
                         data-testid="input-zip"
                       />
@@ -149,11 +152,11 @@ const Step1Welcome = memo(({
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
+                  <FormLabel>{t('garden.workflow.step1.location.country.label')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-country">
-                        <SelectValue placeholder="Select country" />
+                        <SelectValue placeholder={t('garden.workflow.step1.location.country.placeholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-64 overflow-y-auto">
@@ -373,8 +376,8 @@ const Step1Welcome = memo(({
                   setShowClimateModal(true);
                 } else {
                   toast({
-                    title: 'Missing Information',
-                    description: 'Please enter both city and country',
+                    title: t('garden.workflow.step1.validation.requiredFields'),
+                    description: t('garden.workflow.step1.location.city.label') + ' and ' + t('garden.workflow.step1.location.country.label'),
                     variant: 'destructive'
                   });
                 }
@@ -384,12 +387,12 @@ const Step1Welcome = memo(({
               data-testid="button-get-climate"
             >
               <Thermometer className="w-4 h-4 mr-2" />
-              Get Climate Data
+              {t('garden.workflow.step1.climate.getReport')}
             </Button>
 
             <div className="space-y-4 mt-4">
               <div className="text-sm text-muted-foreground">
-                Climate zones (auto-filled after getting climate data)
+                {t('garden.workflow.step1.climate.title')}
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -399,8 +402,8 @@ const Step1Welcome = memo(({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        USDA Hardiness Zone {!isAdmin && <span className="text-red-500">*</span>}
-                        {!isAdmin && <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>}
+                        {t('garden.workflow.step1.climate.usdaZone.label')} {!isAdmin && <span className="text-red-500">*</span>}
+                        {!isAdmin && <span className="text-xs text-muted-foreground ml-2">({t('garden.workflow.step1.validation.atLeastOneZone')})</span>}
                       </FormLabel>
                       <Select 
                         onValueChange={(value) => {
@@ -413,7 +416,7 @@ const Step1Welcome = memo(({
                       >
                         <FormControl>
                           <SelectTrigger data-testid="select-usda-zone">
-                            <SelectValue placeholder="Select zone" />
+                            <SelectValue placeholder={t('garden.workflow.step1.climate.usdaZone.placeholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -437,7 +440,7 @@ const Step1Welcome = memo(({
                         </SelectContent>
                       </Select>
                       <FormDescription className="text-xs">
-                        Primary cold hardiness zone
+                        {t('garden.workflow.step1.climate.usdaZone.description')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -450,8 +453,8 @@ const Step1Welcome = memo(({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        RHS Hardiness Rating {!isAdmin && <span className="text-red-500">*</span>}
-                        {!isAdmin && <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>}
+                        {t('garden.workflow.step1.climate.rhsZone.label')} {!isAdmin && <span className="text-red-500">*</span>}
+                        {!isAdmin && <span className="text-xs text-muted-foreground ml-2">({t('garden.workflow.step1.validation.atLeastOneZone')})</span>}
                       </FormLabel>
                       <Select 
                         onValueChange={(value) => {
@@ -464,7 +467,7 @@ const Step1Welcome = memo(({
                       >
                         <FormControl>
                           <SelectTrigger data-testid="select-rhs-zone">
-                            <SelectValue placeholder="Select rating" />
+                            <SelectValue placeholder={t('garden.workflow.step1.climate.rhsZone.placeholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -478,7 +481,7 @@ const Step1Welcome = memo(({
                         </SelectContent>
                       </Select>
                       <FormDescription className="text-xs">
-                        Temperature hardiness rating
+                        {t('garden.workflow.step1.climate.rhsZone.description')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -491,11 +494,11 @@ const Step1Welcome = memo(({
                 name="heatZone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>AHS Heat Zone</FormLabel>
+                    <FormLabel>{t('garden.workflow.step1.climate.heatZone.label')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-heat-zone">
-                          <SelectValue placeholder="Select heat zone" />
+                          <SelectValue placeholder={t('garden.workflow.step1.climate.heatZone.placeholder')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -514,7 +517,7 @@ const Step1Welcome = memo(({
                       </SelectContent>
                     </Select>
                     <FormDescription className="text-xs">
-                      American Horticultural Society heat tolerance zone
+                      {t('garden.workflow.step1.climate.heatZone.description')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -528,42 +531,42 @@ const Step1Welcome = memo(({
             name="sunExposure"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Primary Sun Exposure {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                <FormLabel>{t('garden.workflow.step1.siteConditions.sunExposure.label')} {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-sun-exposure">
-                      <SelectValue placeholder="Select sun exposure" />
+                      <SelectValue placeholder={t('garden.workflow.step1.siteConditions.sunExposure.placeholder')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="full_sun">
                       <div className="flex items-center">
                         <Sun className="w-4 h-4 mr-2 text-amber-600" />
-                        Full Sun (6+ hours)
+                        {t('garden.workflow.step1.siteConditions.sunExposure.options.full_sun')}
                       </div>
                     </SelectItem>
                     <SelectItem value="partial_sun">
                       <div className="flex items-center">
                         <Sun className="w-4 h-4 mr-2 text-amber-500" />
-                        Partial Sun (4-6 hours)
+                        {t('garden.workflow.step1.siteConditions.sunExposure.options.partial_sun')}
                       </div>
                     </SelectItem>
                     <SelectItem value="partial_shade">
                       <div className="flex items-center">
                         <Cloud className="w-4 h-4 mr-2 text-gray-400" />
-                        Partial Shade (2-4 hours)
+                        {t('garden.workflow.step1.siteConditions.sunExposure.options.partial_shade')}
                       </div>
                     </SelectItem>
                     <SelectItem value="full_shade">
                       <div className="flex items-center">
                         <CloudRain className="w-4 h-4 mr-2 text-gray-600" />
-                        Full Shade (Less than 2 hours)
+                        {t('garden.workflow.step1.siteConditions.sunExposure.options.full_shade')}
                       </div>
                     </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormDescription className="text-xs">
-                  Average daily sun exposure in your garden
+                  {t('garden.workflow.step1.siteConditions.sunExposure.description')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -571,30 +574,30 @@ const Step1Welcome = memo(({
           />
 
           <div className="space-y-4">
-            <h3 className="font-semibold">Soil Information</h3>
+            <h3 className="font-semibold">{t('garden.workflow.step1.siteConditions.title')}</h3>
             
             <FormField
               control={form.control}
               name="soilType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Soil Type {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                  <FormLabel>{t('garden.workflow.step1.siteConditions.soilType.label')} {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-soil-type">
-                        <SelectValue placeholder="Select soil type" />
+                        <SelectValue placeholder={t('garden.workflow.step1.siteConditions.soilType.placeholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="clay">Clay - Heavy, holds moisture</SelectItem>
-                      <SelectItem value="sand">Sandy - Light, drains quickly</SelectItem>
-                      <SelectItem value="loam">Loam - Ideal mix, well-balanced</SelectItem>
-                      <SelectItem value="silt">Silt - Smooth, retains moisture</SelectItem>
-                      <SelectItem value="chalk">Chalk - Alkaline, free-draining</SelectItem>
+                      <SelectItem value="clay">{t('garden.workflow.step1.siteConditions.soilType.options.clay')}</SelectItem>
+                      <SelectItem value="sand">{t('garden.workflow.step1.siteConditions.soilType.options.sand')}</SelectItem>
+                      <SelectItem value="loam">{t('garden.workflow.step1.siteConditions.soilType.options.loam')}</SelectItem>
+                      <SelectItem value="silt">{t('garden.workflow.step1.siteConditions.soilType.options.silt')}</SelectItem>
+                      <SelectItem value="chalk">{t('garden.workflow.step1.siteConditions.soilType.options.chalk')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription className="text-xs">
-                    Your garden's primary soil composition
+                    {t('garden.workflow.step1.siteConditions.soilType.description')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -606,21 +609,21 @@ const Step1Welcome = memo(({
               name="soilPh"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Soil pH {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                  <FormLabel>{t('garden.workflow.step1.siteConditions.soilPh.label')} {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-soil-ph">
-                        <SelectValue placeholder="Select pH level" />
+                        <SelectValue placeholder={t('garden.workflow.step1.siteConditions.soilPh.placeholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="acidic">Acidic (below 7.0)</SelectItem>
-                      <SelectItem value="neutral">Neutral (around 7.0)</SelectItem>
-                      <SelectItem value="alkaline">Alkaline (above 7.0)</SelectItem>
+                      <SelectItem value="acidic">{t('garden.workflow.step1.siteConditions.soilPh.options.acidic')}</SelectItem>
+                      <SelectItem value="neutral">{t('garden.workflow.step1.siteConditions.soilPh.options.neutral')}</SelectItem>
+                      <SelectItem value="alkaline">{t('garden.workflow.step1.siteConditions.soilPh.options.alkaline')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription className="text-xs">
-                    General soil acidity level
+                    {t('garden.workflow.step1.siteConditions.soilPh.description')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

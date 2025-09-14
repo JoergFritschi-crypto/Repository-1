@@ -1,4 +1,5 @@
 import { memo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +42,7 @@ const Step4InteractiveDesign = memo(({
   generatedVisualization,
   setGeneratedVisualization,
 }: Step4Props) => {
+  const { t } = useTranslation();
   const [plantFilters, setPlantFilters] = useState<any>({});
   const [showPlantResults, setShowPlantResults] = useState(false);
   const [searchSource, setSearchSource] = useState<'database' | 'collection'>('database');
@@ -62,8 +64,8 @@ const Step4InteractiveDesign = memo(({
   const handleGenerateAIDesign = async () => {
     if (!gardenId) {
       toast({
-        title: "Garden Not Saved",
-        description: "Please save your garden details before generating a design",
+        title: t('garden.workflow.step4.aiGeneration.errors.notSaved'),
+        description: t('garden.workflow.step4.aiGeneration.errors.saveFirst'),
         variant: "destructive"
       });
       return;
@@ -124,15 +126,15 @@ const Step4InteractiveDesign = memo(({
       setGenerationProgress(100);
 
       toast({
-        title: "AI Design Generated",
-        description: `Successfully created a ${selectedGardenStyle} garden design with ${design.plantPlacements?.length || 0} plants`,
+        title: t('garden.workflow.step4.aiGeneration.success.title'),
+        description: t('garden.workflow.step4.aiGeneration.success.description', { style: selectedGardenStyle, count: design.plantPlacements?.length || 0 }),
       });
 
     } catch (error: any) {
       console.error('Error generating AI design:', error);
       toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate AI design",
+        title: t('garden.workflow.step4.aiGeneration.errors.failed'),
+        description: error.message || t('garden.workflow.step4.aiGeneration.errors.generalError'),
         variant: "destructive"
       });
     } finally {
@@ -152,8 +154,8 @@ const Step4InteractiveDesign = memo(({
             setInventoryPlants([...inventoryPlants, plant]);
             setShowPlantSearch(false);
             toast({
-              title: "Plant Added",
-              description: `${plant.common_name} has been added to your inventory`,
+              title: t('garden.workflow.step4.plantSearch.plantAdded.title'),
+              description: t('garden.workflow.step4.plantSearch.plantAdded.description', { plantName: plant.common_name }),
             });
           }}
           filters={plantFilters}
@@ -173,8 +175,8 @@ const Step4InteractiveDesign = memo(({
           const plantWithQuantity = { ...plant, quantity: 1 };
           setInventoryPlants([...inventoryPlants, plantWithQuantity]);
           toast({
-            title: "Plant Added",
-            description: `${plant.commonName} added to inventory`,
+            title: t('garden.workflow.step4.plantSearch.plantAdded.title'),
+            description: t('garden.workflow.step4.plantSearch.plantAdded.description', { plantName: plant.commonName }),
           });
         }}
       />
@@ -188,10 +190,10 @@ const Step4InteractiveDesign = memo(({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Search className="w-4 h-4 text-primary" />
-              <CardTitle className="text-base">Plant Search & Filters</CardTitle>
+              <CardTitle className="text-base">{t('garden.workflow.step4.plantSearch.title')}</CardTitle>
               {inventoryPlants.length > 0 && (
                 <Badge variant="secondary" className="ml-2 bg-[#FFD700]/10 text-primary border-[#FFD700] hover:bg-[#FFD700] hover:text-white transition-all duration-300">
-                  {inventoryPlants.length} plants in inventory
+                  {t('garden.workflow.step4.plantSearch.inventory.count', { count: inventoryPlants.length })}
                 </Badge>
               )}
               {Object.keys(plantFilters).filter(k => {
@@ -220,7 +222,7 @@ const Step4InteractiveDesign = memo(({
                   data-testid="button-open-search-collapsed"
                 >
                   <Search className="w-3 h-3 mr-2" />
-                  Open Advanced Search
+                  {t('garden.workflow.step4.plantSearch.openAdvanced')}
                 </Button>
               )}
               <ChevronDown 
@@ -244,7 +246,7 @@ const Step4InteractiveDesign = memo(({
                       setSearchSource(checked ? 'collection' : 'database');
                     }}
                   />
-                  <span className="text-sm">My Collection Only</span>
+                  <span className="text-sm">{t('garden.workflow.step4.plantSearch.myCollectionOnly')}</span>
                 </label>
               )}
               

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
@@ -95,49 +96,50 @@ const gardenSchema = z.object({
 
 type GardenFormValues = z.infer<typeof gardenSchema>;
 
-// Step details configuration
-const stepDetails = [
-  { 
-    title: 'Welcome', 
-    subtitle: 'Start your garden journey',
-    description: 'Tell us about your garden location',
-    buttonLabel: 'Next: Site Details'
-  },
-  { 
-    title: 'Site Details', 
-    subtitle: 'Define your space',
-    description: 'Define your garden space',
-    buttonLabel: 'Next: Design Approach'
-  },
-  { 
-    title: 'Design Approach', 
-    subtitle: 'Choose your design method',
-    description: 'AI-assisted or manual design',
-    buttonLabel: 'Next: Design Your Garden'
-  },
-  { 
-    title: 'Interactive Design', 
-    subtitle: 'Choose and place your plants',
-    description: 'Choose and place your plants',
-    buttonLabel: 'Next: Generate Seasonal Views'
-  },
-  { 
-    title: 'Seasonal Garden', 
-    subtitle: 'Year-round garden views',
-    description: 'Generate your seasonal visualization',
-    buttonLabel: 'Next: Review & Download'
-  },
-  { 
-    title: 'Review & Download', 
-    subtitle: 'Complete your design',
-    description: 'Save and share your garden',
-    buttonLabel: 'Complete Garden Design'
-  }
-];
-
 export default function GardenProperties() {
+  const { t } = useTranslation();
   const { id: urlGardenId } = useParams<{ id?: string }>();
   const [, setLocation] = useLocation();
+  
+  // Step details configuration with translations
+  const stepDetails = [
+    { 
+      title: t('garden.workflow.steps.step1.title'), 
+      subtitle: t('garden.workflow.steps.step1.subtitle'),
+      description: t('garden.workflow.steps.step1.description'),
+      buttonLabel: t('garden.workflow.steps.step1.buttonLabel')
+    },
+    { 
+      title: t('garden.workflow.steps.step2.title'), 
+      subtitle: t('garden.workflow.steps.step2.subtitle'),
+      description: t('garden.workflow.steps.step2.description'),
+      buttonLabel: t('garden.workflow.steps.step2.buttonLabel')
+    },
+    { 
+      title: t('garden.workflow.steps.step3.title'), 
+      subtitle: t('garden.workflow.steps.step3.subtitle'),
+      description: t('garden.workflow.steps.step3.description'),
+      buttonLabel: t('garden.workflow.steps.step3.buttonLabel')
+    },
+    { 
+      title: t('garden.workflow.steps.step4.title'), 
+      subtitle: t('garden.workflow.steps.step4.subtitle'),
+      description: t('garden.workflow.steps.step4.description'),
+      buttonLabel: t('garden.workflow.steps.step4.buttonLabel')
+    },
+    { 
+      title: t('garden.workflow.steps.step5.title'), 
+      subtitle: t('garden.workflow.steps.step5.subtitle'),
+      description: t('garden.workflow.steps.step5.description'),
+      buttonLabel: t('garden.workflow.steps.step5.buttonLabel')
+    },
+    { 
+      title: t('garden.workflow.steps.step6.title'), 
+      subtitle: t('garden.workflow.steps.step6.subtitle'),
+      description: t('garden.workflow.steps.step6.description'),
+      buttonLabel: t('garden.workflow.steps.step6.buttonLabel')
+    }
+  ];
   
   // Core state management
   const [gardenId, setGardenId] = useState<string | null>(null);
@@ -220,8 +222,8 @@ export default function GardenProperties() {
       if (data?.id) {
         setGardenId(data.id);
         toast({
-          title: "Garden Created",
-          description: "Your garden has been saved successfully",
+          title: t('garden.workflow.messages.created.title'),
+          description: t('garden.workflow.messages.created.description'),
         });
       }
       queryClient.invalidateQueries({ queryKey: ['/api/gardens'] });
@@ -524,12 +526,12 @@ export default function GardenProperties() {
                   {manualSaving ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {t('garden.workflow.navigation.saving')}
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Save
+                      {t('garden.workflow.navigation.save')}
                     </>
                   )}
                 </Button>

@@ -75,13 +75,420 @@
     "height": "Height",
     "width": "Width",
     "waterNeeds": "Water Needs",
-    "maintenance": "Maintenance"
+    "maintenance": "Maintenance",
+    "workflow": {
+      "title": "Garden Design Workflow",
+      "step": "Step",
+      "of": "of",
+      "progress": "Progress",
+      "autoSave": "Auto-save",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "navigation": {
+        "next": "Next Step",
+        "back": "Previous Step",
+        "complete": "Complete Design",
+        "home": "Back to Home"
+      },
+      "step1": {
+        "title": "Welcome to Garden Design",
+        "subtitle": "Let's create your perfect garden together",
+        "gardenName": {
+          "label": "Garden Name",
+          "placeholder": "My Dream Garden",
+          "description": "Give your garden a memorable name",
+          "required": "Garden name is required"
+        },
+        "location": {
+          "title": "Location",
+          "city": {
+            "label": "City",
+            "placeholder": "London"
+          },
+          "zipCode": {
+            "label": "Postal/Zip Code",
+            "placeholder": "SW1A 1AA"
+          },
+          "country": {
+            "label": "Country",
+            "placeholder": "Select country",
+            "options": {
+              "uk": "United Kingdom",
+              "us": "United States",
+              "ca": "Canada",
+              "au": "Australia",
+              "de": "Germany",
+              "fr": "France",
+              "it": "Italy",
+              "es": "Spain",
+              "nl": "Netherlands",
+              "be": "Belgium",
+              "ch": "Switzerland",
+              "at": "Austria",
+              "se": "Sweden",
+              "no": "Norway",
+              "dk": "Denmark",
+              "fi": "Finland",
+              "ie": "Ireland",
+              "pt": "Portugal",
+              "gr": "Greece",
+              "pl": "Poland",
+              "cz": "Czech Republic",
+              "hu": "Hungary",
+              "ro": "Romania",
+              "bg": "Bulgaria",
+              "hr": "Croatia",
+              "si": "Slovenia",
+              "sk": "Slovakia",
+              "lt": "Lithuania",
+              "lv": "Latvia",
+              "ee": "Estonia",
+              "mt": "Malta",
+              "cy": "Cyprus",
+              "lu": "Luxembourg",
+              "nz": "New Zealand",
+              "jp": "Japan",
+              "kr": "South Korea",
+              "cn": "China",
+              "in": "India",
+              "mx": "Mexico",
+              "br": "Brazil",
+              "ar": "Argentina",
+              "cl": "Chile",
+              "za": "South Africa",
+              "other": "Other"
+            }
+          }
+        },
+        "climate": {
+          "title": "Climate Information",
+          "description": "Help us understand your local growing conditions",
+          "usdaZone": {
+            "label": "USDA Hardiness Zone",
+            "placeholder": "Select USDA zone",
+            "description": "Used primarily in North America"
+          },
+          "rhsZone": {
+            "label": "RHS Hardiness Zone",
+            "placeholder": "Select RHS zone",
+            "description": "Used primarily in Europe"
+          },
+          "heatZone": {
+            "label": "Heat Zone",
+            "placeholder": "Select heat zone",
+            "description": "Optional: Helps with plant selection in hot climates"
+          },
+          "getReport": "Get Climate Report",
+          "reportDescription": "Get detailed climate information for your location"
+        },
+        "siteConditions": {
+          "title": "Site Conditions",
+          "sunExposure": {
+            "label": "Sun Exposure",
+            "placeholder": "Select sun exposure",
+            "options": {
+              "full_sun": "Full Sun (6+ hours direct sun)",
+              "partial_sun": "Partial Sun (4-6 hours direct sun)",
+              "partial_shade": "Partial Shade (2-4 hours direct sun)",
+              "full_shade": "Full Shade (Less than 2 hours direct sun)"
+            }
+          },
+          "soilType": {
+            "label": "Soil Type",
+            "placeholder": "Select soil type",
+            "options": {
+              "clay": "Clay (Heavy, water-retentive)",
+              "sand": "Sand (Light, well-draining)",
+              "loam": "Loam (Balanced, ideal)",
+              "silt": "Silt (Fine, moisture-retentive)",
+              "chalk": "Chalk (Alkaline, well-draining)"
+            }
+          },
+          "soilPh": {
+            "label": "Soil pH",
+            "placeholder": "Select soil pH",
+            "options": {
+              "acidic": "Acidic (Below 6.0)",
+              "neutral": "Neutral (6.0-7.0)",
+              "alkaline": "Alkaline (Above 7.0)"
+            }
+          },
+          "soilAnalysis": {
+            "label": "Soil Analysis",
+            "description": "Have you done a professional soil test?",
+            "uploadTest": "Upload Soil Test Results",
+            "testDescription": "Upload your soil test for more accurate plant recommendations"
+          }
+        },
+        "validation": {
+          "requiredFields": "Required Fields Missing",
+          "requiredFieldsList": "Please fill in the following required fields: {{fields}}",
+          "atLeastOneZone": "At least one Hardiness Zone (USDA or RHS)"
+        }
+      },
+      "step2": {
+        "title": "Garden Details",
+        "subtitle": "Define your garden's physical characteristics",
+        "units": {
+          "label": "Measurement Units",
+          "description": "Choose your preferred measurement system",
+          "meters": "Meters (Metric)",
+          "feet": "Feet (Imperial)"
+        },
+        "shape": {
+          "label": "Garden Shape",
+          "placeholder": "Select shape",
+          "description": "Select the shape that best matches your garden",
+          "options": {
+            "rectangle": "Rectangle",
+            "square": "Square",
+            "circle": "Circle",
+            "oval": "Oval",
+            "triangle": "Triangle",
+            "l_shaped": "L-Shaped",
+            "r_shaped": "R-Shaped (Reverse L)"
+          }
+        },
+        "dimensions": {
+          "title": "Garden Dimensions",
+          "width": "Width",
+          "length": "Length",
+          "height": "Height",
+          "radius": "Radius",
+          "base": "Base",
+          "leg1": "Leg 1",
+          "leg2": "Leg 2",
+          "depth1": "Depth 1",
+          "depth2": "Depth 2"
+        },
+        "slope": {
+          "title": "Slope & Orientation",
+          "direction": {
+            "label": "Slope Direction",
+            "description": "Which direction does your garden slope face?",
+            "options": {
+              "N": "North",
+              "NE": "Northeast",
+              "E": "East",
+              "SE": "Southeast",
+              "S": "South",
+              "SW": "Southwest",
+              "W": "West",
+              "NW": "Northwest"
+            }
+          },
+          "percentage": {
+            "label": "Slope Percentage",
+            "description": "How steep is the slope? (0% = flat, 100% = 45° angle)"
+          }
+        },
+        "photos": {
+          "title": "Garden Photos",
+          "description": "Upload photos of your garden space",
+          "upload": "Upload Photos",
+          "optional": "Optional, but helpful for AI recommendations"
+        },
+        "orientation": {
+          "title": "Orientation",
+          "description": "Mark the orientation of your garden",
+          "set": "Set Orientation",
+          "notSet": "Orientation not set - this helps with plant placement recommendations"
+        }
+      },
+      "step3": {
+        "title": "Choose Your Design Approach",
+        "subtitle": "Select how you'd like to create your garden design",
+        "designMethod": {
+          "label": "Design Method",
+          "ai": {
+            "title": "AI-Generated Design",
+            "badge": "Recommended",
+            "description": "Let our AI create a professional garden design based on your preferences, climate, and selected style. Perfect for beginners and those seeking expert guidance."
+          },
+          "manual": {
+            "title": "Manual Design",
+            "description": "Create your garden from scratch using our interactive design canvas. Full creative control for experienced gardeners or those with specific visions."
+          }
+        },
+        "aiPreferences": {
+          "title": "AI Design Preferences",
+          "gardenStyle": {
+            "label": "Garden Style"
+          },
+          "safety": {
+            "label": "Safety & Accessibility"
+          },
+          "spacing": {
+            "label": "Plant Spacing Preference",
+            "placeholder": "Select spacing preference",
+            "description": "How closely plants should be placed together",
+            "options": {
+              "minimum": "Minimum (Dense, lush garden)",
+              "balanced": "Balanced (Recommended spacing)",
+              "maximum": "Maximum (Open, spacious garden)"
+            }
+          }
+        },
+        "manualInfo": {
+          "title": "Manual Design Mode",
+          "description": "In the next step, you'll have access to our interactive garden canvas where you can:",
+          "features": [
+            "Search and browse our plant database",
+            "Drag and drop plants onto your garden",
+            "Arrange plants exactly as you envision",
+            "See real-time spacing and compatibility feedback"
+          ]
+        }
+      },
+      "step4": {
+        "title": "Garden Design Canvas",
+        "plantSearch": {
+          "title": "Plant Search & Filters",
+          "inventory": "{{count}} plants in inventory",
+          "filtersActive": "{{count}} filters active",
+          "openAdvanced": "Open Advanced Search",
+          "myCollectionOnly": "My Collection Only",
+          "clearFilters": "Clear Filters",
+          "showResults": "Show Results",
+          "hideResults": "Hide Results"
+        },
+        "aiGeneration": {
+          "generate": "Generate AI Garden Design",
+          "generating": "Generating AI Design...",
+          "progress": {
+            "preparing": "Preparing garden data...",
+            "analyzing": "Analyzing conditions...",
+            "selecting": "Selecting plants...",
+            "placing": "Placing plants...",
+            "finalizing": "Finalizing design..."
+          },
+          "success": {
+            "title": "AI Design Complete",
+            "description": "Your {{style}} garden has been designed with {{count}} carefully selected plants. You can now review and adjust the placement in the canvas below."
+          },
+          "error": {
+            "notSaved": "Garden Not Saved",
+            "saveFirst": "Please save your garden details before generating a design",
+            "failed": "Generation Failed",
+            "tryAgain": "Failed to generate AI design"
+          }
+        },
+        "plantMessages": {
+          "added": "Plant Added",
+          "addedToInventory": "{{name}} has been added to your inventory",
+          "addedFromRecent": "{{name}} added to inventory"
+        },
+        "canvas": {
+          "title": "Garden Design Canvas"
+        },
+        "warnings": {
+          "noPlantsTitle": "No Plants Placed",
+          "noPlantsAI": "Click 'Generate AI Garden Design' above to automatically design your garden",
+          "noPlantsManual": "Use the plant search to find and add plants to your garden canvas"
+        }
+      },
+      "step5": {
+        "title": "Seasonal Garden Visualization",
+        "subtitle": "Generate photorealistic views of your garden throughout the year",
+        "summary": {
+          "title": "Your Garden Design",
+          "style": "{{style}} style",
+          "shape": "{{shape}} shape",
+          "plants": "{{count}} plants",
+          "including": "Including: {{plants}}",
+          "andMore": "and {{count}} more"
+        },
+        "description": {
+          "intro": "Our AI will create four seasonal views of your garden showing how it will look in:",
+          "seasons": [
+            "Spring - New growth and early blooms",
+            "Summer - Full bloom and lush foliage",
+            "Autumn - Fall colors and seed heads",
+            "Winter - Structure and evergreen interest"
+          ]
+        },
+        "generation": {
+          "button": "Generate Seasonal Views",
+          "generating": "Generating Seasonal Views...",
+          "progress": {
+            "preparing": "Preparing garden data...",
+            "spring": "Generating spring view...",
+            "variations": "Creating seasonal variations...",
+            "winter": "Finalizing winter view...",
+            "complete": "Complete!"
+          }
+        },
+        "success": {
+          "title": "Seasonal Views Generated!",
+          "description": "Your garden's seasonal progression has been created. View each season to see how your plants will look throughout the year.",
+          "viewSeasonal": "View Seasonal Gallery"
+        },
+        "viewer": {
+          "title": "Seasonal Garden Gallery",
+          "selectDate": "Select a date to see your garden:",
+          "currentSeason": "Current Season: {{season}}",
+          "downloadImage": "Download Image"
+        }
+      },
+      "step6": {
+        "title": "Garden Design Complete!",
+        "subtitle": "Your {{style}} design is ready. Review your design below and download or share it.",
+        "summary": {
+          "title": "{{name}}",
+          "location": "{{city}}, {{country}}",
+          "style": "{{style}} Garden",
+          "area": "{{area}} {{units}}",
+          "plants": "{{count}} Plants",
+          "species": "{{count}} Species",
+          "zones": "Zones: {{zones}}",
+          "conditions": "{{sunExposure}} • {{soilType}} • {{soilPh}}"
+        },
+        "actions": {
+          "title": "Your Garden is Ready",
+          "downloadPDF": {
+            "button": "Download PDF Report",
+            "description": "Complete garden design with plant list and care instructions"
+          },
+          "share": {
+            "button": "Share Garden",
+            "description": "Share your design with friends and family"
+          },
+          "newGarden": {
+            "button": "Create New Garden",
+            "description": "Start designing another garden"
+          }
+        },
+        "gallery": {
+          "title": "Design Gallery",
+          "visualization": "Garden Visualization",
+          "seasonalViews": "Seasonal Views",
+          "plantList": "Plant List"
+        },
+        "download": {
+          "notSaved": "Garden Not Saved",
+          "saveFirst": "Please save your garden before downloading",
+          "complete": "Download Complete",
+          "success": "Your garden design PDF has been downloaded",
+          "failed": "Download Failed",
+          "tryAgain": "Failed to generate PDF. Please try again."
+        },
+        "share": {
+          "notSaved": "Garden Not Saved",
+          "saveFirst": "Please save your garden before sharing",
+          "copied": "Link Copied",
+          "success": "Garden link has been copied to clipboard"
+        }
+      }
+    }
   },
   "seasons": {
     "spring": "Spring",
     "summer": "Summer",
     "autumn": "Autumn",
-    "winter": "Winter"
+    "winter": "Winter",
+    "all": "All Seasons"
   },
   "climate": {
     "tropical": "Tropical",

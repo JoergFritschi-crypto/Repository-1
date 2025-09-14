@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormControl, FormDescription, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -31,13 +32,15 @@ const Step2SiteDetails = memo(({
   const watchedUsdaZone = form.watch("usdaZone");
   const watchedRhsZone = form.watch("rhsZone");
 
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3">
       <Card className="border-2 border-primary shadow-sm" data-testid="step-site-details">
         <CardHeader className="py-7 flower-band-spring rounded-t-lg">
-          <CardTitle className="text-base">Garden Details</CardTitle>
+          <CardTitle className="text-base">{t('garden.workflow.step2.title')}</CardTitle>
           <CardDescription>
-            Define your garden's physical characteristics
+            {t('garden.workflow.step2.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
@@ -47,7 +50,7 @@ const Step2SiteDetails = memo(({
             name="units"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Measurement Units {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                <FormLabel>{t('garden.workflow.step2.dimensions.units.label')} {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <FormControl>
                   <RadioGroup
                     value={field.value}
@@ -56,16 +59,16 @@ const Step2SiteDetails = memo(({
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="meters" id="meters" data-testid="radio-meters" />
-                      <Label htmlFor="meters">Meters (Metric)</Label>
+                      <Label htmlFor="meters">{t('garden.workflow.step2.dimensions.units.options.meters')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="feet" id="feet" data-testid="radio-feet" />
-                      <Label htmlFor="feet">Feet (Imperial)</Label>
+                      <Label htmlFor="feet">{t('garden.workflow.step2.dimensions.units.options.feet')}</Label>
                     </div>
                   </RadioGroup>
                 </FormControl>
                 <FormDescription className="text-xs">
-                  Choose your preferred measurement system
+                  {t('garden.workflow.step2.dimensions.units.description')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -78,25 +81,25 @@ const Step2SiteDetails = memo(({
             name="shape"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Garden Shape {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                <FormLabel>{t('garden.workflow.step2.shape.label')} {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-shape">
-                      <SelectValue placeholder="Select shape" />
+                      <SelectValue placeholder={t('garden.workflow.step2.shape.placeholder')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="rectangle">Rectangle</SelectItem>
-                    <SelectItem value="square">Square</SelectItem>
-                    <SelectItem value="circle">Circle</SelectItem>
-                    <SelectItem value="oval">Oval</SelectItem>
-                    <SelectItem value="triangle">Triangle</SelectItem>
-                    <SelectItem value="l_shaped">L-Shaped</SelectItem>
-                    <SelectItem value="r_shaped">R-Shaped (Reverse L)</SelectItem>
+                    <SelectItem value="rectangle">{t('garden.workflow.step2.shape.options.rectangle')}</SelectItem>
+                    <SelectItem value="square">{t('garden.workflow.step2.shape.options.square')}</SelectItem>
+                    <SelectItem value="circle">{t('garden.workflow.step2.shape.options.circle')}</SelectItem>
+                    <SelectItem value="oval">{t('garden.workflow.step2.shape.options.oval')}</SelectItem>
+                    <SelectItem value="triangle">{t('garden.workflow.step2.shape.options.triangle')}</SelectItem>
+                    <SelectItem value="l_shaped">{t('garden.workflow.step2.shape.options.l_shaped')}</SelectItem>
+                    <SelectItem value="r_shaped">{t('garden.workflow.step2.shape.options.r_shaped')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormDescription className="text-xs">
-                  Select the shape that best matches your garden
+                  {t('garden.workflow.step2.shape.description')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -105,7 +108,7 @@ const Step2SiteDetails = memo(({
 
           {/* Dimension Inputs - Dynamic based on shape */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Dimensions ({watchedUnits || 'meters'})</h3>
+            <h3 className="font-semibold">{t('garden.workflow.step2.dimensions.title')} ({watchedUnits || t('garden.workflow.step2.dimensions.units.options.meters')})</h3>
             
             {['rectangle', 'oval'].includes(watchedShape) && (
               <div className="grid grid-cols-2 gap-4">
@@ -114,7 +117,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.width"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Width ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                      <FormLabel>{t('garden.workflow.step2.dimensions.width.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -133,7 +136,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                      <FormLabel>{t('garden.workflow.step2.dimensions.length.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -156,7 +159,7 @@ const Step2SiteDetails = memo(({
                 name="dimensions.width"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Side Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormLabel>{t('garden.workflow.step2.dimensions.sideLength.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -178,7 +181,7 @@ const Step2SiteDetails = memo(({
                 name="dimensions.radius"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Radius ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormLabel>{t('garden.workflow.step2.dimensions.radius.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -201,7 +204,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.base"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Base ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                      <FormLabel>{t('garden.workflow.step2.dimensions.base.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -220,7 +223,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.height"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Height ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                      <FormLabel>{t('garden.workflow.step2.dimensions.height.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -240,7 +243,7 @@ const Step2SiteDetails = memo(({
             {['l_shaped', 'r_shaped'].includes(watchedShape) && (
               <div>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Define the main body and the cutout dimensions
+                  {t('garden.workflow.step2.dimensions.lShapedDescription')}
                 </p>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <FormField
@@ -248,7 +251,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.mainLength"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Main Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel>{t('garden.workflow.step2.dimensions.mainLength.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -267,7 +270,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.mainWidth"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Main Width ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel>{t('garden.workflow.step2.dimensions.mainWidth.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -288,7 +291,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.cutoutLength"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cutout Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel>{t('garden.workflow.step2.dimensions.cutoutLength.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -307,7 +310,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.cutoutWidth"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cutout Width ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel>{t('garden.workflow.step2.dimensions.cutoutWidth.label')} ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -328,7 +331,7 @@ const Step2SiteDetails = memo(({
 
           {/* Slope & Orientation */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Slope & Orientation</h3>
+            <h3 className="font-semibold">{t('garden.workflow.step2.slopeOrientation.title')}</h3>
             
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -336,26 +339,26 @@ const Step2SiteDetails = memo(({
                 name="slopeDirection"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Slope Direction</FormLabel>
+                    <FormLabel>{t('garden.workflow.step2.slopeOrientation.slopeDirection.label')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-slope-direction" className="bg-white dark:bg-card">
-                          <SelectValue placeholder="Select direction" />
+                          <SelectValue placeholder={t('garden.workflow.step2.slopeOrientation.slopeDirection.placeholder')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="N">North</SelectItem>
-                        <SelectItem value="NE">Northeast</SelectItem>
-                        <SelectItem value="E">East</SelectItem>
-                        <SelectItem value="SE">Southeast</SelectItem>
-                        <SelectItem value="S">South</SelectItem>
-                        <SelectItem value="SW">Southwest</SelectItem>
-                        <SelectItem value="W">West</SelectItem>
-                        <SelectItem value="NW">Northwest</SelectItem>
+                        <SelectItem value="N">{t('garden.workflow.step2.slopeOrientation.directions.N')}</SelectItem>
+                        <SelectItem value="NE">{t('garden.workflow.step2.slopeOrientation.directions.NE')}</SelectItem>
+                        <SelectItem value="E">{t('garden.workflow.step2.slopeOrientation.directions.E')}</SelectItem>
+                        <SelectItem value="SE">{t('garden.workflow.step2.slopeOrientation.directions.SE')}</SelectItem>
+                        <SelectItem value="S">{t('garden.workflow.step2.slopeOrientation.directions.S')}</SelectItem>
+                        <SelectItem value="SW">{t('garden.workflow.step2.slopeOrientation.directions.SW')}</SelectItem>
+                        <SelectItem value="W">{t('garden.workflow.step2.slopeOrientation.directions.W')}</SelectItem>
+                        <SelectItem value="NW">{t('garden.workflow.step2.slopeOrientation.directions.NW')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription className="text-xs">
-                      Direction the slope faces
+                      {t('garden.workflow.step2.slopeOrientation.slopeDirection.description')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -367,7 +370,7 @@ const Step2SiteDetails = memo(({
                 name="slopePercentage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Slope Percentage (%)</FormLabel>
+                    <FormLabel>{t('garden.workflow.step2.slopeOrientation.slopePercentage.label')}</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -381,7 +384,7 @@ const Step2SiteDetails = memo(({
                       />
                     </FormControl>
                     <FormDescription className="text-xs">
-                      0% = flat, 100% = 45° angle
+                      {t('garden.workflow.step2.slopeOrientation.slopePercentage.description')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -395,8 +398,8 @@ const Step2SiteDetails = memo(({
       {/* Garden Sketch with rotatable rings */}
       <Card className="border-2 border-primary shadow-sm" data-testid="step-garden-sketch">
         <CardHeader className="py-7 flower-band-autumn rounded-t-lg">
-          <CardTitle className="text-base">Garden Orientation & View {!isAdmin && <span className="text-red-500">*</span>}</CardTitle>
-          <p className="text-sm text-gray-600 mt-1">Set north direction and viewing point using the interactive controls below</p>
+          <CardTitle className="text-base">{t('garden.workflow.step2.gardenSketch.title')} {!isAdmin && <span className="text-red-500">*</span>}</CardTitle>
+          <p className="text-sm text-gray-600 mt-1">{t('garden.workflow.step2.gardenSketch.description')}</p>
         </CardHeader>
         <CardContent>
           <GardenSketch
@@ -420,11 +423,10 @@ const Step2SiteDetails = memo(({
               <AlertCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-primary">
-                  Garden Orientation Not Set
+                  {t('garden.workflow.step2.orientationWarning.title')}
                 </p>
                 <p className="text-sm text-primary/80">
-                  Please set your garden's actual north direction and viewing point above. 
-                  These are critical for accurate sun exposure calculations and proper plant placement in your design.
+                  {t('garden.workflow.step2.orientationWarning.description')}
                 </p>
               </div>
             </div>
