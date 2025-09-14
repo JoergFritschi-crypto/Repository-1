@@ -437,20 +437,20 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
             </Card>
 
             {/* Spread/Width Range Slider */}
-            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50">
+            <Card className="border-2 border-[#004025] bg-gradient-to-br from-[#004025]/10 to-[#004025]/5">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2 text-blue-800">
-                  <Ruler className="w-4 h-4 rotate-90 text-blue-600" />
+                <CardTitle className="text-base flex items-center gap-2 text-[#004025]">
+                  <Ruler className="w-4 h-4 rotate-90 text-[#004025]" />
                   Spread/Width Range
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm font-medium">
-                    <span className="text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                    <span className="text-[#004025] bg-[#004025]/10 px-2 py-1 rounded">
                       Min: {filters.spreadMin === 0 ? 'Any' : `${(filters.spreadMin / 100).toFixed(1)}m`}
                     </span>
-                    <span className="text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                    <span className="text-[#004025] bg-[#004025]/10 px-2 py-1 rounded">
                       Max: {filters.spreadMax === 300 ? 'Any' : `${(filters.spreadMax / 100).toFixed(1)}m`}
                     </span>
                   </div>
@@ -464,11 +464,11 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
                         handleSliderChange("spreadMin", value[0]);
                         handleSliderChange("spreadMax", value[1]);
                       }}
-                      className="w-full [&_[role=slider]]:bg-blue-600 [&_[role=slider]]:border-blue-700 [&_.relative]:bg-blue-200 [&_[data-orientation]]:bg-blue-100"
+                      className="w-full [&_[role=slider]]:bg-[#004025] [&_[role=slider]]:border-[#004025] [&_.relative]:bg-[#004025]/20 [&_[data-orientation]]:bg-[#004025]/10"
                       data-testid="slider-spread-range"
                     />
                   </div>
-                  <div className="text-xs text-center text-blue-600 font-medium">
+                  <div className="text-xs text-center text-[#004025] font-medium">
                     Plant width for proper spacing
                   </div>
                   <div className="text-xs text-center text-muted-foreground">
