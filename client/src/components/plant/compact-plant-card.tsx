@@ -234,7 +234,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
     onSuccess: () => {
       toast({
         title: "Added to Collection",
-        description: `${plant.commonName} has been added to your garden!`,
+        description: `${plant.commonName} has been added to your collection!`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection/limits"] });
@@ -909,14 +909,13 @@ const CompactPlantCard = memo(function CompactPlantCard({
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Add to Garden</DialogTitle>
+            <DialogTitle className="text-gray-900">Add to My Collection</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 text-gray-900">
             <p>Add <strong>{plant.commonName}</strong> to your collection?</p>
             <div>
               <label className="block text-sm font-medium mb-2">Notes (optional)</label>
               <Textarea
-                placeholder="Where will you plant it?"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -934,7 +933,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
                 disabled={addToCollectionMutation.isPending}
                 className="flex-1"
               >
-                {addToCollectionMutation.isPending ? "Adding..." : "Add to Garden"}
+                {addToCollectionMutation.isPending ? "Adding..." : "Add to Collection"}
               </Button>
             </div>
           </div>

@@ -56,7 +56,7 @@ export function EnhancedPlantCard({
     onSuccess: () => {
       toast({
         title: "Added to Collection",
-        description: `${plant.commonName} has been added to your garden collection!`,
+        description: `${plant.commonName} has been added to your collection!`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-collection"] });
     },
@@ -183,7 +183,7 @@ export function EnhancedPlantCard({
             {isInCollection && (
               <Badge className="bg-accent/90 backdrop-blur-sm">
                 <Heart className="w-3 h-3 mr-1 fill-current" />
-                In Garden
+                In Collection
               </Badge>
             )}
           </div>
@@ -322,12 +322,12 @@ export function EnhancedPlantCard({
                     data-testid={`button-add-collection-${plant.id}`}
                   >
                     <Plus className="w-4 h-4 mr-1" />
-                    Add to Garden
+                    Add to Collection
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-card text-foreground">
                   <DialogHeader>
-                    <DialogTitle className="text-foreground">Add to Your Garden</DialogTitle>
+                    <DialogTitle className="text-foreground">Add to My Collection</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 text-foreground">
                     <div className="flex items-center gap-3">
@@ -346,7 +346,6 @@ export function EnhancedPlantCard({
                     <div>
                       <label className="block text-sm font-medium mb-2">Personal Notes</label>
                       <Textarea
-                        placeholder="Where will you plant it? Any special care notes?"
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         rows={3}
@@ -368,7 +367,7 @@ export function EnhancedPlantCard({
                         {addToCollectionMutation.isPending ? "Adding..." : (
                           <>
                             <Check className="w-4 h-4 mr-1" />
-                            Add to Garden
+                            Add to Collection
                           </>
                         )}
                       </Button>
