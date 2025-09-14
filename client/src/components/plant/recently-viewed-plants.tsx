@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react';
+import { memo, useRef, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/error-message';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import LazyImage from '@/components/ui/lazy-image';
 import { Clock, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import type { Plant } from '@/types/plant';
 
@@ -47,7 +48,7 @@ const RecentlyViewedPlants = memo(({
     enabled: recentlyViewed.length > 0
   });
 
-  const handleScroll = (direction: 'left' | 'right') => {
+  const handleScroll = useCallback((direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const scrollAmount = 280; // Width of one card plus gap
       scrollRef.current.scrollBy({
@@ -55,13 +56,13 @@ const RecentlyViewedPlants = memo(({
         behavior: 'smooth'
       });
     }
-  };
+  }, []);
 
-  const handlePlantClick = (plant: any) => {
+  const handlePlantClick = useCallback((plant: any) => {
     if (onPlantClick) {
       onPlantClick(plant);
     }
-  };
+  }, [onPlantClick]);
 
   if (recentlyViewed.length === 0) {
     return (
@@ -84,7 +85,10 @@ const RecentlyViewedPlants = memo(({
     );
   }
 
-  const displayPlants = recentlyViewed.slice(0, maxItems);
+  const displayPlants = useMemo(() => 
+    recentlyViewed.slice(0, maxItems),
+    [recentlyViewed, maxItems]
+  );
 
   return (
     <Card className={className}>
@@ -174,11 +178,13 @@ const RecentlyViewedPlants = memo(({
                           {/* Plant image */}
                           <div className="w-24 h-24 flex-none">
                             {plant.thumbnailImage ? (
-                              <img
+                              <LazyImage
                                 src={plant.thumbnailImage}
-                                alt={plant.commonName}
+                                alt={plant.commonName || 'Plant'}
                                 className="w-full h-full object-cover rounded-lg"
-                                loading="lazy"
+                                aspectRatio="1/1"
+                                fadeIn={true}
+                                rootMargin="50px"
                               />
                             ) : (
                               <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">

@@ -43,6 +43,7 @@ import SeasonalDateSelector from './seasonal-date-selector';
 import { LoadingSpinner, ProgressBar, LoadingSteps } from '@/components/ui/loading-spinner';
 import { ErrorMessage } from '@/components/ui/error-message';
 import { SeasonalViewerErrorBoundary } from '@/components/ui/error-boundary';
+import LazyImage from '@/components/ui/lazy-image';
 
 interface SeasonalImage {
   dayOfYear: number;        // Day of year (1-365) - precise daily timing
@@ -528,13 +529,16 @@ export default function SeasonalViewer({
 
           {/* Main Image Display */}
           <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-            <img
+            <LazyImage
               src={currentImage.imageUrl}
               alt={`${gardenName} in ${currentImage.season}`}
               className={cn(
                 "max-w-full max-h-full object-contain transition-opacity duration-300",
                 isTransitioning ? "opacity-0" : "opacity-100"
               )}
+              priority={true}
+              aspectRatio="16/9"
+              fadeIn={false}
             />
             
             {/* Side Navigation */}

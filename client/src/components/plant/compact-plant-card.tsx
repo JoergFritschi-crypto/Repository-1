@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import LazyImage from "@/components/ui/lazy-image";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { 
@@ -172,7 +173,7 @@ function getSizeCategory(heightMaxCm: number | null | undefined): {
   }
 }
 
-export function CompactPlantCard({ 
+const CompactPlantCard = memo(function CompactPlantCard({ 
   plant,
   isAdmin = false,
   isInCollection = false,
@@ -188,7 +189,6 @@ export function CompactPlantCard({
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [notes, setNotes] = useState("");
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const { toast } = useToast();
@@ -201,8 +201,14 @@ export function CompactPlantCard({
     }
   }, [showDetailsDialog, plant, addToRecentlyViewed]);
 
-  const primaryImage = plant.fullImage || plant.thumbnailImage;
-  const secondaryImage = plant.detailImage || plant.thumbnailImage;
+  const primaryImage = useMemo(() => 
+    plant.fullImage || plant.thumbnailImage, 
+    [plant.fullImage, plant.thumbnailImage]
+  );
+  const secondaryImage = useMemo(() => 
+    plant.detailImage || plant.thumbnailImage, 
+    [plant.detailImage, plant.thumbnailImage]
+  );
 
   const addToCollectionMutation = useMutation({
     mutationFn: async (data: { plantId: string; notes?: string }) => {
@@ -268,7 +274,7 @@ export function CompactPlantCard({
     }
   });
 
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     const printContent = document.getElementById('plant-detail-card');
     if (!printContent) return;
     
@@ -296,9 +302,9 @@ export function CompactPlantCard({
     window.print();
     document.body.innerHTML = originalContents;
     window.location.reload();
-  };
+  }, [plant.commonName, plant.scientificName]);
   
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     const shareData = {
       title: plant.commonName || 'Plant',
       text: `Check out ${plant.commonName} (${plant.scientificName})`,
@@ -319,9 +325,9 @@ export function CompactPlantCard({
     } catch (err) {
       console.error('Error sharing:', err);
     }
-  };
+  }, [plant.commonName, plant.scientificName, toast]);
   
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const element = document.getElementById('plant-detail-card');
     if (!element) return;
     
@@ -364,9 +370,9 @@ export function CompactPlantCard({
         variant: "destructive"
       });
     }
-  };
+  }, [plant.commonName, plant.scientificName, toast]);
   
-  const validatePlantData = async () => {
+  const validatePlantData = useCallback(async () => {
     setIsValidating(true);
     try {
       const response = await apiRequest("POST", `/api/admin/plants/${plant.id}/validate`);
@@ -390,9 +396,9 @@ export function CompactPlantCard({
     } finally {
       setIsValidating(false);
     }
-  };
+  }, [plant.id, plant.commonName, toast]);
 
-  const generatePlantImages = async () => {
+  const generatePlantImages = useCallback(async () => {
     setIsGeneratingImages(true);
     try {
       const response = await apiRequest("POST", `/api/admin/plants/${plant.id}/generate-images`);
@@ -416,9 +422,9 @@ export function CompactPlantCard({
     } finally {
       setIsGeneratingImages(false);
     }
-  };
+  }, [plant.id, plant.commonName, toast]);
 
-  const getSunIcon = () => {
+  const getSunIcon = useCallback(() => {
     // Handle both string and array formats from database
     const sunlight = Array.isArray(plant.sunlight) ? plant.sunlight[0] : plant.sunlight;
     if (!sunlight) return null;
@@ -427,7 +433,7 @@ export function CompactPlantCard({
     if (sunlight.includes('partial')) return <CloudSun className="w-3 h-3 text-amber-500" />;
     if (sunlight.includes('shade')) return <Cloud className="w-3 h-3 text-gray-400" />;
     return null;
-  };
+  }, [plant.sunlight]);
 
   return (
     <>
@@ -441,11 +447,14 @@ export function CompactPlantCard({
         {/* Image section */}
         <div className="relative h-80 bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
           {primaryImage ? (
-            <img 
+            <LazyImage 
               src={primaryImage}
-              alt={plant.commonName}
-              className={`w-full h-full object-cover ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity`}
-              onLoad={() => setImageLoaded(true)}
+              alt={plant.commonName || 'Plant'}
+              className="w-full h-full object-cover"
+              aspectRatio="1/1"
+              fadeIn={true}
+              priority={false}
+              rootMargin="100px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -932,4 +941,8 @@ export function CompactPlantCard({
       </Dialog>
     </>
   );
-}
+});
+
+CompactPlantCard.displayName = 'CompactPlantCard';
+
+export { CompactPlantCard };

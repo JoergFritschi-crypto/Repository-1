@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { debounce } from "@/lib/performance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,14 +19,29 @@ interface PlantSearchProps {
 
 export default function PlantSearch({ onResults }: PlantSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [filters, setFilters] = useState<PlantSearchFilters>({});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
+  // Debounce search input to reduce API calls
+  const debouncedSearch = useMemo(
+    () => debounce((value: string) => {
+      setDebouncedSearchQuery(value);
+    }, 300),
+    []
+  );
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedSearch(value);
+  }, [debouncedSearch]);
+
   const { data: searchResults, isLoading, error } = useQuery({
-    queryKey: ["/api/plants/search", { q: searchQuery, ...filters }],
+    queryKey: ["/api/plants/search", { q: debouncedSearchQuery, ...filters }],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchQuery.trim()) params.append("q", searchQuery.trim());
+      if (debouncedSearchQuery.trim()) params.append("q", debouncedSearchQuery.trim());
       
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "" && value !== "any") {
@@ -39,7 +55,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
       }
       return response.json();
     },
-    enabled: searchQuery.trim().length > 0 || Object.keys(filters).some(key => filters[key] !== undefined),
+    enabled: debouncedSearchQuery.trim().length > 0 || Object.keys(filters).some(key => filters[key as keyof PlantSearchFilters] !== undefined),
   });
 
   const updateFilter = (key: keyof PlantSearchFilters, value: any) => {
@@ -49,10 +65,11 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
     }));
   };
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilters({});
     setSearchQuery("");
-  };
+    setDebouncedSearchQuery("");
+  }, []);
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
@@ -104,7 +121,7 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
                 id="search-input"
                 placeholder="Search by common name, scientific name, or family..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 onKeyDown={handleKeyPress}
                 className="pl-10"
                 data-testid="input-advanced-search"
@@ -237,25 +254,6 @@ export default function PlantSearch({ onResults }: PlantSearchProps) {
                     <Label htmlFor="attracts-pollinators" className="text-sm font-normal">Attracts Pollinators</Label>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="deer-resistant"
-                      checked={filters.deer_resistant || false}
-                      onCheckedChange={(checked) => updateFilter("deer_resistant", checked || undefined)}
-                      data-testid="checkbox-advanced-deer-resistant"
-                    />
-                    <Label htmlFor="deer-resistant" className="text-sm font-normal">Deer Resistant</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="evergreen"
-                      checked={filters.evergreen || false}
-                      onCheckedChange={(checked) => updateFilter("evergreen", checked || undefined)}
-                      data-testid="checkbox-advanced-evergreen"
-                    />
-                    <Label htmlFor="evergreen" className="text-sm font-normal">Evergreen</Label>
-                  </div>
                 </div>
               </div>
             </div>

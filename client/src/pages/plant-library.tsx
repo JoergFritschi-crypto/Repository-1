@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/layout/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,15 +11,19 @@ import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import PlantSearch from "@/components/plant/plant-search";
 import PlantAdvancedSearch from "@/components/plant/plant-advanced-search";
 import RecentlyViewedPlants from "@/components/plant/recently-viewed-plants";
+import VirtualScroll from "@/components/ui/virtual-scroll";
+import PlantGridVirtual from "@/components/plant/plant-grid-virtual";
+import { debounce } from "@/lib/performance";
 import { SkeletonCardGrid } from "@/components/ui/skeleton-card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage, EmptyState } from "@/components/ui/error-message";
 import { Sprout, Search, Heart, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import type { Plant, PlantSearchFilters } from "@/types/plant";
 
-export default function PlantLibrary() {
+const PlantLibrary = memo(function PlantLibrary() {
   const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
+  const [useVirtualScrolling, setUseVirtualScrolling] = useState(true);
   const [filters, setFilters] = useState<PlantSearchFilters>({});
   const [collectionFilters, setCollectionFilters] = useState<any>({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -404,15 +408,28 @@ export default function PlantLibrary() {
                       variant="card"
                     />
                   ) : paginatedPlants && paginatedPlants.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {paginatedPlants.map((plant: Plant) => (
-                        <CompactPlantCard
-                          key={plant.id}
-                          plant={plant}
-                          isAdmin={false}
-                        />
-                      ))}
-                    </div>
+                    useVirtualScrolling && sortedPlants.length > 50 ? (
+                      <PlantGridVirtual
+                        plants={sortedPlants}
+                        isAdmin={false}
+                        containerHeight={800}
+                        columns={3}
+                        itemHeight={460}
+                        gap={16}
+                        emptyMessage="No plants found"
+                        onClearFilters={clearFilters}
+                      />
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {paginatedPlants.map((plant: Plant) => (
+                          <CompactPlantCard
+                            key={plant.id}
+                            plant={plant}
+                            isAdmin={false}
+                          />
+                        ))}
+                      </div>
+                    )
                   ) : (
                     <EmptyState
                       title="No plants found"
@@ -427,8 +444,8 @@ export default function PlantLibrary() {
                 </CardContent>
               </Card>
 
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
+              {/* Pagination Controls - only show if not using virtual scrolling */}
+              {totalPages > 1 && (!useVirtualScrolling || sortedPlants.length <= 50) && (
                       <div className="flex justify-center items-center gap-2 mt-8">
                         <Button
                           variant="outline"
@@ -691,4 +708,7 @@ export default function PlantLibrary() {
       </div>
     </div>
   );
-}
+});
+
+PlantLibrary.displayName = 'PlantLibrary';
+export default PlantLibrary;

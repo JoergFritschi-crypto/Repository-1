@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { debounce } from "@/lib/performance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -58,7 +59,15 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     includeLargeSpecimens: false
   });
 
-  const handleFilterChange = (key: string, value: any) => {
+  // Debounce the search to reduce API calls
+  const debouncedOnSearch = useMemo(
+    () => debounce((newFilters: any) => {
+      onSearch(newFilters);
+    }, 400),
+    [onSearch]
+  );
+
+  const handleFilterChange = useCallback((key: string, value: any) => {
     const newFilters = { ...filters };
     if (value === undefined || value === "" || value === "all") {
       delete newFilters[key];
@@ -66,11 +75,11 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
       newFilters[key] = value;
     }
     setFilters(newFilters);
-    // For non-slider filters, search immediately
+    // For non-slider filters, use debounced search
     if (key !== "heightMin" && key !== "heightMax" && key !== "spreadMin" && key !== "spreadMax") {
-      onSearch(newFilters);
+      debouncedOnSearch(newFilters);
     }
-  };
+  }, [filters, debouncedOnSearch]);
 
   const handleSliderChange = (key: string, value: any) => {
     // Update local state without triggering search
@@ -90,7 +99,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     // Don't search immediately for color changes
   };
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     const clearedFilters = {
       heightMin: 0,
       heightMax: 500,
@@ -101,7 +110,7 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
     };
     setFilters(clearedFilters);
     onSearch({});
-  };
+  }, [onSearch]);
 
   const activeFilterCount = Object.keys(filters).filter(key => {
     if (key === 'heightMin' && filters[key] === 0) return false;

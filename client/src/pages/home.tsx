@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -11,10 +12,11 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { EmptyState } from "@/components/ui/error-message";
 import { Download, Palette, User } from "lucide-react";
 import { GardenDesignIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
+import LazyImage from "@/components/ui/lazy-image";
 import RecentlyViewedPlants from "@/components/plant/recently-viewed-plants";
 import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
 
-export default function Home() {
+const Home = memo(function Home() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   
@@ -37,10 +39,13 @@ export default function Home() {
       
       {/* Hero Section */}
       <div className="relative h-[500px] overflow-hidden">
-        <img 
+        <LazyImage 
           src={heroImage} 
           alt="Rudbeckia, Delphinium and Salvia garden flowers" 
           className="w-full h-full object-cover"
+          priority={true}
+          aspectRatio="16/9"
+          fadeIn={false}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background">
           <div className="absolute inset-0 flex items-center justify-center">
@@ -301,4 +306,7 @@ export default function Home() {
       </div>
     </div>
   );
-}
+});
+
+Home.displayName = 'Home';
+export default Home;
