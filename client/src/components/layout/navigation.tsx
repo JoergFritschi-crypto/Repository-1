@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, MoreVertical, Shield, Home, Sprout, Stethoscope, Crown, Plus, LogOut, ChevronRight } from "lucide-react";
+import { Menu, X, MoreVertical, Shield, Sprout, Stethoscope, Crown, Plus, LogOut, ChevronRight } from "lucide-react";
 import { GardenScapeIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -13,11 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface NavigationProps {
-  currentStep?: number;
-}
-
-export default function Navigation({ currentStep }: NavigationProps = {}) {
+export default function Navigation() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -32,7 +28,7 @@ export default function Navigation({ currentStep }: NavigationProps = {}) {
   const isActualAdmin = user?.isAdmin === true;
 
   const navigationItems = [
-    { href: "/home", label: "Dashboard", icon: Home },
+    { href: "/home", label: "Dashboard", icon: GardenScapeIcon },
     { href: "/plant-library", label: "Plant Library", icon: PlantLibraryIcon, brandIcon: true },
     { href: "/plant-doctor", label: "Plant Doctor", icon: PlantDoctorIcon, brandIcon: true },
     { href: "/premium", label: "Premium", icon: PremiumIcon, brandIcon: true },

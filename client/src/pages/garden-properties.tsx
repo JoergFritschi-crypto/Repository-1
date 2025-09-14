@@ -657,7 +657,7 @@ export default function GardenProperties() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 via-white to-primary/5">
-      <Navigation currentStep={currentStep} />
+      <Navigation />
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
         <div className="mb-6">

@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
   ArrowLeft, 
-  Home, 
   Settings, 
   Database, 
   Shield,
@@ -11,6 +10,7 @@ import {
   ChevronRight,
   Map
 } from "lucide-react";
+import { GardenScapeIcon } from "@/components/ui/brand-icons";
 
 interface AdminNavigationProps {
   currentPage?: string;
@@ -33,7 +33,7 @@ export function AdminNavigation({ currentPage, gardenId }: AdminNavigationProps)
             {/* Back to Main App Button */}
             <Link href="/home">
               <Button variant="outline" size="sm" className="gap-2">
-                <Home className="w-4 h-4" />
+                <GardenScapeIcon className="w-4 h-4" />
                 Main App
               </Button>
             </Link>
