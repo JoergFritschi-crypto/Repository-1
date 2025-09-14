@@ -652,50 +652,59 @@
     "doctor": {
       "title": "Pflanzendoktor",
       "subtitle": "KI-gestützte Pflanzenidentifikation und Gesundheitsdiagnose",
-      "services": {
-        "identification": {
-          "title": "Pflanzenidentifikation",
-          "description": "Laden Sie ein Foto hoch, um jede Pflanzenart zu identifizieren"
-        },
-        "disease": {
-          "title": "Krankheitsdiagnose",
-          "description": "Identifizieren Sie Pflanzenkrankheiten und erhalten Sie Behandlungsratschläge"
-        },
-        "weed": {
-          "title": "Unkrautidentifikation",
-          "description": "Identifizieren Sie Unkräuter und erhalten Sie Entfernungsstrategien"
-        }
+      "selectService": "Service auswählen",
+      "identification": {
+        "title": "Pflanzenidentifikation",
+        "description": "Laden Sie ein Foto hoch, um jede Pflanzenart zu identifizieren"
+      },
+      "disease": {
+        "title": "Krankheitsdiagnose",
+        "description": "Identifizieren Sie Pflanzenkrankheiten und erhalten Sie Behandlungsratschläge"
+      },
+      "weed": {
+        "title": "Unkrautidentifikation",
+        "description": "Identifizieren Sie Unkräuter und erhalten Sie Entfernungsstrategien"
+      },
+      "premium": {
+        "title": "Premium Pflanzendoktor",
+        "feature1": "Erweiterte Krankheitsdiagnose",
+        "feature2": "Behandlungsempfehlungen",
+        "feature3": "Saisonale Pflegeanleitungen",
+        "feature4": "Expertenberatung",
+        "upgrade": "Auf Premium upgraden"
       },
       "upload": {
         "title": "Bild hochladen",
-        "dragDrop": "Ziehen Sie Ihr Bild hierher oder klicken Sie zum Auswählen",
-        "selectImage": "Bild auswählen",
-        "supportedFormats": "Unterstützte Formate: JPG, PNG, WebP",
-        "maxSize": "Maximale Dateigröße: 10MB",
-        "analyzing": "Analysiere Ihr Bild...",
-        "analysisComplete": "Analyse abgeschlossen",
-        "analysisFailed": "Analyse fehlgeschlagen",
-        "noImageSelected": "Kein Bild ausgewählt",
-        "selectImageFirst": "Bitte wählen Sie ein Bild zur Analyse aus",
-        "additionalNotes": "Zusätzliche Notizen (optional)",
+        "photoLabel": "Pflanzenfoto",
+        "changeImage": "Klicken zum Ändern des Bildes",
+        "instructions": "Ziehen und ablegen oder klicken zum Hochladen",
+        "chooseFile": "Datei wählen",
+        "notesLabel": "Zusätzliche Notizen",
         "notesPlaceholder": "Beschreiben Sie Symptome oder Bedenken..."
       },
       "results": {
         "title": "Aktuelle Ergebnisse",
-        "noResults": "Keine aktuellen Analyseergebnisse",
-        "noResultsDesc": "Laden Sie ein Bild hoch, um mit der Pflanzenidentifikation zu beginnen",
-        "analysisDate": "Analysiert am {{date}}",
-        "confidence": "Vertrauen: {{percentage}}%"
+        "sessions": "Sitzungen",
+        "loadFailed": "Ergebnisse konnten nicht geladen werden",
+        "analysisResult": "Analyseergebnis",
+        "analysisCompleted": "Analyse erfolgreich abgeschlossen",
+        "confidence": "Vertrauen",
+        "noHistory": "Keine Analysehistorie",
+        "noHistoryMessage": "Laden Sie ein Bild hoch, um mit der Pflanzenidentifikation zu beginnen",
+        "startFirst": "Erste Analyse starten"
       },
-      "premium": {
-        "title": "Premium Pflanzendoktor",
-        "features": [
-          "Erweiterte Krankheitsdiagnose",
-          "Behandlungsempfehlungen",
-          "Saisonale Pflegeanleitungen",
-          "Expertenberatung"
-        ],
-        "upgradeNow": "Jetzt upgraden"
+      "analyzing": "Analysiere...",
+      "analyzePlant": "Pflanze analysieren",
+      "analysisComplete": "Analyse abgeschlossen",
+      "analysisSuccess": "Ihre Pflanze wurde erfolgreich analysiert",
+      "analysisFailed": "Analyse fehlgeschlagen",
+      "noImageSelected": "Kein Bild ausgewählt",
+      "selectImagePrompt": "Bitte wählen Sie ein Bild zur Analyse aus",
+      "steps": {
+        "preparing": "Bild vorbereiten",
+        "analyzing": "Merkmale analysieren",
+        "identifying": "Pflanze identifizieren",
+        "diagnosing": "Diagnose erstellen"
       }
     },
     "search": {

@@ -652,50 +652,59 @@
     "doctor": {
       "title": "Doctor de Plantas",
       "subtitle": "Identificación de plantas y diagnóstico de salud impulsado por IA",
-      "services": {
-        "identification": {
-          "title": "Identificación de Plantas",
-          "description": "Sube una foto para identificar cualquier especie de planta"
-        },
-        "disease": {
-          "title": "Diagnóstico de Enfermedades",
-          "description": "Identifica enfermedades de plantas y obtén consejos de tratamiento"
-        },
-        "weed": {
-          "title": "Identificación de Malezas",
-          "description": "Identifica malezas y obtén estrategias de eliminación"
-        }
+      "selectService": "Seleccionar Servicio",
+      "identification": {
+        "title": "Identificación de Plantas",
+        "description": "Sube una foto para identificar cualquier especie de planta"
+      },
+      "disease": {
+        "title": "Diagnóstico de Enfermedades",
+        "description": "Identifica enfermedades de plantas y obtén consejos de tratamiento"
+      },
+      "weed": {
+        "title": "Identificación de Malezas",
+        "description": "Identifica malezas y obtén estrategias de eliminación"
+      },
+      "premium": {
+        "title": "Doctor de Plantas Premium",
+        "feature1": "Diagnóstico avanzado de enfermedades",
+        "feature2": "Recomendaciones de tratamiento",
+        "feature3": "Guías de cuidado estacional",
+        "feature4": "Consulta experta",
+        "upgrade": "Actualizar a Premium"
       },
       "upload": {
         "title": "Subir Imagen",
-        "dragDrop": "Arrastra y suelta tu imagen aquí, o haz clic para seleccionar",
-        "selectImage": "Seleccionar Imagen",
-        "supportedFormats": "Formatos soportados: JPG, PNG, WebP",
-        "maxSize": "Tamaño máximo de archivo: 10MB",
-        "analyzing": "Analizando tu imagen...",
-        "analysisComplete": "Análisis Completado",
-        "analysisFailed": "Análisis Fallido",
-        "noImageSelected": "Ninguna Imagen Seleccionada",
-        "selectImageFirst": "Por favor selecciona una imagen para analizar",
-        "additionalNotes": "Notas adicionales (opcional)",
+        "photoLabel": "Foto de Planta",
+        "changeImage": "Clic para cambiar imagen",
+        "instructions": "Arrastra y suelta o haz clic para subir",
+        "chooseFile": "Elegir Archivo",
+        "notesLabel": "Notas Adicionales",
         "notesPlaceholder": "Describe síntomas o preocupaciones..."
       },
       "results": {
         "title": "Resultados Recientes",
-        "noResults": "Sin resultados de análisis recientes",
-        "noResultsDesc": "Sube una imagen para comenzar con la identificación de plantas",
-        "analysisDate": "Analizado el {{date}}",
-        "confidence": "Confianza: {{percentage}}%"
+        "sessions": "sesiones",
+        "loadFailed": "Error al cargar resultados",
+        "analysisResult": "Resultado del Análisis",
+        "analysisCompleted": "Análisis completado exitosamente",
+        "confidence": "Confianza",
+        "noHistory": "Sin Historial de Análisis",
+        "noHistoryMessage": "Sube una imagen para comenzar con la identificación de plantas",
+        "startFirst": "Inicia Tu Primer Análisis"
       },
-      "premium": {
-        "title": "Doctor de Plantas Premium",
-        "features": [
-          "Diagnóstico avanzado de enfermedades",
-          "Recomendaciones de tratamiento",
-          "Guías de cuidado estacional",
-          "Consulta experta"
-        ],
-        "upgradeNow": "Actualizar Ahora"
+      "analyzing": "Analizando...",
+      "analyzePlant": "Analizar Planta",
+      "analysisComplete": "Análisis Completado",
+      "analysisSuccess": "Tu planta ha sido analizada exitosamente",
+      "analysisFailed": "Análisis Fallido",
+      "noImageSelected": "Ninguna Imagen Seleccionada",
+      "selectImagePrompt": "Por favor selecciona una imagen para analizar",
+      "steps": {
+        "preparing": "Preparando imagen",
+        "analyzing": "Analizando características",
+        "identifying": "Identificando planta",
+        "diagnosing": "Generando diagnóstico"
       }
     },
     "search": {

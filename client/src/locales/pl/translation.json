@@ -652,50 +652,59 @@
     "doctor": {
       "title": "Doktor Roślin",
       "subtitle": "Identyfikacja roślin i diagnoza zdrowia wspierana przez AI",
-      "services": {
-        "identification": {
-          "title": "Identyfikacja Roślin",
-          "description": "Prześlij zdjęcie, aby zidentyfikować dowolny gatunek rośliny"
-        },
-        "disease": {
-          "title": "Diagnoza Chorób",
-          "description": "Zidentyfikuj choroby roślin i uzyskaj porady dotyczące leczenia"
-        },
-        "weed": {
-          "title": "Identyfikacja Chwastów",
-          "description": "Zidentyfikuj chwasty i uzyskaj strategie usuwania"
-        }
+      "selectService": "Wybierz Usługę",
+      "identification": {
+        "title": "Identyfikacja Roślin",
+        "description": "Prześlij zdjęcie, aby zidentyfikować dowolny gatunek rośliny"
+      },
+      "disease": {
+        "title": "Diagnoza Chorób",
+        "description": "Zidentyfikuj choroby roślin i uzyskaj porady dotyczące leczenia"
+      },
+      "weed": {
+        "title": "Identyfikacja Chwastów",
+        "description": "Zidentyfikuj chwasty i uzyskaj strategie usuwania"
+      },
+      "premium": {
+        "title": "Premium Doktor Roślin",
+        "feature1": "Zaawansowana diagnoza chorób",
+        "feature2": "Zalecenia leczenia",
+        "feature3": "Sezonowe przewodniki pielęgnacji",
+        "feature4": "Konsultacja eksperta",
+        "upgrade": "Przejdź na Premium"
       },
       "upload": {
         "title": "Prześlij Obraz",
-        "dragDrop": "Przeciągnij i upuść swój obraz tutaj lub kliknij, aby wybrać",
-        "selectImage": "Wybierz Obraz",
-        "supportedFormats": "Obsługiwane formaty: JPG, PNG, WebP",
-        "maxSize": "Maksymalny rozmiar pliku: 10MB",
-        "analyzing": "Analizowanie twojego obrazu...",
-        "analysisComplete": "Analiza Zakończona",
-        "analysisFailed": "Analiza Nieudana",
-        "noImageSelected": "Nie Wybrano Obrazu",
-        "selectImageFirst": "Proszę wybrać obraz do analizy",
-        "additionalNotes": "Dodatkowe uwagi (opcjonalne)",
+        "photoLabel": "Zdjęcie Rośliny",
+        "changeImage": "Kliknij, aby zmienić obraz",
+        "instructions": "Przeciągnij i upuść lub kliknij, aby przesłać",
+        "chooseFile": "Wybierz Plik",
+        "notesLabel": "Dodatkowe Uwagi",
         "notesPlaceholder": "Opisz objawy lub obawy..."
       },
       "results": {
         "title": "Ostatnie Wyniki",
-        "noResults": "Brak ostatnich wyników analizy",
-        "noResultsDesc": "Prześlij obraz, aby rozpocząć identyfikację roślin",
-        "analysisDate": "Przeanalizowano {{date}}",
-        "confidence": "Pewność: {{percentage}}%"
+        "sessions": "sesje",
+        "loadFailed": "Nie udało się załadować wyników",
+        "analysisResult": "Wynik Analizy",
+        "analysisCompleted": "Analiza zakończona pomyślnie",
+        "confidence": "Pewność",
+        "noHistory": "Brak Historii Analiz",
+        "noHistoryMessage": "Prześlij obraz, aby rozpocząć identyfikację roślin",
+        "startFirst": "Rozpocznij Swoją Pierwszą Analizę"
       },
-      "premium": {
-        "title": "Premium Doktor Roślin",
-        "features": [
-          "Zaawansowana diagnoza chorób",
-          "Zalecenia leczenia",
-          "Sezonowe przewodniki pielęgnacji",
-          "Konsultacja eksperta"
-        ],
-        "upgradeNow": "Ulepsz Teraz"
+      "analyzing": "Analizowanie...",
+      "analyzePlant": "Analizuj Roślinę",
+      "analysisComplete": "Analiza Zakończona",
+      "analysisSuccess": "Twoja roślina została pomyślnie przeanalizowana",
+      "analysisFailed": "Analiza Nieudana",
+      "noImageSelected": "Nie Wybrano Obrazu",
+      "selectImagePrompt": "Proszę wybrać obraz do analizy",
+      "steps": {
+        "preparing": "Przygotowanie obrazu",
+        "analyzing": "Analizowanie cech",
+        "identifying": "Identyfikacja rośliny",
+        "diagnosing": "Generowanie diagnozy"
       }
     },
     "search": {

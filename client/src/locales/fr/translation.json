@@ -652,50 +652,59 @@
     "doctor": {
       "title": "Docteur des Plantes",
       "subtitle": "Identification de plantes et diagnostic de santé alimentés par l'IA",
-      "services": {
-        "identification": {
-          "title": "Identification de Plantes",
-          "description": "Téléchargez une photo pour identifier n'importe quelle espèce de plante"
-        },
-        "disease": {
-          "title": "Diagnostic de Maladies",
-          "description": "Identifiez les maladies des plantes et obtenez des conseils de traitement"
-        },
-        "weed": {
-          "title": "Identification de Mauvaises Herbes",
-          "description": "Identifiez les mauvaises herbes et obtenez des stratégies de suppression"
-        }
+      "selectService": "Sélectionner le Service",
+      "identification": {
+        "title": "Identification de Plantes",
+        "description": "Téléchargez une photo pour identifier n'importe quelle espèce de plante"
+      },
+      "disease": {
+        "title": "Diagnostic de Maladies",
+        "description": "Identifiez les maladies des plantes et obtenez des conseils de traitement"
+      },
+      "weed": {
+        "title": "Identification de Mauvaises Herbes",
+        "description": "Identifiez les mauvaises herbes et obtenez des stratégies de suppression"
+      },
+      "premium": {
+        "title": "Docteur de Plantes Premium",
+        "feature1": "Diagnostic avancé des maladies",
+        "feature2": "Recommandations de traitement",
+        "feature3": "Guides d'entretien saisonniers",
+        "feature4": "Consultation d'experts",
+        "upgrade": "Passer à Premium"
       },
       "upload": {
         "title": "Télécharger une Image",
-        "dragDrop": "Glissez et déposez votre image ici, ou cliquez pour sélectionner",
-        "selectImage": "Sélectionner une Image",
-        "supportedFormats": "Formats supportés : JPG, PNG, WebP",
-        "maxSize": "Taille maximale de fichier : 10MB",
-        "analyzing": "Analyse de votre image...",
-        "analysisComplete": "Analyse Terminée",
-        "analysisFailed": "Analyse Échouée",
-        "noImageSelected": "Aucune Image Sélectionnée",
-        "selectImageFirst": "Veuillez sélectionner une image à analyser",
-        "additionalNotes": "Notes supplémentaires (optionnel)",
+        "photoLabel": "Photo de Plante",
+        "changeImage": "Cliquer pour changer l'image",
+        "instructions": "Glisser-déposer ou cliquer pour télécharger",
+        "chooseFile": "Choisir un Fichier",
+        "notesLabel": "Notes Supplémentaires",
         "notesPlaceholder": "Décrivez les symptômes ou préoccupations..."
       },
       "results": {
         "title": "Résultats Récents",
-        "noResults": "Aucun résultat d'analyse récent",
-        "noResultsDesc": "Téléchargez une image pour commencer l'identification de plantes",
-        "analysisDate": "Analysé le {{date}}",
-        "confidence": "Confiance : {{percentage}}%"
+        "sessions": "sessions",
+        "loadFailed": "Échec du chargement des résultats",
+        "analysisResult": "Résultat de l'Analyse",
+        "analysisCompleted": "Analyse terminée avec succès",
+        "confidence": "Confiance",
+        "noHistory": "Aucun Historique d'Analyse",
+        "noHistoryMessage": "Téléchargez une image pour commencer l'identification de plantes",
+        "startFirst": "Commencer Votre Première Analyse"
       },
-      "premium": {
-        "title": "Docteur de Plantes Premium",
-        "features": [
-          "Diagnostic avancé des maladies",
-          "Recommandations de traitement",
-          "Guides d'entretien saisonniers",
-          "Consultation d'experts"
-        ],
-        "upgradeNow": "Mettre à Niveau Maintenant"
+      "analyzing": "Analyse en cours...",
+      "analyzePlant": "Analyser la Plante",
+      "analysisComplete": "Analyse Terminée",
+      "analysisSuccess": "Votre plante a été analysée avec succès",
+      "analysisFailed": "Analyse Échouée",
+      "noImageSelected": "Aucune Image Sélectionnée",
+      "selectImagePrompt": "Veuillez sélectionner une image à analyser",
+      "steps": {
+        "preparing": "Préparation de l'image",
+        "analyzing": "Analyse des caractéristiques",
+        "identifying": "Identification de la plante",
+        "diagnosing": "Génération du diagnostic"
       }
     },
     "search": {

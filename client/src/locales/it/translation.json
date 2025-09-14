@@ -652,50 +652,59 @@
     "doctor": {
       "title": "Dottore delle Piante",
       "subtitle": "Identificazione piante e diagnosi sanitaria alimentata da IA",
-      "services": {
-        "identification": {
-          "title": "Identificazione Piante",
-          "description": "Carica una foto per identificare qualsiasi specie di pianta"
-        },
-        "disease": {
-          "title": "Diagnosi Malattie",
-          "description": "Identifica le malattie delle piante e ottieni consigli sul trattamento"
-        },
-        "weed": {
-          "title": "Identificazione Erbacce",
-          "description": "Identifica le erbacce e ottieni strategie di rimozione"
-        }
+      "selectService": "Seleziona Servizio",
+      "identification": {
+        "title": "Identificazione Piante",
+        "description": "Carica una foto per identificare qualsiasi specie di pianta"
+      },
+      "disease": {
+        "title": "Diagnosi Malattie",
+        "description": "Identifica le malattie delle piante e ottieni consigli sul trattamento"
+      },
+      "weed": {
+        "title": "Identificazione Erbacce",
+        "description": "Identifica le erbacce e ottieni strategie di rimozione"
+      },
+      "premium": {
+        "title": "Dottore Piante Premium",
+        "feature1": "Diagnosi avanzata delle malattie",
+        "feature2": "Raccomandazioni per il trattamento",
+        "feature3": "Guide di cura stagionali",
+        "feature4": "Consulenza esperta",
+        "upgrade": "Passa a Premium"
       },
       "upload": {
         "title": "Carica Immagine",
-        "dragDrop": "Trascina e rilascia la tua immagine qui, o clicca per selezionare",
-        "selectImage": "Seleziona Immagine",
-        "supportedFormats": "Formati supportati: JPG, PNG, WebP",
-        "maxSize": "Dimensione massima file: 10MB",
-        "analyzing": "Analizzando la tua immagine...",
-        "analysisComplete": "Analisi Completata",
-        "analysisFailed": "Analisi Fallita",
-        "noImageSelected": "Nessuna Immagine Selezionata",
-        "selectImageFirst": "Per favore seleziona un'immagine da analizzare",
-        "additionalNotes": "Note aggiuntive (opzionale)",
+        "photoLabel": "Foto della Pianta",
+        "changeImage": "Clicca per cambiare immagine",
+        "instructions": "Trascina e rilascia o clicca per caricare",
+        "chooseFile": "Scegli File",
+        "notesLabel": "Note Aggiuntive",
         "notesPlaceholder": "Descrivi sintomi o preoccupazioni..."
       },
       "results": {
         "title": "Risultati Recenti",
-        "noResults": "Nessun risultato di analisi recente",
-        "noResultsDesc": "Carica un'immagine per iniziare l'identificazione delle piante",
-        "analysisDate": "Analizzato il {{date}}",
-        "confidence": "Confidenza: {{percentage}}%"
+        "sessions": "sessioni",
+        "loadFailed": "Caricamento risultati fallito",
+        "analysisResult": "Risultato dell'Analisi",
+        "analysisCompleted": "Analisi completata con successo",
+        "confidence": "Confidenza",
+        "noHistory": "Nessuna Cronologia di Analisi",
+        "noHistoryMessage": "Carica un'immagine per iniziare l'identificazione delle piante",
+        "startFirst": "Inizia la Tua Prima Analisi"
       },
-      "premium": {
-        "title": "Dottore Piante Premium",
-        "features": [
-          "Diagnosi avanzata delle malattie",
-          "Raccomandazioni per il trattamento",
-          "Guide di cura stagionali",
-          "Consulenza esperta"
-        ],
-        "upgradeNow": "Aggiorna Ora"
+      "analyzing": "Analizzando...",
+      "analyzePlant": "Analizza Pianta",
+      "analysisComplete": "Analisi Completata",
+      "analysisSuccess": "La tua pianta è stata analizzata con successo",
+      "analysisFailed": "Analisi Fallita",
+      "noImageSelected": "Nessuna Immagine Selezionata",
+      "selectImagePrompt": "Per favore seleziona un'immagine da analizzare",
+      "steps": {
+        "preparing": "Preparazione immagine",
+        "analyzing": "Analisi caratteristiche",
+        "identifying": "Identificazione pianta",
+        "diagnosing": "Generazione diagnosi"
       }
     },
     "search": {

@@ -656,50 +656,59 @@
     "doctor": {
       "title": "Plant Doctor",
       "subtitle": "AI-powered plant identification and health diagnosis",
-      "services": {
-        "identification": {
-          "title": "Plant Identification",
-          "description": "Upload a photo to identify any plant species"
-        },
-        "disease": {
-          "title": "Disease Diagnosis",
-          "description": "Identify plant diseases and get treatment advice"
-        },
-        "weed": {
-          "title": "Weed Identification",
-          "description": "Identify weeds and get removal strategies"
-        }
+      "selectService": "Select Service",
+      "identification": {
+        "title": "Plant Identification",
+        "description": "Upload a photo to identify any plant species"
+      },
+      "disease": {
+        "title": "Disease Diagnosis",
+        "description": "Identify plant diseases and get treatment advice"
+      },
+      "weed": {
+        "title": "Weed Identification",
+        "description": "Identify weeds and get removal strategies"
+      },
+      "premium": {
+        "title": "Premium Plant Doctor",
+        "feature1": "Advanced disease diagnosis",
+        "feature2": "Treatment recommendations",
+        "feature3": "Seasonal care guides",
+        "feature4": "Expert consultation",
+        "upgrade": "Upgrade to Premium"
       },
       "upload": {
         "title": "Upload Image",
-        "dragDrop": "Drag and drop your image here, or click to select",
-        "selectImage": "Select Image",
-        "supportedFormats": "Supported formats: JPG, PNG, WebP",
-        "maxSize": "Maximum file size: 10MB",
-        "analyzing": "Analyzing your image...",
-        "analysisComplete": "Analysis Complete",
-        "analysisFailed": "Analysis Failed",
-        "noImageSelected": "No Image Selected",
-        "selectImageFirst": "Please select an image to analyze",
-        "additionalNotes": "Additional notes (optional)",
+        "photoLabel": "Plant Photo",
+        "changeImage": "Click to change image",
+        "instructions": "Drag and drop or click to upload",
+        "chooseFile": "Choose File",
+        "notesLabel": "Additional Notes",
         "notesPlaceholder": "Describe any symptoms or concerns..."
       },
       "results": {
         "title": "Recent Results",
-        "noResults": "No recent analysis results",
-        "noResultsDesc": "Upload an image to get started with plant identification",
-        "analysisDate": "Analyzed on {{date}}",
-        "confidence": "Confidence: {{percentage}}%"
+        "sessions": "sessions",
+        "loadFailed": "Failed to load results",
+        "analysisResult": "Analysis Result",
+        "analysisCompleted": "Analysis completed successfully",
+        "confidence": "Confidence",
+        "noHistory": "No Analysis History",
+        "noHistoryMessage": "Upload an image to get started with plant identification",
+        "startFirst": "Start Your First Analysis"
       },
-      "premium": {
-        "title": "Premium Plant Doctor",
-        "features": [
-          "Advanced disease diagnosis",
-          "Treatment recommendations",
-          "Seasonal care guides",
-          "Expert consultation"
-        ],
-        "upgradeNow": "Upgrade Now"
+      "analyzing": "Analyzing...",
+      "analyzePlant": "Analyze Plant",
+      "analysisComplete": "Analysis Complete",
+      "analysisSuccess": "Your plant has been successfully analyzed",
+      "analysisFailed": "Analysis Failed",
+      "noImageSelected": "No Image Selected",
+      "selectImagePrompt": "Please select an image to analyze",
+      "steps": {
+        "preparing": "Preparing image",
+        "analyzing": "Analyzing features",
+        "identifying": "Identifying plant",
+        "diagnosing": "Generating diagnosis"
       }
     },
     "search": {
