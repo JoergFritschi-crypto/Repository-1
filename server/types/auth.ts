@@ -1,0 +1,44 @@
+import type { Request } from 'express';
+
+// OIDC Claims structure from Replit
+export interface OIDCClaims {
+  sub: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  profile_image_url?: string;
+  is_admin?: boolean;
+  role?: string;
+  exp?: number;
+}
+
+// User object attached to request by Passport
+export interface AuthUser {
+  claims: OIDCClaims;
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+}
+
+// Properly typed authenticated request
+export interface AuthenticatedRequest extends Request {
+  user: AuthUser;
+  csrfToken?: () => string;
+}
+
+// Type guard to check if request is authenticated
+export function isAuthenticatedRequest(req: Request): req is AuthenticatedRequest {
+  return req.user !== undefined && 
+         'claims' in req.user && 
+         'sub' in (req.user as any).claims;
+}
+
+// Helper to safely get user ID
+export function getUserId(req: AuthenticatedRequest): string {
+  return req.user.claims.sub;
+}
+
+// Helper to check if user is admin
+export function isUserAdmin(req: AuthenticatedRequest): boolean {
+  return req.user.claims.is_admin === true || req.user.claims.role === 'admin';
+}

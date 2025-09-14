@@ -7,6 +7,7 @@ import type { Express, RequestHandler, Request } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import type { AuthenticatedRequest, AuthUser } from './types/auth';
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -146,13 +147,8 @@ export async function setupAuth(app: Express) {
   });
 }
 
-// Type for authenticated requests
-export interface AuthenticatedRequest extends Request {
-  user: any; // Contains OIDC claims
-}
-
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
+  const user = req.user as AuthUser;
 
   if (!req.isAuthenticated() || !user?.expires_at) {
     // Add hint for frontend to redirect
