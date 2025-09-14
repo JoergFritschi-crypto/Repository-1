@@ -22,6 +22,13 @@ import {
   Gift,
   TrendingUp
 } from "lucide-react";
+import { 
+  PremiumIcon,
+  GardenDesignIcon, 
+  PlantLibraryIcon, 
+  SeasonIcon, 
+  PlantDoctorIcon 
+} from "@/components/ui/brand-icons";
 
 export default function PremiumDashboard() {
   const { user, isLoading: authLoading } = useAuth();
@@ -93,7 +100,8 @@ export default function PremiumDashboard() {
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-foreground mb-2" data-testid="text-dashboard-title">
+            <h1 className="text-3xl font-serif font-bold text-foreground mb-2 flex items-center" data-testid="text-dashboard-title">
+              <PremiumIcon className="w-8 h-8 mr-3" />
               Premium Dashboard
             </h1>
             <p className="text-lg text-muted-foreground" data-testid="text-dashboard-subtitle">
@@ -144,7 +152,7 @@ export default function PremiumDashboard() {
                   <p className="text-2xl font-bold" data-testid="text-stat-designs">{stats.designsCreated}</p>
                   <p className="text-sm text-muted-foreground">Designs Created</p>
                 </div>
-                <Palette className="w-8 h-8 text-accent" />
+                <GardenDesignIcon className="w-8 h-8 text-accent" />
               </div>
             </CardContent>
           </Card>
@@ -156,7 +164,7 @@ export default function PremiumDashboard() {
                   <p className="text-2xl font-bold" data-testid="text-stat-plants">{stats.plantsInCollection}</p>
                   <p className="text-sm text-muted-foreground">Plants in Collection</p>
                 </div>
-                <Sprout className="w-8 h-8 text-secondary" />
+                <PlantLibraryIcon className="w-8 h-8 text-secondary" />
               </div>
             </CardContent>
           </Card>
@@ -168,7 +176,7 @@ export default function PremiumDashboard() {
                   <p className="text-2xl font-bold" data-testid="text-stat-blueprints">{stats.blueprintsDownloaded}</p>
                   <p className="text-sm text-muted-foreground">Blueprints Downloaded</p>
                 </div>
-                <Download className="w-8 h-8 text-primary" />
+                <SeasonIcon className="w-8 h-8 text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -180,7 +188,7 @@ export default function PremiumDashboard() {
                   <p className="text-2xl font-bold" data-testid="text-stat-doctor-uses">{stats.plantDoctorUses}</p>
                   <p className="text-sm text-muted-foreground">Plant Doctor Uses</p>
                 </div>
-                <Stethoscope className="w-8 h-8 text-canary" />
+                <PlantDoctorIcon className="w-8 h-8 text-canary" />
               </div>
             </CardContent>
           </Card>
@@ -194,7 +202,7 @@ export default function PremiumDashboard() {
                 <CardTitle data-testid="text-my-designs-title">My Garden Designs</CardTitle>
                 <Button asChild data-testid="button-create-new-design">
                   <a href="/garden-properties">
-                    <Palette className="w-4 h-4 mr-2" />
+                    <GardenDesignIcon className="w-4 h-4 mr-2" />
                     New Design
                   </a>
                 </Button>
@@ -205,7 +213,7 @@ export default function PremiumDashboard() {
                     {gardens.slice(0, 3).map((garden: any) => (
                       <div key={garden.id} className="border border-border rounded-lg p-4 hover:shadow-sm transition-shadow" data-testid={`design-item-${garden.id}`}>
                         <div className="flex items-center space-x-4">
-                          <Palette className="w-16 h-16 text-accent flex-shrink-0" />
+                          <GardenDesignIcon className="w-16 h-16 text-accent flex-shrink-0" />
                           <div className="flex-1">
                             <h3 className="font-medium" data-testid={`text-design-name-${garden.id}`}>{garden.name}</h3>
                             <p className="text-sm text-muted-foreground" data-testid={`text-design-details-${garden.id}`}>
@@ -241,7 +249,7 @@ export default function PremiumDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-12" data-testid="empty-designs-state">
-                    <Palette className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <GardenDesignIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">No designs yet</h3>
                     <p className="text-muted-foreground mb-4">
                       Create your first garden design to get started
@@ -344,7 +352,7 @@ export default function PremiumDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-4" data-testid="empty-collection-state">
-                    <Sprout className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <PlantLibraryIcon className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">No plants in collection</p>
                     <Button variant="ghost" size="sm" asChild className="mt-2" data-testid="button-browse-plants">
                       <a href="/plant-library" className="link-reset">Browse Plants</a>
@@ -362,7 +370,7 @@ export default function PremiumDashboard() {
               <CardContent className="space-y-3">
                 <Button asChild className="w-full justify-start" data-testid="button-plant-doctor">
                   <a href="/plant-doctor" className="link-reset">
-                    <Stethoscope className="w-4 h-4 mr-2" />
+                    <PlantDoctorIcon className="w-4 h-4 mr-2" />
                     Plant Doctor
                   </a>
                 </Button>
@@ -373,7 +381,7 @@ export default function PremiumDashboard() {
                   </a>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" data-testid="button-export-all">
-                  <Download className="w-4 h-4 mr-2" />
+                  <SeasonIcon className="w-4 h-4 mr-2" />
                   Export All
                 </Button>
               </CardContent>
