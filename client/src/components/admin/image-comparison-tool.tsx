@@ -27,10 +27,11 @@ export function ImageComparisonTool() {
   const [selectedType, setSelectedType] = useState<string>("all");
   const { toast } = useToast();
   
-  const plants = ["Japanese Maple", "English Lavender", "Hosta"];
-  const approaches = ["garden", "atlas", "hybrid"];
-  const models = ["schnell"];
-  const imageTypes = ["full", "detail"];
+  // Extract unique values from loaded images or show empty states
+  const plants = Array.from(new Set(images.map(img => img.plantName)));
+  const approaches = ["garden", "atlas", "hybrid"]; // Keep as these are system-defined approaches
+  const models = ["schnell"]; // Keep as these are system-defined models
+  const imageTypes = ["full", "detail"]; // Keep as these are system-defined types
   
   // Load existing images
   const loadImages = async () => {
@@ -50,8 +51,17 @@ export function ImageComparisonTool() {
     loadImages();
   }, []);
   
-  // Generate test images for comparison
+  // Generate test images for comparison (only if plants exist)
   const generateTestImages = async () => {
+    if (plants.length === 0) {
+      toast({
+        title: "No Plants Available",
+        description: "No plant data available for test generation",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setGenerating(true);
     const results = [];
     
@@ -180,7 +190,7 @@ export function ImageComparisonTool() {
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
-      ) : (
+      ) : plants.length > 0 ? (
         <Tabs defaultValue={plants[0]} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             {plants.map(plant => (
@@ -300,6 +310,26 @@ export function ImageComparisonTool() {
             </TabsContent>
           ))}
         </Tabs>
+      ) : (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Flower2 className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Test Images Available</h3>
+            <p className="text-muted-foreground mb-4">
+              Generate test images to start comparing different approaches and models.
+            </p>
+            <Button onClick={generateTestImages} disabled={generating}>
+              {generating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                'Generate Test Set'
+              )}
+            </Button>
+          </div>
+        </div>
       )}
       
       {/* Approach Descriptions */}
