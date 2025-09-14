@@ -378,6 +378,12 @@ export default function GardenProperties() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentStep]);
 
+  // Update search card expansion based on design approach
+  useEffect(() => {
+    // Expand for manual design, collapse for AI design
+    setIsSearchExpanded(localDesignApproach === 'manual');
+  }, [localDesignApproach]);
+
   const nextStep = async () => {
     // Handle transition from Step 4 (Interactive Design) to Step 5 (Seasonal)
     if (currentStep === 4) {
