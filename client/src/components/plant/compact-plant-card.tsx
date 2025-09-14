@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import LazyImage from "@/components/ui/lazy-image";
 import html2canvas from "html2canvas";
@@ -192,7 +193,15 @@ const CompactPlantCard = memo(function CompactPlantCard({
   const [notes, setNotes] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<string>("");
   const { toast } = useToast();
+  
+  // Get user tier
+  const { data: user } = useQuery({
+    queryKey: ['/api/auth/user']
+  });
+  const userTier = user?.userTier || 'free';
   const { addToRecentlyViewed } = useRecentlyViewed();
   
   // Track when detail dialog opens
@@ -231,20 +240,9 @@ const CompactPlantCard = memo(function CompactPlantCard({
     },
     onError: (error: any) => {
       if (error.code === 'COLLECTION_LIMIT_REACHED') {
-        toast({
-          title: "Collection Limit Reached",
-          description: error.message,
-          variant: "destructive",
-          action: (
-            <Button 
-              variant="secondary" 
-              size="sm"
-              onClick={() => window.location.href = '/pricing'}
-            >
-              Upgrade to Premium
-            </Button>
-          )
-        });
+        setUpgradeReason("You've reached your collection limit. Upgrade to add more plants to your collection.");
+        setShowUpgradeModal(true);
+        setShowAddDialog(false);
       } else if (error.code === 'DUPLICATE_PLANT') {
         toast({
           title: "Already in Collection",
@@ -940,6 +938,19 @@ const CompactPlantCard = memo(function CompactPlantCard({
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentTier={userTier as 'free' | 'pay_per_design' | 'premium'}
+        triggerReason={upgradeReason}
+        onSuccessfulUpgrade={() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/my-collection/limits'] });
+          setShowUpgradeModal(false);
+        }}
+      />
     </>
   );
 });

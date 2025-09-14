@@ -76,17 +76,22 @@ export interface StepComponentProps {
 
 // Step-specific props interfaces
 export interface Step1Props extends StepComponentProps {
+  user?: any;
+  isPaidUser?: boolean;
+  autoSaveEnabled?: boolean;
+  setAutoSaveEnabled?: (enabled: boolean) => void;
   showClimateModal: boolean;
   setShowClimateModal: (show: boolean) => void;
   showSoilTestingModal: boolean;
   setShowSoilTestingModal: (show: boolean) => void;
-  locationToFetch: string | null;
-  setLocationToFetch: (location: string | null) => void;
+  locationToFetch?: string | null;
+  setLocationToFetch?: (location: string | null) => void;
   climateData: any;
   setClimateData: (data: any) => void;
 }
 
 export interface Step2Props extends StepComponentProps {
+  user?: any;
   hasUploadedPhotos: boolean;
   setHasUploadedPhotos: (uploaded: boolean) => void;
   hasSetOrientation: boolean;

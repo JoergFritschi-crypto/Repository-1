@@ -590,6 +590,7 @@ export default function GardenProperties() {
             {currentStep === 2 && (
               <Step2SiteDetails
                 form={form}
+                user={user}
                 hasUploadedPhotos={hasUploadedPhotos}
                 setHasUploadedPhotos={setHasUploadedPhotos}
                 hasSetOrientation={hasSetOrientation}

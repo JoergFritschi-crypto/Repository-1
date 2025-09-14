@@ -12,6 +12,7 @@ import type { Step2Props } from './types';
 
 const Step2SiteDetails = memo(({
   form,
+  user,
   hasUploadedPhotos,
   setHasUploadedPhotos,
   hasSetOrientation,
@@ -21,6 +22,7 @@ const Step2SiteDetails = memo(({
   recommendedStyleIds,
   setRecommendedStyleIds,
 }: Step2Props) => {
+  const isAdmin = user?.isAdmin === true;
   const watchedShape = form.watch("shape");
   const watchedDimensions = form.watch("dimensions") || {};
   const watchedUnits = form.watch("units");
@@ -45,7 +47,7 @@ const Step2SiteDetails = memo(({
             name="units"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Measurement Units <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Measurement Units {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <FormControl>
                   <RadioGroup
                     value={field.value}
@@ -76,7 +78,7 @@ const Step2SiteDetails = memo(({
             name="shape"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Garden Shape <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Garden Shape {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-shape">
@@ -112,7 +114,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.width"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Width ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Width ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -131,7 +133,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -154,7 +156,7 @@ const Step2SiteDetails = memo(({
                 name="dimensions.width"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Side Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>Side Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -176,7 +178,7 @@ const Step2SiteDetails = memo(({
                 name="dimensions.radius"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Radius ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>Radius ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -199,7 +201,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.base"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Base ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Base ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -218,7 +220,7 @@ const Step2SiteDetails = memo(({
                   name="dimensions.height"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Height ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Height ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -246,7 +248,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.mainLength"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Main Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Main Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -265,7 +267,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.mainWidth"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Main Width ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Main Width ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -286,7 +288,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.cutoutLength"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cutout Length ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Cutout Length ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -305,7 +307,7 @@ const Step2SiteDetails = memo(({
                     name="dimensions.cutoutWidth"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cutout Width ({watchedUnits}) <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Cutout Width ({watchedUnits}) {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -393,7 +395,7 @@ const Step2SiteDetails = memo(({
       {/* Garden Sketch with rotatable rings */}
       <Card className="border-2 border-primary shadow-sm" data-testid="step-garden-sketch">
         <CardHeader className="py-7 flower-band-autumn rounded-t-lg">
-          <CardTitle className="text-base">Garden Orientation & View <span className="text-red-500">*</span></CardTitle>
+          <CardTitle className="text-base">Garden Orientation & View {!isAdmin && <span className="text-red-500">*</span>}</CardTitle>
           <p className="text-sm text-gray-600 mt-1">Set north direction and viewing point using the interactive controls below</p>
         </CardHeader>
         <CardContent>

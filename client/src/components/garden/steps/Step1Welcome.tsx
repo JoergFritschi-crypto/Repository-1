@@ -13,6 +13,10 @@ import type { Step1Props } from './types';
 
 const Step1Welcome = memo(({
   form,
+  user,
+  isPaidUser,
+  autoSaveEnabled,
+  setAutoSaveEnabled,
   showClimateModal,
   setShowClimateModal,
   showSoilTestingModal,
@@ -22,6 +26,7 @@ const Step1Welcome = memo(({
   climateData,
   setClimateData,
 }: Step1Props) => {
+  const isAdmin = user?.isAdmin === true;
   const watchedCountry = form.watch("country");
   const watchedCity = form.watch("city");
   const watchedZipCode = form.watch("zipCode");
@@ -79,7 +84,7 @@ const Step1Welcome = memo(({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Garden Name <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Garden Name {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <FormControl>
                   <Input 
                     placeholder="My Dream Garden" 
@@ -394,8 +399,8 @@ const Step1Welcome = memo(({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        USDA Hardiness Zone <span className="text-red-500">*</span>
-                        <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>
+                        USDA Hardiness Zone {!isAdmin && <span className="text-red-500">*</span>}
+                        {!isAdmin && <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>}
                       </FormLabel>
                       <Select 
                         onValueChange={(value) => {
@@ -445,8 +450,8 @@ const Step1Welcome = memo(({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        RHS Hardiness Rating <span className="text-red-500">*</span>
-                        <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>
+                        RHS Hardiness Rating {!isAdmin && <span className="text-red-500">*</span>}
+                        {!isAdmin && <span className="text-xs text-muted-foreground ml-2">(at least one zone required)</span>}
                       </FormLabel>
                       <Select 
                         onValueChange={(value) => {
@@ -523,7 +528,7 @@ const Step1Welcome = memo(({
             name="sunExposure"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Primary Sun Exposure <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Primary Sun Exposure {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-sun-exposure">
@@ -573,7 +578,7 @@ const Step1Welcome = memo(({
               name="soilType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Soil Type <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>Soil Type {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-soil-type">
@@ -601,7 +606,7 @@ const Step1Welcome = memo(({
               name="soilPh"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Soil pH <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>Soil pH {!isAdmin && <span className="text-red-500">*</span>}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-soil-ph">

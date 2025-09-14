@@ -37,10 +37,15 @@ export function useStepNavigation({
   }, [currentStep]);
 
   const validateStep1 = useCallback(() => {
+    // Skip validation entirely for admin users
+    if (user?.isAdmin === true) {
+      return true;
+    }
+    
     const values = form.getValues();
     const errors: string[] = [];
     
-    // Check required fields for Step 1
+    // Check required fields for Step 1 (non-admin users only)
     if (!values.name) errors.push("Garden Name");
     if (!values.usdaZone && !values.rhsZone) errors.push("At least one Hardiness Zone (USDA or RHS)");
     if (!values.sunExposure) errors.push("Sun Exposure");
@@ -57,7 +62,7 @@ export function useStepNavigation({
     }
     
     return true;
-  }, [form]);
+  }, [form, user]);
 
   const saveGarden = useCallback(async () => {
     const shouldAutoSave = isPaidUser || autoSaveEnabled;
