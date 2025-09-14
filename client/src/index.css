@@ -170,17 +170,15 @@
     background-clip: text;
   }
   
-  /* Hero title override for clean, prominent gold text with dark green contours */
+  /* Hero title override for PURE GOLD text - no green */
   .hero-title {
-    /* Strong, solid gold color */
-    color: #ffbf00 !important;
-    -webkit-text-fill-color: #ffbf00 !important;
-    /* Dark British green contours for contrast */
-    -webkit-text-stroke: 2px #004225;
-    text-stroke: 2px #004225;
-    /* Additional subtle outer shadow for depth */
-    filter: drop-shadow(0 2px 4px rgba(0, 66, 37, 0.5)) 
-            drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    /* Pure gold color */
+    color: #FFD700 !important;
+    -webkit-text-fill-color: #FFD700 !important;
+    /* No green stroke - pure gold only */
+    /* Add strong black shadow for contrast */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8)) 
+            drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
     font-weight: 900;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -190,8 +188,7 @@
   @media (min-width: 768px) {
     .hero-title {
       font-size: 3.5rem;
-      -webkit-text-stroke: 2.5px #004225;
-      text-stroke: 2.5px #004225;
+      /* No stroke - pure gold */
     }
   }
   
