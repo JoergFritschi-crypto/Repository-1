@@ -116,7 +116,7 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div className="max-w-2xl">
-              <h1 className="text-2xl md:text-3xl font-serif font-bold mb-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" data-testid="text-hero-title">
+              <h1 className="text-2xl md:text-3xl font-serif font-bold mb-3 !text-white hero-title" data-testid="text-hero-title">
                 {t('landing.hero.title')}
               </h1>
               <p className="text-base mb-6 text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-testid="text-hero-subtitle">
