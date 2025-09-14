@@ -657,7 +657,7 @@ export default function GardenProperties() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 via-white to-primary/5">
-      <Navigation />
+      <Navigation currentStep={currentStep} />
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
         <div className="mb-6">
@@ -676,8 +676,8 @@ export default function GardenProperties() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             {stepDetails.map((step, visibleIndex) => {
-              // Map visible index to actual step number (accounting for hidden step 4)
-              const actualStepNumber = visibleIndex < 3 ? visibleIndex + 1 : visibleIndex + 2;
+              // Direct mapping - each step maps to its index + 1
+              const actualStepNumber = visibleIndex + 1;
               const isActive = currentStep === actualStepNumber;
               const isCompleted = currentStep > actualStepNumber;
               const displayNumber = visibleIndex + 1; // Show 1-6 to users
@@ -2320,10 +2320,10 @@ export default function GardenProperties() {
             {/* Step 4: Interactive Design - Unified Plant Selection and Placement */}
             {currentStep === 4 && (
               <div className="space-y-4">
-                {/* Collapsible Plant Search Card */}
-                <Card className="border-2 border-primary/30 shadow-sm" data-testid="plant-search-card">
+                {/* Collapsible Plant Search Card with Gold Accents */}
+                <Card className="border-2 border-primary/30 shadow-sm hover:border-[#FFD700]/50 hover:shadow-lg hover:shadow-[rgba(255,215,0,0.1)] transition-all duration-300" data-testid="plant-search-card">
                   <CardHeader 
-                    className="py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="py-3 cursor-pointer hover:bg-[#FFD700]/5 transition-all duration-300 border-b-2 border-transparent hover:border-[#FFD700]/20"
                     onClick={() => setIsSearchExpanded(!isSearchExpanded)}
                   >
                     <div className="flex items-center justify-between">
@@ -2331,7 +2331,7 @@ export default function GardenProperties() {
                         <Search className="w-4 h-4 text-primary" />
                         <CardTitle className="text-base">Plant Search & Filters</CardTitle>
                         {inventoryPlants.length > 0 && (
-                          <Badge variant="secondary" className="ml-2">
+                          <Badge variant="secondary" className="ml-2 bg-[#FFD700]/10 text-primary border-[#FFD700] hover:bg-[#FFD700] hover:text-white transition-all duration-300">
                             {inventoryPlants.length} plants in inventory
                           </Badge>
                         )}
@@ -2365,7 +2365,7 @@ export default function GardenProperties() {
                           </Button>
                         )}
                         <ChevronDown 
-                          className={`w-4 h-4 text-gray-500 transition-transform ${
+                          className={`w-4 h-4 text-gray-500 hover:text-[#FFD700] transition-all duration-300 ${
                             isSearchExpanded ? 'rotate-180' : ''
                           }`}
                         />
@@ -2392,7 +2392,7 @@ export default function GardenProperties() {
                           <Checkbox 
                             checked={plantFilters.toxicityLevel === 'none'}
                             onCheckedChange={(checked) => {
-                              setPlantFilters(prev => ({
+                              setPlantFilters((prev: any) => ({
                                 ...prev,
                                 toxicityLevel: checked ? 'none' : undefined
                               }));
@@ -2404,7 +2404,7 @@ export default function GardenProperties() {
                           <Checkbox 
                             checked={plantFilters.nativeOnly === true}
                             onCheckedChange={(checked) => {
-                              setPlantFilters(prev => ({
+                              setPlantFilters((prev: any) => ({
                                 ...prev,
                                 nativeOnly: checked ? true : undefined
                               }));
@@ -2507,11 +2507,11 @@ export default function GardenProperties() {
                   )}
                 </Card>
                 
-                {/* Main Garden Design Canvas - Full Width */}
-                <Card className="border-2 border-primary shadow-sm" data-testid="step-interactive-design">
-                  <CardHeader className="py-3">
+                {/* Main Garden Design Canvas - Full Width with Gold Accents */}
+                <Card className="border-2 border-primary shadow-sm hover:shadow-lg hover:shadow-[rgba(255,215,0,0.1)] transition-all duration-300" data-testid="step-interactive-design">
+                  <CardHeader className="py-3 border-b-2 border-[#FFD700]/20 bg-gradient-to-r from-transparent via-[rgba(255,215,0,0.05)] to-transparent">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <PenTool className="w-4 h-4 text-primary" />
+                      <PenTool className="w-4 h-4 text-primary hover:text-[#FFD700] transition-colors" />
                       Interactive Garden Design
                     </CardTitle>
                     <CardDescription>
@@ -2588,11 +2588,34 @@ export default function GardenProperties() {
                     setInventoryPlants(prev => [...prev, plant]);
                     toast({
                       title: "Plant Added",
-                      description: `${plant.plantName} has been added to your inventory`,
+                      description: `${plant.name} has been added to your inventory`,
                     });
                   }}
                   userTier={user?.userTier || 'free'}
                 />
+                
+                {/* Step 4 Navigation Buttons */}
+                <div className="flex justify-between mt-6 sticky bottom-0 bg-background/95 backdrop-blur p-4 border-t-2 border-[#FFD700]/20 -mx-4 mb-[-1rem]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    className="hover:bg-[#FFD700]/10 hover:border-[#FFD700] hover:shadow-[rgba(255,215,0,0.2)] hover:shadow-md transition-all duration-300"
+                    data-testid="button-previous-step4"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
+                    Previous
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    className="bg-primary hover:bg-primary/90 hover:shadow-[rgba(255,215,0,0.3)] hover:shadow-lg transition-all duration-300 hover:border-[#FFD700] border-2 border-transparent"
+                    data-testid="button-next-step4"
+                  >
+                    {stepDetails[3]?.buttonLabel}
+                    <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                  </Button>
+                </div>
               </div>
             )}
 

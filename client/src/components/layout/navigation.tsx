@@ -13,7 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function Navigation() {
+interface NavigationProps {
+  currentStep?: number;
+}
+
+export default function Navigation({ currentStep }: NavigationProps = {}) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
