@@ -1729,7 +1729,7 @@ Rules:
   });
 
   // Test endpoint for enhanced validation pipeline
-  app.post('/api/admin/test-validation-pipeline', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/test-validation-pipeline', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -1814,7 +1814,7 @@ Rules:
   });
 
   // Admin plant routes
-  app.post('/api/admin/plants', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const plantData = insertPlantSchema.parse(req.body);
       const plant = await storage.createPlant(plantData);
@@ -1825,7 +1825,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/plants/pending', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/plants/pending', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const plants = await storage.getPendingPlants();
       res.json(plants);
@@ -1835,7 +1835,7 @@ Rules:
     }
   });
 
-  app.put('/api/admin/plants/:id/verify', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/plants/:id/verify', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const plant = await storage.verifyPlant(req.params.id);
       res.json(plant);
@@ -1845,7 +1845,7 @@ Rules:
     }
   });
 
-  app.delete('/api/admin/plants/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/plants/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       await storage.deletePlant(req.params.id);
       res.json({ message: "Plant deleted successfully" });
@@ -1856,7 +1856,7 @@ Rules:
   });
 
   // Batch validate plants endpoint
-  app.post('/api/admin/plants/batch-validate', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/batch-validate', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -1891,7 +1891,7 @@ Rules:
   });
 
   // Batch generate missing images endpoint
-  app.post('/api/admin/plants/batch-generate-images', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/batch-generate-images', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -1957,7 +1957,7 @@ Rules:
   });
 
   // AI-Generated Garden Tool Icons API
-  app.post('/api/admin/generate-garden-tool-icons', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/generate-garden-tool-icons', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -1982,7 +1982,7 @@ Rules:
     }
   });
 
-  app.post('/api/admin/generate-single-icon', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/generate-single-icon', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2039,7 +2039,7 @@ Rules:
   });
 
   // Admin Security Management Routes
-  app.get('/api/admin/security/stats', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/stats', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2054,7 +2054,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/audit-logs', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/audit-logs', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2078,7 +2078,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/sessions', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2094,7 +2094,7 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/sessions/:sessionId/revoke', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/sessions/:sessionId/revoke', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2121,7 +2121,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/failed-logins', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/failed-logins', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2137,7 +2137,7 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/failed-logins/:ipAddress/clear', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/failed-logins/:ipAddress/clear', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2164,7 +2164,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/ip-controls', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/ip-controls', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2180,7 +2180,7 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/ip-controls', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/ip-controls', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2219,7 +2219,7 @@ Rules:
     }
   });
 
-  app.delete('/api/admin/security/ip-controls/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/security/ip-controls/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2246,7 +2246,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/settings', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/settings', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2261,7 +2261,7 @@ Rules:
     }
   });
 
-  app.put('/api/admin/security/settings', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/security/settings', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2295,7 +2295,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/rate-limits', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/rate-limits', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2316,7 +2316,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/recommendations', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/recommendations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2332,7 +2332,7 @@ Rules:
     }
   });
 
-  app.put('/api/admin/security/recommendations/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/security/recommendations/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2369,7 +2369,7 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/cleanup-sessions', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/cleanup-sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -2397,7 +2397,7 @@ Rules:
   });
 
   // Validate plant data with Perplexity
-  app.post('/api/admin/plants/:id/validate', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/:id/validate', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -2547,7 +2547,7 @@ Rules:
   });
 
   // Image generation endpoints
-  app.post('/api/admin/plants/:id/generate-images', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/:id/generate-images', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -2576,7 +2576,7 @@ Rules:
   });
 
   // Bulk generate images for all plants without images
-  app.post('/api/admin/plants/generate-all-images', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/generate-all-images', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -2619,7 +2619,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/image-generation/status', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/image-generation/status', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -2634,7 +2634,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/image-generation/queue', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/image-generation/queue', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -2661,7 +2661,7 @@ Rules:
   });
 
   // Clear completed and failed items from the queue
-  app.post('/api/admin/image-generation/clear-queue', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/image-generation/clear-queue', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -2680,7 +2680,7 @@ Rules:
   });
 
   // Admin route for photorealizing garden images
-  app.post('/api/admin/photorealize-garden', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/photorealize-garden', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         referenceImage,
@@ -2753,7 +2753,7 @@ Rules:
   });
   
   // NEW: Admin route for Gemini 2.5 Flash botanical enhancement (Step 2 of pipeline)
-  app.post('/api/admin/gemini-enhance-garden', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/gemini-enhance-garden', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         referenceImage,
@@ -2964,7 +2964,7 @@ Rules:
   }
 
   // Generate seasonal variations using Gemini 2.5 "nano banana"
-  app.post('/api/admin/generate-seasonal-variations', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/generate-seasonal-variations', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         referenceImage, // Base64 image from photorealization
@@ -3054,7 +3054,7 @@ Rules:
   });
 
   // Plant Import Wizard endpoints
-  app.get('/api/admin/import/search-perenual', requireAdmin, async (req, res) => {
+  app.get('/api/admin/import/search-perenual', isAuthenticated, async (req, res) => {
     try {
       // Check if user is admin
       const user = await storage.getUser((req as any).user.claims.sub);
@@ -3078,7 +3078,7 @@ Rules:
   });
   
   // Plant Import Wizard - Search GBIF with same rigorous standards
-  app.get('/api/admin/import/search-gbif', requireAdmin, async (req, res) => {
+  app.get('/api/admin/import/search-gbif', isAuthenticated, async (req, res) => {
     try {
       // Check if user is admin
       const user = await storage.getUser((req as any).user.claims.sub);
@@ -3101,7 +3101,7 @@ Rules:
     }
   });
   
-  app.post('/api/admin/import/enrich-gbif', requireAdmin, async (req, res) => {
+  app.post('/api/admin/import/enrich-gbif', isAuthenticated, async (req, res) => {
     try {
       // Check if user is admin
       const user = await storage.getUser((req as any).user.claims.sub);
@@ -3124,7 +3124,7 @@ Rules:
     }
   });
   
-  app.post('/api/admin/import/enrich-inaturalist', requireAdmin, async (req, res) => {
+  app.post('/api/admin/import/enrich-inaturalist', isAuthenticated, async (req, res) => {
     try {
       const { scientific_name } = req.body;
       if (!scientific_name) {
@@ -3142,7 +3142,7 @@ Rules:
   });
   
   // Search iNaturalist for plants
-  app.get('/api/admin/import/search-inaturalist', requireAdmin, async (req, res) => {
+  app.get('/api/admin/import/search-inaturalist', isAuthenticated, async (req, res) => {
     try {
       const { q } = req.query;
       if (!q || typeof q !== 'string') {
@@ -3160,7 +3160,7 @@ Rules:
   });
   
   // Validate plant data with Perplexity AI
-  app.post('/api/admin/import/validate-perplexity', requireAdmin, async (req, res) => {
+  app.post('/api/admin/import/validate-perplexity', isAuthenticated, async (req, res) => {
     try {
       const { plant } = req.body;
       if (!plant || !plant.scientific_name) {
@@ -3177,7 +3177,7 @@ Rules:
     }
   });
   
-  app.post('/api/admin/import/plants', requireAdmin, async (req, res) => {
+  app.post('/api/admin/import/plants', isAuthenticated, async (req, res) => {
     try {
       // Check if user is admin
       const user = await storage.getUser((req as any).user.claims.sub);
@@ -3201,7 +3201,7 @@ Rules:
   });
   
   // Reset stuck items back to pending
-  app.post('/api/admin/image-generation/reset-stuck', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/image-generation/reset-stuck', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -3220,7 +3220,7 @@ Rules:
   });
   
   // Test endpoint for comparing different image generation approaches
-  app.post('/api/admin/test-generation', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/test-generation', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { plantName, approach, modelChoice, imageType } = req.body;
       
@@ -3265,7 +3265,7 @@ Rules:
   });
   
   // Get all test images from the generated folder
-  app.get('/api/admin/test-images', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/test-images', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const fs = await import('fs/promises');
       const imagesDir = path.join(process.cwd(), 'client', 'public', 'generated-images');
@@ -4490,7 +4490,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Admin API Monitoring Routes
-  app.get('/api/admin/api-health', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-health', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -4502,7 +4502,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/api-health/check', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/api-health/check', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -4514,7 +4514,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.get('/api/admin/api-usage', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-usage', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -4533,7 +4533,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.get('/api/admin/api-config', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-config', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -4546,7 +4546,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Test Runware connectivity directly
-  app.get('/api/admin/test-runware', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/test-runware', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -4618,7 +4618,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // API Key Management Routes
-  app.get('/api/admin/api-keys/status', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-keys/status', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -4687,7 +4687,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/api-keys/test/:service', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/api-keys/test/:service', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -4720,7 +4720,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Set user as admin - secured endpoint for bootstrap only
-  app.post('/api/admin/make-admin', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/make-admin', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -4764,7 +4764,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Create test garden for quick testing
-  app.post('/api/admin/create-test-garden', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/create-test-garden', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -4818,7 +4818,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Combined validation with Perenual first, then Perplexity for gaps
-  app.post('/api/admin/validate-plants-combined', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/validate-plants-combined', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -5169,7 +5169,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Validate plants with Perplexity AI to fill missing data
-  app.post('/api/admin/validate-plants-perplexity', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/validate-plants-perplexity', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -5280,7 +5280,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // FireCrawl Plant Data Scraping Endpoint
-  app.post('/api/admin/scrape-plant-data', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/scrape-plant-data', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -5349,7 +5349,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get scraping progress endpoint (database)
-  app.get('/api/admin/scraping-progress', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/scraping-progress', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -5376,7 +5376,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get real-time scraping progress endpoint
-  app.get('/api/admin/scraping-progress-realtime', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/scraping-progress-realtime', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
 
@@ -5691,7 +5691,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   }
 
   // Todo task routes for admin dashboard
-  app.get('/api/admin/todo-tasks', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/todo-tasks', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -5703,7 +5703,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/todo-tasks', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/todo-tasks', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -5718,7 +5718,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.delete('/api/admin/todo-tasks/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/todo-tasks/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -5732,7 +5732,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Populate Test Garden 1 with sample plants
-  app.post('/api/admin/populate-test-garden', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/populate-test-garden', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
 
       
@@ -5972,7 +5972,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   };
   
   // Get security statistics
-  app.get('/api/admin/security/stats', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/stats', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -5988,7 +5988,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get audit logs with filters
-  app.get('/api/admin/security/audit-logs', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/audit-logs', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -6005,7 +6005,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get active sessions
-  app.get('/api/admin/security/sessions', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -6034,7 +6034,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get failed login attempts
-  app.get('/api/admin/security/failed-logins', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/failed-logins', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -6062,7 +6062,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get IP access controls
-  app.get('/api/admin/security/ip-controls', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/ip-controls', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -6107,7 +6107,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get security settings
-  app.get('/api/admin/security/settings', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/settings', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -6135,7 +6135,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get rate limit violations
-  app.get('/api/admin/security/rate-limits', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/rate-limits', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {
@@ -6151,7 +6151,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get security recommendations
-  app.get('/api/admin/security/recommendations', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/recommendations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || !user.isAdmin) {

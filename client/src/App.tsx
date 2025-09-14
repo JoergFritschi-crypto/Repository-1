@@ -49,6 +49,11 @@ const LazyRoute = ({ component: Component, ...props }: any) => (
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Show loading spinner while auth is being checked
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
   return (
     <ErrorBoundary level="page" showDetails={process.env.NODE_ENV === 'development'}>
       <Switch>
@@ -59,7 +64,7 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/contact" component={Contact} />
         
-        {/* Authenticated routes */}
+        {/* Authenticated routes - only render if authenticated */}
         {isAuthenticated && (
           <>
             <Route path="/home" component={Home} />

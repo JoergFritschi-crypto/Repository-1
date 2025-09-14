@@ -132,8 +132,8 @@ export function SecuritySettings() {
   const [activeTab, setActiveTab] = useState('overview');
   const [auditLogFilters, setAuditLogFilters] = useState({
     userId: '',
-    eventType: '',
-    severity: '',
+    eventType: 'all',
+    severity: 'all',
     startDate: '',
     endDate: ''
   });
@@ -152,7 +152,7 @@ export function SecuritySettings() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(auditLogFilters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
+        if (value && value !== 'all') params.append(key, value);
       });
       const response = await fetch(`/api/admin/security/audit-logs?${params}`, {
         credentials: 'include'
@@ -750,10 +750,10 @@ export function SecuritySettings() {
                           <span className="text-sm font-medium">{violation.endpoint}</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          IP: {violation.ipAddress} • Window start: {format(new Date(violation.windowStart), 'PPp')}
+                          IP: {violation.ipAddress} • Window start: {violation.windowStart ? format(new Date(violation.windowStart), 'PPp') : 'N/A'}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Last attempt: {format(new Date(violation.lastAttempt), 'PPp')}
+                          Last attempt: {violation.lastAttempt ? format(new Date(violation.lastAttempt), 'PPp') : 'N/A'}
                         </p>
                       </div>
                     ))}
@@ -789,13 +789,13 @@ export function SecuritySettings() {
                 />
                 <Select
                   value={auditLogFilters.eventType}
-                  onValueChange={(value) => setAuditLogFilters(prev => ({ ...prev, eventType: value }))}
+                  onValueChange={(value) => setAuditLogFilters(prev => ({ ...prev, eventType: value || 'all' }))}
                 >
                   <SelectTrigger data-testid="select-event-type">
                     <SelectValue placeholder="Event Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="login_success">Login Success</SelectItem>
                     <SelectItem value="login_failed">Login Failed</SelectItem>
                     <SelectItem value="session_revoked">Session Revoked</SelectItem>
@@ -805,13 +805,13 @@ export function SecuritySettings() {
                 </Select>
                 <Select
                   value={auditLogFilters.severity}
-                  onValueChange={(value) => setAuditLogFilters(prev => ({ ...prev, severity: value }))}
+                  onValueChange={(value) => setAuditLogFilters(prev => ({ ...prev, severity: value || 'all' }))}
                 >
                   <SelectTrigger data-testid="select-severity">
                     <SelectValue placeholder="Severity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="info">Info</SelectItem>
                     <SelectItem value="warning">Warning</SelectItem>
                     <SelectItem value="error">Error</SelectItem>

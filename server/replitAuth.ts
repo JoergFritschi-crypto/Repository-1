@@ -59,12 +59,17 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
+  // Check if user is admin from OIDC claims
+  const isAdmin = claims["is_admin"] === true || claims["role"] === "admin";
+  
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
+    // Set isAdmin from OIDC claims
+    isAdmin: isAdmin,
   });
 }
 
@@ -139,6 +144,11 @@ export async function setupAuth(app: Express) {
       );
     });
   });
+}
+
+// Type for authenticated requests
+export interface AuthenticatedRequest extends Request {
+  user: any; // Contains OIDC claims
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
