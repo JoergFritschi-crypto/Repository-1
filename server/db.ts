@@ -1,9 +1,6 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
-
-neonConfig.webSocketConstructor = ws;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -11,7 +8,7 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Configure connection pool with proper settings for Neon
+// Configure connection pool with proper settings for PostgreSQL
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
   max: 10, // maximum number of connections in the pool
@@ -27,4 +24,4 @@ pool.on('error', (err) => {
   // Don't throw here to prevent the application from crashing
 });
 
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(pool, { schema });
