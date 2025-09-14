@@ -59,6 +59,7 @@ interface KeyStatusInfo {
 export function APIMonitoring() {
   const { toast } = useToast();
   const [isChecking, setIsChecking] = useState(false);
+  const [hasInitialCheck, setHasInitialCheck] = useState(false);
 
   // Fetch health status
   const { data: healthStatus, isLoading: isLoadingHealth } = useQuery<ServiceHealthStatus[]>({
@@ -109,6 +110,26 @@ export function APIMonitoring() {
     await runHealthChecksMutation.mutateAsync();
     setIsChecking(false);
   };
+
+  // Auto-run health check on initial load if no data exists
+  useEffect(() => {
+    if (!isLoadingHealth && !hasInitialCheck && healthStatus) {
+      const hasAnyData = healthStatus.length > 0;
+      const hasRecentData = healthStatus.some(s => {
+        if (!s.lastChecked) return false;
+        const lastCheck = new Date(s.lastChecked);
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        return lastCheck > fiveMinutesAgo;
+      });
+      
+      if (!hasAnyData || !hasRecentData) {
+        setHasInitialCheck(true);
+        handleRunHealthCheck();
+      } else {
+        setHasInitialCheck(true);
+      }
+    }
+  }, [isLoadingHealth, healthStatus, hasInitialCheck]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

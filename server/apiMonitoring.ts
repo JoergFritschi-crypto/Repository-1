@@ -165,8 +165,9 @@ export class APIMonitoringService {
         testFunction: async () => {
           const startTime = Date.now();
           try {
+            // Use Gemini 2.5 Flash Preview (Nano Banana)
             const response = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1121:generateContent?key=${process.env.GEMINI_API_KEY}`,
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${process.env.GEMINI_API_KEY}`,
               {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -177,12 +178,30 @@ export class APIMonitoringService {
             );
             const responseTime = Date.now() - startTime;
             
-            return {
-              service: 'gemini',
-              status: response.ok ? 'healthy' : 'down',
-              responseTime,
-              errorMessage: !response.ok ? `Status: ${response.status}` : undefined
-            };
+            if (response.ok) {
+              const data = await response.json();
+              return {
+                service: 'gemini',
+                status: 'healthy',
+                responseTime,
+                metadata: { model: 'gemini-2.5-flash-image-preview' }
+              };
+            } else {
+              const errorText = await response.text();
+              let errorDetails = errorText;
+              try {
+                const errorJson = JSON.parse(errorText);
+                errorDetails = errorJson.error?.message || errorText;
+              } catch (e) {
+                // Keep errorText as is
+              }
+              return {
+                service: 'gemini',
+                status: response.status === 429 ? 'degraded' : 'down',
+                responseTime,
+                errorMessage: `Status ${response.status}: ${errorDetails}`
+              };
+            }
           } catch (error) {
             return {
               service: 'gemini',
