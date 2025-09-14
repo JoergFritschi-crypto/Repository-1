@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
@@ -11,10 +11,12 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { EmptyState } from "@/components/ui/error-message";
 import { Download, Palette, User } from "lucide-react";
 import { GardenDesignIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
+import RecentlyViewedPlants from "@/components/plant/recently-viewed-plants";
 import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
 
 export default function Home() {
   const { user } = useAuth();
+  const [location, setLocation] = useLocation();
   
   const { data: gardens, isLoading: gardensLoading } = useQuery({
     queryKey: ["/api/gardens"],
@@ -23,6 +25,11 @@ export default function Home() {
   const { data: plantCollection, isLoading: collectionLoading } = useQuery({
     queryKey: ["/api/my-collection"],
   });
+  
+  const handlePlantClick = (plant: any) => {
+    // Navigate to plant library with the plant selected
+    setLocation(`/plant-library?plantId=${plant.id}`);
+  };
 
   return (
     <div className="min-h-screen bg-background garden-pattern">
@@ -135,6 +142,15 @@ export default function Home() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Recently Viewed Plants */}
+        <div className="mb-4">
+          <RecentlyViewedPlants 
+            showTimestamp={false}
+            maxItems={10}
+            onPlantClick={handlePlantClick}
+          />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-4">

@@ -19,6 +19,7 @@ import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import GardenLayoutCanvas from '@/components/garden/garden-layout-canvas';
 import PlantSearchModal from '@/components/plant/plant-search-modal';
+import RecentlyViewedPlants from '@/components/plant/recently-viewed-plants';
 import type { Step4Props } from './types';
 
 const Step4InteractiveDesign = memo(({
@@ -161,6 +162,22 @@ const Step4InteractiveDesign = memo(({
           plantAvailability={watchedPlantAvailability}
         />
       )}
+
+      {/* Recently Viewed Plants */}
+      <RecentlyViewedPlants 
+        showTimestamp={false}
+        maxItems={8}
+        compact={true}
+        onPlantClick={(plant) => {
+          // Add plant to inventory
+          const plantWithQuantity = { ...plant, quantity: 1 };
+          setInventoryPlants([...inventoryPlants, plantWithQuantity]);
+          toast({
+            title: "Plant Added",
+            description: `${plant.commonName} added to inventory`,
+          });
+        }}
+      />
 
       {/* Collapsible Plant Search Card */}
       <Card className="border-2 border-primary/30 shadow-sm hover:border-[#FFD700]/50 hover:shadow-lg hover:shadow-[rgba(255,215,0,0.1)] transition-all duration-300" data-testid="plant-search-card">

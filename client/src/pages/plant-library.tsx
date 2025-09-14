@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import PlantSearch from "@/components/plant/plant-search";
 import PlantAdvancedSearch from "@/components/plant/plant-advanced-search";
+import RecentlyViewedPlants from "@/components/plant/recently-viewed-plants";
 import { SkeletonCardGrid } from "@/components/ui/skeleton-card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage, EmptyState } from "@/components/ui/error-message";
@@ -375,6 +376,13 @@ export default function PlantLibrary() {
                   setCurrentPage(1);
                 }}
                 totalResults={sortedPlants?.length || 0}
+              />
+
+              {/* Recently Viewed Plants */}
+              <RecentlyViewedPlants 
+                showTimestamp={true}
+                maxItems={12}
+                compact={true}
               />
 
               {/* Plant Cards Grid */}

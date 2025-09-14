@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { 
@@ -191,6 +192,14 @@ export function CompactPlantCard({
   const [isValidating, setIsValidating] = useState(false);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const { toast } = useToast();
+  const { addToRecentlyViewed } = useRecentlyViewed();
+  
+  // Track when detail dialog opens
+  useEffect(() => {
+    if (showDetailsDialog) {
+      addToRecentlyViewed(plant);
+    }
+  }, [showDetailsDialog, plant, addToRecentlyViewed]);
 
   const primaryImage = plant.fullImage || plant.thumbnailImage;
   const secondaryImage = plant.detailImage || plant.thumbnailImage;

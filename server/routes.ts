@@ -1721,6 +1721,29 @@ Rules:
     }
   });
 
+  // Batch fetch plants by IDs
+  app.post('/api/plants/batch', async (req: Request, res: Response) => {
+    try {
+      const { ids } = req.body;
+      
+      if (!ids || !Array.isArray(ids)) {
+        return res.status(400).json({ message: "IDs array required" });
+      }
+      
+      const plants = await Promise.all(
+        ids.map(id => storage.getPlant(id).catch(() => null))
+      );
+      
+      // Filter out nulls (plants that weren't found)
+      const validPlants = plants.filter(p => p !== null);
+      
+      res.json(validPlants);
+    } catch (error) {
+      console.error("Error fetching plants batch:", error);
+      res.status(500).json({ message: "Failed to fetch plants" });
+    }
+  });
+
   // Admin plant routes
   app.post('/api/admin/plants', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
