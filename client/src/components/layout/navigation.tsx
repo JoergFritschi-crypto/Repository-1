@@ -5,6 +5,7 @@ import { GardenScapeIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon, Dashbo
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import type { User } from "@shared/schema";
 import {
   DropdownMenu,
@@ -16,6 +17,7 @@ import {
 export default function Navigation() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation();
   
   // Get the actual user (not affected by tier testing)
   const { data: user } = useQuery<User>({
@@ -28,10 +30,10 @@ export default function Navigation() {
   const isActualAdmin = user?.isAdmin === true;
 
   const navigationItems = [
-    { href: "/home", label: "Dashboard", icon: DashboardIcon },
-    { href: "/plant-library", label: "Plant Library", icon: PlantLibraryIcon, brandIcon: true },
-    { href: "/plant-doctor", label: "Plant Doctor", icon: PlantDoctorIcon, brandIcon: true },
-    { href: "/premium", label: "Premium", icon: PremiumIcon, brandIcon: true },
+    { href: "/home", label: t('mainNavigation.dashboard'), icon: DashboardIcon },
+    { href: "/plant-library", label: t('mainNavigation.plantLibrary'), icon: PlantLibraryIcon, brandIcon: true },
+    { href: "/plant-doctor", label: t('mainNavigation.plantDoctor'), icon: PlantDoctorIcon, brandIcon: true },
+    { href: "/premium", label: t('mainNavigation.premium'), icon: PremiumIcon, brandIcon: true },
   ];
 
   return (
@@ -71,7 +73,7 @@ export default function Navigation() {
               href="/" 
               className="flex items-center space-x-2 group transition-transform duration-200 hover:scale-105" 
               data-testid="link-home"
-              aria-label="GardenScape Pro Home"
+              aria-label={t('mainNavigation.homeAriaLabel')}
             >
               <GardenScapeIcon className="w-7 h-7 transition-transform duration-200 group-hover:rotate-12" />
               <span className="text-lg font-serif font-semibold text-[#004025] group-hover:text-[#004025]/80">GardenScape Pro</span>
@@ -115,11 +117,11 @@ export default function Navigation() {
               className="h-8 text-xs bg-[#004025] hover:bg-[#004025]/90 border-2 border-[#004025] transition-all duration-200 hover:scale-105 hover:shadow-md group" 
               asChild 
               data-testid="button-new-garden"
-              aria-label="Create new garden design"
+              aria-label={t('mainNavigation.newGardenAriaLabel')}
             >
               <Link href="/garden-properties" className="text-white hover:text-white focus:text-white flex items-center gap-1">
                 <Plus className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-90" />
-                New Garden
+                {t('mainNavigation.newGarden')}
               </Link>
             </Button>
             <Button 
@@ -128,11 +130,11 @@ export default function Navigation() {
               className="h-8 text-xs border-2 border-[#004025] text-[#004025] hover:bg-[#004025]/10 transition-all duration-200 hover:scale-105 hover:shadow-sm group" 
               asChild 
               data-testid="button-logout"
-              aria-label="Sign out of your account"
+              aria-label={t('mainNavigation.signOutAriaLabel')}
             >
               <a href="/api/logout" className="link-reset flex items-center gap-1">
                 <LogOut className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
-                Sign Out
+                {t('mainNavigation.signOut')}
               </a>
             </Button>
           </div>
@@ -144,7 +146,7 @@ export default function Navigation() {
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="button-mobile-menu"
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-label={mobileMenuOpen ? t('mainNavigation.closeMenuAriaLabel') : t('mainNavigation.openMenuAriaLabel')}
               aria-expanded={mobileMenuOpen}
               className="transition-all duration-200 hover:scale-105"
             >
@@ -184,7 +186,7 @@ export default function Navigation() {
                     role="menuitem"
                   >
                     <div className="flex items-center gap-2">
-                      {item.label === "Premium" ? (
+                      {item.label === t('mainNavigation.premium') ? (
                         <div className="bg-white rounded-sm p-0.5">
                           <Icon className="w-4 h-4" />
                         </div>
@@ -209,7 +211,7 @@ export default function Navigation() {
                 >
                   <Link href="/garden-properties" className="text-white hover:text-white focus:text-white flex items-center justify-center gap-2">
                     <Plus className="w-4 h-4" />
-                    New Garden
+                    {t('mainNavigation.newGarden')}
                   </Link>
                 </Button>
                 <Button 
@@ -220,7 +222,7 @@ export default function Navigation() {
                 >
                   <a href="/api/logout" className="link-reset flex items-center justify-center gap-2">
                     <LogOut className="w-4 h-4" />
-                    Sign Out
+                    {t('mainNavigation.signOut')}
                   </a>
                 </Button>
               </div>

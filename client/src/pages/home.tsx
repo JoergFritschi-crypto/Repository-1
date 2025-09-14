@@ -2,6 +2,7 @@ import { memo, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
@@ -19,6 +20,7 @@ import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_gard
 const Home = memo(function Home() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
+  const { t } = useTranslation();
   
   const { data: gardens, isLoading: gardensLoading } = useQuery({
     queryKey: ["/api/gardens"],
@@ -51,22 +53,22 @@ const Home = memo(function Home() {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="max-w-4xl mx-auto px-8 text-center">
               <h1 className="text-3xl font-serif font-bold text-white mb-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                Welcome to GardenScape Pro
+                {t('home.heroTitle')}
               </h1>
               <p className="text-base text-white mb-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] max-w-3xl mx-auto">
-                Design stunning gardens with professional tools and expert plant knowledge
+                {t('home.heroSubtitle')}
               </p>
               <div className="flex gap-3 justify-center">
                 <Button className="bg-white/90 hover:bg-white text-primary border-2 border-primary hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1 h-8 px-3 text-xs font-medium" asChild>
                   <Link href="/garden-properties" className="link-reset">
                     <GardenDesignIcon className="w-3.5 h-3.5 mr-2" />
-                    Create Your Garden
+                    {t('home.createYourGarden')}
                   </Link>
                 </Button>
                 <Button variant="outline" className="bg-white/90 hover:bg-white text-primary border-2 border-primary hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-110 hover:-translate-y-1 h-8 px-3 text-xs font-medium" asChild>
                   <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-3.5 h-3.5 mr-2" />
-                    Browse Plants
+                    {t('home.browsePlants')}
                   </Link>
                 </Button>
               </div>
@@ -79,10 +81,10 @@ const Home = memo(function Home() {
         {/* Welcome Section */}
         <div className="mb-3">
           <h1 className="text-lg font-serif font-bold text-foreground" data-testid="text-welcome-title">
-            Welcome back, {user?.firstName || 'Gardener'}!
+            {user?.firstName ? t('home.welcomeTitle', { name: user.firstName }) : t('home.welcomeTitleFallback')}
           </h1>
           <p className="text-xs text-muted-foreground" data-testid="text-welcome-subtitle">
-            Ready to create something beautiful in your garden?
+            {t('home.welcomeSubtitle')}
           </p>
         </div>
 
@@ -99,7 +101,7 @@ const Home = memo(function Home() {
                       {gardens?.length || 0}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground">Garden Designs</p>
+                  <p className="text-xs text-muted-foreground">{t('home.stats.gardenDesigns')}</p>
                 </div>
                 <GardenDesignIcon className="w-6 h-6" />
               </div>
@@ -117,7 +119,7 @@ const Home = memo(function Home() {
                       {plantCollection?.length || 0}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground">Plants in Collection</p>
+                  <p className="text-xs text-muted-foreground">{t('home.stats.plantsInCollection')}</p>
                 </div>
                 <PlantLibraryIcon className="w-6 h-6" />
               </div>
@@ -129,7 +131,7 @@ const Home = memo(function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-lg font-bold" data-testid="text-stat-blueprints">0</p>
-                  <p className="text-xs text-muted-foreground">Blueprints Downloaded</p>
+                  <p className="text-xs text-muted-foreground">{t('home.stats.blueprintsDownloaded')}</p>
                 </div>
                 <GardenDesignIcon className="w-6 h-6" />
               </div>
@@ -140,8 +142,8 @@ const Home = memo(function Home() {
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-lg font-bold" data-testid="text-stat-membership">Free</p>
-                  <p className="text-xs text-muted-foreground">Membership</p>
+                  <p className="text-lg font-bold" data-testid="text-stat-membership">{t('home.stats.membershipFree')}</p>
+                  <p className="text-xs text-muted-foreground">{t('home.stats.membership')}</p>
                 </div>
                 <PremiumIcon className="w-6 h-6" />
               </div>
@@ -163,7 +165,7 @@ const Home = memo(function Home() {
           <div>
             <Card>
               <CardHeader className="pb-3 pt-4">
-                <CardTitle className="text-base" data-testid="text-recent-gardens-title">Recent Garden Designs</CardTitle>
+                <CardTitle className="text-base" data-testid="text-recent-gardens-title">{t('home.sections.recentGardens')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {gardensLoading ? (
@@ -198,10 +200,10 @@ const Home = memo(function Home() {
                               window.location.href = `/garden-design/${garden.id}`;
                             }}
                           >
-                            Edit
+                            {t('home.buttons.edit')}
                           </Button>
                           <Button variant="outline" size="sm" className="hover:scale-105 hover:shadow-sm transition-all duration-200" data-testid={`button-view-${garden.id}`}>
-                            View 3D
+                            {t('home.buttons.view3d')}
                           </Button>
                         </div>
                       </div>
@@ -209,11 +211,11 @@ const Home = memo(function Home() {
                   </div>
                 ) : (
                   <EmptyState
-                    title="No gardens yet"
-                    message="Start by creating your first garden design"
+                    title={t('home.emptyStates.noGardens')}
+                    message={t('home.emptyStates.noGardensSubtext')}
                     icon={<Palette className="w-6 h-6 text-muted-foreground" />}
                     action={{
-                      label: "Create Your First Garden",
+                      label: t('home.buttons.createFirstGarden'),
                       onClick: () => window.location.href = '/garden-properties'
                     }}
                   />
@@ -227,25 +229,25 @@ const Home = memo(function Home() {
             {/* Quick Actions */}
             <Card>
               <CardHeader className="pb-3 pt-4">
-                <CardTitle className="text-base" data-testid="text-quick-actions-title">Quick Actions</CardTitle>
+                <CardTitle className="text-base" data-testid="text-quick-actions-title">{t('home.sections.quickActions')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button size="sm" asChild variant="outline" className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/10" data-testid="button-plant-doctor">
                   <Link href="/plant-doctor" className="link-reset">
                     <PlantDoctorIcon className="w-4 h-4 mr-2" />
-                    Plant Doctor
+                    {t('home.buttons.plantDoctor')}
                   </Link>
                 </Button>
                 <Button size="sm" asChild variant="outline" className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/10" data-testid="button-browse-plants">
                   <Link href="/plant-library" className="link-reset">
                     <PlantLibraryIcon className="w-4 h-4 mr-2" />
-                    Browse Plants
+                    {t('home.browsePlants')}
                   </Link>
                 </Button>
                 <Button size="sm" asChild variant="outline" className="w-full justify-start hover:scale-105 hover:shadow-md transition-all duration-200 hover:bg-primary/10" data-testid="button-premium-features">
                   <Link href="/premium" className="link-reset">
                     <PremiumIcon className="w-4 h-4 mr-2" />
-                    Premium Features
+                    {t('home.buttons.premiumFeatures')}
                   </Link>
                 </Button>
                 {/* Test link for Test Garden 2 */}
@@ -261,9 +263,9 @@ const Home = memo(function Home() {
             {/* Plant Collection Preview */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4">
-                <CardTitle className="text-base" data-testid="text-collection-title">My Plant Collection</CardTitle>
+                <CardTitle className="text-base" data-testid="text-collection-title">{t('home.sections.myPlantCollection')}</CardTitle>
                 <Button variant="ghost" size="sm" asChild className="hover:scale-105 hover:bg-primary/10 transition-all duration-200" data-testid="button-view-all-plants">
-                  <Link href="/plant-library?tab=collection">View All</Link>
+                  <Link href="/plant-library?tab=collection">{t('home.buttons.viewAll')}</Link>
                 </Button>
               </CardHeader>
               <CardContent>
@@ -276,7 +278,7 @@ const Home = memo(function Home() {
                         <div className="w-6 h-6 bg-accent rounded-full flex-shrink-0"></div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-xs truncate" data-testid={`text-plant-name-${item.id}`}>
-                            {item.plant?.commonName || 'Unknown Plant'}
+                            {item.plant?.commonName || t('home.emptyStates.unknownPlant')}
                           </p>
                           <p className="text-xs text-muted-foreground">Added to collection</p>
                         </div>
@@ -290,11 +292,11 @@ const Home = memo(function Home() {
                   </div>
                 ) : (
                   <EmptyState
-                    title="No plants in collection"
-                    message="Start browsing to add plants to your collection"
+                    title={t('home.emptyStates.noPlantsInCollection')}
+                    message={t('home.emptyStates.noPlantsSubtext')}
                     icon={<PlantLibraryIcon className="w-6 h-6 text-muted-foreground" />}
                     action={{
-                      label: "Browse Plants",
+                      label: t('home.browsePlants'),
                       onClick: () => window.location.href = '/plant-library'
                     }}
                   />

@@ -91,6 +91,89 @@
     "polar": "Polar",
     "mediterranean": "Mediterran"
   },
+  "mainNavigation": {
+    "dashboard": "Dashboard",
+    "plantLibrary": "Pflanzenbibliothek",
+    "plantDoctor": "Pflanzenarzt",
+    "premium": "Premium",
+    "newGarden": "Neuer Garten",
+    "signOut": "Abmelden",
+    "homeAriaLabel": "GardenScape Pro Startseite",
+    "newGardenAriaLabel": "Neues Gartendesign erstellen",
+    "signOutAriaLabel": "Von Ihrem Konto abmelden",
+    "closeMenuAriaLabel": "Menü schließen",
+    "openMenuAriaLabel": "Menü öffnen",
+    "adminMenuAriaLabel": "Admin-Menü"
+  },
+  "home": {
+    "heroTitle": "Willkommen bei GardenScape Pro",
+    "heroSubtitle": "Entwerfen Sie atemberaubende Gärten mit professionellen Tools und Expertenpflanzenwissen",
+    "createYourGarden": "Garten Erstellen",
+    "browsePlants": "Pflanzen Durchsuchen",
+    "welcomeTitle": "Willkommen zurück, {name}!",
+    "welcomeTitleFallback": "Willkommen zurück, Gärtner!",
+    "welcomeSubtitle": "Bereit, etwas Schönes in Ihrem Garten zu schaffen?",
+    "stats": {
+      "gardenDesigns": "Gartendesigns",
+      "plantsInCollection": "Pflanzen in Sammlung",
+      "blueprintsDownloaded": "Baupläne heruntergeladen",
+      "membership": "Mitgliedschaft",
+      "membershipFree": "Kostenlos"
+    },
+    "sections": {
+      "recentGardens": "Aktuelle Gartendesigns",
+      "quickActions": "Schnellaktionen",
+      "myPlantCollection": "Meine Pflanzensammlung"
+    },
+    "buttons": {
+      "edit": "Bearbeiten",
+      "view3d": "3D Ansehen",
+      "plantDoctor": "Pflanzenarzt",
+      "premiumFeatures": "Premium-Funktionen",
+      "viewAll": "Alle Ansehen",
+      "createFirstGarden": "Ersten Garten Erstellen"
+    },
+    "emptyStates": {
+      "noGardens": "Noch keine Gärten",
+      "noGardensSubtext": "Beginnen Sie mit der Erstellung Ihres ersten Gartendesigns",
+      "noPlantsInCollection": "Keine Pflanzen in der Sammlung",
+      "noPlantsSubtext": "Beginnen Sie zu durchsuchen, um Pflanzen zu Ihrer Sammlung hinzuzufügen",
+      "unknownPlant": "Unbekannte Pflanze"
+    }
+  },
+  "contact": {
+    "pageTitle": "Kontakt",
+    "emailSupport": {
+      "title": "E-Mail-Support",
+      "description": "Erhalten Sie Hilfe bei technischen Problemen, Abrechnungsfragen oder allgemeinen Anfragen.",
+      "button": "E-Mail Senden"
+    },
+    "communitySupport": {
+      "title": "Community-Support",
+      "description": "Verbinden Sie sich mit anderen Gärtnern und erhalten Sie Rat von unserer Community.",
+      "button": "Community Beitreten"
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "questions": {
+        "firstDesign": {
+          "question": "Wie erstelle ich mein erstes Gartendesign?",
+          "answer": "Beginnen Sie, indem Sie \"Designen beginnen\" von der Startseite klicken. Sie werden durch das Einrichten Ihrer Garteneigenschaften, die Auswahl von Pflanzen und die Erstellung Ihres Layouts geführt."
+        },
+        "premiumPlans": {
+          "question": "Was ist in den Premium-Plänen enthalten?",
+          "answer": "Premium-Pläne umfassen 50 Designs pro Monat, erweiterten Zugang zur Pflanzendatenbank, saisonale Gartenbilder und Prioritätssupport. Sehen Sie sich unsere Preisseite für detaillierte Vergleiche an."
+        },
+        "plantIdentification": {
+          "question": "Wie genau ist die Pflanzenidentifikation?",
+          "answer": "Unsere KI-gestützte Pflanzenidentifikation ist sehr genau, funktioniert aber am besten mit klaren, gut beleuchteten Fotos. Für beste Ergebnisse fotografieren Sie die gesamte Pflanze einschließlich Blättern und Blüten."
+        }
+      }
+    }
+  },
+  "ui": {
+    "close": "Schließen"
+  },
   "landing": {
     "navigation": {
       "signIn": "Anmelden",

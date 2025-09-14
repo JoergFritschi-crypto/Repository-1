@@ -91,6 +91,89 @@
     "polar": "Polaire",
     "mediterranean": "Méditerranéen"
   },
+  "mainNavigation": {
+    "dashboard": "Tableau de Bord",
+    "plantLibrary": "Bibliothèque de Plantes",
+    "plantDoctor": "Docteur des Plantes",
+    "premium": "Premium",
+    "newGarden": "Nouveau Jardin",
+    "signOut": "Se Déconnecter",
+    "homeAriaLabel": "Accueil GardenScape Pro",
+    "newGardenAriaLabel": "Créer un nouveau design de jardin",
+    "signOutAriaLabel": "Se déconnecter de votre compte",
+    "closeMenuAriaLabel": "Fermer le menu",
+    "openMenuAriaLabel": "Ouvrir le menu",
+    "adminMenuAriaLabel": "Menu administrateur"
+  },
+  "home": {
+    "heroTitle": "Bienvenue sur GardenScape Pro",
+    "heroSubtitle": "Concevez des jardins époustouflants avec des outils professionnels et l'expertise végétale",
+    "createYourGarden": "Créer Votre Jardin",
+    "browsePlants": "Parcourir les Plantes",
+    "welcomeTitle": "Bon retour, {name}!",
+    "welcomeTitleFallback": "Bon retour, Jardinier!",
+    "welcomeSubtitle": "Prêt à créer quelque chose de beau dans votre jardin?",
+    "stats": {
+      "gardenDesigns": "Conceptions de Jardin",
+      "plantsInCollection": "Plantes en Collection",
+      "blueprintsDownloaded": "Plans Téléchargés",
+      "membership": "Adhésion",
+      "membershipFree": "Gratuit"
+    },
+    "sections": {
+      "recentGardens": "Conceptions de Jardin Récentes",
+      "quickActions": "Actions Rapides",
+      "myPlantCollection": "Ma Collection de Plantes"
+    },
+    "buttons": {
+      "edit": "Modifier",
+      "view3d": "Voir en 3D",
+      "plantDoctor": "Docteur des Plantes",
+      "premiumFeatures": "Fonctionnalités Premium",
+      "viewAll": "Voir Tout",
+      "createFirstGarden": "Créer Votre Premier Jardin"
+    },
+    "emptyStates": {
+      "noGardens": "Aucun jardin encore",
+      "noGardensSubtext": "Commencez par créer votre première conception de jardin",
+      "noPlantsInCollection": "Aucune plante en collection",
+      "noPlantsSubtext": "Commencez à parcourir pour ajouter des plantes à votre collection",
+      "unknownPlant": "Plante Inconnue"
+    }
+  },
+  "contact": {
+    "pageTitle": "Nous Contacter",
+    "emailSupport": {
+      "title": "Support Email",
+      "description": "Obtenez de l'aide pour les problèmes techniques, les questions de facturation ou les demandes générales.",
+      "button": "Envoyer un Email"
+    },
+    "communitySupport": {
+      "title": "Support Communautaire",
+      "description": "Connectez-vous avec d'autres jardiniers et obtenez des conseils de notre communauté.",
+      "button": "Rejoindre la Communauté"
+    },
+    "faq": {
+      "title": "Questions Fréquemment Posées",
+      "questions": {
+        "firstDesign": {
+          "question": "Comment créer ma première conception de jardin?",
+          "answer": "Commencez en cliquant sur \"Commencer à Concevoir\" depuis la page d'accueil. Vous serez guidé à travers la configuration des propriétés de votre jardin, la sélection des plantes et la création de votre aménagement."
+        },
+        "premiumPlans": {
+          "question": "Qu'est-ce qui est inclus dans les plans premium?",
+          "answer": "Les plans premium incluent 50 conceptions par mois, un accès avancé à la base de données de plantes, des images saisonnières du jardin et un support prioritaire. Consultez notre page de tarifs pour des comparaisons détaillées."
+        },
+        "plantIdentification": {
+          "question": "À quel point l'identification des plantes est-elle précise?",
+          "answer": "Notre identification de plantes alimentée par IA est très précise mais fonctionne mieux avec des photos claires et bien éclairées. Pour de meilleurs résultats, capturez toute la plante y compris les feuilles et les fleurs."
+        }
+      }
+    }
+  },
+  "ui": {
+    "close": "Fermer"
+  },
   "landing": {
     "navigation": {
       "signIn": "Se Connecter",

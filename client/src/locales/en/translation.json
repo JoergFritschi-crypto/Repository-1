@@ -91,6 +91,89 @@
     "polar": "Polar",
     "mediterranean": "Mediterranean"
   },
+  "mainNavigation": {
+    "dashboard": "Dashboard",
+    "plantLibrary": "Plant Library",
+    "plantDoctor": "Plant Doctor",
+    "premium": "Premium",
+    "newGarden": "New Garden",
+    "signOut": "Sign Out",
+    "homeAriaLabel": "GardenScape Pro Home",
+    "newGardenAriaLabel": "Create new garden design",
+    "signOutAriaLabel": "Sign out of your account",
+    "closeMenuAriaLabel": "Close menu",
+    "openMenuAriaLabel": "Open menu",
+    "adminMenuAriaLabel": "Admin menu"
+  },
+  "home": {
+    "heroTitle": "Welcome to GardenScape Pro",
+    "heroSubtitle": "Design stunning gardens with professional tools and expert plant knowledge",
+    "createYourGarden": "Create Your Garden",
+    "browsePlants": "Browse Plants",
+    "welcomeTitle": "Welcome back, {name}!",
+    "welcomeTitleFallback": "Welcome back, Gardener!",
+    "welcomeSubtitle": "Ready to create something beautiful in your garden?",
+    "stats": {
+      "gardenDesigns": "Garden Designs",
+      "plantsInCollection": "Plants in Collection",
+      "blueprintsDownloaded": "Blueprints Downloaded",
+      "membership": "Membership",
+      "membershipFree": "Free"
+    },
+    "sections": {
+      "recentGardens": "Recent Garden Designs",
+      "quickActions": "Quick Actions",
+      "myPlantCollection": "My Plant Collection"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "view3d": "View 3D",
+      "plantDoctor": "Plant Doctor",
+      "premiumFeatures": "Premium Features",
+      "viewAll": "View All",
+      "createFirstGarden": "Create Your First Garden"
+    },
+    "emptyStates": {
+      "noGardens": "No gardens yet",
+      "noGardensSubtext": "Start by creating your first garden design",
+      "noPlantsInCollection": "No plants in collection",
+      "noPlantsSubtext": "Start browsing to add plants to your collection",
+      "unknownPlant": "Unknown Plant"
+    }
+  },
+  "contact": {
+    "pageTitle": "Contact Us",
+    "emailSupport": {
+      "title": "Email Support",
+      "description": "Get help with technical issues, billing questions, or general inquiries.",
+      "button": "Send Email"
+    },
+    "communitySupport": {
+      "title": "Community Support",
+      "description": "Connect with other gardeners and get advice from our community.",
+      "button": "Join Community"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "questions": {
+        "firstDesign": {
+          "question": "How do I create my first garden design?",
+          "answer": "Start by clicking \"Start Designing\" from the homepage. You'll be guided through setting up your garden properties, selecting plants, and creating your layout."
+        },
+        "premiumPlans": {
+          "question": "What's included in the premium plans?",
+          "answer": "Premium plans include 50 designs per month, advanced plant database access, seasonal garden imagery, and priority support. Check our pricing page for detailed comparisons."
+        },
+        "plantIdentification": {
+          "question": "How accurate is the plant identification?",
+          "answer": "Our AI-powered plant identification is highly accurate but works best with clear, well-lit photos. For best results, capture the entire plant including leaves and flowers."
+        }
+      }
+    }
+  },
+  "ui": {
+    "close": "Close"
+  },
   "landing": {
     "navigation": {
       "signIn": "Sign In",

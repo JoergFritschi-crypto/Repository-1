@@ -91,6 +91,89 @@
     "polar": "Polarny",
     "mediterranean": "Śródziemnomorski"
   },
+  "mainNavigation": {
+    "dashboard": "Panel Główny",
+    "plantLibrary": "Biblioteka Roślin",
+    "plantDoctor": "Doktor Roślin",
+    "premium": "Premium",
+    "newGarden": "Nowy Ogród",
+    "signOut": "Wyloguj",
+    "homeAriaLabel": "Strona główna GardenScape Pro",
+    "newGardenAriaLabel": "Utwórz nowy projekt ogrodu",
+    "signOutAriaLabel": "Wyloguj się ze swojego konta",
+    "closeMenuAriaLabel": "Zamknij menu",
+    "openMenuAriaLabel": "Otwórz menu",
+    "adminMenuAriaLabel": "Menu administratora"
+  },
+  "home": {
+    "heroTitle": "Witamy w GardenScape Pro",
+    "heroSubtitle": "Projektuj oszałamiające ogrody z profesjonalnymi narzędziami i ekspercką wiedzą o roślinach",
+    "createYourGarden": "Stwórz Swój Ogród",
+    "browsePlants": "Przeglądaj Rośliny",
+    "welcomeTitle": "Witaj ponownie, {name}!",
+    "welcomeTitleFallback": "Witaj ponownie, Ogrodnik!",
+    "welcomeSubtitle": "Gotowy, aby stworzyć coś pięknego w swoim ogrodzie?",
+    "stats": {
+      "gardenDesigns": "Projekty Ogrodów",
+      "plantsInCollection": "Rośliny w Kolekcji",
+      "blueprintsDownloaded": "Pobrane Plany",
+      "membership": "Członkostwo",
+      "membershipFree": "Darmowe"
+    },
+    "sections": {
+      "recentGardens": "Ostatnie Projekty Ogrodów",
+      "quickActions": "Szybkie Akcje",
+      "myPlantCollection": "Moja Kolekcja Roślin"
+    },
+    "buttons": {
+      "edit": "Edytuj",
+      "view3d": "Zobacz 3D",
+      "plantDoctor": "Doktor Roślin",
+      "premiumFeatures": "Funkcje Premium",
+      "viewAll": "Zobacz Wszystkie",
+      "createFirstGarden": "Utwórz Swój Pierwszy Ogród"
+    },
+    "emptyStates": {
+      "noGardens": "Brak ogrodów",
+      "noGardensSubtext": "Zacznij od utworzenia pierwszego projektu ogrodu",
+      "noPlantsInCollection": "Brak roślin w kolekcji",
+      "noPlantsSubtext": "Zacznij przeglądać, aby dodać rośliny do swojej kolekcji",
+      "unknownPlant": "Nieznana Roślina"
+    }
+  },
+  "contact": {
+    "pageTitle": "Skontaktuj się z Nami",
+    "emailSupport": {
+      "title": "Wsparcie Email",
+      "description": "Otrzymaj pomoc w kwestiach technicznych, pytań dotyczących rozliczeń lub ogólnych zapytań.",
+      "button": "Wyślij Email"
+    },
+    "communitySupport": {
+      "title": "Wsparcie Społeczności",
+      "description": "Połącz się z innymi ogrodnikami i otrzymaj rady od naszej społeczności.",
+      "button": "Dołącz do Społeczności"
+    },
+    "faq": {
+      "title": "Często Zadawane Pytania",
+      "questions": {
+        "firstDesign": {
+          "question": "Jak utworzyć mój pierwszy projekt ogrodu?",
+          "answer": "Zacznij klikając \"Rozpocznij Projektowanie\" ze strony głównej. Zostaniesz przeprowadzony przez ustawienie właściwości ogrodu, wybór roślin i utworzenie układu."
+        },
+        "premiumPlans": {
+          "question": "Co zawierają plany premium?",
+          "answer": "Plany premium obejmują 50 projektów miesięcznie, zaawansowany dostęp do bazy roślin, sezonowe obrazy ogrodu i wsparcie priorytetowe. Sprawdź naszą stronę cenową dla szczegółowych porównań."
+        },
+        "plantIdentification": {
+          "question": "Jak dokładna jest identyfikacja roślin?",
+          "answer": "Nasza identyfikacja roślin napędzana przez AI jest bardzo dokładna, ale działa najlepiej z jasnymi, dobrze oświetlonymi zdjęciami. Dla najlepszych rezultatów, sfotografuj całą roślinę włącznie z liśćmi i kwiatami."
+        }
+      }
+    }
+  },
+  "ui": {
+    "close": "Zamknij"
+  },
   "landing": {
     "navigation": {
       "signIn": "Zaloguj się",
