@@ -43,6 +43,11 @@ export function APIMonitoring() {
     queryKey: ["/api/admin/api-config"],
   });
 
+  // Fetch API key status
+  const { data: keyStatus } = useQuery({
+    queryKey: ["/api/admin/api-keys/status"],
+  });
+
   // Run health checks mutation
   const runHealthChecksMutation = useMutation({
     mutationFn: async () => {
@@ -131,7 +136,6 @@ export function APIMonitoring() {
         </Button>
       </div>
 
-      {/* Overall Health Summary */}
       <Card>
         <CardHeader>
           <CardTitle>System Health Overview</CardTitle>
@@ -161,6 +165,39 @@ export function APIMonitoring() {
           </div>
         </CardContent>
       </Card>
+
+      {/* API Keys Configuration Status */}
+      {keyStatus && (
+        <Card>
+          <CardHeader>
+            <CardTitle>API Keys Configuration</CardTitle>
+            <CardDescription>Quick overview of configured API services</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-4">
+              {Object.entries(keyStatus as Record<string, any>).map(([service, status]) => {
+                const isConfigured = status.configured;
+                return (
+                  <div 
+                    key={service}
+                    className="flex items-center justify-between p-2 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{getServiceIcon(service)}</span>
+                      <span className="text-sm capitalize">{service}</span>
+                    </div>
+                    {isConfigured ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Service Tabs */}
       <Tabs defaultValue="critical" className="w-full">

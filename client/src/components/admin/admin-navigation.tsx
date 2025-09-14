@@ -78,42 +78,6 @@ export function AdminNavigation({ currentPage, gardenId }: AdminNavigationProps)
               </Link>
             )}
             
-            {!isGardenDesign && (
-              <>
-                <Link href="/admin">
-                  <Button 
-                    variant={location === '/admin' ? 'default' : 'ghost'} 
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Database className="w-4 h-4" />
-                    Plants
-                  </Button>
-                </Link>
-                
-                <Link href="/admin/test-garden">
-                  <Button 
-                    variant={location === '/admin/test-garden' ? 'default' : 'ghost'} 
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <TestTube className="w-4 h-4" />
-                    Test Garden
-                  </Button>
-                </Link>
-                
-                <Link href="/admin/security">
-                  <Button 
-                    variant={location === '/admin/security' ? 'default' : 'ghost'} 
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Shield className="w-4 h-4" />
-                    Security
-                  </Button>
-                </Link>
-              </>
-            )}
           </div>
         </div>
       </div>
