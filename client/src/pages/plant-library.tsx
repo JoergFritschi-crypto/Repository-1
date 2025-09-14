@@ -340,7 +340,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                 <CardContent className="py-4">
                   <div className="flex flex-wrap gap-8 items-center">
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">{t('plants.library.plantsFound')}</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('plants.library.plantsFound', { count: sortedPlants?.length || 0 })}</p>
                       <p className="text-2xl font-semibold" data-testid="text-total-plants">{sortedPlants?.length || 0}</p>
                     </div>
                     <div>
