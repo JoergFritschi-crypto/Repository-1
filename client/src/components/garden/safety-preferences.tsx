@@ -54,9 +54,8 @@ export default function SafetyPreferences({ form, showAvailabilityPreference = t
                     <div className="flex items-start space-x-3 p-3 rounded-lg border border-[#004025]/30 bg-[#004025]/10 hover:bg-[#004025]/15">
                       <RadioGroupItem value="low" id="low" />
                       <div className="flex-1">
-                        <Label htmlFor="low" className="font-medium text-sm cursor-pointer flex items-center gap-2">
+                        <Label htmlFor="low" className="font-medium text-sm cursor-pointer">
                           Low Risk Only
-                          <span className="text-xs bg-[#FFD500] text-[#004025] px-2 py-0.5 rounded">Safest Option</span>
                         </Label>
                         <p className="text-xs text-muted-foreground mt-1">
                           Only plants with minimal toxicity risk. Suitable for households with small children and pets.

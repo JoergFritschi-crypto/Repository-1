@@ -291,7 +291,7 @@ export default function GardenProperties() {
       slopePercentage: 0,
       design_approach: undefined,
       preferences: {
-        toxicityLevel: 'low',
+        toxicityLevel: 'none',
         plantAvailability: 'common',
         noThorns: false,
         lowAllergen: false,
@@ -352,7 +352,7 @@ export default function GardenProperties() {
         soilTestId: existingGarden.soilTestId || undefined,
         soilAnalysis: existingGarden.soilAnalysis || undefined,
         preferences: existingGarden.preferences || {
-          toxicityLevel: 'low',
+          toxicityLevel: 'none',
           plantAvailability: 'common',
           noThorns: false,
           lowAllergen: false,
