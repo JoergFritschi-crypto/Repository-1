@@ -166,7 +166,7 @@ export class APIMonitoringService {
           const startTime = Date.now();
           try {
             const response = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1121:generateContent?key=${process.env.GEMINI_API_KEY}`,
               {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -600,88 +600,6 @@ export class APIMonitoringService {
               status: 'down',
               responseTime: Date.now() - startTime,
               errorMessage: error.message
-            };
-          }
-        }
-      });
-    }
-
-    // FireCrawl API Health Check
-    if (process.env.FIRECRAWL_API_KEY) {
-      this.services.push({
-        name: 'firecrawl',
-        criticalService: false,
-        testFunction: async () => {
-          const startTime = Date.now();
-          try {
-            // Test with a simple scrape request (won't actually scrape, just validates the key)
-            const response = await fetch('https://api.firecrawl.dev/v0/scrape', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${process.env.FIRECRAWL_API_KEY}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                url: 'https://example.com',
-                formats: ['markdown']
-              })
-            });
-            const responseTime = Date.now() - startTime;
-            
-            if (response.ok) {
-              const data = await response.json();
-              return {
-                service: 'firecrawl',
-                status: 'healthy',
-                responseTime,
-                metadata: { 
-                  success: data.success,
-                  note: 'API key is valid and working'
-                }
-              };
-            } else if (response.status === 401 || response.status === 403) {
-              return {
-                service: 'firecrawl',
-                status: 'down',
-                responseTime,
-                errorMessage: 'Invalid or expired API key'
-              };
-            } else if (response.status === 402) {
-              return {
-                service: 'firecrawl',
-                status: 'degraded',
-                responseTime,
-                errorMessage: 'Payment required - check your FireCrawl subscription'
-              };
-            } else if (response.status === 429) {
-              return {
-                service: 'firecrawl',
-                status: 'degraded',
-                responseTime,
-                errorMessage: 'Rate limit exceeded'
-              };
-            } else {
-              const errorText = await response.text();
-              let errorMessage = `Status ${response.status}`;
-              try {
-                const errorJson = JSON.parse(errorText);
-                errorMessage = errorJson.error || errorJson.message || errorMessage;
-              } catch (e) {
-                errorMessage = errorText || errorMessage;
-              }
-              return {
-                service: 'firecrawl',
-                status: 'down',
-                responseTime,
-                errorMessage
-              };
-            }
-          } catch (error) {
-            return {
-              service: 'firecrawl',
-              status: 'down',
-              responseTime: Date.now() - startTime,
-              errorMessage: `Connection failed: ${error.message}`
             };
           }
         }
