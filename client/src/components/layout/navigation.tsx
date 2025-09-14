@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import LanguageSelector from "./LanguageSelector";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -112,6 +113,7 @@ export default function Navigation() {
           </div>
           
           <div className="hidden md:flex items-center space-x-2">
+            <LanguageSelector variant="desktop" />
             <Button 
               size="sm" 
               className="h-8 text-xs bg-[#004025] hover:bg-[#004025]/90 border-2 border-[#004025] transition-all duration-200 hover:scale-105 hover:shadow-md group" 
@@ -203,6 +205,10 @@ export default function Navigation() {
                 );
               })}
               <div className="border-t-2 border-[#004025] pt-3 mt-3 space-y-2 px-2">
+                <LanguageSelector 
+                  variant="mobile" 
+                  onLanguageChange={() => setMobileMenuOpen(false)} 
+                />
                 <Button 
                   asChild 
                   className="w-full bg-[#004025] hover:bg-[#004025]/90 transition-all duration-200 hover:shadow-md" 

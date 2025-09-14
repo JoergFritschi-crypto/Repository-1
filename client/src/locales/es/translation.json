@@ -510,7 +510,11 @@
     "signOutAriaLabel": "Cerrar sesión de tu cuenta",
     "closeMenuAriaLabel": "Cerrar menú",
     "openMenuAriaLabel": "Abrir menú",
-    "adminMenuAriaLabel": "Menú de administrador"
+    "adminMenuAriaLabel": "Menú de administrador",
+    "language": "Idioma",
+    "languageSelector": "Selector de idioma",
+    "currentLanguage": "Idioma actual: {{language}}",
+    "switchLanguage": "Cambiar a {{language}}"
   },
   "home": {
     "heroTitle": "Bienvenido a GardenScape Pro",
