@@ -41,14 +41,6 @@ interface ServiceInfo {
 
 const SERVICE_INFO: Record<string, ServiceInfo> = {
   // Critical Services - Essential for core functionality
-  openai: {
-    name: 'OpenAI',
-    endpoint: 'https://api.openai.com',
-    requiredKeys: ['OPENAI_API_KEY'],
-    documentation: 'https://platform.openai.com/docs',
-    testEndpoint: '/v1/models',
-    category: 'critical'
-  },
   anthropic: {
     name: 'Anthropic Claude',
     endpoint: 'https://api.anthropic.com',
@@ -60,7 +52,7 @@ const SERVICE_INFO: Record<string, ServiceInfo> = {
   gemini: {
     name: 'Google Gemini',
     endpoint: 'https://generativelanguage.googleapis.com',
-    requiredKeys: ['GOOGLE_GENAI_API_KEY'],
+    requiredKeys: ['GEMINI_API_KEY'],
     documentation: 'https://ai.google.dev/docs',
     testEndpoint: '/v1beta/models',
     category: 'critical'

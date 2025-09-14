@@ -4675,14 +4675,19 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
           status: process.env.ANTHROPIC_API_KEY ? 'active' : 'untested',
         },
         {
+          service: 'gemini',
+          configured: !!process.env.GEMINI_API_KEY,
+          status: process.env.GEMINI_API_KEY ? 'active' : 'untested',
+        },
+        {
           service: 'stripe',
           configured: !!process.env.STRIPE_SECRET_KEY && !!process.env.VITE_STRIPE_PUBLIC_KEY,
           status: (process.env.STRIPE_SECRET_KEY && process.env.VITE_STRIPE_PUBLIC_KEY) ? 'active' : 'untested',
         },
         {
-          service: 'mapbox',
-          configured: !!process.env.MAPBOX_API_KEY,
-          status: process.env.MAPBOX_API_KEY ? 'active' : 'untested',
+          service: 'perplexity',
+          configured: !!process.env.PERPLEXITY_API_KEY,
+          status: process.env.PERPLEXITY_API_KEY ? 'active' : 'untested',
         },
         {
           service: 'perenual',
@@ -4690,9 +4695,14 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
           status: process.env.PERENUAL_API_KEY ? 'active' : 'untested',
         },
         {
-          service: 'visual_crossing',
-          configured: !!process.env.VISUAL_CROSSING_API_KEY,
-          status: process.env.VISUAL_CROSSING_API_KEY ? 'active' : 'untested',
+          service: 'gbif',
+          configured: !!(process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD),
+          status: (process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD) ? 'active' : 'untested',
+        },
+        {
+          service: 'mapbox',
+          configured: !!process.env.MAPBOX_API_KEY,
+          status: process.env.MAPBOX_API_KEY ? 'active' : 'untested',
         },
         {
           service: 'huggingface',
@@ -4705,28 +4715,53 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
           status: process.env.RUNWARE_API_KEY ? 'active' : 'untested',
         },
         {
-          service: 'perplexity',
-          configured: !!process.env.PERPLEXITY_API_KEY,
-          status: process.env.PERPLEXITY_API_KEY ? 'active' : 'untested',
-        },
-        {
-          service: 'gemini',
-          configured: !!process.env.GEMINI_API_KEY,
-          status: process.env.GEMINI_API_KEY ? 'active' : 'untested',
-        },
-        {
-          service: 'gbif',
-          configured: !!(process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD),
-          status: (process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD) ? 'active' : 'untested',
-        },
-        {
           service: 'firecrawl',
           configured: !!process.env.FIRECRAWL_API_KEY,
           status: process.env.FIRECRAWL_API_KEY ? 'active' : 'untested',
         },
+        {
+          service: 'visual_crossing',
+          configured: !!process.env.VISUAL_CROSSING_API_KEY,
+          status: process.env.VISUAL_CROSSING_API_KEY ? 'active' : 'untested',
+        },
       ];
 
-      res.json(keyStatus);
+      // Transform keyStatus array to the format expected by the frontend
+      const formattedResponse = {
+        keys: keyStatus.reduce((acc: any, key) => {
+          if (key.service === 'stripe') {
+            // Special handling for Stripe which has two keys
+            acc['stripe_STRIPE_SECRET_KEY'] = { 
+              configured: !!process.env.STRIPE_SECRET_KEY, 
+              lastUsed: null 
+            };
+            acc['stripe_VITE_STRIPE_PUBLIC_KEY'] = { 
+              configured: !!process.env.VITE_STRIPE_PUBLIC_KEY, 
+              lastUsed: null 
+            };
+          } else if (key.service === 'gbif') {
+            // Special handling for GBIF which uses email/password
+            acc['gbif_GBIF_EMAIL'] = { 
+              configured: !!process.env.GBIF_EMAIL, 
+              lastUsed: null 
+            };
+            acc['gbif_GBIF_PASSWORD'] = { 
+              configured: !!process.env.GBIF_PASSWORD, 
+              lastUsed: null 
+            };
+          } else {
+            // Standard format for other services
+            const keyName = `${key.service.toUpperCase()}_API_KEY`;
+            acc[`${key.service}_${keyName}`] = { 
+              configured: key.configured, 
+              lastUsed: null 
+            };
+          }
+          return acc;
+        }, {})
+      };
+
+      res.json(formattedResponse);
     } catch (error) {
       console.error("Error fetching API key status:", error);
       res.status(500).json({ message: "Failed to fetch API key status" });
