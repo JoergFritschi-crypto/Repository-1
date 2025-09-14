@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
-import { PlusCircle, Download, Palette, User } from "lucide-react";
+import { Download, Palette, User } from "lucide-react";
 import { GardenDesignIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
 import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
 
@@ -128,14 +128,8 @@ export default function Home() {
           {/* Recent Gardens */}
           <div>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4">
+              <CardHeader className="pb-3 pt-4">
                 <CardTitle className="text-base" data-testid="text-recent-gardens-title">Recent Garden Designs</CardTitle>
-                <Button size="sm" asChild className="hover:scale-105 hover:shadow-md transition-all duration-200" data-testid="button-new-garden">
-                  <Link href="/garden-properties">
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    New Garden
-                  </Link>
-                </Button>
               </CardHeader>
               <CardContent>
                 {gardensLoading ? (

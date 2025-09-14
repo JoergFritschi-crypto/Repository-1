@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Check, MoreVertical, Shield } from "lucide-react";
+import { Star, Check, MoreVertical, Shield, LogOut } from "lucide-react";
 import { GardenScapeIcon, GardenDesignIcon, SeasonIcon, PlantDoctorIcon, PlantLibraryIcon, PremiumIcon } from "@/components/ui/brand-icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -79,8 +79,20 @@ export default function Landing() {
                   <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" title="View your gardens, stats, and recent activity">
                     Dashboard
                   </Link>
-                  <Button asChild data-testid="button-go-to-dashboard" title="Start creating a new garden design">
+                  <Button asChild data-testid="button-new-garden" title="Start creating a new garden design">
                     <Link href="/garden-properties">+ New Garden</Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    asChild 
+                    data-testid="button-logout"
+                    title="Sign out of your account"
+                  >
+                    <a href="/api/logout" className="link-reset flex items-center gap-1">
+                      <LogOut className="w-3.5 h-3.5" />
+                      Sign Out
+                    </a>
                   </Button>
                 </>
               )}
