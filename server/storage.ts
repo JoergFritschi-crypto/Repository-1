@@ -492,7 +492,7 @@ export class DatabaseStorage implements IStorage {
           );
         }
         return null;
-      }).filter(Boolean);
+      }).filter((condition): condition is NonNullable<typeof condition> => condition !== null);
       if (monthConditions.length > 0) {
         conditions.push(or(...monthConditions));
       }
@@ -1012,7 +1012,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(securityAuditLogs.eventType as any, filters.eventType));
     }
     if (filters?.severity) {
-      conditions.push(eq(securityAuditLogs.severity, filters.severity));
+      conditions.push(eq(securityAuditLogs.severity as any, filters.severity));
     }
     if (filters?.startDate) {
       conditions.push(gte(securityAuditLogs.createdAt, filters.startDate));
@@ -1328,14 +1328,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSecurityStats(): Promise<{
-    totalSessions: number;
-    failedLogins24h: number;
-    blockedIps: number;
-    auditLogsToday: number;
+    totalUsers: number;
+    activeSessionsCount: number;
+    failedLoginsLast24h: number;
+    blockedIpsCount: number;
     securityScore: number;
-    lastAuditTime: Date | null;
-    activeThreats: number;
-    rateLimitViolations: number;
+    recentEvents: SecurityAuditLog[];
   }> {
     // Get total active sessions count
     const activeSessionsResult = await db
@@ -1409,15 +1407,26 @@ export class DatabaseStorage implements IStorage {
     if (rateLimitViolationCount > 100) securityScore -= 10;
     if (rateLimitViolationCount > 500) securityScore -= 20;
     
+    // Get total users count
+    const totalUsersResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users);
+    const totalUsers = Number(totalUsersResult[0]?.count || 0);
+    
+    // Get recent security events (last 10)
+    const recentEvents = await db
+      .select()
+      .from(securityAuditLogs)
+      .orderBy(desc(securityAuditLogs.createdAt))
+      .limit(10);
+    
     return {
-      totalSessions,
-      failedLogins24h,
-      blockedIps,
-      auditLogsToday,
+      totalUsers,
+      activeSessionsCount: totalSessions,
+      failedLoginsLast24h: failedLogins24h,
+      blockedIpsCount: blockedIps,
       securityScore: Math.max(0, securityScore),
-      lastAuditTime,
-      activeThreats,
-      rateLimitViolations: rateLimitViolationCount
+      recentEvents
     };
   }
 }

@@ -14,8 +14,8 @@ function getDatabaseUrl(): string {
   // Check if PG* variables exist (created by create_postgresql_database_tool)
   if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
       process.env.PGPASSWORD && process.env.PGDATABASE) {
-    // Construct DATABASE_URL from PG* variables
-    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`;
+    // Construct DATABASE_URL from PG* variables with SSL required
+    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}?sslmode=require`;
     console.log('Session store using PostgreSQL database from PG* environment variables');
     return url;
   }
