@@ -40,6 +40,7 @@ interface ServiceInfo {
 }
 
 const SERVICE_INFO: Record<string, ServiceInfo> = {
+  // Critical Services - Essential for core functionality
   openai: {
     name: 'OpenAI',
     endpoint: 'https://api.openai.com',
@@ -78,6 +79,64 @@ const SERVICE_INFO: Record<string, ServiceInfo> = {
     requiredKeys: ['PERPLEXITY_API_KEY'],
     documentation: 'https://docs.perplexity.ai',
     testEndpoint: '/chat/completions',
+    category: 'critical'
+  },
+  
+  // Auxiliary Services - Additional features and enhancements
+  perenual: {
+    name: 'Perenual Plant Database',
+    endpoint: 'https://perenual.com/api',
+    requiredKeys: ['PERENUAL_API_KEY'],
+    documentation: 'https://perenual.com/docs/api',
+    testEndpoint: '/species-list',
+    category: 'auxiliary'
+  },
+  gbif: {
+    name: 'GBIF Species Data',
+    endpoint: 'https://api.gbif.org',
+    requiredKeys: ['GBIF_EMAIL', 'GBIF_PASSWORD'],
+    documentation: 'https://www.gbif.org/developer',
+    testEndpoint: '/v1/species/search',
+    category: 'auxiliary'
+  },
+  mapbox: {
+    name: 'Mapbox Geocoding',
+    endpoint: 'https://api.mapbox.com',
+    requiredKeys: ['MAPBOX_API_KEY'],
+    documentation: 'https://docs.mapbox.com/api/',
+    testEndpoint: '/geocoding/v5/mapbox.places',
+    category: 'auxiliary'
+  },
+  visual_crossing: {
+    name: 'Visual Crossing Weather',
+    endpoint: 'https://weather.visualcrossing.com',
+    requiredKeys: ['VISUAL_CROSSING_API_KEY'],
+    documentation: 'https://www.visualcrossing.com/resources/documentation',
+    testEndpoint: '/VisualCrossingWebServices/rest/services/timeline',
+    category: 'auxiliary'
+  },
+  huggingface: {
+    name: 'HuggingFace AI',
+    endpoint: 'https://api-inference.huggingface.co',
+    requiredKeys: ['HUGGINGFACE_API_KEY'],
+    documentation: 'https://huggingface.co/docs/api-inference',
+    testEndpoint: '/models',
+    category: 'auxiliary'
+  },
+  runware: {
+    name: 'Runware Images',
+    endpoint: 'https://api.runware.ai',
+    requiredKeys: ['RUNWARE_API_KEY'],
+    documentation: 'https://docs.runware.ai',
+    testEndpoint: '/v1',
+    category: 'auxiliary'
+  },
+  firecrawl: {
+    name: 'FireCrawl Web',
+    endpoint: 'https://api.firecrawl.dev',
+    requiredKeys: ['FIRECRAWL_API_KEY'],
+    documentation: 'https://docs.firecrawl.dev',
+    testEndpoint: '/v1/scrape',
     category: 'auxiliary'
   }
 };
