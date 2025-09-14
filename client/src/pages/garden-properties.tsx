@@ -24,7 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye, Info, ChevronRight, MousePointer, Check, Loader2, Search, Database, Filter, Lightbulb, RotateCcw, Download, FileText } from 'lucide-react';
+import { Thermometer, Droplets, TreePine, ArrowLeft, ArrowRight, MapPin, Sun, Cloud, CloudRain, Wind, Snowflake, Beaker, Flower2, Shield, Wand2, Palette, AlertCircle, Sparkles, Sprout, Compass, PenTool, Eye, Info, ChevronRight, MousePointer, Check, Loader2, Search, Database, Filter, Lightbulb, RotateCcw, Download, FileText, ChevronDown } from 'lucide-react';
 import GardenSketch from '@/components/garden/garden-sketch';
 import GardenLayoutCanvas, { type PlacedPlant } from '@/components/garden/garden-layout-canvas';
 import GardenRenderer3D from '@/components/garden/garden-renderer-3d';
@@ -41,9 +41,6 @@ import { useAuthWithTesting } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { Lock, Crown, CreditCard } from 'lucide-react';
 import { GardenDesignIcon } from '@/components/ui/brand-icons';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { PlantAdvancedSearch } from '@/components/plant/plant-advanced-search';
-import PlantSearchResults from '@/components/plant/plant-search-results';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import FinalReviewGallery from '@/components/garden/final-review-gallery';
 import SeasonalViewer from '@/components/garden/seasonal-viewer';
@@ -256,6 +253,7 @@ export default function GardenProperties() {
   const [plantFilters, setPlantFilters] = useState<any>({});
   const [showPlantResults, setShowPlantResults] = useState(false);
   const [searchSource, setSearchSource] = useState<'database' | 'collection'>('database');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false); // Will be set based on design approach
   
   // Get user data and design generation history
   const { user } = useAuthWithTesting();
@@ -2315,7 +2313,195 @@ export default function GardenProperties() {
 
             {/* Step 4: Interactive Design - Unified Plant Selection and Placement */}
             {currentStep === 4 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
+                {/* Collapsible Plant Search Card */}
+                <Card className="border-2 border-primary/30 shadow-sm" data-testid="plant-search-card">
+                  <CardHeader 
+                    className="py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Search className="w-4 h-4 text-primary" />
+                        <CardTitle className="text-base">Plant Search & Filters</CardTitle>
+                        {inventoryPlants.length > 0 && (
+                          <Badge variant="secondary" className="ml-2">
+                            {inventoryPlants.length} plants in inventory
+                          </Badge>
+                        )}
+                        {Object.keys(plantFilters).filter(k => {
+                          const v = plantFilters[k];
+                          return v !== undefined && v !== '' && v !== 'all' && v !== null && 
+                                 !(Array.isArray(v) && v.length === 0);
+                        }).length > 0 && (
+                          <Badge variant="outline" className="ml-2">
+                            {Object.keys(plantFilters).filter(k => {
+                              const v = plantFilters[k];
+                              return v !== undefined && v !== '' && v !== 'all' && v !== null && 
+                                     !(Array.isArray(v) && v.length === 0);
+                            }).length} filters active
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!isSearchExpanded && (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowPlantSearch(true);
+                            }}
+                            data-testid="button-open-search-collapsed"
+                          >
+                            <Search className="w-3 h-3 mr-2" />
+                            Open Advanced Search
+                          </Button>
+                        )}
+                        <ChevronDown 
+                          className={`w-4 h-4 text-gray-500 transition-transform ${
+                            isSearchExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  {isSearchExpanded && (
+                    <CardContent className="pt-0 pb-4 space-y-4">
+                      {/* Quick Filter Options */}
+                      <div className="flex flex-wrap gap-3">
+                        {user?.userTier === 'premium' && (
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox 
+                              checked={searchSource === 'collection'}
+                              onCheckedChange={(checked) => {
+                                setSearchSource(checked ? 'collection' : 'database');
+                              }}
+                            />
+                            <span className="text-sm">My Collection Only</span>
+                          </label>
+                        )}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox 
+                            checked={plantFilters.toxicityLevel === 'none'}
+                            onCheckedChange={(checked) => {
+                              setPlantFilters(prev => ({
+                                ...prev,
+                                toxicityLevel: checked ? 'none' : undefined
+                              }));
+                            }}
+                          />
+                          <span className="text-sm">Non-toxic Only</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox 
+                            checked={plantFilters.nativeOnly === true}
+                            onCheckedChange={(checked) => {
+                              setPlantFilters(prev => ({
+                                ...prev,
+                                nativeOnly: checked ? true : undefined
+                              }));
+                            }}
+                          />
+                          <span className="text-sm">Native Plants Only</span>
+                        </label>
+                      </div>
+                      
+                      {/* Primary Search Button */}
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-600">
+                          Use advanced search to find the perfect plants for your garden
+                        </p>
+                        <Button
+                          variant="default"
+                          onClick={() => setShowPlantSearch(true)}
+                          data-testid="button-open-advanced-search"
+                        >
+                          <Search className="w-4 h-4 mr-2" />
+                          Open Advanced Search
+                        </Button>
+                      </div>
+                      
+                      {/* AI Design Generation Option */}
+                      {(selectedStyleFromAI || selectedGardenStyle) && (
+                        <div className="pt-2 border-t">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Wand2 className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-medium">AI Design Assistant</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                setIsGeneratingDesign(true);
+                                try {
+                                  const styleToUse = selectedStyleFromAI || (selectedGardenStyle ? GARDEN_STYLES[selectedGardenStyle as keyof typeof GARDEN_STYLES] : null);
+                                  
+                                  if (!styleToUse) {
+                                    toast({
+                                      title: "No Style Selected",
+                                      description: "Please select a garden style first",
+                                      variant: "destructive"
+                                    });
+                                    return;
+                                  }
+                                  
+                                  const response = await apiRequest('POST', '/api/generate-complete-design', {
+                                    selectedStyle: styleToUse,
+                                    gardenData: form.getValues(),
+                                    safetyPreferences: {
+                                      toxicityLevel: watchedToxicityLevel,
+                                      plantAvailability: watchedPlantAvailability
+                                    }
+                                  });
+                                  
+                                  const design = await response.json();
+                                  setCompleteDesign(design);
+                                  
+                                  // Automatically populate inventory with AI-selected plants
+                                  if (design.plants && design.plants.length > 0) {
+                                    setInventoryPlants(design.plants);
+                                    toast({
+                                      title: "AI Design Generated",
+                                      description: `Added ${design.plants.length} plants to your inventory. Drag them onto the canvas!`,
+                                    });
+                                  }
+                                } catch (error: any) {
+                                  console.error('Error generating design:', error);
+                                  toast({
+                                    title: "Generation Failed",
+                                    description: error.message || "Failed to generate AI design",
+                                    variant: "destructive"
+                                  });
+                                } finally {
+                                  setIsGeneratingDesign(false);
+                                }
+                              }}
+                              disabled={isGeneratingDesign}
+                              data-testid="button-generate-ai-design"
+                            >
+                              {isGeneratingDesign ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                  Generating...
+                                </>
+                              ) : (
+                                <>
+                                  <Wand2 className="w-3 h-3 mr-2" />
+                                  Generate AI Plant Selection
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  )}
+                </Card>
+                
+                {/* Main Garden Design Canvas - Full Width */}
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-interactive-design">
                   <CardHeader className="py-3">
                     <CardTitle className="text-base flex items-center gap-2">
@@ -2323,258 +2509,62 @@ export default function GardenProperties() {
                       Interactive Garden Design
                     </CardTitle>
                     <CardDescription>
-                      Browse plants on the left, design your garden on the right
+                      {inventoryPlants.length === 0 
+                        ? "Search for plants above, then drag them onto your garden canvas"
+                        : `Drag and place your ${inventoryPlants.length} selected plants onto the canvas below`
+                      }
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
-                    {/* Split-panel layout with plant library and canvas */}
-                    <ResizablePanelGroup direction="horizontal" className="h-[750px] border-t">
-                      {/* Left Panel: Plant Search and Filters */}
-                      <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
-                        <div className="h-full flex flex-col border-r bg-gray-50/50">
-                          {/* Plant Search Header */}
-                          <div className="p-4 border-b bg-white">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Search className="w-5 h-5 text-primary" />
-                              <h3 className="font-semibold">Plant Library</h3>
-                              <Badge variant="outline" className="ml-auto">
-                                {inventoryPlants.length} plants selected
-                              </Badge>
-                            </div>
-                            
-                            {/* Tabs for Database vs Collection */}
-                            <Tabs value={searchSource} onValueChange={(value: any) => setSearchSource(value)} className="w-full">
-                              <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="database" className="flex items-center gap-1">
-                                  <Database className="w-3 h-3" />
-                                  Database
-                                </TabsTrigger>
-                                <TabsTrigger 
-                                  value="collection" 
-                                  disabled={user?.userTier !== 'premium'}
-                                  className="flex items-center gap-1"
-                                >
-                                  <TreePine className="w-3 h-3" />
-                                  My Collection
-                                </TabsTrigger>
-                              </TabsList>
-                            </Tabs>
-                          </div>
-                          
-                          {/* Plant Filters and Search */}
-                          <div className="flex-1 overflow-y-auto p-4">
-                            {!showPlantResults ? (
-                              <div className="space-y-4">
-                                <PlantAdvancedSearch 
-                                  onSearch={(filters) => {
-                                    setPlantFilters(filters);
-                                    setShowPlantResults(true);
-                                  }}
-                                />
-                                
-                                {/* Quick Tips */}
-                                <Alert className="border-primary/20">
-                                  <Lightbulb className="h-4 w-4" />
-                                  <AlertTitle>Quick Tips</AlertTitle>
-                                  <AlertDescription className="text-xs">
-                                    • Use filters to find plants by size, color, or type<br/>
-                                    • Add plants to your inventory, then drag them onto the canvas<br/>
-                                    • Right-click plants on the canvas to remove them
-                                  </AlertDescription>
-                                </Alert>
-                              </div>
-                            ) : (
-                              <PlantSearchResults
-                                filters={plantFilters}
-                                searchSource={searchSource}
-                                onSelectPlants={(plantsMap) => {
-                                  // Add selected plants to inventory
-                                  plantsMap.forEach(({ plant, quantity }) => {
-                                    for (let i = 0; i < quantity; i++) {
-                                      setInventoryPlants(prev => [...prev, plant]);
-                                    }
-                                  });
-                                  
-                                  toast({
-                                    title: "Plants Added",
-                                    description: `Added ${plantsMap.size} plant type(s) to your inventory`
-                                  });
-                                  
-                                  setShowPlantResults(false);
-                                  setPlantFilters({});
-                                }}
-                                onBack={() => {
-                                  setShowPlantResults(false);
-                                  setPlantFilters({});
-                                }}
-                                userTier={user?.userTier || 'free'}
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </ResizablePanel>
-                      
-                      {/* Resize Handle */}
-                      <ResizableHandle withHandle />
-                      
-                      {/* Right Panel: Garden Canvas */}
-                      <ResizablePanel defaultSize={65} minSize={50}>
-                        <div className="h-full flex flex-col">
-                          {/* Canvas Header with AI Options */}
-                          <div className="p-3 border-b bg-white">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Palette className="w-4 h-4 text-primary" />
-                                <h3 className="font-semibold text-sm">Garden Canvas</h3>
-                                {completeDesign && (
-                                  <Badge className="ml-2" variant="secondary">
-                                    AI Design Loaded
-                                  </Badge>
-                                )}
-                              </div>
-                              
-                              {/* AI Design Options */}
-                              <div className="flex items-center gap-2">
-                                {selectedStyleFromAI || selectedGardenStyle ? (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={async () => {
-                                      setIsGeneratingDesign(true);
-                                      try {
-                                        const styleToUse = selectedStyleFromAI || (selectedGardenStyle ? GARDEN_STYLES[selectedGardenStyle as keyof typeof GARDEN_STYLES] : null);
-                                        
-                                        if (!styleToUse) {
-                                          toast({
-                                            title: "No Style Selected",
-                                            description: "Please select a garden style first",
-                                            variant: "destructive"
-                                          });
-                                          return;
-                                        }
-                                        
-                                        const response = await apiRequest('POST', '/api/generate-complete-design', {
-                                          selectedStyle: styleToUse,
-                                          gardenData: form.getValues(),
-                                          safetyPreferences: {
-                                            toxicityLevel: watchedToxicityLevel,
-                                            plantAvailability: watchedPlantAvailability
-                                          }
-                                        });
-                                        
-                                        const design = await response.json();
-                                        setCompleteDesign(design);
-                                        
-                                        toast({
-                                          title: 'AI Design Generated!',
-                                          description: `Your ${design.styleName} garden is ready with ${design.plantPlacements.length} plants.`
-                                        });
-                                      } catch (error) {
-                                        console.error('Failed to generate design:', error);
-                                        toast({
-                                          title: 'Generation Failed',
-                                          description: 'Could not generate garden design. Please try again.',
-                                          variant: 'destructive'
-                                        });
-                                      } finally {
-                                        setIsGeneratingDesign(false);
-                                      }
-                                    }}
-                                    disabled={isGeneratingDesign}
-                                    data-testid="button-generate-ai-design"
-                                  >
-                                    {isGeneratingDesign ? (
-                                      <>
-                                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                        Generating...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Wand2 className="w-3 h-3 mr-1" />
-                                        Generate AI Design
-                                      </>
-                                    )}
-                                  </Button>
-                                ) : (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => {
-                                            toast({
-                                              title: "Style Selection Required",
-                                              description: "Upload garden photos in Step 2 or select a style to enable AI design",
-                                              variant: "destructive"
-                                            });
-                                          }}
-                                          data-testid="button-ai-design-disabled"
-                                        >
-                                          <Wand2 className="w-3 h-3 mr-1" />
-                                          AI Design
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Upload photos or select a style first</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Garden Canvas Component */}
-                          <div className="flex-1 overflow-auto bg-gray-50">
-                            <GardenLayoutCanvas
-                              shape={watchedShape}
-                              dimensions={watchedDimensions}
-                              units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
-                              gardenName={watchedName}
-                              aiDesign={completeDesign}
-                              inventoryPlants={inventoryPlants}
-                              onOpenPlantSearch={() => {
-                                // Instead of opening modal, focus on left panel
-                                setShowPlantResults(false);
-                                setPlantFilters({});
-                              }}
-                              onPlacedPlantsChange={setPlacedPlants}
-                            />
-                          </div>
-                        </div>
-                      </ResizablePanel>
-                    </ResizablePanelGroup>
+                    <div className="h-[750px] border-t bg-gray-50">
+                      {/* Garden Canvas Component - Now Full Width */}
+                      <GardenLayoutCanvas
+                        shape={watchedShape}
+                        dimensions={watchedDimensions}
+                        units={watchedUnits === 'feet' ? 'imperial' : 'metric'}
+                        gardenName={watchedName}
+                        aiDesign={completeDesign}
+                        inventoryPlants={inventoryPlants}
+                        onOpenPlantSearch={() => setShowPlantSearch(true)}
+                        onPlacedPlantsChange={setPlacedPlants}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
                 
-                {/* Design Summary Card (if AI design was generated) */}
+                {/* AI Design Details (if generated) */}
                 {completeDesign && (
-                  <Card className="border-2 border-primary bg-primary/10 shadow-sm" data-testid="design-details">
+                  <Card className="border border-primary/30">
                     <CardHeader className="py-3">
                       <CardTitle className="text-base flex items-center gap-2">
-                        <TreePine className="w-4 h-4 text-primary" />
-                        Your {completeDesign.styleName} Garden Design
+                        <Sparkles className="w-4 h-4 text-primary" />
+                        AI Design Details
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4 pt-0">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="p-3 bg-white rounded-lg border">
+                          <h4 className="font-semibold text-sm mb-2">Design Style</h4>
+                          <p className="text-xs text-gray-600">
+                            {completeDesign.styleName || 'Custom'}
+                          </p>
+                        </div>
                         <div className="p-3 bg-white rounded-lg border">
                           <h4 className="font-semibold text-sm mb-2">Plant Count</h4>
-                          <p className="text-2xl font-bold text-primary">
-                            {completeDesign.plantPlacements.length} plants
+                          <p className="text-xs text-gray-600">
+                            {completeDesign.plantPlacements?.length || 0} plants
                           </p>
                         </div>
                         <div className="p-3 bg-white rounded-lg border">
                           <h4 className="font-semibold text-sm mb-2">Design Zones</h4>
-                          <p className="text-xs">
-                            {completeDesign.designZones.map((zone: any) => zone.name).join(', ')}
+                          <p className="text-xs text-gray-600">
+                            {completeDesign.designZones?.map((zone: any) => zone.name).join(', ') || 'Multiple zones'}
                           </p>
                         </div>
                         <div className="p-3 bg-white rounded-lg border">
                           <h4 className="font-semibold text-sm mb-2">Color Palette</h4>
                           <div className="flex gap-1 flex-wrap">
-                            {completeDesign.colorPalette.slice(0, 3).map((color: string, i: number) => (
+                            {(completeDesign.colorPalette || []).slice(0, 3).map((color: string, i: number) => (
                               <Badge key={i} variant="outline" className="text-xs">{color}</Badge>
                             ))}
                           </div>
@@ -2583,6 +2573,20 @@ export default function GardenProperties() {
                     </CardContent>
                   </Card>
                 )}
+                
+                {/* Plant Search Modal */}
+                <PlantSearchModal
+                  isOpen={showPlantSearch}
+                  onClose={() => setShowPlantSearch(false)}
+                  onSelectPlant={(plant) => {
+                    setInventoryPlants(prev => [...prev, plant]);
+                    toast({
+                      title: "Plant Added",
+                      description: `${plant.plantName} has been added to your inventory`,
+                    });
+                  }}
+                  userTier={user?.userTier || 'free'}
+                />
               </div>
             )}
 
