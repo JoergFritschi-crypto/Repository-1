@@ -23,28 +23,61 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+interface ServiceHealthStatus {
+  service: string;
+  status: 'healthy' | 'degraded' | 'down';
+  lastChecked?: string;
+  responseTime?: number;
+  error?: string;
+  errorMessage?: string;
+  details?: any;
+  quotaUsed?: number;
+  quotaLimit?: number;
+}
+
+interface APIUsageStats {
+  [service: string]: {
+    count: number;
+    cost?: number;
+    limit?: number;
+  };
+}
+
+interface APIConfig {
+  [service: string]: {
+    purpose?: string;
+    endpoint?: string;
+    rateLimit?: number;
+  };
+}
+
+interface KeyStatusInfo {
+  configured: boolean;
+  lastUsed?: string;
+}
+
 export function APIMonitoring() {
   const { toast } = useToast();
   const [isChecking, setIsChecking] = useState(false);
 
   // Fetch health status
-  const { data: healthStatus, isLoading: isLoadingHealth } = useQuery({
+  const { data: healthStatus, isLoading: isLoadingHealth } = useQuery<ServiceHealthStatus[]>({
     queryKey: ["/api/admin/api-health"],
     refetchInterval: 60000, // Refresh every minute
   });
 
   // Fetch usage stats
-  const { data: usageStats } = useQuery({
+  const { data: usageStats } = useQuery<APIUsageStats>({
     queryKey: ["/api/admin/api-usage"],
   });
 
   // Fetch API configuration
-  const { data: apiConfig } = useQuery({
+  const { data: apiConfig } = useQuery<APIConfig>({
     queryKey: ["/api/admin/api-config"],
   });
 
   // Fetch API key status
-  const { data: keyStatus } = useQuery({
+  const { data: keyStatus } = useQuery<Record<string, KeyStatusInfo>>({
     queryKey: ["/api/admin/api-keys/status"],
   });
 
@@ -106,16 +139,16 @@ export function APIMonitoring() {
     return icons[service] || "🔧";
   };
 
-  const criticalServices = (healthStatus as any[])?.filter((s: any) => 
+  const criticalServices = healthStatus?.filter((s) => 
     ['anthropic', 'perplexity', 'stripe'].includes(s.service)
   ) || [];
 
-  const nonCriticalServices = (healthStatus as any[])?.filter((s: any) => 
+  const nonCriticalServices = healthStatus?.filter((s) => 
     !['anthropic', 'perplexity', 'stripe'].includes(s.service)
   ) || [];
 
-  const healthyCount = (healthStatus as any[])?.filter((s: any) => s.status === 'healthy').length || 0;
-  const totalServices = (healthStatus as any[])?.length || 0;
+  const healthyCount = healthStatus?.filter((s) => s.status === 'healthy').length || 0;
+  const totalServices = healthStatus?.length || 0;
   const healthPercentage = totalServices > 0 ? (healthyCount / totalServices) * 100 : 0;
 
   return (
@@ -175,7 +208,7 @@ export function APIMonitoring() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-4">
-              {Object.entries(keyStatus as Record<string, any>).map(([service, status]) => {
+              {Object.entries(keyStatus).map(([service, status]) => {
                 const isConfigured = status.configured;
                 return (
                   <div 
@@ -210,7 +243,7 @@ export function APIMonitoring() {
         {/* Critical Services Tab */}
         <TabsContent value="critical" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {criticalServices.map((service: any) => (
+            {criticalServices.map((service) => (
               <Card key={service.service} data-testid={`card-service-${service.service}`}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -221,7 +254,7 @@ export function APIMonitoring() {
                     {getStatusBadge(service.status)}
                   </div>
                   <CardDescription>
-                    {(apiConfig as any)?.[service.service]?.purpose || 'API Service'}
+                    {apiConfig?.[service.service]?.purpose || 'API Service'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -268,7 +301,7 @@ export function APIMonitoring() {
         {/* Auxiliary Services Tab */}
         <TabsContent value="auxiliary" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            {nonCriticalServices.map((service: any) => (
+            {nonCriticalServices.map((service) => (
               <Card key={service.service} data-testid={`card-aux-service-${service.service}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -309,28 +342,28 @@ export function APIMonitoring() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {(usageStats as any[])?.map((stat: any) => (
-                  <div key={stat.service} className="flex items-center justify-between p-3 border rounded-lg">
+                {usageStats && Object.entries(usageStats).map(([serviceName, stat]) => (
+                  <div key={serviceName} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{getServiceIcon(stat.service)}</span>
+                      <span className="text-2xl">{getServiceIcon(serviceName)}</span>
                       <div>
-                        <p className="font-medium capitalize">{stat.service}</p>
+                        <p className="font-medium capitalize">{serviceName}</p>
                         <p className="text-sm text-muted-foreground">
-                          {stat.totalRequests || 0} requests
+                          {stat.count || 0} requests
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      {stat.totalTokens && (
+                      {stat.limit && (
                         <p className="text-sm">
                           <TrendingUp className="inline h-3 w-3 mr-1" />
-                          {stat.totalTokens.toLocaleString()} tokens
+                          Limit: {stat.limit.toLocaleString()}
                         </p>
                       )}
-                      {stat.totalCost && (
+                      {stat.cost !== undefined && (
                         <p className="font-medium">
                           <DollarSign className="inline h-3 w-3" />
-                          {parseFloat(stat.totalCost).toFixed(2)}
+                          {stat.cost.toFixed(2)}
                         </p>
                       )}
                     </div>

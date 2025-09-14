@@ -113,6 +113,9 @@ export default function Admin() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchFilters, setSearchFilters] = useState<any>(null);
   const [isGeneratingIcons, setIsGeneratingIcons] = useState(false);
+  const [isBatchValidating, setIsBatchValidating] = useState(false);
+  const [isGeneratingMissing, setIsGeneratingMissing] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number } | null>(null);
   const { toast } = useToast();
 
   // Icon Gallery functionality
@@ -471,6 +474,123 @@ export default function Admin() {
     { id: "api-keys", label: "API Keys", icon: Key },
   ];
 
+  // Batch validation handler
+  const handleBatchValidation = async () => {
+    setIsBatchValidating(true);
+    setBatchProgress(null);
+    
+    try {
+      const pendingPlantIds = displayedPlants
+        ?.filter((p: any) => p.verification_status === 'pending')
+        .map((p: any) => p.id) || [];
+      
+      const totalPlants = pendingPlantIds.length;
+      setBatchProgress({ current: 0, total: totalPlants });
+      
+      // Process in batches of 10
+      const batchSize = 10;
+      let successCount = 0;
+      let failCount = 0;
+      
+      for (let i = 0; i < pendingPlantIds.length; i += batchSize) {
+        const batch = pendingPlantIds.slice(i, i + batchSize);
+        
+        // Process batch
+        const response = await apiRequest("POST", "/api/admin/plants/batch-validate", {
+          plantIds: batch
+        });
+        
+        const result = await response.json();
+        successCount += result.success || 0;
+        failCount += result.failed || 0;
+        
+        setBatchProgress({ current: Math.min(i + batchSize, totalPlants), total: totalPlants });
+        
+        // Add delay to prevent overload
+        if (i + batchSize < pendingPlantIds.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+      
+      toast({
+        title: "Batch Validation Complete",
+        description: `Successfully validated ${successCount} plants${failCount > 0 ? `, ${failCount} failed` : ''}`,
+      });
+      
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/plants/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/plants"] });
+      refetchPlants();
+    } catch (error: any) {
+      toast({
+        title: "Batch Validation Failed",
+        description: error.message || "Failed to validate plants",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBatchValidating(false);
+      setBatchProgress(null);
+    }
+  };
+  
+  // Generate missing images handler
+  const handleGenerateMissing = async () => {
+    setIsGeneratingMissing(true);
+    setBatchProgress(null);
+    
+    try {
+      const plantsWithMissingImages = displayedPlants
+        ?.filter((p: any) => !p.images?.gardenFull && p.verification_status === 'verified')
+        .map((p: any) => p.id) || [];
+      
+      const totalPlants = plantsWithMissingImages.length;
+      setBatchProgress({ current: 0, total: totalPlants });
+      
+      // Process in batches of 5 (image generation is more resource intensive)
+      const batchSize = 5;
+      let successCount = 0;
+      let failCount = 0;
+      
+      for (let i = 0; i < plantsWithMissingImages.length; i += batchSize) {
+        const batch = plantsWithMissingImages.slice(i, i + batchSize);
+        
+        // Process batch
+        const response = await apiRequest("POST", "/api/admin/plants/batch-generate-images", {
+          plantIds: batch
+        });
+        
+        const result = await response.json();
+        successCount += result.success || 0;
+        failCount += result.failed || 0;
+        
+        setBatchProgress({ current: Math.min(i + batchSize, totalPlants), total: totalPlants });
+        
+        // Add delay to prevent overload
+        if (i + batchSize < plantsWithMissingImages.length) {
+          await new Promise(resolve => setTimeout(resolve, 500)); // Longer delay for image generation
+        }
+      }
+      
+      toast({
+        title: "Image Generation Complete",
+        description: `Successfully generated images for ${successCount} plants${failCount > 0 ? `, ${failCount} failed` : ''}`,
+      });
+      
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/plants"] });
+      refetchPlants();
+    } catch (error: any) {
+      toast({
+        title: "Image Generation Failed",
+        description: error.message || "Failed to generate images",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingMissing(false);
+      setBatchProgress(null);
+    }
+  };
+
   // Create test garden mutation
   const createTestGardenMutation = useMutation({
     mutationFn: async () => {
@@ -574,6 +694,50 @@ export default function Admin() {
                           </div>
                         )}
                         <div className="ml-auto flex gap-2">
+                          {displayedPlants?.filter((p: any) => p.verification_status === 'pending').length > 0 && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="bg-[#004025] hover:bg-[#004025]/90"
+                              data-testid="button-batch-validate"
+                              onClick={handleBatchValidation}
+                              disabled={isBatchValidating}
+                            >
+                              {isBatchValidating ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                  {batchProgress ? `${batchProgress.current}/${batchProgress.total}` : 'Validating...'}
+                                </>
+                              ) : (
+                                <>
+                                  <Check className="w-4 h-4 mr-1" />
+                                  Batch Validate ({displayedPlants?.filter((p: any) => p.verification_status === 'pending').length})
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          {displayedPlants?.filter((p: any) => !p.images?.gardenFull && p.verification_status === 'verified').length > 0 && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="bg-[#004025] hover:bg-[#004025]/90"
+                              data-testid="button-generate-missing"
+                              onClick={handleGenerateMissing}
+                              disabled={isGeneratingMissing}
+                            >
+                              {isGeneratingMissing ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                  {batchProgress ? `${batchProgress.current}/${batchProgress.total}` : 'Generating...'}
+                                </>
+                              ) : (
+                                <>
+                                  <ImageIcon className="w-4 h-4 mr-1" />
+                                  Generate Missing ({displayedPlants?.filter((p: any) => !p.images?.gardenFull && p.verification_status === 'verified').length})
+                                </>
+                              )}
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="default"

@@ -1817,6 +1817,115 @@ Rules:
     }
   });
 
+  // Batch validate plants endpoint
+  app.post('/api/admin/plants/batch-validate', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { plantIds } = req.body;
+      if (!plantIds || !Array.isArray(plantIds)) {
+        return res.status(400).json({ message: "Invalid plant IDs" });
+      }
+
+      let successCount = 0;
+      let failedCount = 0;
+
+      // Process each plant in the batch
+      for (const plantId of plantIds) {
+        try {
+          await storage.verifyPlant(plantId);
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to verify plant ${plantId}:`, error);
+          failedCount++;
+        }
+      }
+
+      res.json({ 
+        success: successCount, 
+        failed: failedCount,
+        total: plantIds.length 
+      });
+    } catch (error) {
+      console.error("Error batch validating plants:", error);
+      res.status(500).json({ message: "Failed to batch validate plants" });
+    }
+  });
+
+  // Batch generate missing images endpoint
+  app.post('/api/admin/plants/batch-generate-images', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { plantIds } = req.body;
+      if (!plantIds || !Array.isArray(plantIds)) {
+        return res.status(400).json({ message: "Invalid plant IDs" });
+      }
+
+      let successCount = 0;
+      let failedCount = 0;
+
+      // Process each plant in the batch
+      for (const plantId of plantIds) {
+        try {
+          const plant = await storage.getPlant(plantId);
+          if (!plant) {
+            failedCount++;
+            continue;
+          }
+
+          // Generate images for the plant if missing
+          if (!plant.images?.gardenFull) {
+            // Use the existing image generation service
+            const result = await imageGenerationService.generatePlantImages({
+              plantId: plant.id,
+              scientificName: plant.scientific_name,
+              commonName: plant.common_name,
+              description: plant.description || '',
+              plantType: plant.plant_type,
+              colors: plant.colors || [],
+              specialFeatures: plant.special_features || []
+            });
+
+            // Update plant with generated images
+            if (result.success && result.images) {
+              await storage.updatePlant(plant.id, {
+                images: result.images,
+                imageGenerationStatus: 'completed'
+              });
+              successCount++;
+            } else {
+              failedCount++;
+            }
+          } else {
+            // Plant already has images
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to generate images for plant ${plantId}:`, error);
+          failedCount++;
+        }
+      }
+
+      res.json({ 
+        success: successCount, 
+        failed: failedCount,
+        total: plantIds.length 
+      });
+    } catch (error) {
+      console.error("Error batch generating images:", error);
+      res.status(500).json({ message: "Failed to batch generate images" });
+    }
+  });
+
   // AI-Generated Garden Tool Icons API
   app.post('/api/admin/generate-garden-tool-icons', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
     try {
