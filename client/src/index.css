@@ -170,17 +170,21 @@
     background-clip: text;
   }
   
-  /* Hero title override for PURE GOLD text with very thin dark green border */
+  /* Hero title override for PURE GOLD text with green outline added */
   .hero-title {
-    /* Pure gold color */
+    /* Pure gold color - full, undiminished */
     color: #FFD700 !important;
     -webkit-text-fill-color: #FFD700 !important;
-    /* Very thin dark green border - just a subtle outline */
-    -webkit-text-stroke: 0.5px hsl(var(--british-racing-green));
-    text-stroke: 0.5px hsl(var(--british-racing-green));
-    /* Add strong black shadow for contrast */
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8)) 
-            drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+    /* Add green outline using text-shadow - doesn't reduce gold area */
+    text-shadow: 
+      /* Thin green outline */
+      -1px -1px 0 hsl(var(--british-racing-green)),
+      1px -1px 0 hsl(var(--british-racing-green)),
+      -1px 1px 0 hsl(var(--british-racing-green)),
+      1px 1px 0 hsl(var(--british-racing-green)),
+      /* Black shadow for depth */
+      2px 2px 4px rgba(0, 0, 0, 0.8),
+      4px 4px 8px rgba(0, 0, 0, 0.6);
     font-weight: 900;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -190,9 +194,7 @@
   @media (min-width: 768px) {
     .hero-title {
       font-size: 3.5rem;
-      /* Very thin stroke even at larger size */
-      -webkit-text-stroke: 0.75px hsl(var(--british-racing-green));
-      text-stroke: 0.75px hsl(var(--british-racing-green));
+      /* Maintain text-shadow approach at larger size */
     }
   }
   
