@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Architects+Daughter&family=Fira+Code:wght@300..700&display=swap');
 @import './styles/loading-animations.css';
 @tailwind base;
 @tailwind components;
@@ -34,8 +35,9 @@
   --print-background: 0 0% 100%;
   --print-border: 151 100% 13%;
   --radius: 8px;
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-serif: 'Architects Daughter', cursive;
+  --font-mono: 'Fira Code', monospace;
   
   /* Text Enhancement Properties */
   --header-text-shadow: 0 0 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -159,17 +161,22 @@
     }
   }
   
-  /* Global typography - compact and elegant */
+  /* Global typography - vibrant and playful */
   h1 {
-    @apply text-2xl font-semibold;
+    @apply text-3xl font-bold;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--dark-pastel-green)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
   
   h2 {
-    @apply text-xl font-semibold;
+    @apply text-2xl font-bold text-primary;
   }
   
   h3 {
-    @apply text-lg font-medium;
+    @apply text-xl font-semibold;
+    color: hsl(var(--dark-spring-green));
   }
   
   h4 {
@@ -256,6 +263,95 @@
 }
 
 @layer components {
+  /* Vibrant gradient backgrounds */
+  .gradient-garden {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.9) 0%, 
+      hsl(var(--dark-pastel-green) / 0.8) 25%, 
+      hsl(var(--secondary) / 0.9) 50%, 
+      hsl(var(--dark-spring-green) / 0.8) 75%, 
+      hsl(var(--primary) / 0.9) 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+  }
+  
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Colorful card effects */
+  .card {
+    transition: all 0.3s ease;
+    border: 2px solid hsl(var(--primary));
+  }
+  
+  .card:hover {
+    border-color: hsl(var(--gold));
+    box-shadow: 
+      0 0 20px hsl(var(--gold) / 0.3),
+      0 4px 15px hsl(var(--primary) / 0.2);
+    transform: translateY(-2px);
+  }
+  
+  /* Vibrant button styles */
+  button {
+    transition: all 0.3s ease;
+    font-weight: 600;
+  }
+  
+  button:not([disabled]):hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 4px 12px hsl(var(--gold) / 0.4),
+      0 0 20px hsl(var(--accent) / 0.3);
+  }
+  
+  /* Primary button with gradient */
+  button[data-variant="default"],
+  .btn-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--dark-spring-green)));
+    border: none;
+    color: white;
+  }
+  
+  button[data-variant="default"]:hover,
+  .btn-primary:hover {
+    background: linear-gradient(135deg, hsl(var(--dark-spring-green)), hsl(var(--primary)));
+  }
+  
+  /* Accent elements with gold */
+  .accent-gold {
+    color: hsl(var(--gold));
+    text-shadow: 0 0 10px hsl(var(--gold) / 0.5);
+  }
+  
+  /* Playful navigation links */
+  nav a {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, hsl(var(--gold)), hsl(var(--accent)));
+    transition: width 0.3s ease;
+  }
+  
+  nav a:hover::after {
+    width: 100%;
+  }
+  
+  nav a:hover {
+    color: hsl(var(--gold)) !important;
+  }
+  
   .garden-pattern {
     background-image: 
       radial-gradient(circle at 25% 25%, hsl(var(--muted)) 0%, transparent 50%),
@@ -264,41 +360,70 @@
     background-position: 0 0, 50px 50px;
   }
   
-  /* Icon buttons hover states */
+  /* Icon buttons with colorful hover states */
   svg {
     transition: all 0.2s ease;
   }
   
   button:hover svg {
     transform: scale(1.1);
-    filter: drop-shadow(0 2px 4px hsl(var(--gold) / 0.4));
+    filter: drop-shadow(0 2px 4px hsl(var(--gold) / 0.6));
+    color: hsl(var(--gold));
   }
   
-  /* Logo hover animation */
+  /* Logo with playful animation */
   [data-testid="link-home"]:hover svg {
     transform: rotate(5deg) scale(1.1);
     filter: drop-shadow(0 4px 8px hsl(var(--gold) / 0.6));
   }
   
   [data-testid="link-home"]:hover span {
-    color: hsl(var(--canary)) !important;
-    text-shadow: 0 2px 8px hsl(var(--gold) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
   }
   
-  /* Input focus states with color */
+  /* Colorful input focus states */
   input:focus,
   textarea:focus,
   select:focus {
-    border-color: hsl(var(--canary)) !important;
-    outline: 2px solid hsl(var(--canary) / 0.2) !important;
+    border-color: hsl(var(--gold)) !important;
+    outline: 3px solid hsl(var(--gold) / 0.2) !important;
     outline-offset: 2px;
+    box-shadow: 0 0 15px hsl(var(--gold) / 0.2);
   }
   
-  /* Badge hover effects */
+  /* Badge with gradient hover */
+  .badge {
+    transition: all 0.3s ease;
+    font-weight: 600;
+  }
+  
   .badge:hover {
-    background-color: hsl(var(--canary)) !important;
-    color: hsl(var(--british-racing-green)) !important;
-    transition: all 0.2s ease;
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--accent))) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px hsl(var(--gold) / 0.4);
+  }
+  
+  /* Tabs with colorful indicators */
+  [role="tab"][aria-selected="true"] {
+    color: hsl(var(--primary)) !important;
+    border-bottom: 3px solid hsl(var(--gold)) !important;
+  }
+  
+  /* Dropdown with vibrant hover */
+  [role="menuitem"]:hover {
+    background: linear-gradient(135deg, hsl(var(--gold) / 0.1), hsl(var(--accent) / 0.1)) !important;
+    color: hsl(var(--primary)) !important;
+  }
+  
+  /* Toast notifications with gradient borders */
+  [data-sonner-toast] {
+    border-left: 4px solid transparent !important;
+    border-image: linear-gradient(180deg, hsl(var(--gold)), hsl(var(--accent))) 1 !important;
   }
   .garden-canvas {
     background-image: radial-gradient(circle at 25px 25px, hsl(var(--dark-spring-green) / 0.1) 2px, transparent 0);
