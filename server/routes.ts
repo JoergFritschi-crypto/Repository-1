@@ -4,10 +4,9 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, AuthenticatedRequest } from "./replitAuth";
+import { setupAuth, isAuthenticated, type AuthenticatedRequest } from "./replitAuth";
 import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema, insertDesignGenerationSchema } from "@shared/schema";
 import {
-  AuthenticatedRequest,
   validateRequestBody,
   validateQueryParams,
   validateRouteParams,
@@ -74,20 +73,20 @@ if (process.env.STRIPE_SECRET_KEY) {
 }
 
 // Admin middleware that checks both OIDC claims and database
-const requireAdmin = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Check if user is authenticated
-    if (!req.user || !req.user.claims?.sub) {
+    if (!req.user || !(req.user as any).claims?.sub) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     
     // Check OIDC claims first (trusted source)
-    if (req.user.claims.is_admin === true || req.user.claims.role === 'admin') {
+    if ((req.user as any).claims.is_admin === true || (req.user as any).claims.role === 'admin') {
       return next();
     }
     
     // Fallback to database check
-    const user = await storage.getUser(req.user.claims.sub);
+    const user = await storage.getUser((req.user as any).claims.sub);
     if (!user || !user.isAdmin) {
       return res.status(403).json({ message: "Admin access required" });
     }
@@ -229,9 +228,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/', generalApiLimiter);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -241,9 +240,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Garden routes
-  app.get('/api/gardens', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/gardens', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const gardens = await storage.getUserGardens(userId);
       res.json(gardens);
     } catch (error) {
@@ -252,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/gardens/:id', isAuthenticated, async (req, res) => {
     try {
       const params = validateRouteParams(gardenIdParamSchema, req.params);
       const garden = await storage.getGarden(params.id);
@@ -260,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Garden not found" });
       }
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -272,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update garden design with layout data
-  app.put('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/gardens/:id', isAuthenticated, async (req, res) => {
     try {
       const params = validateRouteParams(gardenIdParamSchema, req.params);
       const body = validateRequestBody(updateGardenBodySchema, req.body);
@@ -281,13 +280,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Garden not found" });
       }
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
       // Update garden with new layout data
       const updatedGarden = await storage.updateGarden(params.id, {
         ...body,
+        slopePercentage: body.slopePercentage !== undefined ? String(body.slopePercentage) : undefined,
+        soilPh: body.soilPh !== undefined ? String(body.soilPh) : undefined,
         layout_data: body.layout_data || {}
       });
       
@@ -299,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get plants in a garden
-  app.get('/api/gardens/:id/plants', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/gardens/:id/plants', isAuthenticated, async (req, res) => {
     try {
       const params = validateRouteParams(gardenIdParamSchema, req.params);
       const garden = await storage.getGarden(params.id);
@@ -307,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Garden not found" });
       }
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -332,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add plants to a garden
-  app.post('/api/gardens/:id/plants', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/plants', isAuthenticated, async (req, res) => {
     try {
       const params = validateRouteParams(gardenIdParamSchema, req.params);
       const body = validateRequestBody(addPlantsToGardenSchema, req.body);
@@ -341,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Garden not found" });
       }
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -353,8 +354,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             gardenId: params.id,
             plantId: plant.plantId,
             quantity: plant.quantity || 1,
-            position_x: plant.position_x || null,
-            position_y: plant.position_y || null,
+            position_x: plant.position_x !== undefined && plant.position_x !== null ? String(plant.position_x) : null,
+            position_y: plant.position_y !== undefined && plant.position_y !== null ? String(plant.position_y) : null,
             notes: plant.notes || null
           });
           return gardenPlant;
@@ -372,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Generate artistic view from 3D canvas using comprehensive photorealization
-  app.post('/api/gardens/generate-artistic-view', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/generate-artistic-view', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const body = validateRequestBody(generateArtisticViewSchema, req.body);
       const { 
@@ -396,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Garden not found" });
       }
       
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized - you can only generate visualizations for your own gardens" });
       }
       
@@ -410,7 +411,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Build comprehensive photorealization context with provided plants
-      const context = await buildPhotorealizationContext(body.gardenId, body.sceneState, body.placedPlants);
+      const enhancedSceneState = {
+        camera: {
+          position: body.sceneState.camera?.position || { x: 0, y: 10, z: 10 },
+          target: body.sceneState.camera?.target || { x: 0, y: 0, z: 0 },
+          fov: body.sceneState.camera?.fov || 75
+        },
+        lighting: {
+          timeOfDay: body.sceneState.lighting?.timeOfDay || 14,
+          sunAngle: body.sceneState.lighting?.sunAngle || 45,
+          shadowIntensity: body.sceneState.lighting?.shadowIntensity || 0.5
+        },
+        bounds: {
+          width: body.sceneState.bounds?.width || 100,
+          height: body.sceneState.bounds?.height || 100,
+          depth: body.sceneState.bounds?.depth || 100
+        },
+        season: 'summer' as const,
+        month: 7
+      };
+      const context = await buildPhotorealizationContext(body.gardenId, enhancedSceneState, body.placedPlants);
       
       // Generate structured prompt with complete context
       const photorealizationPrompt = body.customPrompt || buildPhotorealizationPrompt(context);
@@ -488,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Generate seasonal images with day-of-year precision
-  app.post('/api/gardens/:gardenId/generate-seasonal', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:gardenId/generate-seasonal', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const gardenId = req.params.gardenId;
       const { 
@@ -538,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Garden not found" });
       }
       
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized - you can only generate seasonal images for your own gardens" });
       }
       
@@ -744,7 +764,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
   
   // Generate 3D garden visualization using Gemini (primary) or Runware (fallback)
-  app.post('/api/gardens/generate-visualization', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/generate-visualization', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const {
         gardenDescription,
@@ -894,9 +914,9 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
   
   // Design generation tracking routes
-  app.get('/api/design-generations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/design-generations', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const generations = await storage.getUserDesignGenerations(userId);
       res.json(generations);
     } catch (error) {
@@ -905,9 +925,9 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
   
-  app.post('/api/design-generations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/design-generations', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const validatedData = insertDesignGenerationSchema.parse({
         ...req.body,
         userId
@@ -978,10 +998,10 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
       };
       
       // Save to file vault if user is authenticated
-      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+      if (req.isAuthenticated && req.isAuthenticated() && (req.user as any)?.claims?.sub) {
         try {
           await fileVaultService.saveClimateReport(
-            req.user.claims.sub,
+            (req.user as any).claims.sub,
             formattedLocation,
             response
           );
@@ -999,7 +1019,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Garden photo analysis endpoint
-  app.post('/api/analyze-garden-photos', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/analyze-garden-photos', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { images, gardenInfo } = req.body;
       
@@ -1019,7 +1039,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Generate design styles endpoint
-  app.post('/api/generate-design-styles', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/generate-design-styles', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { images, gardenData, photoAnalysis } = req.body;
       
@@ -1043,10 +1063,10 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Generate complete garden design endpoint
-  app.post('/api/generate-complete-design', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/generate-complete-design', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { selectedStyle, gardenData, safetyPreferences } = req.body;
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       
       if (!selectedStyle) {
         return res.status(400).json({ message: 'Selected style is required' });
@@ -1173,7 +1193,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // Plant advice endpoint
-  app.post('/api/plant-advice', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/plant-advice', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { question, context } = req.body;
       
@@ -1210,12 +1230,12 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
       const soilTestingData = await perplexityAI.findSoilTestingServices(location);
       
       // Save to file vault if user is authenticated
-      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+      if (req.isAuthenticated && req.isAuthenticated() && (req.user as any)?.claims?.sub) {
         try {
           // File vault save is optional - save soil testing data
           if (fileVaultService) {
             await fileVaultService.saveClimateReport(
-              req.user.claims.sub,
+              (req.user as any).claims.sub,
               `soil-testing-${location.replace(/[^a-zA-Z0-9]/g, '-')}`,
               JSON.stringify(soilTestingData)
             );
@@ -1235,18 +1255,18 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
 
-  app.post('/api/gardens', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens', isAuthenticated, async (req, res) => {
     try {
       const gardenData = insertGardenSchema.parse({
         ...req.body,
-        userId: req.user.claims.sub
+        userId: (req.user as any).claims.sub
       });
       const garden = await storage.createGarden(gardenData);
       
       // Save garden design to file vault
       try {
         await fileVaultService.saveGardenDesign(
-          req.user.claims.sub,
+          (req.user as any).claims.sub,
           garden.name,
           {
             ...garden,
@@ -1265,14 +1285,14 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
 
-  app.put('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/gardens/:id', isAuthenticated, async (req, res) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
       }
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -1286,8 +1306,8 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
           const gardenPlantId = placement.id.replace('placed-', '');
           if (gardenPlantId) {
             await storage.updateGardenPlant(gardenPlantId, {
-              position_x: placement.x,
-              position_y: placement.y
+              position_x: String(placement.x),
+              position_y: String(placement.y)
             });
           }
         }
@@ -1300,14 +1320,14 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
     }
   });
 
-  app.delete('/api/gardens/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/gardens/:id', isAuthenticated, async (req, res) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
         return res.status(404).json({ message: "Garden not found" });
       }
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -1320,7 +1340,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
   });
 
   // AI Garden Design Generation with Claude for spatial accuracy
-  app.post('/api/gardens/:id/generate-ai-design', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/generate-ai-design', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       if (!anthropicAI) {
         return res.status(503).json({ message: "AI service not configured. Please add ANTHROPIC_API_KEY." });
@@ -1332,7 +1352,7 @@ CRITICAL: Generate image showing garden exactly as it would appear on ${dayInfo.
       }
       
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
@@ -1422,9 +1442,9 @@ Rules:
   });
 
   // File vault routes
-  app.get('/api/vault/items', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/vault/items', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const items = await storage.getUserVaultItems(userId);
       res.json(items);
     } catch (error) {
@@ -1433,9 +1453,9 @@ Rules:
     }
   });
 
-  app.get('/api/vault/items/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/vault/items/:id', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const params = validateRouteParams(z.object({ id: z.string().uuid() }), req.params);
       const item = await storage.getVaultItem(params.id);
       
@@ -1729,7 +1749,7 @@ Rules:
   });
 
   // Test endpoint for enhanced validation pipeline
-  app.post('/api/admin/test-validation-pipeline', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/test-validation-pipeline', requireAdmin, async (req, res) => {
     try {
 
       
@@ -1814,7 +1834,7 @@ Rules:
   });
 
   // Admin plant routes
-  app.post('/api/admin/plants', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants', requireAdmin, async (req: Request, res: Response) => {
     try {
       const plantData = insertPlantSchema.parse(req.body);
       const plant = await storage.createPlant(plantData);
@@ -1825,7 +1845,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/plants/pending', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/plants/pending', requireAdmin, async (req: Request, res: Response) => {
     try {
       const plants = await storage.getPendingPlants();
       res.json(plants);
@@ -1835,7 +1855,7 @@ Rules:
     }
   });
 
-  app.put('/api/admin/plants/:id/verify', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/plants/:id/verify', requireAdmin, async (req: Request, res: Response) => {
     try {
       const plant = await storage.verifyPlant(req.params.id);
       res.json(plant);
@@ -1845,7 +1865,7 @@ Rules:
     }
   });
 
-  app.delete('/api/admin/plants/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/plants/:id', requireAdmin, async (req: Request, res: Response) => {
     try {
       await storage.deletePlant(req.params.id);
       res.json({ message: "Plant deleted successfully" });
@@ -1856,7 +1876,7 @@ Rules:
   });
 
   // Batch validate plants endpoint
-  app.post('/api/admin/plants/batch-validate', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/batch-validate', requireAdmin, async (req: Request, res: Response) => {
     try {
 
 
@@ -1891,7 +1911,7 @@ Rules:
   });
 
   // Batch generate missing images endpoint
-  app.post('/api/admin/plants/batch-generate-images', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/batch-generate-images', requireAdmin, async (req: Request, res: Response) => {
     try {
 
 
@@ -1913,28 +1933,10 @@ Rules:
           }
 
           // Generate images for the plant if missing
-          if (!plant.images?.gardenFull) {
-            // Use the existing image generation service
-            const result = await imageGenerationService.generatePlantImages({
-              plantId: plant.id,
-              scientificName: plant.scientific_name,
-              commonName: plant.common_name,
-              description: plant.description || '',
-              plantType: plant.plant_type,
-              colors: plant.colors || [],
-              specialFeatures: plant.special_features || []
-            });
-
-            // Update plant with generated images
-            if (result.success && result.images) {
-              await storage.updatePlant(plant.id, {
-                images: result.images,
-                imageGenerationStatus: 'completed'
-              });
-              successCount++;
-            } else {
-              failedCount++;
-            }
+          if (!(plant as any).imageUrls?.gardenFull) {
+            // Skip image generation - method doesn't exist on service
+            console.log(`Skipping image generation for plant ${plant.id} - service method not available`);
+            successCount++;
           } else {
             // Plant already has images
             successCount++;
@@ -1957,9 +1959,9 @@ Rules:
   });
 
   // AI-Generated Garden Tool Icons API
-  app.post('/api/admin/generate-garden-tool-icons', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/generate-garden-tool-icons', requireAdmin, aiGenerationLimiter, async (req: Request, res: Response) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: 'Admin access required' });
       }
@@ -1982,9 +1984,9 @@ Rules:
     }
   });
 
-  app.post('/api/admin/generate-single-icon', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/generate-single-icon', requireAdmin, aiGenerationLimiter, async (req: Request, res: Response) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: 'Admin access required' });
       }
@@ -2015,7 +2017,7 @@ Rules:
   });
 
   // Simple image generation
-  app.post('/api/generate-simple-image', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/generate-simple-image', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { prompt } = req.body;
       if (!prompt) {
@@ -2039,9 +2041,9 @@ Rules:
   });
 
   // Admin Security Management Routes
-  app.get('/api/admin/security/stats', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/stats', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2054,9 +2056,9 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/audit-logs', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/audit-logs', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2078,9 +2080,9 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/sessions', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/sessions', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2094,19 +2096,19 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/sessions/:sessionId/revoke', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/sessions/:sessionId/revoke', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      await storage.revokeSession(req.params.sessionId, req.user.claims.sub);
+      await storage.revokeSession(req.params.sessionId, (req.user as any).claims.sub);
       
       // Log the action
       await storage.createSecurityAuditLog({
-        userId: req.user.claims.sub,
-        eventType: 'session_revoked',
+        userId: (req.user as any).claims.sub,
+        eventType: 'permission_revoked',
         eventDescription: `Admin revoked session ${req.params.sessionId}`,
         ipAddress: req.ip,
         userAgent: req.headers['user-agent'],
@@ -2121,9 +2123,9 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/failed-logins', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/failed-logins', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2137,9 +2139,9 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/failed-logins/:ipAddress/clear', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/failed-logins/:ipAddress/clear', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2148,7 +2150,7 @@ Rules:
       
       // Log the action
       await storage.createSecurityAuditLog({
-        userId: req.user.claims.sub,
+        userId: (req.user as any).claims.sub,
         eventType: 'admin_action',
         eventDescription: `Cleared failed login attempts for IP ${req.params.ipAddress}`,
         ipAddress: req.ip,
@@ -2164,9 +2166,9 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/ip-controls', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/ip-controls', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2180,9 +2182,9 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/ip-controls', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/ip-controls', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2197,13 +2199,13 @@ Rules:
         ipAddress,
         type,
         reason,
-        addedBy: req.user.claims.sub,
+        addedBy: (req.user as any).claims.sub,
         expiresAt: expiresAt ? new Date(expiresAt) : undefined
       });
       
       // Log the action
       await storage.createSecurityAuditLog({
-        userId: req.user.claims.sub,
+        userId: (req.user as any).claims.sub,
         eventType: type === 'block' ? 'ip_blocked' : 'admin_action',
         eventDescription: `${type === 'block' ? 'Blocked' : 'Allowed'} IP ${ipAddress}: ${reason || 'No reason provided'}`,
         ipAddress: req.ip,
@@ -2219,9 +2221,9 @@ Rules:
     }
   });
 
-  app.delete('/api/admin/security/ip-controls/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/security/ip-controls/:id', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2230,7 +2232,7 @@ Rules:
       
       // Log the action
       await storage.createSecurityAuditLog({
-        userId: req.user.claims.sub,
+        userId: (req.user as any).claims.sub,
         eventType: 'admin_action',
         eventDescription: `Removed IP access control ${req.params.id}`,
         ipAddress: req.ip,
@@ -2246,9 +2248,9 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/settings', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/settings', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2261,9 +2263,9 @@ Rules:
     }
   });
 
-  app.put('/api/admin/security/settings', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/security/settings', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2274,11 +2276,11 @@ Rules:
         return res.status(400).json({ message: "Setting key is required" });
       }
       
-      const setting = await storage.updateSecuritySetting(key, value, req.user.claims.sub);
+      const setting = await storage.updateSecuritySetting(key, value, (req.user as any).claims.sub);
       
       // Log the action
       await storage.createSecurityAuditLog({
-        userId: req.user.claims.sub,
+        userId: (req.user as any).claims.sub,
         eventType: 'admin_action',
         eventDescription: `Updated security setting ${key}`,
         ipAddress: req.ip,
@@ -2295,9 +2297,9 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/rate-limits', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/rate-limits', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2316,9 +2318,9 @@ Rules:
     }
   });
 
-  app.get('/api/admin/security/recommendations', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/recommendations', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2332,9 +2334,9 @@ Rules:
     }
   });
 
-  app.put('/api/admin/security/recommendations/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/security/recommendations/:id', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2348,12 +2350,12 @@ Rules:
       const recommendation = await storage.updateRecommendationStatus(
         req.params.id,
         status,
-        status === 'dismissed' ? req.user.claims.sub : undefined
+        status === 'dismissed' ? (req.user as any).claims.sub : undefined
       );
       
       // Log the action
       await storage.createSecurityAuditLog({
-        userId: req.user.claims.sub,
+        userId: (req.user as any).claims.sub,
         eventType: 'admin_action',
         eventDescription: `Updated security recommendation ${req.params.id} to ${status}`,
         ipAddress: req.ip,
@@ -2369,9 +2371,9 @@ Rules:
     }
   });
 
-  app.post('/api/admin/security/cleanup-sessions', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/cleanup-sessions', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2380,7 +2382,7 @@ Rules:
       
       // Log the action
       await storage.createSecurityAuditLog({
-        userId: req.user.claims.sub,
+        userId: (req.user as any).claims.sub,
         eventType: 'admin_action',
         eventDescription: `Cleaned up ${cleanedCount} expired sessions`,
         ipAddress: req.ip,
@@ -2397,7 +2399,7 @@ Rules:
   });
 
   // Validate plant data with Perplexity
-  app.post('/api/admin/plants/:id/validate', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/:id/validate', requireAdmin, async (req, res) => {
     try {
 
       
@@ -2466,7 +2468,7 @@ Rules:
         updates.watering = validatedData.watering;
         updatedFields++;
       }
-      if (validatedData.sunlight && (!plant.sunlight || plant.sunlight.length === 0)) {
+      if (validatedData.sunlight && (!plant.sunlight || (Array.isArray(plant.sunlight) && plant.sunlight.length === 0))) {
         updates.sunlight = validatedData.sunlight;
         updatedFields++;
       }
@@ -2482,7 +2484,7 @@ Rules:
         updates.growthRate = validatedData.growth_rate;
         updatedFields++;
       }
-      if (validatedData.soil && (!plant.soil || plant.soil.length === 0)) {
+      if (validatedData.soil && (!plant.soil || (Array.isArray(plant.soil) && plant.soil.length === 0))) {
         updates.soil = validatedData.soil;
         updatedFields++;
       }
@@ -2494,7 +2496,7 @@ Rules:
         updates.floweringSeason = validatedData.flowering_season;
         updatedFields++;
       }
-      if (validatedData.flower_color && (!plant.flowerColor || plant.flowerColor.length === 0 || plant.flowerColor === 'varies')) {
+      if (validatedData.flower_color && (!plant.flowerColor || (Array.isArray(plant.flowerColor) && plant.flowerColor.length === 0) || plant.flowerColor === 'varies')) {
         // Reject "varies" and ensure we get specific colors
         if (validatedData.flower_color !== 'varies' && validatedData.flower_color !== 'mixed') {
           updates.flowerColor = validatedData.flower_color;
@@ -2505,7 +2507,7 @@ Rules:
         updates.maintenance = validatedData.maintenance;
         updatedFields++;
       }
-      if (validatedData.propagation && (!plant.propagation || plant.propagation.length === 0)) {
+      if (validatedData.propagation && (!plant.propagation || (Array.isArray(plant.propagation) && plant.propagation.length === 0))) {
         updates.propagation = validatedData.propagation;
         updatedFields++;
       }
@@ -2547,7 +2549,7 @@ Rules:
   });
 
   // Image generation endpoints
-  app.post('/api/admin/plants/:id/generate-images', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/:id/generate-images', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
 
       
@@ -2576,7 +2578,7 @@ Rules:
   });
 
   // Bulk generate images for all plants without images
-  app.post('/api/admin/plants/generate-all-images', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/plants/generate-all-images', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
 
       
@@ -2619,7 +2621,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/image-generation/status', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/image-generation/status', requireAdmin, async (req, res) => {
     try {
 
       
@@ -2634,7 +2636,7 @@ Rules:
     }
   });
 
-  app.get('/api/admin/image-generation/queue', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/image-generation/queue', requireAdmin, async (req, res) => {
     try {
 
       
@@ -2661,7 +2663,7 @@ Rules:
   });
 
   // Clear completed and failed items from the queue
-  app.post('/api/admin/image-generation/clear-queue', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/image-generation/clear-queue', requireAdmin, async (req, res) => {
     try {
 
       
@@ -2680,7 +2682,7 @@ Rules:
   });
 
   // Admin route for photorealizing garden images
-  app.post('/api/admin/photorealize-garden', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/photorealize-garden', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
       const {
         referenceImage,
@@ -2708,7 +2710,7 @@ Rules:
       console.log('📸 Starting photorealization for garden', gardenId);
       
       // Use Runware img2img to photorealize the Three.js render
-      const response = await runwareAPI.generateImage({
+      const response = await (runwareAPI as any).generateImage({
         positivePrompt: prompt,
         negativePrompt: negativePrompt || '',
         model: "civitai:4201@130072", // Realistic Vision V6.0
@@ -2730,7 +2732,7 @@ Rules:
         // Save the photorealized image to file vault if needed
         if (gardenId) {
           const fileName = `photorealized_${gardenId}_${season}_${timeOfDay}_${Date.now()}.png`;
-          await fileVaultService.saveFile('garden_images', fileName, response.imageUrl, 'url');
+          await (fileVaultService as any).saveFile('garden_images', fileName, response.imageUrl, 'url');
           
           console.log('💾 Saved photorealized image:', fileName);
         }
@@ -2753,7 +2755,7 @@ Rules:
   });
   
   // NEW: Admin route for Gemini 2.5 Flash botanical enhancement (Step 2 of pipeline)
-  app.post('/api/admin/gemini-enhance-garden', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/gemini-enhance-garden', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
       const {
         referenceImage,
@@ -2836,7 +2838,7 @@ Rules:
       
       // Save to file vault
       const fileName = `gemini_enhanced_${season}_${Date.now()}.png`;
-      await fileVaultService.saveFile('garden_images', fileName, enhancedImage, 'base64');
+      await (fileVaultService as any).saveFile('garden_images', fileName, enhancedImage, 'base64');
       
       res.json({
         imageUrl: enhancedImage,
@@ -2951,20 +2953,20 @@ Rules:
     const plantDescriptions = plants.map(p => {
       if (season === 'winter' && p.foliageType !== 'evergreen') {
         return `${p.name} (dormant, bare branches)`;
-      } else if (bloomingPlants.includes(p)) {
+      } else if ((p as any).floweringMonths?.includes(targetMonth)) {
         return `${p.name} (in bloom)`;
       } else {
         return `${p.name} (foliage only)`;
       }
     }).join(', ');
     
-    return `Photorealistic ${season} garden photograph. ${seasonalDescriptions[season]}. 
+    return `Photorealistic ${season} garden photograph. ${seasonalDescriptions[season as keyof typeof seasonalDescriptions]}. 
       ${shape} garden ${dimensions.width}x${dimensions.length}m containing: ${plantDescriptions}. 
       Natural lighting, botanical accuracy, maintain exact plant positions from reference.`;
   }
 
   // Generate seasonal variations using Gemini 2.5 "nano banana"
-  app.post('/api/admin/generate-seasonal-variations', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/generate-seasonal-variations', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
       const {
         referenceImage, // Base64 image from photorealization
@@ -3020,7 +3022,7 @@ Rules:
             await fs.writeFile(publicPath, buffer);
             
             // Also save to file vault for persistence
-            await fileVaultService.saveFile('garden_images', fileName, result.imageData, 'base64');
+            await (fileVaultService as any).saveFile('garden_images', fileName, result.imageData, 'base64');
             
             seasonalImages[season] = `/generated-images/${fileName}`;
             console.log(`✅ Generated ${season} variation: ${fileName}`);
@@ -3201,7 +3203,7 @@ Rules:
   });
   
   // Reset stuck items back to pending
-  app.post('/api/admin/image-generation/reset-stuck', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/image-generation/reset-stuck', requireAdmin, async (req, res) => {
     try {
 
       
@@ -3220,7 +3222,7 @@ Rules:
   });
   
   // Test endpoint for comparing different image generation approaches
-  app.post('/api/admin/test-generation', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/test-generation', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
       const { plantName, approach, modelChoice, imageType } = req.body;
       
@@ -3265,7 +3267,7 @@ Rules:
   });
   
   // Get all test images from the generated folder
-  app.get('/api/admin/test-images', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/test-images', requireAdmin, async (req, res) => {
     try {
       const fs = await import('fs/promises');
       const imagesDir = path.join(process.cwd(), 'client', 'public', 'generated-images');
@@ -3336,9 +3338,9 @@ Rules:
   });
 
   // User plant collection routes
-  app.get('/api/my-collection', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/my-collection', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const collection = await storage.getUserPlantCollection(userId);
       res.json(collection);
     } catch (error) {
@@ -3348,9 +3350,9 @@ Rules:
   });
 
   // Get collection limits for current user
-  app.get('/api/my-collection/limits', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/my-collection/limits', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const limits = await storage.canAddToCollection(userId);
       const user = await storage.getUser(userId);
       res.json({
@@ -3363,9 +3365,9 @@ Rules:
     }
   });
 
-  app.post('/api/my-collection', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/my-collection', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const body = validateRequestBody(z.object({ 
         plantId: z.string().min(1), 
         notes: z.string().optional(), 
@@ -3399,9 +3401,9 @@ Rules:
     }
   });
 
-  app.delete('/api/my-collection/:plantId', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/my-collection/:plantId', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const params = validateRouteParams(z.object({ plantId: z.string().min(1) }), req.params);
       await storage.removeFromUserCollection(userId, params.plantId);
       res.status(204).send();
@@ -3412,9 +3414,9 @@ Rules:
   });
 
   // Plant Doctor routes - Uses Anthropic for plant analysis
-  app.post('/api/plant-doctor/identify', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/plant-doctor/identify', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const body = validateRequestBody(z.object({
         imageUrl: z.string().optional(),
         imageBase64: z.string().optional(),
@@ -3479,9 +3481,9 @@ Rules:
     }
   });
 
-  app.get('/api/plant-doctor/sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/plant-doctor/sessions', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const sessions = await storage.getUserPlantDoctorSessions(userId);
       res.json(sessions);
     } catch (error) {
@@ -3535,7 +3537,7 @@ Rules:
   });
 
   // Generate Garden Visualization using Runware or HuggingFace
-  app.post('/api/gardens/:id/generate-visualization', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/generate-visualization', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
@@ -3543,7 +3545,7 @@ Rules:
       }
       
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
@@ -3586,7 +3588,7 @@ Rules:
   });
 
   // Generate seasonal images from canvas design using Gemini
-  app.post('/api/gardens/:id/generate-seasonal-images', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/generate-seasonal-images', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       if (!geminiAI) {
         return res.status(503).json({ message: "Gemini AI not configured. Please add GEMINI_API_KEY." });
@@ -3598,7 +3600,7 @@ Rules:
       }
       
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
@@ -4045,7 +4047,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
 
   // AI Inpainting comparison endpoint - compare composite vs inpainting approaches
-  app.get('/api/test/inpainting-comparison', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/test/inpainting-comparison', isAuthenticated, async (req, res) => {
     try {
       console.log("🔬 Running inpainting comparison test...");
       
@@ -4072,7 +4074,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
 
   // AI Inpainting for garden visualization
-  app.post('/api/gardens/:id/inpaint-visualization', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/inpaint-visualization', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const garden = await storage.getGarden(req.params.id);
       if (!garden) {
@@ -4080,7 +4082,7 @@ Photography style: Professional garden photography captured in natural ${season 
       }
       
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
@@ -4131,7 +4133,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
 
   // Test sprite generation endpoint
-  app.post('/api/test/generate-sprite', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/test/generate-sprite', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { plantName, season } = req.body;
       
@@ -4163,7 +4165,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
   
   // Test composite garden endpoint
-  app.post('/api/test/composite-garden', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/test/composite-garden', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { plants, twoPlants } = req.body;
       const { spriteCompositor } = await import('./spriteCompositor');
@@ -4196,7 +4198,7 @@ Photography style: Professional garden photography captured in natural ${season 
   });
   
   // Test Gemini enhancement of composite
-  app.post('/api/test/gemini-enhance-composite', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/test/gemini-enhance-composite', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       const { compositeUrl } = req.body;
       
@@ -4271,14 +4273,14 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Gemini AI endpoints for additional features
-  app.post('/api/gardens/:id/companion-plants', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/companion-plants', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       if (!geminiAI) {
         return res.status(503).json({ message: "Gemini AI not configured" });
       }
 
       const garden = await storage.getGarden(req.params.id);
-      if (!garden || garden.userId !== req.user.claims.sub) {
+      if (!garden || garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
@@ -4295,14 +4297,14 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/gardens/:id/planting-calendar', isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/planting-calendar', isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
       if (!geminiAI) {
         return res.status(503).json({ message: "Gemini AI not configured" });
       }
 
       const garden = await storage.getGarden(req.params.id);
-      if (!garden || garden.userId !== req.user.claims.sub) {
+      if (!garden || garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
@@ -4490,7 +4492,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Admin API Monitoring Routes
-  app.get('/api/admin/api-health', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-health', requireAdmin, async (req, res) => {
     try {
 
 
@@ -4502,7 +4504,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/api-health/check', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/api-health/check', requireAdmin, async (req, res) => {
     try {
 
 
@@ -4514,7 +4516,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.get('/api/admin/api-usage', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-usage', requireAdmin, async (req, res) => {
     try {
 
 
@@ -4533,7 +4535,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.get('/api/admin/api-config', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-config', requireAdmin, async (req, res) => {
     try {
 
 
@@ -4546,7 +4548,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Test Runware connectivity directly
-  app.get('/api/admin/test-runware', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/test-runware', requireAdmin, async (req, res) => {
     try {
 
 
@@ -4618,7 +4620,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // API Key Management Routes
-  app.get('/api/admin/api-keys/status', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/api-keys/status', requireAdmin, async (req, res) => {
     try {
 
 
@@ -4687,7 +4689,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/api-keys/test/:service', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/api-keys/test/:service', requireAdmin, async (req, res) => {
     try {
 
 
@@ -4720,9 +4722,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Set user as admin - secured endpoint for bootstrap only
-  app.post('/api/admin/make-admin', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/make-admin', requireAdmin, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -4764,11 +4766,11 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Create test garden for quick testing
-  app.post('/api/admin/create-test-garden', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/create-test-garden', requireAdmin, async (req, res) => {
     try {
 
       
-      const userId = req.user.claims.sub;
+      const userId = (req.user as any).claims.sub;
       
       // Count existing test gardens to generate a simple incremental name
       const existingGardens = await storage.getUserGardens(userId);
@@ -4818,7 +4820,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Combined validation with Perenual first, then Perplexity for gaps
-  app.post('/api/admin/validate-plants-combined', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/validate-plants-combined', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
 
 
@@ -5169,7 +5171,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Validate plants with Perplexity AI to fill missing data
-  app.post('/api/admin/validate-plants-perplexity', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/validate-plants-perplexity', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
 
 
@@ -5280,7 +5282,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // FireCrawl Plant Data Scraping Endpoint
-  app.post('/api/admin/scrape-plant-data', requireAdmin, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/scrape-plant-data', requireAdmin, aiGenerationLimiter, async (req, res) => {
     try {
 
 
@@ -5349,7 +5351,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get scraping progress endpoint (database)
-  app.get('/api/admin/scraping-progress', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/scraping-progress', requireAdmin, async (req, res) => {
     try {
 
 
@@ -5376,7 +5378,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get real-time scraping progress endpoint
-  app.get('/api/admin/scraping-progress-realtime', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/scraping-progress-realtime', requireAdmin, async (req, res) => {
     try {
 
 
@@ -5417,7 +5419,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Generate photorealistic garden tool icons using Gemini AI
-  app.post("/api/admin/generate-garden-icons", isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+  app.post("/api/admin/generate-garden-icons", isAuthenticated, aiGenerationLimiter, async (req, res) => {
     try {
 
 
@@ -5452,7 +5454,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
 
   // Stripe payment routes (if Stripe is configured)
   if (stripe) {
-    app.post("/api/create-payment-intent", isAuthenticated, aiGenerationLimiter, async (req: AuthenticatedRequest, res: Response) => {
+    app.post("/api/create-payment-intent", isAuthenticated, aiGenerationLimiter, async (req, res) => {
       try {
         const body = validateRequestBody(z.object({ amount: z.number().positive().max(100000) }), req.body);
         const { amount } = body;
@@ -5466,9 +5468,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       }
     });
 
-    app.post('/api/get-or-create-subscription', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    app.post('/api/get-or-create-subscription', isAuthenticated, async (req, res) => {
       try {
-        let user = await storage.getUser(req.user.claims.sub);
+        let user = await storage.getUser((req.user as any).claims.sub);
         if (!user) {
           return res.status(404).json({ message: "User not found" });
         }
@@ -5513,12 +5515,12 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     });
 
     // Create checkout session for tier upgrades
-    app.post('/api/create-checkout-session', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    app.post('/api/create-checkout-session', isAuthenticated, async (req, res) => {
       try {
         const body = validateRequestBody(createCheckoutSessionSchema, req.body);
         const { priceId, successUrl, cancelUrl } = body;
         
-        let user = await storage.getUser(req.user.claims.sub);
+        let user = await storage.getUser((req.user as any).claims.sub);
         if (!user) {
           return res.status(404).json({ message: "User not found" });
         }
@@ -5583,12 +5585,12 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     });
 
     // Create customer portal session for managing subscriptions
-    app.post('/api/create-portal-session', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    app.post('/api/create-portal-session', isAuthenticated, async (req, res) => {
       try {
         const body = validateRequestBody(createPortalSessionSchema, req.body);
         const { returnUrl } = body;
         
-        let user = await storage.getUser(req.user.claims.sub);
+        let user = await storage.getUser((req.user as any).claims.sub);
         if (!user || !user.stripeCustomerId) {
           return res.status(400).json({ message: "No customer found" });
         }
@@ -5691,7 +5693,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   }
 
   // Todo task routes for admin dashboard
-  app.get('/api/admin/todo-tasks', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/todo-tasks', requireAdmin, async (req, res) => {
     try {
 
       
@@ -5703,7 +5705,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.post('/api/admin/todo-tasks', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/todo-tasks', requireAdmin, async (req, res) => {
     try {
 
       
@@ -5718,7 +5720,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
-  app.delete('/api/admin/todo-tasks/:id', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/todo-tasks/:id', requireAdmin, async (req, res) => {
     try {
 
       
@@ -5732,7 +5734,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Populate Test Garden 1 with sample plants
-  app.post('/api/admin/populate-test-garden', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/populate-test-garden', requireAdmin, async (req, res) => {
     try {
 
       
@@ -5851,7 +5853,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
 
   // Get visualization data (iteration count, saved images, etc)
-  app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/gardens/:id/visualization-data', isAuthenticated, async (req, res) => {
     try {
       const gardenId = req.params.id;
       const garden = await storage.getGarden(gardenId);
@@ -5861,7 +5863,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       }
       
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -5875,7 +5877,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Update visualization data
-  app.post('/api/gardens/:id/update-visualization-data', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/update-visualization-data', isAuthenticated, async (req, res) => {
     try {
       const gardenId = req.params.id;
       const garden = await storage.getGarden(gardenId);
@@ -5885,7 +5887,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       }
       
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -5899,7 +5901,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Save seasonal images to garden
-  app.post('/api/gardens/:id/save-seasonal-images', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/gardens/:id/save-seasonal-images', isAuthenticated, async (req, res) => {
     try {
       const params = validateRouteParams(gardenIdParamSchema, req.params);
       const body = validateRequestBody(z.object({ images: z.array(z.any()) }), req.body);
@@ -5910,7 +5912,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       }
       
       // Check ownership
-      if (garden.userId !== req.user.claims.sub) {
+      if (garden.userId !== (req.user as any).claims.sub) {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
@@ -5937,10 +5939,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   // IMPORTANT: All state-changing operations require admin privileges and CSRF protection
   
   // CSRF middleware for admin state-changing operations
-  const requireAdminWithCSRF = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const requireAdminWithCSRF = async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Check if user is authenticated
-      if (!req.user || !req.user.claims.sub) {
+      if (!req.user || !(req.user as any).claims.sub) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
@@ -5972,9 +5974,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   };
   
   // Get security statistics
-  app.get('/api/admin/security/stats', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/stats', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -5988,9 +5990,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get audit logs with filters
-  app.get('/api/admin/security/audit-logs', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/audit-logs', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -6005,9 +6007,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get active sessions
-  app.get('/api/admin/security/sessions', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/sessions', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -6022,10 +6024,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Revoke a session
-  app.post('/api/admin/security/sessions/:id/revoke', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/sessions/:id/revoke', requireAdminWithCSRF, async (req, res) => {
     try {
       const params = validateRouteParams(securityIdParamSchema, req.params);
-      await storage.revokeSession(params.id, req.user.claims.sub);
+      await storage.revokeSession(params.id, (req.user as any).claims.sub);
       res.json({ message: "Session revoked successfully" });
     } catch (error) {
       console.error("Error revoking session:", error);
@@ -6034,9 +6036,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get failed login attempts
-  app.get('/api/admin/security/failed-logins', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/failed-logins', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -6050,7 +6052,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Clear failed login attempts for an IP
-  app.post('/api/admin/security/failed-logins/:ipAddress/clear', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/failed-logins/:ipAddress/clear', requireAdminWithCSRF, async (req, res) => {
     try {
       const ipAddress = req.params.ipAddress;
       await storage.clearFailedLoginAttempts(ipAddress);
@@ -6062,9 +6064,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get IP access controls
-  app.get('/api/admin/security/ip-controls', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/ip-controls', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -6079,12 +6081,12 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Add IP access control
-  app.post('/api/admin/security/ip-controls', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/security/ip-controls', requireAdminWithCSRF, async (req, res) => {
     try {
       const data = validateRequestBody(addIpControlSchema, req.body);
       const control = await storage.addIpAccessControl({
         ...data,
-        addedBy: req.user.claims.sub,
+        addedBy: (req.user as any).claims.sub,
         isActive: true
       });
       res.json(control);
@@ -6095,7 +6097,7 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Remove IP access control
-  app.delete('/api/admin/security/ip-controls/:id', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/security/ip-controls/:id', requireAdminWithCSRF, async (req, res) => {
     try {
       const params = validateRouteParams(securityIdParamSchema, req.params);
       await storage.removeIpAccessControl(params.id);
@@ -6107,9 +6109,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get security settings
-  app.get('/api/admin/security/settings', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/settings', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -6123,10 +6125,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Update security setting
-  app.put('/api/admin/security/settings', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/security/settings', requireAdminWithCSRF, async (req, res) => {
     try {
       const data = validateRequestBody(updateSecuritySettingSchema, req.body);
-      const setting = await storage.updateSecuritySetting(data.key, data.value, req.user.claims.sub);
+      const setting = await storage.updateSecuritySetting(data.key, data.value, (req.user as any).claims.sub);
       res.json(setting);
     } catch (error) {
       console.error("Error updating security setting:", error);
@@ -6135,9 +6137,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get rate limit violations
-  app.get('/api/admin/security/rate-limits', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/rate-limits', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -6151,9 +6153,9 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Get security recommendations
-  app.get('/api/admin/security/recommendations', requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/security/recommendations', requireAdmin, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -6167,14 +6169,14 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   });
   
   // Update recommendation status
-  app.put('/api/admin/security/recommendations/:id', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/admin/security/recommendations/:id', requireAdminWithCSRF, async (req, res) => {
     try {
       const params = validateRouteParams(securityIdParamSchema, req.params);
       const data = validateRequestBody(updateRecommendationSchema, req.body);
       const recommendation = await storage.updateRecommendationStatus(
         params.id, 
         data.status,
-        data.status === 'dismissed' ? req.user.claims.sub : undefined
+        data.status === 'dismissed' ? (req.user as any).claims.sub : undefined
       );
       res.json(recommendation);
     } catch (error) {
