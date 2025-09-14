@@ -25,6 +25,8 @@ export default function Landing() {
   const { data: user } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     retry: false,
+    // Don't throw errors - handle them gracefully
+    throwOnError: false,
   });
   
   // Check if testing mode is active

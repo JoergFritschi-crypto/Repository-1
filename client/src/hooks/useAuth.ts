@@ -7,6 +7,8 @@ export function useAuth() {
   const { data: user, isLoading, error } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     retry: false,
+    // Don't throw errors - handle them gracefully
+    throwOnError: false,
   });
 
   // Auto-redirect on auth errors
@@ -29,6 +31,8 @@ export function useAuthWithTesting() {
   const { data: user, isLoading, error } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     retry: false,
+    // Don't throw errors - handle them gracefully
+    throwOnError: false,
   });
   
   const [testingTier, setTestingTier] = useState<string | null>(null);
