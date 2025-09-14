@@ -1431,4 +1431,941 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// In-memory storage implementation for when database is unavailable
+export class MemStorage implements IStorage {
+  private users = new Map<string, User>();
+  private gardens = new Map<string, Garden>();
+  private plants = new Map<string, Plant>();
+  private userPlantCollections = new Map<string, UserPlantCollection[]>();
+  private gardenPlants = new Map<string, GardenPlant[]>();
+  private plantDoctorSessions = new Map<string, PlantDoctorSession[]>();
+  private designGenerations = new Map<string, DesignGeneration[]>();
+  private climateDataMap = new Map<string, ClimateData>();
+  private fileVaultItems = new Map<string, FileVault>();
+  private scrapingProgressMap = new Map<string, ScrapingProgress>();
+  private todoTasksMap = new Map<string, TodoTask>();
+  private securityAuditLogsArray: SecurityAuditLog[] = [];
+  private failedLoginAttemptsMap = new Map<string, FailedLoginAttempt[]>();
+  private activeSessionsMap = new Map<string, ActiveSession>();
+  private ipAccessControlArray: IpAccessControl[] = [];
+  private securitySettingsMap = new Map<string, SecuritySetting>();
+  private rateLimitViolationsArray: RateLimitViolation[] = [];
+  private securityRecommendationsMap = new Map<string, SecurityRecommendation>();
+
+  constructor() {
+    console.log('🔶 MemStorage initialized - Data will NOT persist across restarts');
+  }
+
+  private generateId(): string {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existingUser = this.users.get(userData.id!);
+    const user: User = {
+      id: userData.id!,
+      email: userData.email ?? existingUser?.email ?? null,
+      firstName: userData.firstName ?? existingUser?.firstName ?? null,
+      lastName: userData.lastName ?? existingUser?.lastName ?? null,
+      profileImageUrl: userData.profileImageUrl ?? existingUser?.profileImageUrl ?? null,
+      createdAt: existingUser?.createdAt || new Date(),
+      updatedAt: new Date(),
+      stripeCustomerId: userData.stripeCustomerId ?? existingUser?.stripeCustomerId ?? null,
+      stripeSubscriptionId: userData.stripeSubscriptionId ?? existingUser?.stripeSubscriptionId ?? null,
+      subscriptionStatus: userData.subscriptionStatus ?? existingUser?.subscriptionStatus ?? null,
+      userTier: userData.userTier ?? existingUser?.userTier ?? 'free',
+      designCredits: userData.designCredits ?? existingUser?.designCredits ?? 1,
+      isAdmin: userData.isAdmin ?? existingUser?.isAdmin ?? false
+    };
+    this.users.set(userData.id!, user);
+    return user;
+  }
+
+  async updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error('User not found');
+    user.stripeCustomerId = stripeCustomerId;
+    user.stripeSubscriptionId = stripeSubscriptionId;
+    user.updatedAt = new Date();
+    return user;
+  }
+
+  async updateUser(userId: string, data: Partial<User>): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error('User not found');
+    Object.assign(user, data);
+    user.updatedAt = new Date();
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  // Garden operations
+  async getGarden(id: string): Promise<Garden | undefined> {
+    return this.gardens.get(id);
+  }
+
+  async getUserGardens(userId: string): Promise<Garden[]> {
+    return Array.from(this.gardens.values())
+      .filter(g => g.userId === userId)
+      .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0));
+  }
+
+  async createGarden(garden: InsertGarden): Promise<Garden> {
+    const newGarden: Garden = {
+      id: this.generateId(),
+      name: garden.name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId: garden.userId,
+      location: garden.location,
+      units: garden.units || 'metric',
+      shape: garden.shape,
+      dimensions: garden.dimensions,
+      slopePercentage: garden.slopePercentage || null,
+      slopeDirection: garden.slopeDirection || null,
+      northOrientation: garden.northOrientation || null,
+      pointOfView: garden.pointOfView || 'bird_eye',
+      sunExposure: garden.sunExposure || null,
+      soilType: garden.soilType || null,
+      soilPh: garden.soilPh || null,
+      hasSoilAnalysis: garden.hasSoilAnalysis || false,
+      soilAnalysis: garden.soilAnalysis || null,
+      hardiness_zone: garden.hardiness_zone || null,
+      usdaZone: garden.usdaZone || null,
+      rhsZone: garden.rhsZone || null,
+      hardinessCategory: garden.hardinessCategory || null,
+      climate_data: garden.climate_data || null,
+      preferences: garden.preferences || null,
+      design_approach: garden.design_approach || 'ai',
+      layout_data: garden.layout_data || null,
+      ai_generated: garden.ai_generated || false,
+      status: garden.status || 'draft'
+    };
+    this.gardens.set(newGarden.id, newGarden);
+    return newGarden;
+  }
+
+  async updateGarden(id: string, garden: Partial<InsertGarden>): Promise<Garden> {
+    const existing = this.gardens.get(id);
+    if (!existing) throw new Error('Garden not found');
+    Object.assign(existing, garden, { updatedAt: new Date() });
+    return existing;
+  }
+
+  async deleteGarden(id: string): Promise<void> {
+    this.gardens.delete(id);
+  }
+
+  // Plant operations
+  async getPlant(id: string): Promise<Plant | undefined> {
+    return this.plants.get(id);
+  }
+
+  async getAllPlants(): Promise<Plant[]> {
+    return Array.from(this.plants.values());
+  }
+
+  async searchPlants(query: string, filters?: {
+    type?: string;
+    hardiness_zone?: string;
+    sun_requirements?: string;
+    pet_safe?: boolean;
+  }): Promise<Plant[]> {
+    let results = Array.from(this.plants.values());
+    
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      results = results.filter(p => 
+        p.commonName?.toLowerCase().includes(lowerQuery) ||
+        p.scientificName?.toLowerCase().includes(lowerQuery)
+      );
+    }
+    
+    if (filters?.type) {
+      results = results.filter(p => p.type === filters.type);
+    }
+    
+    if (filters?.sun_requirements) {
+      results = results.filter(p => 
+        p.sunlight && (p.sunlight as string[]).includes(filters.sun_requirements!)
+      );
+    }
+    
+    if (filters?.pet_safe !== undefined) {
+      results = results.filter(p => p.petSafe === filters.pet_safe);
+    }
+    
+    return results;
+  }
+
+  async advancedSearchPlants(filters: any): Promise<Plant[]> {
+    let results = Array.from(this.plants.values());
+    
+    // Apply filters similar to searchPlants but with more options
+    if (filters.genus || filters.species || filters.cultivar) {
+      const searchTerms = [filters.genus, filters.species, filters.cultivar].filter(Boolean).map(s => s.toLowerCase());
+      results = results.filter(p => {
+        const plantText = [
+          p.genus, p.species, p.cultivar, p.commonName, p.scientificName
+        ].filter(Boolean).join(' ').toLowerCase();
+        return searchTerms.some(term => plantText.includes(term));
+      });
+    }
+    
+    if (filters.plantType) {
+      results = results.filter(p => p.type === filters.plantType);
+    }
+    
+    if (filters.minHeight) {
+      results = results.filter(p => p.heightMaxCm && p.heightMaxCm >= filters.minHeight);
+    }
+    
+    if (filters.maxHeight && filters.maxHeight !== 0) {
+      results = results.filter(p => p.heightMinCm && p.heightMinCm <= filters.maxHeight);
+    }
+    
+    return results.slice(0, 100); // Limit to 100 results
+  }
+
+  async createPlant(plant: InsertPlant): Promise<Plant> {
+    const newPlant: Plant = {
+      ...plant,
+      id: this.generateId(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      verificationStatus: plant.verificationStatus || 'pending',
+      perenualId: plant.perenualId ?? null,
+      externalId: plant.externalId ?? null
+    } as Plant;
+    this.plants.set(newPlant.id, newPlant);
+    return newPlant;
+  }
+
+  async updatePlant(id: string, plant: Partial<InsertPlant>): Promise<Plant> {
+    const existing = this.plants.get(id);
+    if (!existing) throw new Error('Plant not found');
+    Object.assign(existing, plant, { updatedAt: new Date() });
+    return existing;
+  }
+
+  async getPendingPlants(): Promise<Plant[]> {
+    return Array.from(this.plants.values()).filter(p => p.verificationStatus === 'pending');
+  }
+
+  async verifyPlant(id: string): Promise<Plant> {
+    const plant = this.plants.get(id);
+    if (!plant) throw new Error('Plant not found');
+    plant.verificationStatus = 'verified';
+    plant.updatedAt = new Date();
+    return plant;
+  }
+
+  async deletePlant(id: string): Promise<void> {
+    this.plants.delete(id);
+  }
+
+  // User plant collection operations
+  async getUserPlantCollection(userId: string): Promise<UserPlantCollection[]> {
+    const collections = this.userPlantCollections.get(userId) || [];
+    return collections.map(c => ({
+      ...c,
+      plant: this.plants.get(c.plantId)
+    }));
+  }
+
+  async getUserCollectionCount(userId: string): Promise<number> {
+    return (this.userPlantCollections.get(userId) || []).length;
+  }
+
+  async canAddToCollection(userId: string): Promise<{ canAdd: boolean; limit: number; current: number }> {
+    const user = await this.getUser(userId);
+    if (!user) return { canAdd: false, limit: 0, current: 0 };
+    
+    const limits = { free: 15, pay_per_design: 100, premium: -1 };
+    const userTier = user.userTier || 'free';
+    const limit = limits[userTier as keyof typeof limits];
+    const current = await this.getUserCollectionCount(userId);
+    
+    if (limit === -1) return { canAdd: true, limit: -1, current };
+    return { canAdd: current < limit, limit, current };
+  }
+
+  async addToUserCollection(collection: InsertUserPlantCollection): Promise<UserPlantCollection> {
+    const { canAdd } = await this.canAddToCollection(collection.userId);
+    if (!canAdd) throw new Error('Collection limit reached');
+    
+    const userCollections = this.userPlantCollections.get(collection.userId) || [];
+    if (userCollections.some(c => c.plantId === collection.plantId)) {
+      throw new Error('Plant already in collection');
+    }
+    
+    const newCollection: UserPlantCollection = {
+      id: this.generateId(),
+      userId: collection.userId,
+      plantId: collection.plantId,
+      notes: collection.notes ?? null,
+      isFavorite: collection.isFavorite ?? false,
+      createdAt: new Date()
+    };
+    userCollections.push(newCollection);
+    this.userPlantCollections.set(collection.userId, userCollections);
+    return newCollection;
+  }
+
+  async removeFromUserCollection(userId: string, plantId: string): Promise<void> {
+    const collections = this.userPlantCollections.get(userId) || [];
+    this.userPlantCollections.set(
+      userId,
+      collections.filter(c => c.plantId !== plantId)
+    );
+  }
+
+  // Garden plant operations
+  async getGardenPlants(gardenId: string): Promise<GardenPlant[]> {
+    return this.gardenPlants.get(gardenId) || [];
+  }
+
+  async addPlantToGarden(gardenPlant: InsertGardenPlant): Promise<GardenPlant> {
+    const newGardenPlant: GardenPlant = {
+      id: this.generateId(),
+      gardenId: gardenPlant.gardenId,
+      plantId: gardenPlant.plantId,
+      position_x: gardenPlant.position_x ?? null,
+      position_y: gardenPlant.position_y ?? null,
+      quantity: gardenPlant.quantity ?? 1,
+      notes: gardenPlant.notes ?? null,
+      createdAt: new Date()
+    };
+    const plants = this.gardenPlants.get(gardenPlant.gardenId) || [];
+    plants.push(newGardenPlant);
+    this.gardenPlants.set(gardenPlant.gardenId, plants);
+    return newGardenPlant;
+  }
+
+  async updateGardenPlant(id: string, gardenPlant: Partial<InsertGardenPlant>): Promise<GardenPlant> {
+    for (const [gardenId, plants] of Array.from(this.gardenPlants.entries())) {
+      const plant = plants.find((p: any) => p.id === id);
+      if (plant) {
+        Object.assign(plant, gardenPlant);
+        return plant;
+      }
+    }
+    throw new Error('Garden plant not found');
+  }
+
+  async removePlantFromGarden(id: string): Promise<void> {
+    for (const [gardenId, plants] of Array.from(this.gardenPlants.entries())) {
+      const index = plants.findIndex((p: any) => p.id === id);
+      if (index !== -1) {
+        plants.splice(index, 1);
+        return;
+      }
+    }
+  }
+
+  // Plant doctor operations
+  async createPlantDoctorSession(session: InsertPlantDoctorSession): Promise<PlantDoctorSession> {
+    const newSession: PlantDoctorSession = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      userId: session.userId ?? null,
+      sessionType: session.sessionType,
+      imageUrl: session.imageUrl ?? null,
+      aiAnalysis: session.aiAnalysis ?? null,
+      confidence: session.confidence ?? null,
+      identifiedPlantId: session.identifiedPlantId ?? null,
+      userFeedback: session.userFeedback ?? null
+    };
+    const userId = session.userId || 'anonymous';
+    const sessions = this.plantDoctorSessions.get(userId) || [];
+    sessions.push(newSession);
+    this.plantDoctorSessions.set(userId, sessions);
+    return newSession;
+  }
+
+  async getUserPlantDoctorSessions(userId: string): Promise<PlantDoctorSession[]> {
+    return (this.plantDoctorSessions.get(userId) || [])
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async updatePlantDoctorSession(id: string, session: Partial<InsertPlantDoctorSession>): Promise<PlantDoctorSession> {
+    for (const sessions of Array.from(this.plantDoctorSessions.values())) {
+      const found = sessions.find((s: any) => s.id === id);
+      if (found) {
+        Object.assign(found, session);
+        return found;
+      }
+    }
+    throw new Error('Session not found');
+  }
+
+  // Design generation operations
+  async getUserDesignGenerations(userId: string): Promise<DesignGeneration[]> {
+    return (this.designGenerations.get(userId) || [])
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async createDesignGeneration(generation: InsertDesignGeneration): Promise<DesignGeneration> {
+    const newGeneration: DesignGeneration = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      userId: generation.userId,
+      gardenId: generation.gardenId ?? null,
+      styleId: generation.styleId,
+      generationType: generation.generationType,
+      success: generation.success ?? true,
+      errorMessage: generation.errorMessage ?? null,
+      tokensUsed: generation.tokensUsed ?? null
+    };
+    const generations = this.designGenerations.get(generation.userId) || [];
+    generations.push(newGeneration);
+    this.designGenerations.set(generation.userId, generations);
+    return newGeneration;
+  }
+
+  async getDesignGenerationsByStyle(userId: string, styleId: string): Promise<DesignGeneration[]> {
+    return (this.designGenerations.get(userId) || [])
+      .filter(g => g.styleId === styleId)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  // Climate data operations
+  async getClimateData(location: string): Promise<ClimateData | undefined> {
+    return this.climateDataMap.get(location);
+  }
+
+  async createClimateData(climate: InsertClimateData): Promise<ClimateData> {
+    const newClimate: ClimateData = {
+      id: this.generateId(),
+      location: climate.location,
+      hardiness_zone: climate.hardiness_zone ?? null,
+      usda_zone: climate.usda_zone ?? null,
+      rhs_zone: climate.rhs_zone ?? null,
+      ahs_heat_zone: climate.ahs_heat_zone ?? null,
+      koppen_climate: climate.koppen_climate ?? null,
+      hardiness_category: climate.hardiness_category ?? null,
+      temperature_range: climate.temperature_range ?? null,
+      annual_rainfall: climate.annual_rainfall ?? null,
+      avg_temp_min: climate.avg_temp_min ?? null,
+      avg_temp_max: climate.avg_temp_max ?? null,
+      avg_humidity: climate.avg_humidity ?? null,
+      avg_wind_speed: climate.avg_wind_speed ?? null,
+      sunshine_percent: climate.sunshine_percent ?? null,
+      wettest_month: climate.wettest_month ?? null,
+      wettest_month_precip: climate.wettest_month_precip ?? null,
+      driest_month: climate.driest_month ?? null,
+      driest_month_precip: climate.driest_month_precip ?? null,
+      monthly_precip_pattern: climate.monthly_precip_pattern ?? null,
+      frost_dates: climate.frost_dates ?? null,
+      growing_season: climate.growing_season ?? null,
+      monthly_data: climate.monthly_data ?? null,
+      gardening_advice: climate.gardening_advice ?? null,
+      data_source: climate.data_source ?? 'visual_crossing',
+      data_range: climate.data_range ?? null,
+      lastUpdated: new Date()
+    };
+    this.climateDataMap.set(climate.location, newClimate);
+    return newClimate;
+  }
+
+  async updateClimateData(location: string, climate: Partial<InsertClimateData>): Promise<ClimateData> {
+    const existing = this.climateDataMap.get(location);
+    if (!existing) throw new Error('Climate data not found');
+    Object.assign(existing, climate, { lastUpdated: new Date() });
+    return existing;
+  }
+
+  // File vault operations
+  async createVaultItem(vaultItem: InsertFileVault): Promise<FileVault> {
+    const newItem: FileVault = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      userId: vaultItem.userId,
+      fileName: vaultItem.fileName,
+      fileType: vaultItem.fileType,
+      contentType: vaultItem.contentType,
+      filePath: vaultItem.filePath,
+      metadata: vaultItem.metadata ?? null,
+      expiresAt: vaultItem.expiresAt ?? null,
+      lastAccessedAt: null,
+      accessCount: 0
+    };
+    this.fileVaultItems.set(newItem.id, newItem);
+    return newItem;
+  }
+
+  async getUserVaultItems(userId: string): Promise<FileVault[]> {
+    return Array.from(this.fileVaultItems.values())
+      .filter(item => item.userId === userId)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async getVaultItem(id: string): Promise<FileVault | undefined> {
+    return this.fileVaultItems.get(id);
+  }
+
+  async updateVaultAccessTime(id: string): Promise<void> {
+    const item = this.fileVaultItems.get(id);
+    if (item) {
+      item.lastAccessedAt = new Date();
+      item.accessCount = (item.accessCount || 0) + 1;
+    }
+  }
+
+  async deleteExpiredVaultItems(): Promise<number> {
+    const now = new Date();
+    let count = 0;
+    for (const [id, item] of Array.from(this.fileVaultItems.entries())) {
+      if (item.expiresAt && item.expiresAt <= now) {
+        this.fileVaultItems.delete(id);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // Visualization data operations
+  async getVisualizationData(gardenId: string): Promise<any | undefined> {
+    const garden = this.gardens.get(gardenId);
+    if (!garden) return undefined;
+    const layoutData = garden.layout_data as any || {};
+    return {
+      iterationCount: layoutData.visualizationIterationCount || 0,
+      savedImages: layoutData.savedSeasonalImages || [],
+      lastSaved: layoutData.lastSeasonalImagesSaved || null
+    };
+  }
+
+  async updateVisualizationData(gardenId: string, data: any): Promise<void> {
+    const garden = this.gardens.get(gardenId);
+    if (!garden) return;
+    const layoutData = garden.layout_data as any || {};
+    if (data.iterationCount !== undefined) {
+      layoutData.visualizationIterationCount = data.iterationCount;
+    }
+    if (data.savedImages !== undefined) {
+      layoutData.savedSeasonalImages = data.savedImages;
+    }
+    if (data.lastSaved !== undefined) {
+      layoutData.lastSeasonalImagesSaved = data.lastSaved;
+    }
+    garden.layout_data = layoutData;
+  }
+
+  // Scraping progress operations
+  async getScrapingProgress(url: string): Promise<ScrapingProgress | undefined> {
+    return this.scrapingProgressMap.get(url);
+  }
+
+  async createScrapingProgress(progress: InsertScrapingProgress): Promise<ScrapingProgress> {
+    const newProgress: ScrapingProgress = {
+      id: this.generateId(),
+      url: progress.url,
+      status: progress.status || 'in_progress',
+      totalBatches: progress.totalBatches ?? 0,
+      completedBatches: progress.completedBatches ?? 0,
+      totalPlants: progress.totalPlants ?? 0,
+      savedPlants: progress.savedPlants ?? 0,
+      duplicatePlants: progress.duplicatePlants ?? 0,
+      failedPlants: progress.failedPlants ?? 0,
+      lastProductUrl: progress.lastProductUrl ?? null,
+      productUrls: progress.productUrls ?? null,
+      errors: progress.errors ?? null,
+      startedAt: new Date(),
+      completedAt: null,
+      updatedAt: new Date()
+    };
+    this.scrapingProgressMap.set(progress.url, newProgress);
+    return newProgress;
+  }
+
+  async updateScrapingProgress(id: string, progress: Partial<InsertScrapingProgress>): Promise<ScrapingProgress> {
+    for (const item of Array.from(this.scrapingProgressMap.values())) {
+      if (item.id === id) {
+        Object.assign(item, progress, { updatedAt: new Date() });
+        return item;
+      }
+    }
+    throw new Error('Scraping progress not found');
+  }
+
+  async finalizeScrapingProgress(id: string, stats: any): Promise<ScrapingProgress> {
+    for (const item of Array.from(this.scrapingProgressMap.values())) {
+      if (item.id === id) {
+        item.totalPlants = stats.totalPlants;
+        item.savedPlants = stats.savedPlants;
+        item.duplicatePlants = stats.duplicatePlants;
+        item.failedPlants = stats.failedPlants;
+        item.status = 'completed';
+        item.completedAt = new Date();
+        item.updatedAt = new Date();
+        return item;
+      }
+    }
+    throw new Error('Scraping progress not found');
+  }
+
+  async getPlantByScientificName(scientificName: string): Promise<Plant | undefined> {
+    return Array.from(this.plants.values()).find(p => p.scientificName === scientificName);
+  }
+
+  async getPlantByExternalId(externalId: string): Promise<Plant | undefined> {
+    return Array.from(this.plants.values()).find(p => p.externalId === externalId);
+  }
+
+  async bulkCreatePlants(plants: InsertPlant[]): Promise<{ saved: number; duplicates: number; errors: number }> {
+    let saved = 0, duplicates = 0, errors = 0;
+    for (const plant of plants) {
+      try {
+        if (plant.scientificName && await this.getPlantByScientificName(plant.scientificName)) {
+          duplicates++;
+        } else {
+          await this.createPlant(plant);
+          saved++;
+        }
+      } catch {
+        errors++;
+      }
+    }
+    return { saved, duplicates, errors };
+  }
+
+  // Todo task operations
+  async getAllTodoTasks(): Promise<TodoTask[]> {
+    return Array.from(this.todoTasksMap.values());
+  }
+
+  async createTodoTask(task: InsertTodoTask): Promise<TodoTask> {
+    const newTask: TodoTask = {
+      ...task,
+      id: this.generateId(),
+      createdAt: new Date()
+    };
+    this.todoTasksMap.set(newTask.id, newTask);
+    return newTask;
+  }
+
+  async deleteTodoTask(id: string): Promise<void> {
+    this.todoTasksMap.delete(id);
+  }
+
+  // Security operations
+  async createSecurityAuditLog(log: InsertSecurityAuditLog): Promise<SecurityAuditLog> {
+    const newLog: SecurityAuditLog = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      userId: log.userId ?? null,
+      eventType: log.eventType,
+      eventDescription: log.eventDescription,
+      ipAddress: log.ipAddress ?? null,
+      userAgent: log.userAgent ?? null,
+      severity: log.severity ?? 'info',
+      success: log.success ?? true,
+      metadata: log.metadata ?? null
+    };
+    this.securityAuditLogsArray.push(newLog);
+    return newLog;
+  }
+
+  async getSecurityAuditLogs(filters?: any): Promise<SecurityAuditLog[]> {
+    let logs = [...this.securityAuditLogsArray];
+    if (filters?.userId) logs = logs.filter(l => l.userId === filters.userId);
+    if (filters?.eventType) logs = logs.filter(l => l.eventType === filters.eventType);
+    if (filters?.severity) logs = logs.filter(l => l.severity === filters.severity);
+    if (filters?.limit) logs = logs.slice(0, filters.limit);
+    return logs.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async recordFailedLoginAttempt(attempt: InsertFailedLoginAttempt): Promise<FailedLoginAttempt> {
+    const newAttempt: FailedLoginAttempt = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      ipAddress: attempt.ipAddress,
+      userAgent: attempt.userAgent ?? null,
+      attemptedEmail: attempt.attemptedEmail ?? null,
+      attemptCount: 1,
+      lastAttempt: new Date(),
+      blockedUntil: attempt.blockedUntil ?? null
+    };
+    const attempts = this.failedLoginAttemptsMap.get(attempt.ipAddress) || [];
+    attempts.push(newAttempt);
+    this.failedLoginAttemptsMap.set(attempt.ipAddress, attempts);
+    return newAttempt;
+  }
+
+  async getFailedLoginAttempts(ipAddress?: string): Promise<FailedLoginAttempt[]> {
+    if (ipAddress) {
+      return this.failedLoginAttemptsMap.get(ipAddress) || [];
+    }
+    const all: FailedLoginAttempt[] = [];
+    for (const attempts of Array.from(this.failedLoginAttemptsMap.values())) {
+      all.push(...attempts);
+    }
+    return all;
+  }
+
+  async clearFailedLoginAttempts(ipAddress: string): Promise<void> {
+    this.failedLoginAttemptsMap.delete(ipAddress);
+  }
+
+  async createActiveSession(session: InsertActiveSession): Promise<ActiveSession> {
+    const newSession: ActiveSession = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      userId: session.userId,
+      expiresAt: session.expiresAt ?? null,
+      ipAddress: session.ipAddress,
+      userAgent: session.userAgent ?? null,
+      sessionToken: session.sessionToken,
+      lastActivity: new Date(),
+      loginTime: session.loginTime ?? new Date(),
+      isActive: true,
+      revokedAt: null,
+      revokedBy: null
+    };
+    this.activeSessionsMap.set(session.sessionToken, newSession);
+    return newSession;
+  }
+
+  async getActiveSessions(userId?: string): Promise<ActiveSession[]> {
+    const sessions = Array.from(this.activeSessionsMap.values());
+    if (userId) {
+      return sessions.filter(s => s.userId === userId);
+    }
+    return sessions;
+  }
+
+  async updateSessionActivity(sessionId: string): Promise<void> {
+    const session = Array.from(this.activeSessionsMap.values()).find(s => s.sessionToken === sessionId);
+    if (session) {
+      session.lastActivity = new Date();
+    }
+  }
+
+  async revokeSession(sessionId: string, revokedBy: string): Promise<void> {
+    const session = Array.from(this.activeSessionsMap.values()).find(s => s.sessionToken === sessionId);
+    if (session) {
+      session.isActive = false;
+      session.revokedAt = new Date();
+      session.revokedBy = revokedBy;
+    }
+  }
+
+  async cleanupExpiredSessions(): Promise<number> {
+    const now = new Date();
+    let count = 0;
+    for (const [id, session] of Array.from(this.activeSessionsMap.entries())) {
+      if (session.expiresAt && session.expiresAt <= now) {
+        this.activeSessionsMap.delete(id);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  async addIpAccessControl(control: InsertIpAccessControl): Promise<IpAccessControl> {
+    const newControl: IpAccessControl = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      updatedAt: null,
+      type: control.type,
+      ipAddress: control.ipAddress,
+      ipRange: control.ipRange ?? null,
+      reason: control.reason ?? null,
+      addedBy: control.addedBy ?? null,
+      expiresAt: control.expiresAt ?? null,
+      isActive: true
+    };
+    this.ipAccessControlArray.push(newControl);
+    return newControl;
+  }
+
+  async getIpAccessControl(type?: 'block' | 'allow'): Promise<IpAccessControl[]> {
+    if (type) {
+      return this.ipAccessControlArray.filter(c => c.type === type && c.isActive);
+    }
+    return this.ipAccessControlArray.filter(c => c.isActive);
+  }
+
+  async checkIpAccess(ipAddress: string): Promise<{ allowed: boolean; reason?: string }> {
+    const blocked = this.ipAccessControlArray.find(c => 
+      c.type === 'block' && c.isActive && c.ipAddress === ipAddress
+    );
+    if (blocked) {
+      return { allowed: false, reason: blocked.reason || 'IP blocked' };
+    }
+    return { allowed: true };
+  }
+
+  async removeIpAccessControl(id: string): Promise<void> {
+    const index = this.ipAccessControlArray.findIndex(c => c.id === id);
+    if (index !== -1) {
+      this.ipAccessControlArray.splice(index, 1);
+    }
+  }
+
+  async getSecuritySettings(): Promise<SecuritySetting[]> {
+    return Array.from(this.securitySettingsMap.values());
+  }
+
+  async updateSecuritySetting(key: string, value: any, updatedBy: string): Promise<SecuritySetting> {
+    let setting = this.securitySettingsMap.get(key);
+    if (!setting) {
+      setting = {
+        id: this.generateId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        description: null,
+        key,
+        value,
+        lastModifiedBy: updatedBy
+      };
+    } else {
+      setting.value = value;
+      setting.updatedAt = new Date();
+      setting.lastModifiedBy = updatedBy;
+    }
+    this.securitySettingsMap.set(key, setting);
+    return setting;
+  }
+
+  async recordRateLimitViolation(violation: InsertRateLimitViolation): Promise<RateLimitViolation> {
+    const newViolation: RateLimitViolation = {
+      id: this.generateId(),
+      createdAt: new Date(),
+      userId: violation.userId ?? null,
+      ipAddress: violation.ipAddress,
+      endpoint: violation.endpoint,
+      violationCount: violation.violationCount ?? 1,
+      windowStart: new Date(),
+      windowEnd: violation.windowEnd ?? null,
+      blocked: violation.blocked ?? false,
+      blockedUntil: violation.blockedUntil ?? null
+    };
+    this.rateLimitViolationsArray.push(newViolation);
+    return newViolation;
+  }
+
+  async getRateLimitViolations(filters?: any): Promise<RateLimitViolation[]> {
+    let violations = [...this.rateLimitViolationsArray];
+    if (filters?.ipAddress) violations = violations.filter(v => v.ipAddress === filters.ipAddress);
+    if (filters?.endpoint) violations = violations.filter(v => v.endpoint === filters.endpoint);
+    return violations;
+  }
+
+  async getSecurityRecommendations(status?: string): Promise<SecurityRecommendation[]> {
+    const recs = Array.from(this.securityRecommendationsMap.values());
+    if (status) {
+      return recs.filter(r => r.status === status);
+    }
+    return recs;
+  }
+
+  async updateRecommendationStatus(id: string, status: string, dismissedBy?: string): Promise<SecurityRecommendation> {
+    const rec = this.securityRecommendationsMap.get(id);
+    if (!rec) throw new Error('Recommendation not found');
+    rec.status = status;
+    if (dismissedBy) rec.dismissedBy = dismissedBy;
+    if (status === 'dismissed') rec.dismissedAt = new Date();
+    return rec;
+  }
+
+  async createSecurityRecommendation(recommendation: InsertSecurityRecommendation): Promise<SecurityRecommendation> {
+    const newRec: SecurityRecommendation = {
+      id: this.generateId(),
+      title: recommendation.title,
+      description: recommendation.description,
+      severity: recommendation.severity,
+      category: recommendation.category,
+      status: 'pending',
+      priority: recommendation.priority ?? 0,
+      implementationGuide: recommendation.implementationGuide ?? null,
+      dismissedBy: null,
+      dismissedAt: null,
+      dismissalReason: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.securityRecommendationsMap.set(newRec.id, newRec);
+    return newRec;
+  }
+
+  async getSecurityStats(): Promise<any> {
+    const totalUsers = this.users.size;
+    const activeSessionsCount = Array.from(this.activeSessionsMap.values())
+      .filter(s => s.isActive).length;
+    
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const failedLoginsLast24h = Array.from(this.failedLoginAttemptsMap.values())
+      .flat()
+      .filter(a => a.lastAttempt && a.lastAttempt >= twentyFourHoursAgo).length;
+    
+    const blockedIpsCount = this.ipAccessControlArray
+      .filter(c => c.type === 'block' && c.isActive).length;
+    
+    let securityScore = 100;
+    if (failedLoginsLast24h > 10) securityScore -= 10;
+    if (failedLoginsLast24h > 50) securityScore -= 20;
+    if (blockedIpsCount > 5) securityScore -= 5;
+    if (blockedIpsCount > 20) securityScore -= 10;
+    
+    const recentEvents = this.securityAuditLogsArray
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+      .slice(0, 10);
+    
+    return {
+      totalUsers,
+      activeSessionsCount,
+      failedLoginsLast24h,
+      blockedIpsCount,
+      securityScore: Math.max(0, securityScore),
+      recentEvents
+    };
+  }
+}
+
+// Database connectivity test and fallback logic
+let storage: IStorage;
+
+// Function to test database connectivity
+async function testDatabaseConnection(): Promise<boolean> {
+  try {
+    // Try to import db and run a simple query
+    const { db } = await import('./db');
+    const { sql } = await import('drizzle-orm');
+    
+    // Run a simple test query
+    await db.execute(sql`SELECT 1`);
+    return true;
+  } catch (error) {
+    // Database is not available
+    console.error('Database connection test failed:', error instanceof Error ? error.message : 'Unknown error');
+    return false;
+  }
+}
+
+// Initialize storage with fallback
+(async () => {
+  const isDatabaseAvailable = await testDatabaseConnection();
+  
+  if (isDatabaseAvailable) {
+    console.log('✅ Using PostgreSQL database for storage');
+    storage = new DatabaseStorage();
+  } else {
+    console.warn('⚠️  Database unavailable, using in-memory storage');
+    console.warn('⚠️  Data will NOT persist across server restarts');
+    console.warn('⚠️  This is a fallback mode - configure a database for production use');
+    storage = new MemStorage();
+  }
+})();
+
+// Export storage (will be undefined briefly during initialization)
+export { storage };

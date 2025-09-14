@@ -10,25 +10,15 @@ import MemoryStore from "memorystore";
 import { storage } from "./storage";
 import type { AuthenticatedRequest, AuthUser } from './types/auth';
 
-// Automatically construct DATABASE_URL from PG* environment variables if they exist
-function getDatabaseUrl(): string | null {
-  // Check if PG* variables exist (created by create_postgresql_database_tool)
-  if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
-      process.env.PGPASSWORD && process.env.PGDATABASE) {
-    // Construct DATABASE_URL from PG* variables with SSL required
-    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}?sslmode=require`;
-    console.log('Session store using PostgreSQL database from PG* environment variables');
-    return url;
-  }
-  
-  // Fall back to DATABASE_URL if PG* variables don't exist
-  if (process.env.DATABASE_URL) {
-    console.log('Session store using DATABASE_URL environment variable');
-    return process.env.DATABASE_URL;
-  }
-  
-  // Return null instead of throwing - will trigger fallback to MemoryStore
-  return null;
+// Try to check if database is actually working by importing db
+let isDatabaseAvailable = true;
+try {
+  // Try to import db to see if database is configured
+  require('./db');
+} catch (error: any) {
+  // If db.ts throws an error (database not configured), mark as unavailable
+  isDatabaseAvailable = false;
+  console.warn('⚠️ Database not configured for sessions, will use MemoryStore');
 }
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -45,13 +35,33 @@ const getOidcConfig = memoize(
   { maxAge: 3600 * 1000 }
 );
 
+// Get database URL if PG* environment variables exist
+function getDatabaseUrl(): string | null {
+  // Check if PG* variables exist (created by create_postgresql_database_tool)
+  if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
+      process.env.PGPASSWORD && process.env.PGDATABASE) {
+    // Construct DATABASE_URL from PG* variables with SSL required
+    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}?sslmode=require`;
+    return url;
+  }
+  
+  // Fall back to DATABASE_URL if PG* variables don't exist
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+  
+  return null;
+}
+
+// Create session middleware with appropriate store
 export function getSession() {
   const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days for better user experience
   
   let sessionStore: any;
   const databaseUrl = getDatabaseUrl();
   
-  if (databaseUrl) {
+  // Only try PostgreSQL if database is available AND we have a connection string
+  if (isDatabaseAvailable && databaseUrl) {
     try {
       // Attempt to create PostgreSQL session store
       const pgStore = connectPg(session);
@@ -60,21 +70,38 @@ export function getSession() {
         createTableIfMissing: true,
         ttl: sessionTtl,
         tableName: "sessions",
+        // Add error handler to prevent crashes
+        errorLog: (error: any) => {
+          // Check if this is a connection error
+          if (error.message?.includes('endpoint has been disabled') ||
+              error.message?.includes('connection refused') ||
+              error.code === 'ECONNREFUSED') {
+            console.error('⚠️ PGStore connection failed, sessions may be lost on restart:', error.message);
+            // Mark database as unavailable for future requests
+            isDatabaseAvailable = false;
+          } else {
+            console.error('PGStore error:', error);
+          }
+        }
       });
       console.log('✅ Using PostgreSQL for session storage');
-    } catch (error) {
-      console.warn('⚠️ Failed to connect to PostgreSQL for sessions:', error);
+    } catch (error: any) {
+      console.warn('⚠️ Failed to create PostgreSQL session store:', error.message || error);
       console.warn('⚠️ Falling back to MemoryStore (sessions will not persist across restarts)');
+      isDatabaseAvailable = false;
       const MemStore = MemoryStore(session);
       sessionStore = new MemStore({
         checkPeriod: 86400000 // prune expired entries every 24h
       });
     }
   } else {
-    // No database configured - use MemoryStore
-    console.warn('⚠️ No database configured for sessions');
-    console.warn('⚠️ Using MemoryStore (sessions will not persist across restarts)');
-    console.warn('⚠️ To enable persistent sessions, configure a PostgreSQL database');
+    // No database configured or database unavailable - use MemoryStore
+    if (!isDatabaseAvailable) {
+      console.warn('⚠️ Database unavailable - using MemoryStore for sessions');
+    } else {
+      console.warn('⚠️ No database configured - using MemoryStore for sessions');
+    }
+    console.warn('⚠️ Sessions will not persist across server restarts');
     const MemStore = MemoryStore(session);
     sessionStore = new MemStore({
       checkPeriod: 86400000 // prune expired entries every 24h
