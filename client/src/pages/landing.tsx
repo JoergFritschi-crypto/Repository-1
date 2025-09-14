@@ -76,7 +76,8 @@ export default function Landing() {
                 </>
               ) : (
                 <>
-                  <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" title="View your gardens, stats, and recent activity">
+                  <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1" title="View your gardens, stats, and recent activity">
+                    <DashboardIcon className="w-3.5 h-3.5" />
                     Dashboard
                   </Link>
                   <Button asChild data-testid="button-new-garden" title="Start creating a new garden design">
