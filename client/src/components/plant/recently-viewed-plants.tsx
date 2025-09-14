@@ -64,6 +64,11 @@ const RecentlyViewedPlants = memo(({
     }
   }, [onPlantClick]);
 
+  const displayPlants = useMemo(() => 
+    recentlyViewed.slice(0, maxItems),
+    [recentlyViewed, maxItems]
+  );
+
   if (recentlyViewed.length === 0) {
     return (
       <Card className={className}>
@@ -84,11 +89,6 @@ const RecentlyViewedPlants = memo(({
       </Card>
     );
   }
-
-  const displayPlants = useMemo(() => 
-    recentlyViewed.slice(0, maxItems),
-    [recentlyViewed, maxItems]
-  );
 
   return (
     <Card className={className}>
