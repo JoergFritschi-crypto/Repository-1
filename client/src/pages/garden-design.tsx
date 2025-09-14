@@ -28,7 +28,7 @@ import {
   FolderOpen,
   ArrowLeft
 } from "lucide-react";
-import { GardenScapeIcon } from "@/components/ui/brand-icons";
+import { DashboardIcon } from "@/components/ui/brand-icons";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -187,7 +187,7 @@ export default function GardenDesign() {
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link href="/home" className="flex items-center gap-1 text-[#004025] hover:text-[#004025]/80">
-                    <GardenScapeIcon className="w-3.5 h-3.5" />
+                    <DashboardIcon className="w-3.5 h-3.5" />
                     <span>Dashboard</span>
                   </Link>
                 </BreadcrumbLink>

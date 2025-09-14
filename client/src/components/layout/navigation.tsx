@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Menu, X, MoreVertical, Shield, Sprout, Stethoscope, Crown, Plus, LogOut, ChevronRight } from "lucide-react";
-import { GardenScapeIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
+import { GardenScapeIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon, DashboardIcon } from "@/components/ui/brand-icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ export default function Navigation() {
   const isActualAdmin = user?.isAdmin === true;
 
   const navigationItems = [
-    { href: "/home", label: "Dashboard", icon: GardenScapeIcon },
+    { href: "/home", label: "Dashboard", icon: DashboardIcon },
     { href: "/plant-library", label: "Plant Library", icon: PlantLibraryIcon, brandIcon: true },
     { href: "/plant-doctor", label: "Plant Doctor", icon: PlantDoctorIcon, brandIcon: true },
     { href: "/premium", label: "Premium", icon: PremiumIcon, brandIcon: true },
