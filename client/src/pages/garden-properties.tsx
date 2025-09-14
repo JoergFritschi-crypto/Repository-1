@@ -2179,7 +2179,7 @@ export default function GardenProperties() {
             {currentStep === 3 && (
               <div className="space-y-3">
                 <Card className="border-2 border-primary shadow-sm" data-testid="step-design-approach">
-                  <CardHeader className="py-7 flower-band-cottage rounded-t-lg">
+                  <CardHeader className="py-7 flower-band-sunset rounded-t-lg">
                     <CardTitle className="text-base">Choose Your Design Approach</CardTitle>
                     <CardDescription>
                       Select how you'd like to create your garden design
