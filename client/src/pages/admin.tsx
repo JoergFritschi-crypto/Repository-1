@@ -60,22 +60,18 @@ import {
 // AI-Generated Icon Component for Icon Gallery
 const AIGeneratedIcon = ({ path, name, size = 96 }: { path: string; name: string; size?: number }) => (
   <div className="flex flex-col items-center space-y-2 p-4 border border-border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-    <div 
-      className="border-2 border-border rounded-lg p-3 bg-white dark:bg-gray-900 shadow-sm" 
-      style={{ width: size + 16, height: size + 16 }}
-    >
-      <img 
-        src={path} 
-        alt={name}
-        width={size}
-        height={size}
-        className="object-contain"
-        onError={(e) => {
-          console.error(`Failed to load icon: ${path}`);
-          e.currentTarget.style.display = 'none';
-        }}
-      />
-    </div>
+    <img 
+      src={path} 
+      alt={name}
+      width={size}
+      height={size}
+      className="object-contain mx-auto"
+      style={{ width: size, height: size }}
+      onError={(e) => {
+        console.error(`Failed to load icon: ${path}`);
+        e.currentTarget.style.display = 'none';
+      }}
+    />
     <span className="text-sm font-medium text-center max-w-[120px] text-foreground">{name}</span>
     <Button
       variant="outline"

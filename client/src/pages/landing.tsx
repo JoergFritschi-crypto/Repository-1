@@ -301,9 +301,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-4">
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
-                <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <GardenDesignIcon className="w-8 h-8" />
-                </div>
+                <GardenDesignIcon className="w-8 h-8 mx-auto mb-3" />
                 <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-ai-title">AI Garden Design</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-ai-description">
                   Intelligent plant selection and layout optimization based on your garden conditions
@@ -312,9 +310,7 @@ export default function Landing() {
             </Card>
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
-                <div className="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <SeasonIcon className="w-8 h-8" />
-                </div>
+                <SeasonIcon className="w-8 h-8 mx-auto mb-3" />
                 <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-seasonal-title">Seasonal Visualization</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-seasonal-description">
                   See your garden through the seasons with AI-generated imagery
@@ -323,9 +319,7 @@ export default function Landing() {
             </Card>
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
-                <div className="w-14 h-14 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <PlantDoctorIcon className="w-8 h-8" />
-                </div>
+                <PlantDoctorIcon className="w-8 h-8 mx-auto mb-3" />
                 <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-doctor-title">Plant Doctor</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-doctor-description">
                   Identify plants and diseases with AI-powered image recognition

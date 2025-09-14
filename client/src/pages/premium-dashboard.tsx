@@ -119,9 +119,7 @@ export default function PremiumDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-canary rounded-full flex items-center justify-center">
-                    <Crown className="w-6 h-6 text-primary" />
-                  </div>
+                  <Crown className="w-12 h-12 text-canary" />
                   <div>
                     <h3 className="font-semibold text-lg" data-testid="text-upgrade-title">Unlock Premium Features</h3>
                     <p className="text-muted-foreground" data-testid="text-upgrade-subtitle">
@@ -207,9 +205,7 @@ export default function PremiumDashboard() {
                     {gardens.slice(0, 3).map((garden: any) => (
                       <div key={garden.id} className="border border-border rounded-lg p-4 hover:shadow-sm transition-shadow" data-testid={`design-item-${garden.id}`}>
                         <div className="flex items-center space-x-4">
-                          <div className="w-16 h-16 bg-accent/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Palette className="w-8 h-8 text-accent" />
-                          </div>
+                          <Palette className="w-16 h-16 text-accent flex-shrink-0" />
                           <div className="flex-1">
                             <h3 className="font-medium" data-testid={`text-design-name-${garden.id}`}>{garden.name}</h3>
                             <p className="text-sm text-muted-foreground" data-testid={`text-design-details-${garden.id}`}>
@@ -323,9 +319,11 @@ export default function PremiumDashboard() {
                   <div className="space-y-3">
                     {plantCollection.slice(0, 3).map((item: any) => (
                       <div key={item.id} className="flex items-center space-x-3" data-testid={`collection-item-${item.id}`}>
-                        <div className="w-8 h-8 bg-accent rounded-full flex-shrink-0">
-                          {item.isFavorite && (
-                            <Star className="w-4 h-4 text-canary m-2" />
+                        <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                          {item.isFavorite ? (
+                            <Star className="w-8 h-8 text-canary" />
+                          ) : (
+                            <div className="w-8 h-8" />
                           )}
                         </div>
                         <div className="flex-1">

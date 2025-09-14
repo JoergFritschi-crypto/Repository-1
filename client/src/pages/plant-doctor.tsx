@@ -150,9 +150,7 @@ export default function PlantDoctor() {
                       data-testid={`service-${key}`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary">
-                          <Icon className="w-5 h-5 text-primary" />
-                        </div>
+                        <Icon className="w-10 h-10 text-primary" />
                         <div className="flex-1">
                           <h3 className="font-medium text-sm">{config.title}</h3>
                           <p className="text-xs text-muted-foreground">{config.description}</p>
@@ -310,11 +308,11 @@ export default function PlantDoctor() {
                           {sessions.slice(0, 5).map((session: any) => (
                             <div key={session.id} className="border-2 border-primary/30 rounded-lg p-3 hover:border-primary transition-all" data-testid={`session-${session.id}`}>
                               <div className="flex items-start space-x-4">
-                                <div className="w-16 h-16 bg-muted rounded-lg flex-shrink-0 flex items-center justify-center">
+                                <div className="w-16 h-16 rounded-lg flex-shrink-0 flex items-center justify-center">
                                   {session.imageUrl ? (
                                     <img src={session.imageUrl} alt="Plant" className="w-full h-full object-cover rounded-lg" />
                                   ) : (
-                                    <Camera className="w-8 h-8 text-muted-foreground" />
+                                    <Camera className="w-16 h-16 text-muted-foreground" />
                                   )}
                                 </div>
                                 <div className="flex-1">
