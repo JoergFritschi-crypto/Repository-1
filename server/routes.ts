@@ -4538,7 +4538,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   // Admin API Monitoring Routes
   app.get('/api/admin/api-health', requireAdmin, async (req: Request, res) => {
     try {
-
+      // Disable caching to prevent 304 Not Modified responses
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
 
       const healthStatus = await apiMonitoring.getHealthStatus();
       res.json(healthStatus);
@@ -4550,7 +4553,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
 
   app.post('/api/admin/api-health/check', requireAdmin, async (req: Request, res) => {
     try {
-
+      // Disable caching to prevent 304 Not Modified responses
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
 
       const results = await apiMonitoring.runHealthChecks();
       res.json(results);
@@ -4562,7 +4568,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
 
   app.get('/api/admin/api-usage', requireAdmin, async (req: Request, res) => {
     try {
-
+      // Disable caching to prevent 304 Not Modified responses
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
 
       const startDate = req.query.startDate 
         ? new Date(req.query.startDate as string) 
@@ -4581,7 +4590,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
 
   app.get('/api/admin/api-config', requireAdmin, async (req: Request, res) => {
     try {
-
+      // Disable caching to prevent 304 Not Modified responses
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
 
       const config = apiMonitoring.getServiceConfiguration();
       res.json(config);
@@ -4666,7 +4678,10 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
   // API Key Management Routes
   app.get('/api/admin/api-keys/status', requireAdmin, async (req: Request, res) => {
     try {
-
+      // Disable caching to prevent 304 Not Modified responses
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
 
       const keyStatus = [
         {
