@@ -4,6 +4,11 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/layout/navigation";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
+import { SkeletonText, SkeletonStat } from "@/components/ui/skeleton-text";
+import { SkeletonListItem, SkeletonList } from "@/components/ui/skeleton-table";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { EmptyState } from "@/components/ui/error-message";
 import { Download, Palette, User } from "lucide-react";
 import { GardenDesignIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from "@/components/ui/brand-icons";
 import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
@@ -75,9 +80,13 @@ export default function Home() {
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-lg font-bold" data-testid="text-stat-designs">
-                    {gardensLoading ? '...' : gardens?.length || 0}
-                  </p>
+                  {gardensLoading ? (
+                    <SkeletonStat label={false} />
+                  ) : (
+                    <p className="text-lg font-bold" data-testid="text-stat-designs">
+                      {gardens?.length || 0}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground">Garden Designs</p>
                 </div>
                 <GardenDesignIcon className="w-6 h-6" />
@@ -89,9 +98,13 @@ export default function Home() {
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-lg font-bold" data-testid="text-stat-plants">
-                    {collectionLoading ? '...' : plantCollection?.length || 0}
-                  </p>
+                  {collectionLoading ? (
+                    <SkeletonStat label={false} />
+                  ) : (
+                    <p className="text-lg font-bold" data-testid="text-stat-plants">
+                      {plantCollection?.length || 0}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground">Plants in Collection</p>
                 </div>
                 <PlantLibraryIcon className="w-6 h-6" />
@@ -133,10 +146,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 {gardensLoading ? (
-                  <div className="text-center py-4" data-testid="loading-gardens">
-                    <div className="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
-                    <p className="text-sm text-muted-foreground">Loading your gardens...</p>
-                  </div>
+                  <SkeletonList count={3} showIcon={false} showActions={true} />
                 ) : gardens && gardens.length > 0 ? (
                   <div className="space-y-2">
                     {gardens.slice(0, 3).map((garden: any) => (
@@ -177,16 +187,15 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-4" data-testid="empty-gardens">
-                    <Palette className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <h3 className="text-sm font-medium mb-1">No gardens yet</h3>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Start by creating your first garden design
-                    </p>
-                    <Button size="sm" asChild className="hover:scale-105 hover:shadow-md transition-all duration-200" data-testid="button-create-first-garden">
-                      <Link href="/garden-properties">Create Your First Garden</Link>
-                    </Button>
-                  </div>
+                  <EmptyState
+                    title="No gardens yet"
+                    message="Start by creating your first garden design"
+                    icon={<Palette className="w-6 h-6 text-muted-foreground" />}
+                    action={{
+                      label: "Create Your First Garden",
+                      onClick: () => window.location.href = '/garden-properties'
+                    }}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -238,10 +247,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 {collectionLoading ? (
-                  <div className="text-center py-3" data-testid="loading-collection">
-                    <div className="animate-spin w-5 h-5 border-3 border-primary border-t-transparent rounded-full mx-auto mb-1"></div>
-                    <p className="text-xs text-muted-foreground">Loading collection...</p>
-                  </div>
+                  <SkeletonList count={3} showIcon={true} showActions={false} />
                 ) : plantCollection && plantCollection.length > 0 ? (
                   <div className="space-y-2">
                     {plantCollection.slice(0, 3).map((item: any) => (
@@ -262,13 +268,15 @@ export default function Home() {
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-3" data-testid="empty-collection">
-                    <PlantLibraryIcon className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
-                    <p className="text-xs text-muted-foreground">No plants in collection</p>
-                    <Button variant="ghost" size="sm" asChild className="mt-2 hover:scale-105 hover:bg-primary/10 transition-all duration-200" data-testid="button-browse-to-add">
-                      <Link href="/plant-library" className="link-reset">Browse Plants</Link>
-                    </Button>
-                  </div>
+                  <EmptyState
+                    title="No plants in collection"
+                    message="Start browsing to add plants to your collection"
+                    icon={<PlantLibraryIcon className="w-6 h-6 text-muted-foreground" />}
+                    action={{
+                      label: "Browse Plants",
+                      onClick: () => window.location.href = '/plant-library'
+                    }}
+                  />
                 )}
               </CardContent>
             </Card>

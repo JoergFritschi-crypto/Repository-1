@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import PlantSearch from "@/components/plant/plant-search";
 import PlantAdvancedSearch from "@/components/plant/plant-advanced-search";
+import { SkeletonCardGrid } from "@/components/ui/skeleton-card";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage, EmptyState } from "@/components/ui/error-message";
 import { Sprout, Search, Heart, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import type { Plant, PlantSearchFilters } from "@/types/plant";
 
@@ -33,7 +36,7 @@ export default function PlantLibrary() {
     },
   });
 
-  const { data: plants, isLoading: plantsLoading, refetch: refetchPlants } = useQuery({
+  const { data: plants, isLoading: plantsLoading, error: plantsError, refetch: refetchPlants } = useQuery({
     queryKey: ["/api/plants/search", { q: filters.search || searchQuery, ...filters }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -61,7 +64,7 @@ export default function PlantLibrary() {
     enabled: true, // Enable auto-fetch when filters change
   });
 
-  const { data: myCollectionRaw = [], isLoading: collectionLoading } = useQuery<any[]>({
+  const { data: myCollectionRaw = [], isLoading: collectionLoading, error: collectionError } = useQuery<any[]>({
     queryKey: ["/api/my-collection"],
   });
 
@@ -384,17 +387,14 @@ export default function PlantLibrary() {
                 <CardContent>
                   {/* Plants Display */}
                   {plantsLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[...Array(6)].map((_, i) => (
-                      <Card key={i} className="animate-pulse" data-testid={`skeleton-plant-${i}`}>
-                        <div className="h-48 bg-muted"></div>
-                        <CardContent className="pt-4">
-                          <div className="h-4 bg-muted rounded mb-2"></div>
-                          <div className="h-3 bg-muted rounded w-2/3"></div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                    <SkeletonCardGrid count={9} variant="plant" />
+                  ) : plantsError ? (
+                    <ErrorMessage
+                      title="Failed to load plants"
+                      error={plantsError}
+                      onRetry={refetchPlants}
+                      variant="card"
+                    />
                   ) : paginatedPlants && paginatedPlants.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {paginatedPlants.map((plant: Plant) => (
@@ -406,16 +406,15 @@ export default function PlantLibrary() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-12" data-testid="empty-plants-state">
-                      <Sprout className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">No plants found</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Try adjusting your search criteria or clearing filters
-                      </p>
-                      <Button onClick={clearFilters} data-testid="button-clear-search">
-                        Clear Search & Filters
-                      </Button>
-                    </div>
+                    <EmptyState
+                      title="No plants found"
+                      message="Try adjusting your search criteria or clearing filters"
+                      icon={<Sprout className="w-8 h-8 text-muted-foreground" />}
+                      action={{
+                        label: "Clear Search & Filters",
+                        onClick: clearFilters
+                      }}
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -585,17 +584,14 @@ export default function PlantLibrary() {
                 </CardHeader>
                 <CardContent>
                   {collectionLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[...Array(6)].map((_, i) => (
-                        <Card key={i} className="animate-pulse" data-testid={`skeleton-collection-${i}`}>
-                          <div className="h-48 bg-muted"></div>
-                          <CardContent className="pt-4">
-                            <div className="h-4 bg-muted rounded mb-2"></div>
-                            <div className="h-3 bg-muted rounded w-2/3"></div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                    <SkeletonCardGrid count={9} variant="plant" />
+                  ) : collectionError ? (
+                    <ErrorMessage
+                      title="Failed to load collection"
+                      error={collectionError}
+                      onRetry={() => window.location.reload()}
+                      variant="card"
+                    />
                   ) : paginatedCollection && Array.isArray(paginatedCollection) && paginatedCollection.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {paginatedCollection.map((item: any) => (
@@ -608,16 +604,15 @@ export default function PlantLibrary() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-12" data-testid="empty-collection-state">
-                      <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">Your collection is empty</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Start building your personal plant collection by browsing our database
-                      </p>
-                      <Button onClick={() => setActiveTab("browse")} data-testid="button-browse-to-add">
-                        Browse Plants
-                      </Button>
-                    </div>
+                    <EmptyState
+                      title="Your collection is empty"
+                      message="Start building your personal plant collection by browsing our database"
+                      icon={<Heart className="w-8 h-8 text-muted-foreground" />}
+                      action={{
+                        label: "Browse Plants",
+                        onClick: () => setActiveTab("browse")
+                      }}
+                    />
                   )}
                 </CardContent>
               </Card>

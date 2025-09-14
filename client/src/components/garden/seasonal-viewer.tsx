@@ -40,6 +40,8 @@ import { cn } from '@/lib/utils';
 import { apiRequest } from '@/lib/queryClient';
 import { format, parse } from 'date-fns';
 import SeasonalDateSelector from './seasonal-date-selector';
+import { LoadingSpinner, ProgressBar, LoadingSteps } from '@/components/ui/loading-spinner';
+import { ErrorMessage } from '@/components/ui/error-message';
 
 interface SeasonalImage {
   dayOfYear: number;        // Day of year (1-365) - precise daily timing
@@ -473,7 +475,7 @@ export default function SeasonalViewer({
                     disabled={generationProgress.isGenerating}
                   >
                     {generationProgress.isGenerating ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <LoadingSpinner size="sm" />
                     ) : (
                       <Plus className="h-5 w-5" />
                     )}
@@ -562,20 +564,21 @@ export default function SeasonalViewer({
           {generationProgress.isGenerating && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
               <div className="bg-black/80 rounded-lg p-6 max-w-sm mx-4">
-                <div className="flex items-center gap-3 text-white mb-4">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="font-medium">Generating Seasonal Images</span>
-                </div>
-                <p className="text-white/70 text-sm mb-2">{generationProgress.message}</p>
+                <LoadingSpinner 
+                  size="lg" 
+                  text="Generating Seasonal Images"
+                  textPosition="right"
+                  className="text-white mb-4"
+                />
+                <p className="text-white/70 text-sm mb-3">{generationProgress.message}</p>
                 {generationProgress.totalImages > 0 && (
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div 
-                      className="bg-canary h-2 rounded-full transition-all duration-300"
-                      style={{ 
-                        width: `${(generationProgress.currentImageIndex / generationProgress.totalImages) * 100}%` 
-                      }}
-                    />
-                  </div>
+                  <ProgressBar
+                    value={generationProgress.currentImageIndex}
+                    max={generationProgress.totalImages}
+                    text={`Image ${generationProgress.currentImageIndex} of ${generationProgress.totalImages}`}
+                    showPercentage={true}
+                    color="accent"
+                  />
                 )}
               </div>
             </div>
@@ -847,20 +850,19 @@ export default function SeasonalViewer({
               {/* Generation Status */}
               {generationProgress.isGenerating && (
                 <div className="bg-muted rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                    <span className="font-medium">Generating Seasonal Images</span>
-                  </div>
+                  <LoadingSpinner 
+                    size="base" 
+                    text="Generating Seasonal Images"
+                    textPosition="right"
+                    className="mb-3"
+                  />
                   <p className="text-sm text-muted-foreground mb-3">{generationProgress.message}</p>
                   {generationProgress.totalImages > 0 && (
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-300"
-                        style={{ 
-                          width: `${(generationProgress.currentImageIndex / generationProgress.totalImages) * 100}%` 
-                        }}
-                      />
-                    </div>
+                    <ProgressBar
+                      value={generationProgress.currentImageIndex}
+                      max={generationProgress.totalImages}
+                      showPercentage={true}
+                    />
                   )}
                 </div>
               )}

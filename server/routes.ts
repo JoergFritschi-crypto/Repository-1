@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertGardenSchema, insertPlantSchema, insertPlantDoctorSessionSchema, insertDesignGenerationSchema } from "@shared/schema";

@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { SkeletonList } from "@/components/ui/skeleton-table";
+import { LoadingSpinner, LoadingSteps } from "@/components/ui/loading-spinner";
+import { ErrorMessage, EmptyState } from "@/components/ui/error-message";
 import { 
   Stethoscope, 
   Camera, 
@@ -28,7 +31,7 @@ export default function PlantDoctor() {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const { toast } = useToast();
 
-  const { data: sessions = [], isLoading: sessionsLoading } = useQuery<any[]>({
+  const { data: sessions = [], isLoading: sessionsLoading, error: sessionsError } = useQuery<any[]>({
     queryKey: ["/api/plant-doctor/sessions"],
   });
 
@@ -276,8 +279,8 @@ export default function PlantDoctor() {
                       >
                         {identificationMutation.isPending ? (
                           <>
-                            <Clock className="w-4 h-4 mr-2 animate-spin" />
-                            Analyzing...
+                            <LoadingSpinner size="xs" />
+                            <span className="ml-2">Analyzing...</span>
                           </>
                         ) : (
                           <>
@@ -286,6 +289,18 @@ export default function PlantDoctor() {
                           </>
                         )}
                       </Button>
+                      
+                      {/* Loading Steps */}
+                      {identificationMutation.isPending && (
+                        <LoadingSteps
+                          steps={[
+                            { label: "Preparing image...", status: "completed" },
+                            { label: "Analyzing plant features...", status: "loading" },
+                            { label: "Identifying species...", status: "pending" },
+                            { label: "Generating diagnosis...", status: "pending" }
+                          ]}
+                        />
+                      )}
                     </div>
                   </TabsContent>
 
@@ -299,10 +314,14 @@ export default function PlantDoctor() {
                       </div>
 
                       {sessionsLoading ? (
-                        <div className="text-center py-8" data-testid="loading-sessions">
-                          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                          <p className="text-muted-foreground">Loading your analysis history...</p>
-                        </div>
+                        <SkeletonList count={3} showIcon={true} showActions={true} />
+                      ) : sessionsError ? (
+                        <ErrorMessage
+                          title="Failed to load sessions"
+                          error={sessionsError}
+                          onRetry={() => queryClient.invalidateQueries({ queryKey: ["/api/plant-doctor/sessions"] })}
+                          variant="card"
+                        />
                       ) : sessions && (sessions as any[]).length > 0 ? (
                         <div className="space-y-4">
                           {sessions.slice(0, 5).map((session: any) => (
@@ -354,16 +373,15 @@ export default function PlantDoctor() {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-12" data-testid="empty-sessions-state">
-                          <Stethoscope className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold mb-2">No analysis history</h3>
-                          <p className="text-muted-foreground mb-4">
-                            Upload your first plant photo to get started with AI analysis
-                          </p>
-                          <Button variant="outline" data-testid="button-start-first-analysis">
-                            Start First Analysis
-                          </Button>
-                        </div>
+                        <EmptyState
+                          title="No analysis history"
+                          message="Upload your first plant photo to get started with AI analysis"
+                          icon={<Stethoscope className="w-8 h-8 text-muted-foreground" />}
+                          action={{
+                            label: "Start First Analysis",
+                            onClick: () => document.getElementById('tab-upload')?.click()
+                          }}
+                        />
                       )}
                     </div>
                   </TabsContent>
