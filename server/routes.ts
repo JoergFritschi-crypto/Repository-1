@@ -1388,7 +1388,8 @@ Rules:
   // Plant routes
   app.get('/api/plants/search', async (req: Request, res: Response) => {
     try {
-      const queryParams = validateQueryParams(z.object({
+      // Use a combined schema for plant search that includes all needed fields
+      const searchSchema = z.object({
         q: z.string().optional(),
         type: z.string().optional(),
         hardiness_zone: z.string().optional(),
@@ -1400,7 +1401,9 @@ Rules:
         spreadMax: z.coerce.number().optional(),
         includeLargeSpecimens: z.enum(["true", "false"]).optional(),
         selectedColors: z.string().optional()
-      }), req.query);
+      });
+      
+      const queryParams = validateQueryParams(searchSchema, req.query);
       const query = queryParams.q || "";
       
       // Check if we have advanced filters

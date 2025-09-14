@@ -12,10 +12,12 @@ import { Progress } from '@/components/ui/progress';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useLocation, useParams } from 'wouter';
-import { Sparkles, ArrowLeft, ArrowRight, Check, Loader2, Home } from 'lucide-react';
+import { Sparkles, ArrowLeft, ArrowRight, Check, Loader2, Home, Save } from 'lucide-react';
 import Navigation from '@/components/layout/navigation';
 import { useAuthWithTesting } from '@/hooks/useAuth';
 import { useStepNavigation } from '@/hooks/useStepNavigation';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { SaveStatusIndicator } from '@/components/ui/save-status';
 import { GARDEN_STYLES, CORE_GARDEN_STYLES, ADDITIONAL_GARDEN_STYLES } from '@shared/gardenStyles';
 import { GardenDesignIcon } from '@/components/ui/brand-icons';
 
@@ -164,6 +166,7 @@ export default function GardenProperties() {
   const { user } = useAuthWithTesting();
   const isPaidUser = user?.userTier === 'pay_per_design' || user?.userTier === 'premium';
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [manualSaving, setManualSaving] = useState(false);
   
   // Form setup
   const form = useForm<GardenFormValues>({
@@ -250,6 +253,103 @@ export default function GardenProperties() {
         variant: "destructive",
       });
     }
+  });
+
+  // Manual save function
+  const handleManualSave = async () => {
+    setManualSaving(true);
+    try {
+      const values = form.getValues();
+      const gardenData = {
+        name: values.name,
+        city: values.city || undefined,
+        zipCode: values.zipCode || undefined,
+        country: values.country || undefined,
+        usdaZone: values.usdaZone || undefined,
+        rhsZone: values.rhsZone || undefined,
+        heatZone: values.heatZone || undefined,
+        shape: values.shape,
+        dimensions: values.dimensions,
+        units: values.units,
+        sunExposure: values.sunExposure || undefined,
+        soilType: values.soilType || undefined,
+        soilPh: values.soilPh || undefined,
+        slopeDirection: values.slopeDirection,
+        slopePercentage: values.slopePercentage,
+        hasSoilAnalysis: values.hasSoilAnalysis || false,
+        soilAnalysis: values.soilAnalysis || {},
+        design_approach: values.design_approach,
+        selectedStyle: values.selectedStyle,
+        preferences: values.preferences,
+      };
+      
+      if (gardenId) {
+        await updateGardenMutation.mutateAsync({ id: gardenId, data: gardenData });
+      } else {
+        const result = await createGardenMutation.mutateAsync(gardenData);
+        if (result?.id) {
+          setGardenId(result.id);
+        }
+      }
+      
+      toast({
+        title: "Garden Saved",
+        description: "Your garden has been saved successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save your garden. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setManualSaving(false);
+    }
+  };
+
+  // Auto-save functionality
+  const formValues = form.watch();
+  const { status: saveStatus, lastSaved, error: saveError } = useAutoSave({
+    data: formValues,
+    onSave: async (data) => {
+      if (!user) return;
+      
+      const gardenData = {
+        name: data.name,
+        city: data.city || undefined,
+        zipCode: data.zipCode || undefined,
+        country: data.country || undefined,
+        usdaZone: data.usdaZone || undefined,
+        rhsZone: data.rhsZone || undefined,
+        heatZone: data.heatZone || undefined,
+        shape: data.shape,
+        dimensions: data.dimensions,
+        units: data.units,
+        sunExposure: data.sunExposure || undefined,
+        soilType: data.soilType || undefined,
+        soilPh: data.soilPh || undefined,
+        slopeDirection: data.slopeDirection,
+        slopePercentage: data.slopePercentage,
+        hasSoilAnalysis: data.hasSoilAnalysis || false,
+        soilAnalysis: data.soilAnalysis || {},
+        design_approach: data.design_approach,
+        selectedStyle: data.selectedStyle,
+        preferences: data.preferences,
+      };
+      
+      if (gardenId) {
+        await updateGardenMutation.mutateAsync({ id: gardenId, data: gardenData });
+      } else if (data.name && (data.usdaZone || data.rhsZone)) {
+        // Only create if we have minimum required fields
+        const result = await createGardenMutation.mutateAsync(gardenData);
+        if (result?.id) {
+          setGardenId(result.id);
+        }
+      }
+    },
+    enabled: autoSaveEnabled && !!user && (isPaidUser || autoSaveEnabled),
+    interval: 30000, // 30 seconds
+    debounceDelay: 2000, // 2 seconds
   });
 
   // Navigation hook
@@ -394,9 +494,46 @@ export default function GardenProperties() {
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header with Garden Icon and Title */}
         <div className="mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <GardenDesignIcon className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold">Garden Design Studio</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <GardenDesignIcon className="w-8 h-8 text-primary" />
+              <h1 className="text-3xl font-bold">Garden Design Studio</h1>
+            </div>
+            
+            {/* Save Status and Manual Save */}
+            {user && (
+              <div className="flex items-center gap-3">
+                {autoSaveEnabled && (
+                  <SaveStatusIndicator
+                    status={saveStatus}
+                    lastSaved={lastSaved}
+                    error={saveError}
+                    showLastSaved={true}
+                    variant="full"
+                  />
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualSave}
+                  disabled={manualSaving || saveStatus === 'saving'}
+                  data-testid="button-manual-save"
+                >
+                  {manualSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
           
           {/* Progress Bar */}
