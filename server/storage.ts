@@ -1040,21 +1040,20 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(failedLoginAttempts)
       .where(eq(failedLoginAttempts.ipAddress, attempt.ipAddress))
-      .orderBy(desc(failedLoginAttempts.lastAttemptAt))
+      .orderBy(desc(failedLoginAttempts.lastAttempt))
       .limit(1);
     
-    if (existing && existing.lastAttemptAt) {
+    if (existing && existing.lastAttempt) {
       // If last attempt was within last hour, update count
       const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      if (existing.lastAttemptAt > hourAgo) {
+      if (existing.lastAttempt > hourAgo) {
         const [updated] = await db
           .update(failedLoginAttempts)
           .set({
             attemptCount: (existing.attemptCount || 0) + 1,
-            lastAttemptAt: new Date(),
-            email: attempt.email || existing.email,
-            userAgent: attempt.userAgent || existing.userAgent,
-            reason: attempt.reason || existing.reason
+            lastAttempt: new Date(),
+            attemptedEmail: attempt.attemptedEmail || existing.attemptedEmail,
+            userAgent: attempt.userAgent || existing.userAgent
           })
           .where(eq(failedLoginAttempts.id, existing.id))
           .returning();
@@ -1073,12 +1072,12 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(failedLoginAttempts)
         .where(eq(failedLoginAttempts.ipAddress, ipAddress))
-        .orderBy(desc(failedLoginAttempts.lastAttemptAt));
+        .orderBy(desc(failedLoginAttempts.lastAttempt));
     }
     return await db
       .select()
       .from(failedLoginAttempts)
-      .orderBy(desc(failedLoginAttempts.lastAttemptAt));
+      .orderBy(desc(failedLoginAttempts.lastAttempt));
   }
 
   async clearFailedLoginAttempts(ipAddress: string): Promise<void> {
@@ -1108,7 +1107,7 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(activeSessions)
       .set({ lastActivity: new Date() })
-      .where(eq(activeSessions.sessionId, sessionId));
+      .where(eq(activeSessions.sessionToken, sessionId));
   }
 
   async revokeSession(sessionId: string, revokedBy: string): Promise<void> {
@@ -1119,7 +1118,7 @@ export class DatabaseStorage implements IStorage {
         revokedAt: new Date(),
         revokedBy
       })
-      .where(eq(activeSessions.sessionId, sessionId));
+      .where(eq(activeSessions.sessionToken, sessionId));
   }
 
   async cleanupExpiredSessions(): Promise<number> {
@@ -1198,35 +1197,34 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(securitySettings)
-      .where(eq(securitySettings.isEnabled, true))
-      .orderBy(securitySettings.settingKey);
+      .orderBy(securitySettings.key);
   }
 
   async updateSecuritySetting(key: string, value: any, updatedBy: string): Promise<SecuritySetting> {
     const [existingSetting] = await db
       .select()
       .from(securitySettings)
-      .where(eq(securitySettings.settingKey, key))
+      .where(eq(securitySettings.key, key))
       .limit(1);
     
     if (existingSetting) {
       const [updated] = await db
         .update(securitySettings)
         .set({
-          settingValue: value,
-          updatedBy,
+          value: value,
+          lastModifiedBy: updatedBy,
           updatedAt: new Date()
         })
-        .where(eq(securitySettings.settingKey, key))
+        .where(eq(securitySettings.key, key))
         .returning();
       return updated;
     } else {
       const [newSetting] = await db
         .insert(securitySettings)
         .values({
-          settingKey: key,
-          settingValue: value,
-          updatedBy
+          key: key,
+          value: value,
+          lastModifiedBy: updatedBy
         })
         .returning();
       return newSetting;
@@ -1251,8 +1249,7 @@ export class DatabaseStorage implements IStorage {
         .update(rateLimitViolations)
         .set({
           violationCount: (existing.violationCount || 0) + 1,
-          lastViolationAt: new Date(),
-          metadata: violation.metadata || existing.metadata
+          windowEnd: new Date()
         })
         .where(eq(rateLimitViolations.id, existing.id))
         .returning();
@@ -1286,7 +1283,7 @@ export class DatabaseStorage implements IStorage {
       query = query.where(and(...conditions)) as any;
     }
     
-    return await query.orderBy(desc(rateLimitViolations.lastViolationAt));
+    return await query.orderBy(desc(rateLimitViolations.windowStart));
   }
 
   async getSecurityRecommendations(status?: string): Promise<SecurityRecommendation[]> {
@@ -1352,7 +1349,7 @@ export class DatabaseStorage implements IStorage {
     const failedLoginsResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(failedLoginAttempts)
-      .where(gte(failedLoginAttempts.lastAttemptAt, twentyFourHoursAgo));
+      .where(gte(failedLoginAttempts.lastAttempt, twentyFourHoursAgo));
     const failedLogins24h = Number(failedLoginsResult[0]?.count || 0);
     
     // Get blocked IPs count
@@ -1399,7 +1396,7 @@ export class DatabaseStorage implements IStorage {
     const rateLimitResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(rateLimitViolations)
-      .where(gte(rateLimitViolations.lastAttempt, twentyFourHoursAgo));
+      .where(gte(rateLimitViolations.windowStart, twentyFourHoursAgo));
     const rateLimitViolationCount = Number(rateLimitResult[0]?.count || 0);
     
     // Calculate security score (more comprehensive formula)
