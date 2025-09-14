@@ -90,5 +90,96 @@
     "continental": "Continentale",
     "polar": "Polare",
     "mediterranean": "Mediterraneo"
+  },
+  "landing": {
+    "navigation": {
+      "signIn": "Accedi",
+      "getStartedFree": "Inizia Gratis",
+      "dashboard": "Dashboard",
+      "newGarden": "+ Nuovo Giardino",
+      "signOut": "Esci",
+      "adminPanel": "Pannello Admin",
+      "adminTesting": "Admin (Test)",
+      "signInTooltip": "Hai già un account? Accedi qui",
+      "getStartedTooltip": "Nuovo su GardenScape? Crea il tuo account gratuito",
+      "dashboardTooltip": "Visualizza i tuoi giardini, statistiche e attività recenti",
+      "newGardenTooltip": "Inizia a creare un nuovo design del giardino",
+      "signOutTooltip": "Esci dal tuo account"
+    },
+    "hero": {
+      "title": "Progetta il Tuo Giardino dei Sogni con l'IA",
+      "subtitle": "Strumenti professionali di design del giardino con conoscenza esperta delle piante",
+      "imageAlt": "Bellissimo giardino perenne con achillea, emerocallidi, nepeta e altro",
+      "createGarden": "Crea il Tuo Giardino",
+      "browsePlants": "Sfoglia Piante",
+      "createDescription": "Inizia a progettare con la guida dell'IA",
+      "browseDescription": "Esplora la nostra biblioteca di piante",
+      "benefits": "✨ Ottieni raccomandazioni personalizzate di piante • 🎨 Progetta con strumenti professionali • 📱 Salva e condividi le tue creazioni"
+    },
+    "pricing": {
+      "title": "Prezzi Semplici",
+      "subtitle": "Scegli il piano che funziona per te",
+      "mostPopular": "Più Popolare",
+      "free": {
+        "title": "Gratuito",
+        "price": "Sempre Gratuito",
+        "feature1": "Accesso base alla biblioteca di piante",
+        "feature2": "Identificazione piante (5/mese)",
+        "feature3": "Supporto della community",
+        "button": "Inizia",
+        "buttonAuth": "Vai alla Dashboard"
+      },
+      "design": {
+        "title": "Paga-per-Design",
+        "price": "€6",
+        "priceUnit": "/design",
+        "feature1": "Design completo del giardino",
+        "feature2": "Immagini stagionali del giardino",
+        "feature3": "Lista della spesa per piante",
+        "feature4": "Supporto prioritario",
+        "button": "Crea Design"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "€12",
+        "priceUnit": "/mese",
+        "feature1": "50 design/mese",
+        "feature2": "Database avanzato di piante",
+        "feature3": "Collezione personale di piante",
+        "feature4": "Consulente IA del giardino",
+        "feature5": "Dashboard premium",
+        "button": "Inizia Premium",
+        "buttonAuth": "Visualizza Premium"
+      }
+    },
+    "features": {
+      "title": "Strumenti Professionali di Design del Giardino",
+      "subtitle": "Strumenti alimentati dall'IA per ogni fase della pianificazione del giardino",
+      "aiDesign": {
+        "title": "Design del Giardino con IA",
+        "description": "Selezione intelligente di piante e ottimizzazione del layout basata sulle condizioni del tuo giardino"
+      },
+      "seasonal": {
+        "title": "Visualizzazione Stagionale",
+        "description": "Vedi il tuo giardino attraverso le stagioni con immagini generate dall'IA"
+      },
+      "plantDoctor": {
+        "title": "Dottore delle Piante",
+        "description": "Identifica piante e malattie con riconoscimento di immagini alimentato dall'IA"
+      }
+    },
+    "footer": {
+      "description": "Design del giardino alimentato dall'IA per bellissimi paesaggi ornamentali.",
+      "featuresTitle": "Caratteristiche",
+      "gardenDesign": "Design Giardino",
+      "plantLibrary": "Biblioteca Piante",
+      "plantDoctor": "Dottore delle Piante",
+      "premiumFeatures": "Caratteristiche Premium",
+      "legalTitle": "Legale",
+      "privacyPolicy": "Informativa sulla Privacy",
+      "termsOfService": "Termini di Servizio",
+      "contact": "Contatto",
+      "copyright": "© 2024 GardenScape Pro. Tutti i diritti riservati."
+    }
   }
 }

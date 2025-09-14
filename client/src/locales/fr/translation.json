@@ -90,5 +90,96 @@
     "continental": "Continental",
     "polar": "Polaire",
     "mediterranean": "Méditerranéen"
+  },
+  "landing": {
+    "navigation": {
+      "signIn": "Se Connecter",
+      "getStartedFree": "Commencer Gratuitement",
+      "dashboard": "Tableau de Bord",
+      "newGarden": "+ Nouveau Jardin",
+      "signOut": "Se Déconnecter",
+      "adminPanel": "Panneau Admin",
+      "adminTesting": "Admin (Test)",
+      "signInTooltip": "Vous avez déjà un compte ? Connectez-vous ici",
+      "getStartedTooltip": "Nouveau sur GardenScape ? Créez votre compte gratuit",
+      "dashboardTooltip": "Visualisez vos jardins, statistiques et activités récentes",
+      "newGardenTooltip": "Commencer à créer un nouveau design de jardin",
+      "signOutTooltip": "Se déconnecter de votre compte"
+    },
+    "hero": {
+      "title": "Concevez le Jardin de vos Rêves avec l'IA",
+      "subtitle": "Outils de conception de jardins professionnels avec expertise végétale",
+      "imageAlt": "Magnifique jardin de vivaces avec achillée, hémérocalles, cataire et plus",
+      "createGarden": "Créer Votre Jardin",
+      "browsePlants": "Parcourir les Plantes",
+      "createDescription": "Commencez à concevoir avec l'aide de l'IA",
+      "browseDescription": "Explorez notre bibliothèque de plantes",
+      "benefits": "✨ Obtenez des recommandations de plantes personnalisées • 🎨 Concevez avec des outils professionnels • 📱 Sauvegardez et partagez vos créations"
+    },
+    "pricing": {
+      "title": "Tarifs Simples",
+      "subtitle": "Choisissez le plan qui vous convient",
+      "mostPopular": "Plus Populaire",
+      "free": {
+        "title": "Gratuit",
+        "price": "Toujours Gratuit",
+        "feature1": "Accès de base à la bibliothèque de plantes",
+        "feature2": "Identification de plantes (5/mois)",
+        "feature3": "Support communautaire",
+        "button": "Commencer",
+        "buttonAuth": "Aller au Tableau de Bord"
+      },
+      "design": {
+        "title": "Paiement par Design",
+        "price": "6€",
+        "priceUnit": "/design",
+        "feature1": "Conception complète de jardin",
+        "feature2": "Images saisonnières du jardin",
+        "feature3": "Liste d'achat de plantes",
+        "feature4": "Support prioritaire",
+        "button": "Créer un Design"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "12€",
+        "priceUnit": "/mois",
+        "feature1": "50 designs/mois",
+        "feature2": "Base de données avancée de plantes",
+        "feature3": "Collection personnelle de plantes",
+        "feature4": "Conseiller jardin IA",
+        "feature5": "Tableau de bord premium",
+        "button": "Commencer Premium",
+        "buttonAuth": "Voir Premium"
+      }
+    },
+    "features": {
+      "title": "Outils de Conception de Jardins Professionnels",
+      "subtitle": "Outils alimentés par l'IA pour chaque étape de la planification de jardin",
+      "aiDesign": {
+        "title": "Conception de Jardin par IA",
+        "description": "Sélection intelligente de plantes et optimisation de l'aménagement basées sur les conditions de votre jardin"
+      },
+      "seasonal": {
+        "title": "Visualisation Saisonnière",
+        "description": "Voyez votre jardin à travers les saisons avec des images générées par IA"
+      },
+      "plantDoctor": {
+        "title": "Docteur des Plantes",
+        "description": "Identifiez les plantes et maladies avec reconnaissance d'images alimentée par IA"
+      }
+    },
+    "footer": {
+      "description": "Conception de jardins alimentée par l'IA pour de magnifiques paysages ornementaux.",
+      "featuresTitle": "Fonctionnalités",
+      "gardenDesign": "Conception de Jardin",
+      "plantLibrary": "Bibliothèque de Plantes",
+      "plantDoctor": "Docteur des Plantes",
+      "premiumFeatures": "Fonctionnalités Premium",
+      "legalTitle": "Légal",
+      "privacyPolicy": "Politique de Confidentialité",
+      "termsOfService": "Conditions d'Utilisation",
+      "contact": "Contact",
+      "copyright": "© 2024 GardenScape Pro. Tous droits réservés."
+    }
   }
 }

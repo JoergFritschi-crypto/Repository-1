@@ -6,6 +6,7 @@ import { Star, Check, MoreVertical, Shield, LogOut } from "lucide-react";
 import { GardenScapeIcon, GardenDesignIcon, SeasonIcon, PlantDoctorIcon, PlantLibraryIcon, PremiumIcon, DashboardIcon } from "@/components/ui/brand-icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { User } from "@shared/schema";
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import gardenImage from '@assets/generated_images/Mixed_perennial_garden_scene_5
 
 export default function Landing() {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   
   // Get the actual user (not affected by tier testing)
   const { data: user } = useQuery<User>({
@@ -52,7 +54,7 @@ export default function Landing() {
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="flex items-center cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
-                        <span>{isTestingMode ? "Admin (Testing)" : "Admin Panel"}</span>
+                        <span>{isTestingMode ? t('landing.navigation.adminTesting') : t('landing.navigation.adminPanel')}</span>
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -67,32 +69,32 @@ export default function Landing() {
             <div className="flex items-center space-x-4">
               {!isAuthenticated ? (
                 <>
-                  <a href="/api/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" title="Already have an account? Sign in here">
-                    Sign In
+                  <a href="/api/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" title={t('landing.navigation.signInTooltip')}>
+                    {t('landing.navigation.signIn')}
                   </a>
-                  <Button asChild data-testid="button-get-started" title="New to GardenScape? Start your free account">
-                    <a href="/api/login">Get Started Free</a>
+                  <Button asChild data-testid="button-get-started" title={t('landing.navigation.getStartedTooltip')}>
+                    <a href="/api/login">{t('landing.navigation.getStartedFree')}</a>
                   </Button>
                 </>
               ) : (
                 <>
-                  <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1" title="View your gardens, stats, and recent activity">
+                  <Link href="/home" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1" title={t('landing.navigation.dashboardTooltip')}>
                     <DashboardIcon className="w-3.5 h-3.5" />
-                    Dashboard
+                    {t('landing.navigation.dashboard')}
                   </Link>
-                  <Button asChild data-testid="button-new-garden" title="Start creating a new garden design">
-                    <Link href="/garden-properties">+ New Garden</Link>
+                  <Button asChild data-testid="button-new-garden" title={t('landing.navigation.newGardenTooltip')}>
+                    <Link href="/garden-properties">{t('landing.navigation.newGarden')}</Link>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     asChild 
                     data-testid="button-logout"
-                    title="Sign out of your account"
+                    title={t('landing.navigation.signOutTooltip')}
                   >
                     <a href="/api/logout" className="link-reset flex items-center gap-1">
                       <LogOut className="w-3.5 h-3.5" />
-                      Sign Out
+                      {t('landing.navigation.signOut')}
                     </a>
                   </Button>
                 </>
@@ -106,17 +108,17 @@ export default function Landing() {
       <section className="relative h-[550px] overflow-hidden">
         <img 
           src={gardenImage} 
-          alt="Beautiful perennial garden with yarrow, daylilies, catmint and more" 
+          alt={t('landing.hero.imageAlt')} 
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div className="max-w-2xl">
               <h1 className="text-2xl md:text-3xl font-serif font-bold mb-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" data-testid="text-hero-title">
-                Design Your Dream Garden with AI
+                {t('landing.hero.title')}
               </h1>
               <p className="text-base mb-6 text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" data-testid="text-hero-subtitle">
-                Professional garden design tools with expert plant knowledge
+                {t('landing.hero.subtitle')}
               </p>
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -125,37 +127,37 @@ export default function Landing() {
                       {!isAuthenticated ? (
                         <a href="/api/login" className="flex items-center justify-center gap-1 h-full link-reset">
                           <GardenDesignIcon className="w-3.5 h-3.5" />
-                          Create Your Garden
+                          {t('landing.hero.createGarden')}
                         </a>
                       ) : (
                         <Link href="/garden-properties" className="flex items-center justify-center gap-1 h-full link-reset">
                           <GardenDesignIcon className="w-3.5 h-3.5" />
-                          Create Your Garden
+                          {t('landing.hero.createGarden')}
                         </Link>
                       )}
                     </Button>
-                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Start designing with AI guidance</p>
+                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">{t('landing.hero.createDescription')}</p>
                   </div>
                   <div className="flex-1">
                     <Button variant="outline" asChild className="bg-white/90 hover:bg-white text-primary border-2 border-primary hover:border-primary/30 shadow-lg hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 w-full h-8 px-3 text-xs font-medium hover:scale-110 hover:-translate-y-1" data-testid="button-watch-demo">
                       {!isAuthenticated ? (
                         <a href="/api/login" className="flex items-center justify-center gap-1 h-full link-reset">
                           <PlantLibraryIcon className="w-3.5 h-3.5" />
-                          Browse Plants
+                          {t('landing.hero.browsePlants')}
                         </a>
                       ) : (
                         <Link href="/plant-library" className="flex items-center justify-center gap-1 h-full link-reset">
                           <PlantLibraryIcon className="w-3.5 h-3.5" />
-                          Browse Plants
+                          {t('landing.hero.browsePlants')}
                         </Link>
                       )}
                     </Button>
-                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">Explore our plant library</p>
+                    <p className="text-sm text-white/80 mt-1 text-center sm:text-left">{t('landing.hero.browseDescription')}</p>
                   </div>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                    ✨ Get personalized plant recommendations • 🎨 Design with professional tools • 📱 Save and share your creations
+                    {t('landing.hero.benefits')}
                   </p>
                 </div>
               </div>
@@ -169,10 +171,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6">
             <h2 className="text-xl font-serif font-bold text-foreground mb-2" data-testid="text-pricing-title">
-              Simple Pricing
+              {t('landing.pricing.title')}
             </h2>
             <p className="text-sm text-muted-foreground" data-testid="text-pricing-subtitle">
-              Choose the plan that works for you
+              {t('landing.pricing.subtitle')}
             </p>
           </div>
 
@@ -180,29 +182,29 @@ export default function Landing() {
             <Card className="h-full relative">
               <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
                 <PlantLibraryIcon className="w-6 h-6 mx-auto mb-3" />
-                <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-free-title">Free</h3>
+                <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-free-title">{t('landing.pricing.free.title')}</h3>
                 <p className="text-xl font-bold mb-3 text-primary" data-testid="text-plan-free-price">
-                  Always Free
+                  {t('landing.pricing.free.price')}
                 </p>
                 <ul className="space-y-1 mb-4 flex-1">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Basic plant library access</span>
+                    <span className="text-xs">{t('landing.pricing.free.feature1')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Plant identification (5/month)</span>
+                    <span className="text-xs">{t('landing.pricing.free.feature2')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Community support</span>
+                    <span className="text-xs">{t('landing.pricing.free.feature3')}</span>
                   </li>
                 </ul>
                 <Button size="sm" variant="secondary" className="w-full mt-auto hover:bg-secondary/80 hover:shadow-md transition-all duration-300" asChild data-testid="button-plan-free">
                   {!isAuthenticated ? (
-                    <a href="/api/login">Get Started</a>
+                    <a href="/api/login">{t('landing.pricing.free.button')}</a>
                   ) : (
-                    <Link href="/home" className="link-reset">Go to Dashboard</Link>
+                    <Link href="/home" className="link-reset">{t('landing.pricing.free.buttonAuth')}</Link>
                   )}
                 </Button>
               </CardContent>
@@ -210,37 +212,37 @@ export default function Landing() {
 
             <Card className="h-full relative">
               <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-primary text-xs">
-                Most Popular
+                {t('landing.pricing.mostPopular')}
               </Badge>
               <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
                 <GardenDesignIcon className="w-6 h-6 mx-auto mb-3" />
-                <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-design-title">Pay-per-Design</h3>
+                <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-design-title">{t('landing.pricing.design.title')}</h3>
                 <p className="text-xl font-bold mb-3" data-testid="text-plan-design-price">
-                  $6<span className="text-sm font-normal text-muted-foreground">/design</span>
+                  {t('landing.pricing.design.price')}<span className="text-sm font-normal text-muted-foreground">{t('landing.pricing.design.priceUnit')}</span>
                 </p>
                 <ul className="space-y-1 mb-4 flex-1">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Complete garden design</span>
+                    <span className="text-xs">{t('landing.pricing.design.feature1')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Seasonal garden imagery</span>
+                    <span className="text-xs">{t('landing.pricing.design.feature2')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Plant shopping list</span>
+                    <span className="text-xs">{t('landing.pricing.design.feature3')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Priority support</span>
+                    <span className="text-xs">{t('landing.pricing.design.feature4')}</span>
                   </li>
                 </ul>
                 <Button size="sm" variant="secondary" className="w-full mt-auto hover:bg-secondary/80 hover:shadow-md transition-all duration-300" asChild data-testid="button-plan-design">
                   {!isAuthenticated ? (
-                    <a href="/api/login">Create Design</a>
+                    <a href="/api/login">{t('landing.pricing.design.button')}</a>
                   ) : (
-                    <Link href="/garden-properties" className="link-reset">Create Design</Link>
+                    <Link href="/garden-properties" className="link-reset">{t('landing.pricing.design.button')}</Link>
                   )}
                 </Button>
               </CardContent>
@@ -249,37 +251,37 @@ export default function Landing() {
             <Card className="h-full relative">
               <CardContent className="pt-6 pb-4 px-4 h-full flex flex-col">
                 <PremiumIcon className="w-6 h-6 mx-auto mb-3" />
-                <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-premium-title">Premium</h3>
+                <h3 className="text-base font-semibold mb-1 text-center" data-testid="text-plan-premium-title">{t('landing.pricing.premium.title')}</h3>
                 <p className="text-xl font-bold mb-3" data-testid="text-plan-premium-price">
-                  $12<span className="text-sm font-normal text-muted-foreground">/month</span>
+                  {t('landing.pricing.premium.price')}<span className="text-sm font-normal text-muted-foreground">{t('landing.pricing.premium.priceUnit')}</span>
                 </p>
                 <ul className="space-y-1 mb-4 flex-1">
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">50 designs/month</span>
+                    <span className="text-xs">{t('landing.pricing.premium.feature1')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Advanced plant database</span>
+                    <span className="text-xs">{t('landing.pricing.premium.feature2')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Personal plant collection</span>
+                    <span className="text-xs">{t('landing.pricing.premium.feature3')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">AI garden advisor</span>
+                    <span className="text-xs">{t('landing.pricing.premium.feature4')}</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-4 h-4 text-accent mr-1 flex-shrink-0" />
-                    <span className="text-xs">Premium dashboard</span>
+                    <span className="text-xs">{t('landing.pricing.premium.feature5')}</span>
                   </li>
                 </ul>
                 <Button size="sm" variant="secondary" className="w-full mt-auto hover:bg-secondary/80 hover:shadow-md transition-all duration-300" asChild data-testid="button-plan-premium">
                   {!isAuthenticated ? (
-                    <a href="/api/login">Start Premium</a>
+                    <a href="/api/login">{t('landing.pricing.premium.button')}</a>
                   ) : (
-                    <Link href="/premium" className="link-reset">View Premium</Link>
+                    <Link href="/premium" className="link-reset">{t('landing.pricing.premium.buttonAuth')}</Link>
                   )}
                 </Button>
               </CardContent>
@@ -293,37 +295,37 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6">
             <h2 className="text-xl font-serif font-bold text-foreground mb-2" data-testid="text-features-title">
-              Professional Garden Design Tools
+              {t('landing.features.title')}
             </h2>
             <p className="text-sm text-muted-foreground max-w-xl mx-auto" data-testid="text-features-subtitle">
-              AI-powered tools for every step of garden planning
+              {t('landing.features.subtitle')}
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
                 <GardenDesignIcon className="w-8 h-8 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-ai-title">AI Garden Design</h3>
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-ai-title">{t('landing.features.aiDesign.title')}</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-ai-description">
-                  Intelligent plant selection and layout optimization based on your garden conditions
+                  {t('landing.features.aiDesign.description')}
                 </p>
               </CardContent>
             </Card>
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
                 <SeasonIcon className="w-8 h-8 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-seasonal-title">Seasonal Visualization</h3>
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-seasonal-title">{t('landing.features.seasonal.title')}</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-seasonal-description">
-                  See your garden through the seasons with AI-generated imagery
+                  {t('landing.features.seasonal.description')}
                 </p>
               </CardContent>
             </Card>
             <Card className="text-center">
               <CardContent className="pt-4 pb-4 px-4">
                 <PlantDoctorIcon className="w-8 h-8 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-doctor-title">Plant Doctor</h3>
+                <h3 className="text-sm font-semibold mb-1" data-testid="text-feature-doctor-title">{t('landing.features.plantDoctor.title')}</h3>
                 <p className="text-xs text-muted-foreground" data-testid="text-feature-doctor-description">
-                  Identify plants and diseases with AI-powered image recognition
+                  {t('landing.features.plantDoctor.description')}
                 </p>
               </CardContent>
             </Card>
@@ -340,28 +342,28 @@ export default function Landing() {
                 <GardenScapeIcon className="w-6 h-6" />
                 <span className="text-lg font-serif font-bold">GardenScape Pro</span>
               </div>
-              <p className="text-sm opacity-90">AI-powered garden design for beautiful ornamental landscapes.</p>
+              <p className="text-sm opacity-90">{t('landing.footer.description')}</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-3">Features</h4>
+              <h4 className="font-semibold mb-3">{t('landing.footer.featuresTitle')}</h4>
               <ul className="space-y-2 text-sm opacity-90">
-                <li><Link href="/garden-properties" className="hover:underline">Garden Design</Link></li>
-                <li><Link href="/plant-library" className="hover:underline">Plant Library</Link></li>
-                <li><Link href="/plant-doctor" className="hover:underline">Plant Doctor</Link></li>
-                <li><Link href="/premium" className="hover:underline">Premium Features</Link></li>
+                <li><Link href="/garden-properties" className="hover:underline">{t('landing.footer.gardenDesign')}</Link></li>
+                <li><Link href="/plant-library" className="hover:underline">{t('landing.footer.plantLibrary')}</Link></li>
+                <li><Link href="/plant-doctor" className="hover:underline">{t('landing.footer.plantDoctor')}</Link></li>
+                <li><Link href="/premium" className="hover:underline">{t('landing.footer.premiumFeatures')}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-3">Legal</h4>
+              <h4 className="font-semibold mb-3">{t('landing.footer.legalTitle')}</h4>
               <ul className="space-y-2 text-sm opacity-90">
-                <li><Link href="/privacy" className="hover:underline transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:underline transition-colors">Terms of Service</Link></li>
-                <li><Link href="/contact" className="hover:underline transition-colors">Contact</Link></li>
+                <li><Link href="/privacy" className="hover:underline transition-colors">{t('landing.footer.privacyPolicy')}</Link></li>
+                <li><Link href="/terms" className="hover:underline transition-colors">{t('landing.footer.termsOfService')}</Link></li>
+                <li><Link href="/contact" className="hover:underline transition-colors">{t('landing.footer.contact')}</Link></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-primary-foreground/20 mt-8 pt-6 text-center">
-            <p className="text-sm opacity-90">&copy; 2024 GardenScape Pro. All rights reserved.</p>
+            <p className="text-sm opacity-90">{t('landing.footer.copyright')}</p>
           </div>
         </div>
       </footer>

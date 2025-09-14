@@ -90,5 +90,96 @@
     "continental": "Continental",
     "polar": "Polar",
     "mediterranean": "Mediterranean"
+  },
+  "landing": {
+    "navigation": {
+      "signIn": "Sign In",
+      "getStartedFree": "Get Started Free",
+      "dashboard": "Dashboard",
+      "newGarden": "+ New Garden",
+      "signOut": "Sign Out",
+      "adminPanel": "Admin Panel",
+      "adminTesting": "Admin (Testing)",
+      "signInTooltip": "Already have an account? Sign in here",
+      "getStartedTooltip": "New to GardenScape? Start your free account",
+      "dashboardTooltip": "View your gardens, stats, and recent activity",
+      "newGardenTooltip": "Start creating a new garden design",
+      "signOutTooltip": "Sign out of your account"
+    },
+    "hero": {
+      "title": "Design Your Dream Garden with AI",
+      "subtitle": "Professional garden design tools with expert plant knowledge",
+      "imageAlt": "Beautiful perennial garden with yarrow, daylilies, catmint and more",
+      "createGarden": "Create Your Garden",
+      "browsePlants": "Browse Plants",
+      "createDescription": "Start designing with AI guidance",
+      "browseDescription": "Explore our plant library",
+      "benefits": "✨ Get personalized plant recommendations • 🎨 Design with professional tools • 📱 Save and share your creations"
+    },
+    "pricing": {
+      "title": "Simple Pricing",
+      "subtitle": "Choose the plan that works for you",
+      "mostPopular": "Most Popular",
+      "free": {
+        "title": "Free",
+        "price": "Always Free",
+        "feature1": "Basic plant library access",
+        "feature2": "Plant identification (5/month)",
+        "feature3": "Community support",
+        "button": "Get Started",
+        "buttonAuth": "Go to Dashboard"
+      },
+      "design": {
+        "title": "Pay-per-Design",
+        "price": "$6",
+        "priceUnit": "/design",
+        "feature1": "Complete garden design",
+        "feature2": "Seasonal garden imagery",
+        "feature3": "Plant shopping list",
+        "feature4": "Priority support",
+        "button": "Create Design"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "$12",
+        "priceUnit": "/month",
+        "feature1": "50 designs/month",
+        "feature2": "Advanced plant database",
+        "feature3": "Personal plant collection",
+        "feature4": "AI garden advisor",
+        "feature5": "Premium dashboard",
+        "button": "Start Premium",
+        "buttonAuth": "View Premium"
+      }
+    },
+    "features": {
+      "title": "Professional Garden Design Tools",
+      "subtitle": "AI-powered tools for every step of garden planning",
+      "aiDesign": {
+        "title": "AI Garden Design",
+        "description": "Intelligent plant selection and layout optimization based on your garden conditions"
+      },
+      "seasonal": {
+        "title": "Seasonal Visualization",
+        "description": "See your garden through the seasons with AI-generated imagery"
+      },
+      "plantDoctor": {
+        "title": "Plant Doctor",
+        "description": "Identify plants and diseases with AI-powered image recognition"
+      }
+    },
+    "footer": {
+      "description": "AI-powered garden design for beautiful ornamental landscapes.",
+      "featuresTitle": "Features",
+      "gardenDesign": "Garden Design",
+      "plantLibrary": "Plant Library",
+      "plantDoctor": "Plant Doctor",
+      "premiumFeatures": "Premium Features",
+      "legalTitle": "Legal",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "contact": "Contact",
+      "copyright": "© 2024 GardenScape Pro. All rights reserved."
+    }
   }
 }

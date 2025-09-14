@@ -90,5 +90,96 @@
     "continental": "Continental",
     "polar": "Polar",
     "mediterranean": "Mediterráneo"
+  },
+  "landing": {
+    "navigation": {
+      "signIn": "Iniciar Sesión",
+      "getStartedFree": "Empezar Gratis",
+      "dashboard": "Panel de Control",
+      "newGarden": "+ Nuevo Jardín",
+      "signOut": "Cerrar Sesión",
+      "adminPanel": "Panel de Admin",
+      "adminTesting": "Admin (Prueba)",
+      "signInTooltip": "¿Ya tienes una cuenta? Inicia sesión aquí",
+      "getStartedTooltip": "¿Nuevo en GardenScape? Crea tu cuenta gratuita",
+      "dashboardTooltip": "Ve tus jardines, estadísticas y actividad reciente",
+      "newGardenTooltip": "Comienza a crear un nuevo diseño de jardín",
+      "signOutTooltip": "Cerrar sesión de tu cuenta"
+    },
+    "hero": {
+      "title": "Diseña tu Jardín de Ensueño con IA",
+      "subtitle": "Herramientas profesionales de diseño de jardines con conocimiento experto de plantas",
+      "imageAlt": "Hermoso jardín perenne con milenrama, lirios de día, hierba gatera y más",
+      "createGarden": "Crear tu Jardín",
+      "browsePlants": "Explorar Plantas",
+      "createDescription": "Comienza a diseñar con guía de IA",
+      "browseDescription": "Explora nuestra biblioteca de plantas",
+      "benefits": "✨ Obtén recomendaciones personalizadas de plantas • 🎨 Diseña con herramientas profesionales • 📱 Guarda y comparte tus creaciones"
+    },
+    "pricing": {
+      "title": "Precios Simples",
+      "subtitle": "Elige el plan que funcione para ti",
+      "mostPopular": "Más Popular",
+      "free": {
+        "title": "Gratis",
+        "price": "Siempre Gratis",
+        "feature1": "Acceso básico a biblioteca de plantas",
+        "feature2": "Identificación de plantas (5/mes)",
+        "feature3": "Soporte de la comunidad",
+        "button": "Empezar",
+        "buttonAuth": "Ir al Panel de Control"
+      },
+      "design": {
+        "title": "Pago por Diseño",
+        "price": "6€",
+        "priceUnit": "/diseño",
+        "feature1": "Diseño completo de jardín",
+        "feature2": "Imágenes estacionales del jardín",
+        "feature3": "Lista de compras de plantas",
+        "feature4": "Soporte prioritario",
+        "button": "Crear Diseño"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "12€",
+        "priceUnit": "/mes",
+        "feature1": "50 diseños/mes",
+        "feature2": "Base de datos avanzada de plantas",
+        "feature3": "Colección personal de plantas",
+        "feature4": "Asesor de jardín IA",
+        "feature5": "Panel de control premium",
+        "button": "Empezar Premium",
+        "buttonAuth": "Ver Premium"
+      }
+    },
+    "features": {
+      "title": "Herramientas Profesionales de Diseño de Jardines",
+      "subtitle": "Herramientas potenciadas por IA para cada paso de la planificación del jardín",
+      "aiDesign": {
+        "title": "Diseño de Jardín con IA",
+        "description": "Selección inteligente de plantas y optimización de diseño basada en las condiciones de tu jardín"
+      },
+      "seasonal": {
+        "title": "Visualización Estacional",
+        "description": "Ve tu jardín a través de las estaciones con imágenes generadas por IA"
+      },
+      "plantDoctor": {
+        "title": "Doctor de Plantas",
+        "description": "Identifica plantas y enfermedades con reconocimiento de imágenes potenciado por IA"
+      }
+    },
+    "footer": {
+      "description": "Diseño de jardines potenciado por IA para hermosos paisajes ornamentales.",
+      "featuresTitle": "Características",
+      "gardenDesign": "Diseño de Jardín",
+      "plantLibrary": "Biblioteca de Plantas",
+      "plantDoctor": "Doctor de Plantas",
+      "premiumFeatures": "Características Premium",
+      "legalTitle": "Legal",
+      "privacyPolicy": "Política de Privacidad",
+      "termsOfService": "Términos de Servicio",
+      "contact": "Contacto",
+      "copyright": "© 2024 GardenScape Pro. Todos los derechos reservados."
+    }
   }
 }

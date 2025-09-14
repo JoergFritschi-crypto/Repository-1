@@ -90,5 +90,96 @@
     "continental": "Kontynentalny",
     "polar": "Polarny",
     "mediterranean": "Śródziemnomorski"
+  },
+  "landing": {
+    "navigation": {
+      "signIn": "Zaloguj się",
+      "getStartedFree": "Zacznij za Darmo",
+      "dashboard": "Panel Główny",
+      "newGarden": "+ Nowy Ogród",
+      "signOut": "Wyloguj",
+      "adminPanel": "Panel Administratora",
+      "adminTesting": "Administrator (Test)",
+      "signInTooltip": "Masz już konto? Zaloguj się tutaj",
+      "getStartedTooltip": "Nowy w GardenScape? Załóż darmowe konto",
+      "dashboardTooltip": "Zobacz swoje ogrody, statystyki i ostatnią aktywność",
+      "newGardenTooltip": "Zacznij tworzyć nowy projekt ogrodu",
+      "signOutTooltip": "Wyloguj się ze swojego konta"
+    },
+    "hero": {
+      "title": "Zaprojektuj Swój Wymarzony Ogród z AI",
+      "subtitle": "Profesjonalne narzędzia do projektowania ogrodów z ekspercką wiedzą o roślinach",
+      "imageAlt": "Piękny ogród byliny z krwawnikiem, żółtymi liliami, kocimiętą i innymi",
+      "createGarden": "Stwórz Swój Ogród",
+      "browsePlants": "Przeglądaj Rośliny",
+      "createDescription": "Zacznij projektować z przewodnictwem AI",
+      "browseDescription": "Eksploruj naszą bibliotekę roślin",
+      "benefits": "✨ Otrzymuj spersonalizowane rekomendacje roślin • 🎨 Projektuj z profesjonalnymi narzędziami • 📱 Zapisuj i udostępniaj swoje kreacje"
+    },
+    "pricing": {
+      "title": "Proste Cenniki",
+      "subtitle": "Wybierz plan, który do Ciebie pasuje",
+      "mostPopular": "Najpopularniejszy",
+      "free": {
+        "title": "Darmowy",
+        "price": "Zawsze Darmowy",
+        "feature1": "Podstawowy dostęp do biblioteki roślin",
+        "feature2": "Identyfikacja roślin (5/miesiąc)",
+        "feature3": "Wsparcie społeczności",
+        "button": "Rozpocznij",
+        "buttonAuth": "Idź do Panelu"
+      },
+      "design": {
+        "title": "Płatność za Projekt",
+        "price": "6€",
+        "priceUnit": "/projekt",
+        "feature1": "Kompletny projekt ogrodu",
+        "feature2": "Sezonowe obrazy ogrodu",
+        "feature3": "Lista zakupów roślin",
+        "feature4": "Wsparcie priorytetowe",
+        "button": "Stwórz Projekt"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "12€",
+        "priceUnit": "/miesiąc",
+        "feature1": "50 projektów/miesiąc",
+        "feature2": "Zaawansowana baza roślin",
+        "feature3": "Osobista kolekcja roślin",
+        "feature4": "Doradca ogrodowy AI",
+        "feature5": "Panel premium",
+        "button": "Rozpocznij Premium",
+        "buttonAuth": "Zobacz Premium"
+      }
+    },
+    "features": {
+      "title": "Profesjonalne Narzędzia do Projektowania Ogrodów",
+      "subtitle": "Narzędzia zasilane AI dla każdego etapu planowania ogrodu",
+      "aiDesign": {
+        "title": "Projekt Ogrodu z AI",
+        "description": "Inteligentny wybór roślin i optymalizacja układu oparta na warunkach Twojego ogrodu"
+      },
+      "seasonal": {
+        "title": "Wizualizacja Sezonowa",
+        "description": "Zobacz swój ogród przez pory roku z obrazami generowanymi przez AI"
+      },
+      "plantDoctor": {
+        "title": "Doktor Roślin",
+        "description": "Identyfikuj rośliny i choroby z rozpoznawaniem obrazu zasilanym AI"
+      }
+    },
+    "footer": {
+      "description": "Projektowanie ogrodów zasilane AI dla pięknych krajobrazów ozdobnych.",
+      "featuresTitle": "Funkcje",
+      "gardenDesign": "Projekt Ogrodu",
+      "plantLibrary": "Biblioteka Roślin",
+      "plantDoctor": "Doktor Roślin",
+      "premiumFeatures": "Funkcje Premium",
+      "legalTitle": "Prawne",
+      "privacyPolicy": "Polityka Prywatności",
+      "termsOfService": "Warunki Użytkowania",
+      "contact": "Kontakt",
+      "copyright": "© 2024 GardenScape Pro. Wszystkie prawa zastrzeżone."
+    }
   }
 }

@@ -90,5 +90,96 @@
     "continental": "Kontinental",
     "polar": "Polar",
     "mediterranean": "Mediterran"
+  },
+  "landing": {
+    "navigation": {
+      "signIn": "Anmelden",
+      "getStartedFree": "Kostenlos Starten",
+      "dashboard": "Dashboard",
+      "newGarden": "+ Neuer Garten",
+      "signOut": "Abmelden",
+      "adminPanel": "Admin-Panel",
+      "adminTesting": "Admin (Test)",
+      "signInTooltip": "Haben Sie bereits ein Konto? Hier anmelden",
+      "getStartedTooltip": "Neu bei GardenScape? Erstellen Sie Ihr kostenloses Konto",
+      "dashboardTooltip": "Ihre Gärten, Statistiken und aktuelle Aktivitäten anzeigen",
+      "newGardenTooltip": "Neues Gartendesign erstellen",
+      "signOutTooltip": "Von Ihrem Konto abmelden"
+    },
+    "hero": {
+      "title": "Entwerfen Sie Ihren Traumgarten mit KI",
+      "subtitle": "Professionelle Gartendesign-Tools mit Expertenpflanzenwissen",
+      "imageAlt": "Wunderschöner Staudengarten mit Schafgarbe, Taglilien, Katzenminze und mehr",
+      "createGarden": "Garten Erstellen",
+      "browsePlants": "Pflanzen Durchsuchen",
+      "createDescription": "Beginnen Sie mit KI-Anleitung zu entwerfen",
+      "browseDescription": "Erkunden Sie unsere Pflanzenbibliothek",
+      "benefits": "✨ Personalisierte Pflanzenempfehlungen erhalten • 🎨 Mit professionellen Tools entwerfen • 📱 Ihre Kreationen speichern und teilen"
+    },
+    "pricing": {
+      "title": "Einfache Preisgestaltung",
+      "subtitle": "Wählen Sie den Plan, der für Sie funktioniert",
+      "mostPopular": "Beliebteste",
+      "free": {
+        "title": "Kostenlos",
+        "price": "Immer Kostenlos",
+        "feature1": "Grundlegender Zugang zur Pflanzenbibliothek",
+        "feature2": "Pflanzenidentifikation (5/Monat)",
+        "feature3": "Community-Support",
+        "button": "Loslegen",
+        "buttonAuth": "Zum Dashboard"
+      },
+      "design": {
+        "title": "Pro Design",
+        "price": "6€",
+        "priceUnit": "/Design",
+        "feature1": "Komplettes Gartendesign",
+        "feature2": "Saisonale Gartenbilder",
+        "feature3": "Pflanzeneinkaufsliste",
+        "feature4": "Prioritäts-Support",
+        "button": "Design Erstellen"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "12€",
+        "priceUnit": "/Monat",
+        "feature1": "50 Designs/Monat",
+        "feature2": "Erweiterte Pflanzendatenbank",
+        "feature3": "Persönliche Pflanzensammlung",
+        "feature4": "KI-Gartenberater",
+        "feature5": "Premium-Dashboard",
+        "button": "Premium Starten",
+        "buttonAuth": "Premium Anzeigen"
+      }
+    },
+    "features": {
+      "title": "Professionelle Gartendesign-Tools",
+      "subtitle": "KI-gestützte Tools für jeden Schritt der Gartenplanung",
+      "aiDesign": {
+        "title": "KI-Gartendesign",
+        "description": "Intelligente Pflanzenauswahl und Layout-Optimierung basierend auf Ihren Gartenbedingungen"
+      },
+      "seasonal": {
+        "title": "Saisonale Visualisierung",
+        "description": "Sehen Sie Ihren Garten durch die Jahreszeiten mit KI-generierten Bildern"
+      },
+      "plantDoctor": {
+        "title": "Pflanzenarzt",
+        "description": "Identifizieren Sie Pflanzen und Krankheiten mit KI-gestützter Bilderkennung"
+      }
+    },
+    "footer": {
+      "description": "KI-gestütztes Gartendesign für schöne Zierlandschaften.",
+      "featuresTitle": "Funktionen",
+      "gardenDesign": "Gartengestaltung",
+      "plantLibrary": "Pflanzenbibliothek",
+      "plantDoctor": "Pflanzenarzt",
+      "premiumFeatures": "Premium-Funktionen",
+      "legalTitle": "Rechtliches",
+      "privacyPolicy": "Datenschutzrichtlinie",
+      "termsOfService": "Nutzungsbedingungen",
+      "contact": "Kontakt",
+      "copyright": "© 2024 GardenScape Pro. Alle Rechte vorbehalten."
+    }
   }
 }
