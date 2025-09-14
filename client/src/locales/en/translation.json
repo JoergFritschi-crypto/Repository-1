@@ -589,6 +589,302 @@
   "ui": {
     "close": "Close"
   },
+  "plants": {
+    "library": {
+      "title": "Plant Library",
+      "subtitle": "Discover and explore our comprehensive plant database",
+      "searchPlaceholder": "Search plants by common or scientific name...",
+      "searchTip": "Tip: Use the filters below to narrow down your search by plant characteristics",
+      "filtersActive": "{{count}} filters active",
+      "plantsFound": "{{count}} plants found",
+      "noResults": "No plants found",
+      "noResultsDesc": "Try adjusting your search terms or filters",
+      "loading": "Loading plants...",
+      "tabs": {
+        "browse": "Browse Plants",
+        "advanced": "Advanced Search",
+        "collection": "My Collection"
+      },
+      "sort": {
+        "nameAsc": "Name A-Z",
+        "nameDesc": "Name Z-A",
+        "newest": "Newest First",
+        "oldest": "Oldest First"
+      },
+      "pagination": {
+        "showing": "Showing {{start}}-{{end}} of {{total}} plants",
+        "page": "Page {{current}} of {{total}}",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "collection": {
+        "addToCollection": "Add to Collection",
+        "removeFromCollection": "Remove from Collection",
+        "addedToCollection": "Added to Collection",
+        "removedFromCollection": "Removed from Collection",
+        "inCollection": "In Collection",
+        "collectionLimit": "Collection Limit Reached",
+        "upgradeToAddMore": "Upgrade to add more plants to your collection",
+        "duplicatePlant": "This plant is already in your collection",
+        "myCollectionOnly": "My Collection Only",
+        "emptyCollection": "Your collection is empty",
+        "emptyCollectionDesc": "Start browsing to add plants to your collection"
+      }
+    },
+    "card": {
+      "viewDetails": "View Details",
+      "addToGarden": "Add to Garden",
+      "edit": "Edit Plant",
+      "delete": "Delete Plant",
+      "verify": "Verify",
+      "reject": "Reject",
+      "generateImages": "Generate Images",
+      "admin": "Admin Actions",
+      "pending": "Pending Verification",
+      "verified": "Verified",
+      "moreActions": "More Actions",
+      "shareCard": "Share Plant Card",
+      "printCard": "Print Plant Card",
+      "downloadCard": "Download Card",
+      "addNotes": "Add personal notes...",
+      "saveNotes": "Save Notes",
+      "closeModal": "Close",
+      "plantDetails": "Plant Details",
+      "careInstructions": "Care Instructions",
+      "growingTips": "Growing Tips"
+    },
+    "doctor": {
+      "title": "Plant Doctor",
+      "subtitle": "AI-powered plant identification and health diagnosis",
+      "services": {
+        "identification": {
+          "title": "Plant Identification",
+          "description": "Upload a photo to identify any plant species"
+        },
+        "disease": {
+          "title": "Disease Diagnosis",
+          "description": "Identify plant diseases and get treatment advice"
+        },
+        "weed": {
+          "title": "Weed Identification",
+          "description": "Identify weeds and get removal strategies"
+        }
+      },
+      "upload": {
+        "title": "Upload Image",
+        "dragDrop": "Drag and drop your image here, or click to select",
+        "selectImage": "Select Image",
+        "supportedFormats": "Supported formats: JPG, PNG, WebP",
+        "maxSize": "Maximum file size: 10MB",
+        "analyzing": "Analyzing your image...",
+        "analysisComplete": "Analysis Complete",
+        "analysisFailed": "Analysis Failed",
+        "noImageSelected": "No Image Selected",
+        "selectImageFirst": "Please select an image to analyze",
+        "additionalNotes": "Additional notes (optional)",
+        "notesPlaceholder": "Describe any symptoms or concerns..."
+      },
+      "results": {
+        "title": "Recent Results",
+        "noResults": "No recent analysis results",
+        "noResultsDesc": "Upload an image to get started with plant identification",
+        "analysisDate": "Analyzed on {{date}}",
+        "confidence": "Confidence: {{percentage}}%"
+      },
+      "premium": {
+        "title": "Premium Plant Doctor",
+        "features": [
+          "Advanced disease diagnosis",
+          "Treatment recommendations",
+          "Seasonal care guides",
+          "Expert consultation"
+        ],
+        "upgradeNow": "Upgrade Now"
+      }
+    },
+    "search": {
+      "advanced": {
+        "title": "Plant Filters & Search",
+        "description": "Use any combination of filters to find your perfect plants",
+        "clearAll": "Clear All",
+        "applyFilters": "Search",
+        "activeFilters": "{{count}} active"
+      },
+      "filters": {
+        "plantTypes": "Plant Types (Select Multiple)",
+        "selectPlantTypes": "Select Plant Types",
+        "heightRange": "Height Range",
+        "spreadRange": "Spread/Width Range",
+        "colors": "Colors (Select All That Apply)",
+        "bloomSeasons": "Bloom Seasons",
+        "sunlight": "Sun Requirements",
+        "water": "Water Requirements",
+        "soilType": "Soil Type",
+        "hardiness": "Hardiness Zone",
+        "maintenance": "Maintenance Level",
+        "foliageType": "Foliage Type",
+        "growthRate": "Growth Rate",
+        "nativeRegion": "Native Region"
+      },
+      "plantTypes": {
+        "perennial": "Perennials",
+        "annual": "Annuals",
+        "biennial": "Biennials",
+        "shrub": "Shrubs",
+        "tree": "Trees",
+        "bulb": "Bulbs",
+        "climber": "Climbers",
+        "grass": "Ornamental Grasses",
+        "succulent": "Succulents",
+        "cactus": "Cacti",
+        "fern": "Ferns",
+        "aquatic": "Aquatic Plants"
+      },
+      "sunlight": {
+        "full_sun": "Full Sun (6+ hours)",
+        "partial_sun": "Partial Sun (4-6 hours)",
+        "partial_shade": "Partial Shade (2-4 hours)",
+        "full_shade": "Full Shade (<2 hours)"
+      },
+      "water": {
+        "low": "Low Water",
+        "moderate": "Moderate Water",
+        "high": "High Water"
+      },
+      "soilTypes": {
+        "clay": "Clay",
+        "sand": "Sand",
+        "loam": "Loam",
+        "silt": "Silt",
+        "chalk": "Chalk"
+      },
+      "maintenance": {
+        "low": "Low Maintenance",
+        "moderate": "Moderate",
+        "high": "High Maintenance"
+      },
+      "seasons": {
+        "spring": "Spring",
+        "summer": "Summer",
+        "autumn": "Autumn",
+        "winter": "Winter"
+      },
+      "colors": {
+        "white": "White",
+        "cream": "Cream",
+        "yellow": "Yellow",
+        "orange": "Orange",
+        "peach": "Peach",
+        "red": "Red",
+        "pink": "Pink",
+        "hotPink": "Hot Pink",
+        "magenta": "Magenta",
+        "purple": "Purple",
+        "lavender": "Lavender",
+        "blue": "Blue",
+        "lightBlue": "Light Blue",
+        "turquoise": "Turquoise",
+        "green": "Green",
+        "lime": "Lime",
+        "brown": "Brown",
+        "black": "Black"
+      },
+      "height": {
+        "min": "Min: {{value}}",
+        "max": "Max: {{value}}",
+        "any": "Any",
+        "anyHeight": "Any height",
+        "includeLarge": "Include large specimen trees",
+        "largeSpecimens": "(5m+)",
+        "allHeights": "🌳 All heights",
+        "showingAll": "Showing all ornamental trees including large specimens",
+        "defaultRange": "From tiny ground covers to medium trees (up to 5m)",
+        "includes": "Includes Araucaria, Cedars, and other specimen trees",
+        "typical": "Default: Shows typical garden plants • Check box for larger trees"
+      },
+      "spread": {
+        "min": "Min: {{value}}",
+        "max": "Max: {{value}}",
+        "any": "Any",
+        "description": "Plant width for proper spacing",
+        "defaultInfo": "Default: Shows all spreads • Adjust to filter"
+      }
+    },
+    "recentlyViewed": {
+      "title": "Recently Viewed Plants",
+      "empty": "No recently viewed plants yet",
+      "emptyDesc": "Browse the plant library to start building your history",
+      "clearHistory": "Clear History",
+      "viewedOn": "Viewed {{time}}"
+    },
+    "characteristics": {
+      "commonName": "Common Name",
+      "scientificName": "Scientific Name",
+      "type": "Plant Type",
+      "height": "Height",
+      "spread": "Spread",
+      "bloomTime": "Bloom Time",
+      "flowerColor": "Flower Color",
+      "foliageColor": "Foliage Color",
+      "sunlight": "Sunlight",
+      "water": "Water",
+      "soil": "Soil",
+      "hardiness": "Hardiness",
+      "maintenance": "Maintenance",
+      "growthRate": "Growth Rate",
+      "spacing": "Plant Spacing",
+      "companion": "Companion Plants",
+      "zone": "Growing Zone",
+      "native": "Native To",
+      "size": {
+        "compact": "Compact",
+        "standard": "Standard",
+        "medium": "Medium Tree",
+        "large": "Large Tree",
+        "giant": "Giant Tree"
+      },
+      "hardiness": {
+        "veryHardy": "Very Hardy",
+        "hardy": "Hardy",
+        "halfHardy": "Half Hardy",
+        "tender": "Tender"
+      }
+    },
+    "care": {
+      "watering": "Watering",
+      "sunlight": "Sunlight Requirements",
+      "soil": "Soil Requirements",
+      "fertilizing": "Fertilizing",
+      "pruning": "Pruning",
+      "planting": "Planting",
+      "spacing": "Spacing",
+      "seasonalCare": "Seasonal Care",
+      "problems": "Common Problems",
+      "tips": "Growing Tips",
+      "instructions": "Care Instructions"
+    },
+    "messages": {
+      "success": {
+        "plantAdded": "{{name}} has been added to your garden!",
+        "plantRemoved": "{{name}} has been removed from your collection",
+        "notesUpdated": "Plant notes updated successfully",
+        "imageGenerated": "Plant images generated successfully"
+      },
+      "error": {
+        "failedToAdd": "Failed to add plant to collection",
+        "failedToRemove": "Failed to remove plant from collection",
+        "failedToLoad": "Failed to load plant data",
+        "failedToSave": "Failed to save plant information",
+        "alreadyInCollection": "This plant is already in your collection",
+        "limitReached": "You've reached your collection limit"
+      },
+      "warnings": {
+        "unsavedChanges": "You have unsaved changes",
+        "deleteConfirm": "Are you sure you want to delete this plant?",
+        "removeConfirm": "Remove {{name}} from your collection?"
+      }
+    }
+  },
   "landing": {
     "navigation": {
       "signIn": "Sign In",
@@ -678,302 +974,6 @@
       "termsOfService": "Terms of Service",
       "contact": "Contact",
       "copyright": "© 2024 GardenScape Pro. All rights reserved."
-    },
-    "plants": {
-      "library": {
-        "title": "Plant Library",
-        "subtitle": "Discover and explore our comprehensive plant database",
-        "searchPlaceholder": "Search plants by common or scientific name...",
-        "searchTip": "Tip: Use the filters below to narrow down your search by plant characteristics",
-        "filtersActive": "{{count}} filters active",
-        "plantsFound": "{{count}} plants found",
-        "noResults": "No plants found",
-        "noResultsDesc": "Try adjusting your search terms or filters",
-        "loading": "Loading plants...",
-        "tabs": {
-          "browse": "Browse Plants",
-          "advanced": "Advanced Search",
-          "collection": "My Collection"
-        },
-        "sort": {
-          "nameAsc": "Name A-Z",
-          "nameDesc": "Name Z-A",
-          "newest": "Newest First",
-          "oldest": "Oldest First"
-        },
-        "pagination": {
-          "showing": "Showing {{start}}-{{end}} of {{total}} plants",
-          "page": "Page {{current}} of {{total}}",
-          "previous": "Previous",
-          "next": "Next"
-        },
-        "collection": {
-          "addToCollection": "Add to Collection",
-          "removeFromCollection": "Remove from Collection",
-          "addedToCollection": "Added to Collection",
-          "removedFromCollection": "Removed from Collection",
-          "inCollection": "In Collection",
-          "collectionLimit": "Collection Limit Reached",
-          "upgradeToAddMore": "Upgrade to add more plants to your collection",
-          "duplicatePlant": "This plant is already in your collection",
-          "myCollectionOnly": "My Collection Only",
-          "emptyCollection": "Your collection is empty",
-          "emptyCollectionDesc": "Start browsing to add plants to your collection"
-        }
-      },
-      "card": {
-        "viewDetails": "View Details",
-        "addToGarden": "Add to Garden",
-        "edit": "Edit Plant",
-        "delete": "Delete Plant",
-        "verify": "Verify",
-        "reject": "Reject",
-        "generateImages": "Generate Images",
-        "admin": "Admin Actions",
-        "pending": "Pending Verification",
-        "verified": "Verified",
-        "moreActions": "More Actions",
-        "shareCard": "Share Plant Card",
-        "printCard": "Print Plant Card",
-        "downloadCard": "Download Card",
-        "addNotes": "Add personal notes...",
-        "saveNotes": "Save Notes",
-        "closeModal": "Close",
-        "plantDetails": "Plant Details",
-        "careInstructions": "Care Instructions",
-        "growingTips": "Growing Tips"
-      },
-      "doctor": {
-        "title": "Plant Doctor",
-        "subtitle": "AI-powered plant identification and health diagnosis",
-        "services": {
-          "identification": {
-            "title": "Plant Identification",
-            "description": "Upload a photo to identify any plant species"
-          },
-          "disease": {
-            "title": "Disease Diagnosis",
-            "description": "Identify plant diseases and get treatment advice"
-          },
-          "weed": {
-            "title": "Weed Identification",
-            "description": "Identify weeds and get removal strategies"
-          }
-        },
-        "upload": {
-          "title": "Upload Image",
-          "dragDrop": "Drag and drop your image here, or click to select",
-          "selectImage": "Select Image",
-          "supportedFormats": "Supported formats: JPG, PNG, WebP",
-          "maxSize": "Maximum file size: 10MB",
-          "analyzing": "Analyzing your image...",
-          "analysisComplete": "Analysis Complete",
-          "analysisFailed": "Analysis Failed",
-          "noImageSelected": "No Image Selected",
-          "selectImageFirst": "Please select an image to analyze",
-          "additionalNotes": "Additional notes (optional)",
-          "notesPlaceholder": "Describe any symptoms or concerns..."
-        },
-        "results": {
-          "title": "Recent Results",
-          "noResults": "No recent analysis results",
-          "noResultsDesc": "Upload an image to get started with plant identification",
-          "analysisDate": "Analyzed on {{date}}",
-          "confidence": "Confidence: {{percentage}}%"
-        },
-        "premium": {
-          "title": "Premium Plant Doctor",
-          "features": [
-            "Advanced disease diagnosis",
-            "Treatment recommendations",
-            "Seasonal care guides",
-            "Expert consultation"
-          ],
-          "upgradeNow": "Upgrade Now"
-        }
-      },
-      "search": {
-        "advanced": {
-          "title": "Plant Filters & Search",
-          "description": "Use any combination of filters to find your perfect plants",
-          "clearAll": "Clear All",
-          "applyFilters": "Search",
-          "activeFilters": "{{count}} active"
-        },
-        "filters": {
-          "plantTypes": "Plant Types (Select Multiple)",
-          "selectPlantTypes": "Select Plant Types",
-          "heightRange": "Height Range",
-          "spreadRange": "Spread/Width Range",
-          "colors": "Colors (Select All That Apply)",
-          "bloomSeasons": "Bloom Seasons",
-          "sunlight": "Sun Requirements",
-          "water": "Water Requirements",
-          "soilType": "Soil Type",
-          "hardiness": "Hardiness Zone",
-          "maintenance": "Maintenance Level",
-          "foliageType": "Foliage Type",
-          "growthRate": "Growth Rate",
-          "nativeRegion": "Native Region"
-        },
-        "plantTypes": {
-          "perennial": "Perennials",
-          "annual": "Annuals",
-          "biennial": "Biennials",
-          "shrub": "Shrubs",
-          "tree": "Trees",
-          "bulb": "Bulbs",
-          "climber": "Climbers",
-          "grass": "Ornamental Grasses",
-          "succulent": "Succulents",
-          "cactus": "Cacti",
-          "fern": "Ferns",
-          "aquatic": "Aquatic Plants"
-        },
-        "sunlight": {
-          "full_sun": "Full Sun (6+ hours)",
-          "partial_sun": "Partial Sun (4-6 hours)",
-          "partial_shade": "Partial Shade (2-4 hours)",
-          "full_shade": "Full Shade (<2 hours)"
-        },
-        "water": {
-          "low": "Low Water",
-          "moderate": "Moderate Water",
-          "high": "High Water"
-        },
-        "soilTypes": {
-          "clay": "Clay",
-          "sand": "Sand",
-          "loam": "Loam",
-          "silt": "Silt",
-          "chalk": "Chalk"
-        },
-        "maintenance": {
-          "low": "Low Maintenance",
-          "moderate": "Moderate",
-          "high": "High Maintenance"
-        },
-        "seasons": {
-          "spring": "Spring",
-          "summer": "Summer",
-          "autumn": "Autumn",
-          "winter": "Winter"
-        },
-        "colors": {
-          "white": "White",
-          "cream": "Cream",
-          "yellow": "Yellow",
-          "orange": "Orange",
-          "peach": "Peach",
-          "red": "Red",
-          "pink": "Pink",
-          "hotPink": "Hot Pink",
-          "magenta": "Magenta",
-          "purple": "Purple",
-          "lavender": "Lavender",
-          "blue": "Blue",
-          "lightBlue": "Light Blue",
-          "turquoise": "Turquoise",
-          "green": "Green",
-          "lime": "Lime",
-          "brown": "Brown",
-          "black": "Black"
-        },
-        "height": {
-          "min": "Min: {{value}}",
-          "max": "Max: {{value}}",
-          "any": "Any",
-          "anyHeight": "Any height",
-          "includeLarge": "Include large specimen trees",
-          "largeSpecimens": "(5m+)",
-          "allHeights": "🌳 All heights",
-          "showingAll": "Showing all ornamental trees including large specimens",
-          "defaultRange": "From tiny ground covers to medium trees (up to 5m)",
-          "includes": "Includes Araucaria, Cedars, and other specimen trees",
-          "typical": "Default: Shows typical garden plants • Check box for larger trees"
-        },
-        "spread": {
-          "min": "Min: {{value}}",
-          "max": "Max: {{value}}",
-          "any": "Any",
-          "description": "Plant width for proper spacing",
-          "defaultInfo": "Default: Shows all spreads • Adjust to filter"
-        }
-      },
-      "recentlyViewed": {
-        "title": "Recently Viewed Plants",
-        "empty": "No recently viewed plants yet",
-        "emptyDesc": "Browse the plant library to start building your history",
-        "clearHistory": "Clear History",
-        "viewedOn": "Viewed {{time}}"
-      },
-      "characteristics": {
-        "commonName": "Common Name",
-        "scientificName": "Scientific Name",
-        "type": "Plant Type",
-        "height": "Height",
-        "spread": "Spread",
-        "bloomTime": "Bloom Time",
-        "flowerColor": "Flower Color",
-        "foliageColor": "Foliage Color",
-        "sunlight": "Sunlight",
-        "water": "Water",
-        "soil": "Soil",
-        "hardiness": "Hardiness",
-        "maintenance": "Maintenance",
-        "growthRate": "Growth Rate",
-        "spacing": "Plant Spacing",
-        "companion": "Companion Plants",
-        "zone": "Growing Zone",
-        "native": "Native To",
-        "size": {
-          "compact": "Compact",
-          "standard": "Standard",
-          "medium": "Medium Tree",
-          "large": "Large Tree",
-          "giant": "Giant Tree"
-        },
-        "hardiness": {
-          "veryHardy": "Very Hardy",
-          "hardy": "Hardy",
-          "halfHardy": "Half Hardy",
-          "tender": "Tender"
-        }
-      },
-      "care": {
-        "watering": "Watering",
-        "sunlight": "Sunlight Requirements",
-        "soil": "Soil Requirements",
-        "fertilizing": "Fertilizing",
-        "pruning": "Pruning",
-        "planting": "Planting",
-        "spacing": "Spacing",
-        "seasonalCare": "Seasonal Care",
-        "problems": "Common Problems",
-        "tips": "Growing Tips",
-        "instructions": "Care Instructions"
-      },
-      "messages": {
-        "success": {
-          "plantAdded": "{{name}} has been added to your garden!",
-          "plantRemoved": "{{name}} has been removed from your collection",
-          "notesUpdated": "Plant notes updated successfully",
-          "imageGenerated": "Plant images generated successfully"
-        },
-        "error": {
-          "failedToAdd": "Failed to add plant to collection",
-          "failedToRemove": "Failed to remove plant from collection",
-          "failedToLoad": "Failed to load plant data",
-          "failedToSave": "Failed to save plant information",
-          "alreadyInCollection": "This plant is already in your collection",
-          "limitReached": "You've reached your collection limit"
-        },
-        "warnings": {
-          "unsavedChanges": "You have unsaved changes",
-          "deleteConfirm": "Are you sure you want to delete this plant?",
-          "removeConfirm": "Remove {{name}} from your collection?"
-        }
-      }
     }
   }
 }

@@ -585,6 +585,302 @@
   "ui": {
     "close": "Zamknij"
   },
+  "plants": {
+    "library": {
+      "title": "Biblioteka Roślin",
+      "subtitle": "Odkryj i eksploruj naszą kompleksową bazę danych roślin",
+      "searchPlaceholder": "Szukaj roślin po nazwie zwyczajowej lub naukowej...",
+      "searchTip": "Wskazówka: Użyj filtrów poniżej, aby zawęzić wyszukiwanie według cech roślin",
+      "filtersActive": "{{count}} aktywnych filtrów",
+      "plantsFound": "Znaleziono {{count}} roślin",
+      "noResults": "Nie znaleziono roślin",
+      "noResultsDesc": "Spróbuj dostosować terminy wyszukiwania lub filtry",
+      "loading": "Ładowanie roślin...",
+      "tabs": {
+        "browse": "Przeglądaj Rośliny",
+        "advanced": "Zaawansowane Wyszukiwanie",
+        "collection": "Moja Kolekcja"
+      },
+      "sort": {
+        "nameAsc": "Nazwa A-Z",
+        "nameDesc": "Nazwa Z-A",
+        "newest": "Najnowsze Najpierw",
+        "oldest": "Najstarsze Najpierw"
+      },
+      "pagination": {
+        "showing": "Pokazywanie {{start}}-{{end}} z {{total}} roślin",
+        "page": "Strona {{current}} z {{total}}",
+        "previous": "Poprzednia",
+        "next": "Następna"
+      },
+      "collection": {
+        "addToCollection": "Dodaj do Kolekcji",
+        "removeFromCollection": "Usuń z Kolekcji",
+        "addedToCollection": "Dodano do Kolekcji",
+        "removedFromCollection": "Usunięto z Kolekcji",
+        "inCollection": "W Kolekcji",
+        "collectionLimit": "Osiągnięto Limit Kolekcji",
+        "upgradeToAddMore": "Ulepsz, aby dodać więcej roślin do swojej kolekcji",
+        "duplicatePlant": "Ta roślina jest już w twojej kolekcji",
+        "myCollectionOnly": "Tylko Moja Kolekcja",
+        "emptyCollection": "Twoja kolekcja jest pusta",
+        "emptyCollectionDesc": "Zacznij przeglądać, aby dodać rośliny do swojej kolekcji"
+      }
+    },
+    "card": {
+      "viewDetails": "Zobacz Szczegóły",
+      "addToGarden": "Dodaj do Ogrodu",
+      "edit": "Edytuj Roślinę",
+      "delete": "Usuń Roślinę",
+      "verify": "Weryfikuj",
+      "reject": "Odrzuć",
+      "generateImages": "Generuj Obrazy",
+      "admin": "Akcje Admina",
+      "pending": "Oczekuje na Weryfikację",
+      "verified": "Zweryfikowano",
+      "moreActions": "Więcej Akcji",
+      "shareCard": "Udostępnij Kartę Rośliny",
+      "printCard": "Drukuj Kartę Rośliny",
+      "downloadCard": "Pobierz Kartę",
+      "addNotes": "Dodaj osobiste notatki...",
+      "saveNotes": "Zapisz Notatki",
+      "closeModal": "Zamknij",
+      "plantDetails": "Szczegóły Rośliny",
+      "careInstructions": "Instrukcje Pielęgnacji",
+      "growingTips": "Wskazówki Uprawy"
+    },
+    "doctor": {
+      "title": "Doktor Roślin",
+      "subtitle": "Identyfikacja roślin i diagnoza zdrowia wspierana przez AI",
+      "services": {
+        "identification": {
+          "title": "Identyfikacja Roślin",
+          "description": "Prześlij zdjęcie, aby zidentyfikować dowolny gatunek rośliny"
+        },
+        "disease": {
+          "title": "Diagnoza Chorób",
+          "description": "Zidentyfikuj choroby roślin i uzyskaj porady dotyczące leczenia"
+        },
+        "weed": {
+          "title": "Identyfikacja Chwastów",
+          "description": "Zidentyfikuj chwasty i uzyskaj strategie usuwania"
+        }
+      },
+      "upload": {
+        "title": "Prześlij Obraz",
+        "dragDrop": "Przeciągnij i upuść swój obraz tutaj lub kliknij, aby wybrać",
+        "selectImage": "Wybierz Obraz",
+        "supportedFormats": "Obsługiwane formaty: JPG, PNG, WebP",
+        "maxSize": "Maksymalny rozmiar pliku: 10MB",
+        "analyzing": "Analizowanie twojego obrazu...",
+        "analysisComplete": "Analiza Zakończona",
+        "analysisFailed": "Analiza Nieudana",
+        "noImageSelected": "Nie Wybrano Obrazu",
+        "selectImageFirst": "Proszę wybrać obraz do analizy",
+        "additionalNotes": "Dodatkowe uwagi (opcjonalne)",
+        "notesPlaceholder": "Opisz objawy lub obawy..."
+      },
+      "results": {
+        "title": "Ostatnie Wyniki",
+        "noResults": "Brak ostatnich wyników analizy",
+        "noResultsDesc": "Prześlij obraz, aby rozpocząć identyfikację roślin",
+        "analysisDate": "Przeanalizowano {{date}}",
+        "confidence": "Pewność: {{percentage}}%"
+      },
+      "premium": {
+        "title": "Premium Doktor Roślin",
+        "features": [
+          "Zaawansowana diagnoza chorób",
+          "Zalecenia leczenia",
+          "Sezonowe przewodniki pielęgnacji",
+          "Konsultacja eksperta"
+        ],
+        "upgradeNow": "Ulepsz Teraz"
+      }
+    },
+    "search": {
+      "advanced": {
+        "title": "Filtry i Wyszukiwanie Roślin",
+        "description": "Użyj dowolnej kombinacji filtrów, aby znaleźć idealne rośliny",
+        "clearAll": "Wyczyść Wszystko",
+        "applyFilters": "Szukaj",
+        "activeFilters": "{{count}} aktywnych"
+      },
+      "filters": {
+        "plantTypes": "Typy Roślin (Wybór Wielokrotny)",
+        "selectPlantTypes": "Wybierz Typy Roślin",
+        "heightRange": "Zakres Wysokości",
+        "spreadRange": "Zakres Szerokości",
+        "colors": "Kolory (Wybierz Wszystkie Pasujące)",
+        "bloomSeasons": "Sezony Kwitnienia",
+        "sunlight": "Wymagania Słoneczne",
+        "water": "Wymagania Wodne",
+        "soilType": "Typ Gleby",
+        "hardiness": "Strefa Mrozoodporności",
+        "maintenance": "Poziom Utrzymania",
+        "foliageType": "Typ Liści",
+        "growthRate": "Tempo Wzrostu",
+        "nativeRegion": "Region Pochodzenia"
+      },
+      "plantTypes": {
+        "perennial": "Byliny",
+        "annual": "Jednoroczne",
+        "biennial": "Dwuletnie",
+        "shrub": "Krzewy",
+        "tree": "Drzewa",
+        "bulb": "Cebulowe",
+        "climber": "Pnącza",
+        "grass": "Trawy Ozdobne",
+        "succulent": "Sukulenty",
+        "cactus": "Kaktusy",
+        "fern": "Paprocie",
+        "aquatic": "Rośliny Wodne"
+      },
+      "sunlight": {
+        "full_sun": "Pełne Słońce (6+ godzin)",
+        "partial_sun": "Częściowe Słońce (4-6 godzin)",
+        "partial_shade": "Półcień (2-4 godziny)",
+        "full_shade": "Pełny Cień (<2 godziny)"
+      },
+      "water": {
+        "low": "Mało Wody",
+        "moderate": "Umiarkowanie Wody",
+        "high": "Dużo Wody"
+      },
+      "soilTypes": {
+        "clay": "Glina",
+        "sand": "Piasek",
+        "loam": "Próchnica",
+        "silt": "Muł",
+        "chalk": "Kreda"
+      },
+      "maintenance": {
+        "low": "Niskie Utrzymanie",
+        "moderate": "Umiarkowane",
+        "high": "Wysokie Utrzymanie"
+      },
+      "seasons": {
+        "spring": "Wiosna",
+        "summer": "Lato",
+        "autumn": "Jesień",
+        "winter": "Zima"
+      },
+      "colors": {
+        "white": "Biały",
+        "cream": "Kremowy",
+        "yellow": "Żółty",
+        "orange": "Pomarańczowy",
+        "peach": "Brzoskwiniowy",
+        "red": "Czerwony",
+        "pink": "Różowy",
+        "hotPink": "Intensywny Róż",
+        "magenta": "Magenta",
+        "purple": "Fioletowy",
+        "lavender": "Lawendowy",
+        "blue": "Niebieski",
+        "lightBlue": "Jasnoniebieski",
+        "turquoise": "Turkusowy",
+        "green": "Zielony",
+        "lime": "Limonkowy",
+        "brown": "Brązowy",
+        "black": "Czarny"
+      },
+      "height": {
+        "min": "Min: {{value}}",
+        "max": "Maks: {{value}}",
+        "any": "Dowolna",
+        "anyHeight": "Dowolna wysokość",
+        "includeLarge": "Uwzględnij duże drzewa okazowe",
+        "largeSpecimens": "(5m+)",
+        "allHeights": "🌳 Wszystkie wysokości",
+        "showingAll": "Pokazywanie wszystkich drzew ozdobnych włącznie z dużymi okazami",
+        "defaultRange": "Od małych okryw gruntowych do średnich drzew (do 5m)",
+        "includes": "Zawiera Araukarię, Cedry i inne drzewa okazowe",
+        "typical": "Domyślnie: Pokazuje typowe rośliny ogrodowe • Zaznacz dla większych drzew"
+      },
+      "spread": {
+        "min": "Min: {{value}}",
+        "max": "Maks: {{value}}",
+        "any": "Dowolna",
+        "description": "Szerokość rośliny dla odpowiedniego rozstawienia",
+        "defaultInfo": "Domyślnie: Pokazuje wszystkie szerokości • Dostosuj, aby filtrować"
+      }
+    },
+    "recentlyViewed": {
+      "title": "Ostatnio Przeglądane Rośliny",
+      "empty": "Brak ostatnio przeglądanych roślin",
+      "emptyDesc": "Przeglądaj bibliotekę roślin, aby zacząć budować swoją historię",
+      "clearHistory": "Wyczyść Historię",
+      "viewedOn": "Przeglądane {{time}}"
+    },
+    "characteristics": {
+      "commonName": "Nazwa Zwyczajowa",
+      "scientificName": "Nazwa Naukowa",
+      "type": "Typ Rośliny",
+      "height": "Wysokość",
+      "spread": "Szerokość",
+      "bloomTime": "Czas Kwitnienia",
+      "flowerColor": "Kolor Kwiatu",
+      "foliageColor": "Kolor Liści",
+      "sunlight": "Światło Słoneczne",
+      "water": "Woda",
+      "soil": "Gleba",
+      "hardiness": "Mrozoodporność",
+      "maintenance": "Utrzymanie",
+      "growthRate": "Tempo Wzrostu",
+      "spacing": "Rozstaw Roślin",
+      "companion": "Rośliny Towarzyszące",
+      "zone": "Strefa Wzrostu",
+      "native": "Pochodzenie",
+      "size": {
+        "compact": "Kompaktowy",
+        "standard": "Standardowy",
+        "medium": "Średnie Drzewo",
+        "large": "Duże Drzewo",
+        "giant": "Ogromne Drzewo"
+      },
+      "hardiness": {
+        "veryHardy": "Bardzo Mrozoodporna",
+        "hardy": "Mrozoodporna",
+        "halfHardy": "Częściowo Mrozoodporna",
+        "tender": "Delikatna"
+      }
+    },
+    "care": {
+      "watering": "Podlewanie",
+      "sunlight": "Wymagania Świetlne",
+      "soil": "Wymagania Glebowe",
+      "fertilizing": "Nawożenie",
+      "pruning": "Przycinanie",
+      "planting": "Sadzenie",
+      "spacing": "Rozstaw",
+      "seasonalCare": "Pielęgnacja Sezonowa",
+      "problems": "Częste Problemy",
+      "tips": "Wskazówki Uprawy",
+      "instructions": "Instrukcje Pielęgnacji"
+    },
+    "messages": {
+      "success": {
+        "plantAdded": "{{name}} został dodany do twojego ogrodu!",
+        "plantRemoved": "{{name}} został usunięty z twojej kolekcji",
+        "notesUpdated": "Notatki o roślinie zostały pomyślnie zaktualizowane",
+        "imageGenerated": "Obrazy rośliny zostały pomyślnie wygenerowane"
+      },
+      "error": {
+        "failedToAdd": "Nie udało się dodać rośliny do kolekcji",
+        "failedToRemove": "Nie udało się usunąć rośliny z kolekcji",
+        "failedToLoad": "Nie udało się załadować danych rośliny",
+        "failedToSave": "Nie udało się zapisać informacji o roślinie",
+        "alreadyInCollection": "Ta roślina jest już w twojej kolekcji",
+        "limitReached": "Osiągnąłeś limit swojej kolekcji"
+      },
+      "warnings": {
+        "unsavedChanges": "Masz niezapisane zmiany",
+        "deleteConfirm": "Czy na pewno chcesz usunąć tę roślinę?",
+        "removeConfirm": "Usunąć {{name}} z twojej kolekcji?"
+      }
+    }
+  },
   "landing": {
     "navigation": {
       "signIn": "Zaloguj się",
@@ -674,302 +970,6 @@
       "termsOfService": "Warunki Użytkowania",
       "contact": "Kontakt",
       "copyright": "© 2024 GardenScape Pro. Wszystkie prawa zastrzeżone."
-    },
-    "plants": {
-      "library": {
-        "title": "Biblioteka Roślin",
-        "subtitle": "Odkryj i eksploruj naszą kompleksową bazę danych roślin",
-        "searchPlaceholder": "Szukaj roślin po nazwie popularnej lub naukowej...",
-        "searchTip": "Wskazówka: Użyj filtrów poniżej, aby zawęzić wyszukiwanie według cech roślin",
-        "filtersActive": "{{count}} filtrów aktywnych",
-        "plantsFound": "{{count}} roślin znalezionych",
-        "noResults": "Nie znaleziono roślin",
-        "noResultsDesc": "Spróbuj dostosować terminy wyszukiwania lub filtry",
-        "loading": "Ładowanie roślin...",
-        "tabs": {
-          "browse": "Przeglądaj Rośliny",
-          "advanced": "Wyszukiwanie Zaawansowane",
-          "collection": "Moja Kolekcja"
-        },
-        "sort": {
-          "nameAsc": "Nazwa A-Z",
-          "nameDesc": "Nazwa Z-A",
-          "newest": "Najnowsze",
-          "oldest": "Najstarsze"
-        },
-        "pagination": {
-          "showing": "Pokazywanie {{start}}-{{end}} z {{total}} roślin",
-          "page": "Strona {{current}} z {{total}}",
-          "previous": "Poprzednia",
-          "next": "Następna"
-        },
-        "collection": {
-          "addToCollection": "Dodaj do Kolekcji",
-          "removeFromCollection": "Usuń z Kolekcji",
-          "addedToCollection": "Dodano do Kolekcji",
-          "removedFromCollection": "Usunięto z Kolekcji",
-          "inCollection": "W Kolekcji",
-          "collectionLimit": "Limit Kolekcji Osiągnięty",
-          "upgradeToAddMore": "Uaktualnij, aby dodać więcej roślin do swojej kolekcji",
-          "duplicatePlant": "Ta roślina jest już w twojej kolekcji",
-          "myCollectionOnly": "Tylko Moja Kolekcja",
-          "emptyCollection": "Twoja kolekcja jest pusta",
-          "emptyCollectionDesc": "Zacznij przeglądać, aby dodać rośliny do swojej kolekcji"
-        }
-      },
-      "card": {
-        "viewDetails": "Zobacz Szczegóły",
-        "addToGarden": "Dodaj do Ogrodu",
-        "edit": "Edytuj Roślinę",
-        "delete": "Usuń Roślinę",
-        "verify": "Zweryfikuj",
-        "reject": "Odrzuć",
-        "generateImages": "Generuj Obrazy",
-        "admin": "Akcje Administratora",
-        "pending": "Oczekuje na Weryfikację",
-        "verified": "Zweryfikowane",
-        "moreActions": "Więcej Akcji",
-        "shareCard": "Udostępnij Kartę Rośliny",
-        "printCard": "Wydrukuj Kartę Rośliny",
-        "downloadCard": "Pobierz Kartę",
-        "addNotes": "Dodaj osobiste notatki...",
-        "saveNotes": "Zapisz Notatki",
-        "closeModal": "Zamknij",
-        "plantDetails": "Szczegóły Rośliny",
-        "careInstructions": "Instrukcje Pielęgnacji",
-        "growingTips": "Wskazówki Uprawy"
-      },
-      "doctor": {
-        "title": "Doktor Roślin",
-        "subtitle": "Identyfikacja roślin i diagnoza zdrowotna zasilane AI",
-        "services": {
-          "identification": {
-            "title": "Identyfikacja Roślin",
-            "description": "Prześlij zdjęcie, aby zidentyfikować jakąkolwiek odmianę rośliny"
-          },
-          "disease": {
-            "title": "Diagnoza Chorob",
-            "description": "Zidentyfikuj choroby roślin i otrzymaj porady dotyczące leczenia"
-          },
-          "weed": {
-            "title": "Identyfikacja Chwastów",
-            "description": "Zidentyfikuj chwasty i otrzymaj strategie usuwania"
-          }
-        },
-        "upload": {
-          "title": "Prześlij Obraz",
-          "dragDrop": "Przeciągnij i upuść swoje zdjęcie tutaj lub kliknij, aby wybrać",
-          "selectImage": "Wybierz Obraz",
-          "supportedFormats": "Obsługiwane formaty: JPG, PNG, WebP",
-          "maxSize": "Maksymalny rozmiar pliku: 10MB",
-          "analyzing": "Analizowanie twojego obrazu...",
-          "analysisComplete": "Analiza Zakończona",
-          "analysisFailed": "Analiza Nieudana",
-          "noImageSelected": "Nie Wybrano Obrazu",
-          "selectImageFirst": "Proszę najpierw wybrać obraz do analizy",
-          "additionalNotes": "Dodatkowe notatki (opcjonalne)",
-          "notesPlaceholder": "Opisz objawy lub obawy..."
-        },
-        "results": {
-          "title": "Ostatnie Wyniki",
-          "noResults": "Brak ostatnich wyników analizy",
-          "noResultsDesc": "Prześlij obraz, aby zacząć identyfikację roślin",
-          "analysisDate": "Przeanalizowano {{date}}",
-          "confidence": "Pewność: {{percentage}}%"
-        },
-        "premium": {
-          "title": "Premium Doktor Roślin",
-          "features": [
-            "Zaawansowana diagnoza chorob",
-            "Zalecenia leczenia",
-            "Sezonowe poradniki pielęgnacji",
-            "Konsultacje ekspertów"
-          ],
-          "upgradeNow": "Uaktualnij Teraz"
-        }
-      },
-      "search": {
-        "advanced": {
-          "title": "Filtry i Wyszukiwanie Roślin",
-          "description": "Użyj dowolnej kombinacji filtrów, aby znaleźć swoje idealne rośliny",
-          "clearAll": "Wyczyść Wszystko",
-          "applyFilters": "Szukaj",
-          "activeFilters": "{{count}} aktywnych"
-        },
-        "filters": {
-          "plantTypes": "Typy Roślin (Wybór Wielokrotny)",
-          "selectPlantTypes": "Wybierz Typy Roślin",
-          "heightRange": "Zakres Wysokości",
-          "spreadRange": "Zakres Rozpiości/Szerokości",
-          "colors": "Kolory (Wybierz Wszystkie Pasujące)",
-          "bloomSeasons": "Sezony Kwitnienia",
-          "sunlight": "Wymagania Słoneczne",
-          "water": "Wymagania Wodne",
-          "soilType": "Typ Gleby",
-          "hardiness": "Strefa Mrozoodporności",
-          "maintenance": "Poziom Konserwacji",
-          "foliageType": "Typ Liści",
-          "growthRate": "Tempo Wzrostu",
-          "nativeRegion": "Region Pochodzenia"
-        },
-        "plantTypes": {
-          "perennial": "Byliny",
-          "annual": "Jednoroczne",
-          "biennial": "Dwuletnie",
-          "shrub": "Krzewy",
-          "tree": "Drzewa",
-          "bulb": "Cebulowe",
-          "climber": "Pnącza",
-          "grass": "Trawy Ozdobne",
-          "succulent": "Sukulenty",
-          "cactus": "Kaktusy",
-          "fern": "Paprocie",
-          "aquatic": "Rośliny Wodne"
-        },
-        "sunlight": {
-          "full_sun": "Pełne Słońce (6+ godzin)",
-          "partial_sun": "Częściowe Słońce (4-6 godzin)",
-          "partial_shade": "Częściowy Cień (2-4 godziny)",
-          "full_shade": "Pełny Cień (<2 godziny)"
-        },
-        "water": {
-          "low": "Mało Wody",
-          "moderate": "Umiarkowanie Wody",
-          "high": "Dużo Wody"
-        },
-        "soilTypes": {
-          "clay": "Glina",
-          "sand": "Piasek",
-          "loam": "Ziemia Urodzajna",
-          "silt": "Muł",
-          "chalk": "Kreda"
-        },
-        "maintenance": {
-          "low": "Niska Konserwacja",
-          "moderate": "Umiarkowana",
-          "high": "Wysoka Konserwacja"
-        },
-        "seasons": {
-          "spring": "Wiosna",
-          "summer": "Lato",
-          "autumn": "Jesień",
-          "winter": "Zima"
-        },
-        "colors": {
-          "white": "Biały",
-          "cream": "Kremowy",
-          "yellow": "Żółty",
-          "orange": "Pomarańczowy",
-          "peach": "Brzoskwiniowy",
-          "red": "Czerwony",
-          "pink": "Różowy",
-          "hotPink": "Intensywny Różowy",
-          "magenta": "Magenta",
-          "purple": "Fioletowy",
-          "lavender": "Lawendowy",
-          "blue": "Niebieski",
-          "lightBlue": "Jasnoniebieski",
-          "turquoise": "Turkusowy",
-          "green": "Zielony",
-          "lime": "Limonkowy",
-          "brown": "Brązowy",
-          "black": "Czarny"
-        },
-        "height": {
-          "min": "Min: {{value}}",
-          "max": "Max: {{value}}",
-          "any": "Dowolny",
-          "anyHeight": "Dowolna wysokość",
-          "includeLarge": "Włącz duże drzewa okazy",
-          "largeSpecimens": "(5m+)",
-          "allHeights": "🌳 Wszystkie wysokości",
-          "showingAll": "Pokazywanie wszystkich drzew ozdobnych włącznie z dużymi okazami",
-          "defaultRange": "Od małych okryw gruntu do średnich drzew (do 5m)",
-          "includes": "Zawiera Araukarie, Cedry i inne drzewa okazy",
-          "typical": "Domyślne: Pokazuje typowe rośliny ogrodowe • Zaznacz dla większych drzew"
-        },
-        "spread": {
-          "min": "Min: {{value}}",
-          "max": "Max: {{value}}",
-          "any": "Dowolny",
-          "description": "Szerokość rośliny dla właściwych odstępów",
-          "defaultInfo": "Domyślne: Pokazuje wszystkie rozpiętości • Dostosuj do filtrowania"
-        }
-      },
-      "recentlyViewed": {
-        "title": "Ostatnio Oglądane Rośliny",
-        "empty": "Brak ostatnio oglądanych roślin",
-        "emptyDesc": "Przeglądaj bibliotekę roślin, aby zacząć budować swoją historię",
-        "clearHistory": "Wyczyść Historię",
-        "viewedOn": "Oglądane {{time}}"
-      },
-      "characteristics": {
-        "commonName": "Nazwa Popularna",
-        "scientificName": "Nazwa Naukowa",
-        "type": "Typ Rośliny",
-        "height": "Wysokość",
-        "spread": "Rozpiętość",
-        "bloomTime": "Czas Kwitnienia",
-        "flowerColor": "Kolor Kwiatów",
-        "foliageColor": "Kolor Liści",
-        "sunlight": "Słońce",
-        "water": "Woda",
-        "soil": "Gleba",
-        "hardiness": "Mrozoodporność",
-        "maintenance": "Konserwacja",
-        "growthRate": "Tempo Wzrostu",
-        "spacing": "Odstępy Między Roślinami",
-        "companion": "Rośliny Towarzyszące",
-        "zone": "Strefa Uprawy",
-        "native": "Pochodzenie",
-        "size": {
-          "compact": "Kompaktowy",
-          "standard": "Standardowy",
-          "medium": "Średnie Drzewo",
-          "large": "Duże Drzewo",
-          "giant": "Olbrzymie Drzewo"
-        },
-        "hardiness": {
-          "veryHardy": "Bardzo Mrozoodporny",
-          "hardy": "Mrozoodporny",
-          "halfHardy": "Półmrozoodporny",
-          "tender": "Wrażliwy"
-        }
-      },
-      "care": {
-        "watering": "Podlewanie",
-        "sunlight": "Wymagania Świetlne",
-        "soil": "Wymagania Glebowe",
-        "fertilizing": "Nawożenie",
-        "pruning": "Przycinanie",
-        "planting": "Sadzenie",
-        "spacing": "Odstępy",
-        "seasonalCare": "Pielęgnacja Sezonowa",
-        "problems": "Częste Problemy",
-        "tips": "Wskazówki Uprawy",
-        "instructions": "Instrukcje Pielęgnacji"
-      },
-      "messages": {
-        "success": {
-          "plantAdded": "{{name}} została dodana do twojego ogrodu!",
-          "plantRemoved": "{{name}} została usunięta z twojej kolekcji",
-          "notesUpdated": "Notatki rośliny zaktualizowane pomyślnie",
-          "imageGenerated": "Obrazy rośliny wygenerowane pomyślnie"
-        },
-        "error": {
-          "failedToAdd": "Nie udało się dodać rośliny do kolekcji",
-          "failedToRemove": "Nie udało się usunąć rośliny z kolekcji",
-          "failedToLoad": "Nie udało się załadować danych rośliny",
-          "failedToSave": "Nie udało się zapisać informacji o roślinie",
-          "alreadyInCollection": "Ta roślina jest już w twojej kolekcji",
-          "limitReached": "Osiągnąłeś limit swojej kolekcji"
-        },
-        "warnings": {
-          "unsavedChanges": "Masz niezapisane zmiany",
-          "deleteConfirm": "Czy na pewno chcesz usunąć tę roślinę?",
-          "removeConfirm": "Usunąć {{name}} z twojej kolekcji?"
-        }
-      }
     }
   }
 }
