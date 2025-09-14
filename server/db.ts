@@ -2,15 +2,33 @@ import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
 
-if (!process.env.DATABASE_URL) {
+// Automatically construct DATABASE_URL from PG* environment variables if they exist
+function getDatabaseUrl(): string {
+  // Check if PG* variables exist (created by create_postgresql_database_tool)
+  if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
+      process.env.PGPASSWORD && process.env.PGDATABASE) {
+    // Construct DATABASE_URL from PG* variables
+    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`;
+    console.log('Using PostgreSQL database from PG* environment variables');
+    return url;
+  }
+  
+  // Fall back to DATABASE_URL if PG* variables don't exist
+  if (process.env.DATABASE_URL) {
+    console.log('Using DATABASE_URL environment variable');
+    return process.env.DATABASE_URL;
+  }
+  
   throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
+    "Database configuration not found. Either set DATABASE_URL or provision a database using create_postgresql_database_tool.",
   );
 }
 
+const DATABASE_URL = getDatabaseUrl();
+
 // Configure connection pool with proper settings for PostgreSQL
 export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
+  connectionString: DATABASE_URL,
   max: 10, // maximum number of connections in the pool
   idleTimeoutMillis: 30000, // close idle clients after 30 seconds
   connectionTimeoutMillis: 10000, // timeout for new connection attempts

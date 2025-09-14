@@ -3,6 +3,16 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 
+// Override DATABASE_URL if PG* environment variables exist
+// This ensures all components (including drizzle.config.ts) use the new database
+if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
+    process.env.PGPASSWORD && process.env.PGDATABASE) {
+  // Construct DATABASE_URL from PG* variables
+  const newDatabaseUrl = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`;
+  process.env.DATABASE_URL = newDatabaseUrl;
+  console.log('Overriding DATABASE_URL with PostgreSQL database from PG* environment variables');
+}
+
 const app = express();
 
 // Serve static files from public directory

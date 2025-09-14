@@ -9,6 +9,28 @@ import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import type { AuthenticatedRequest, AuthUser } from './types/auth';
 
+// Automatically construct DATABASE_URL from PG* environment variables if they exist
+function getDatabaseUrl(): string {
+  // Check if PG* variables exist (created by create_postgresql_database_tool)
+  if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
+      process.env.PGPASSWORD && process.env.PGDATABASE) {
+    // Construct DATABASE_URL from PG* variables
+    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`;
+    console.log('Session store using PostgreSQL database from PG* environment variables');
+    return url;
+  }
+  
+  // Fall back to DATABASE_URL if PG* variables don't exist
+  if (process.env.DATABASE_URL) {
+    console.log('Session store using DATABASE_URL environment variable');
+    return process.env.DATABASE_URL;
+  }
+  
+  throw new Error(
+    "Database configuration not found for session store. Either set DATABASE_URL or provision a database.",
+  );
+}
+
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
@@ -27,7 +49,7 @@ export function getSession() {
   const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days for better user experience
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
+    conString: getDatabaseUrl(),
     createTableIfMissing: true,
     ttl: sessionTtl,
     tableName: "sessions",
