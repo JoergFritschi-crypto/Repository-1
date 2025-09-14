@@ -2388,30 +2388,6 @@ export default function GardenProperties() {
                             <span className="text-sm">My Collection Only</span>
                           </label>
                         )}
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox 
-                            checked={plantFilters.toxicityLevel === 'none'}
-                            onCheckedChange={(checked) => {
-                              setPlantFilters((prev: any) => ({
-                                ...prev,
-                                toxicityLevel: checked ? 'none' : undefined
-                              }));
-                            }}
-                          />
-                          <span className="text-sm">Non-toxic Only</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox 
-                            checked={plantFilters.nativeOnly === true}
-                            onCheckedChange={(checked) => {
-                              setPlantFilters((prev: any) => ({
-                                ...prev,
-                                nativeOnly: checked ? true : undefined
-                              }));
-                            }}
-                          />
-                          <span className="text-sm">Native Plants Only</span>
-                        </label>
                       </div>
                       
                       {/* Primary Search Button */}

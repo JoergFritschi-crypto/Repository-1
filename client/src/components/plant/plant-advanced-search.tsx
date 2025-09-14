@@ -934,14 +934,6 @@ export function PlantAdvancedSearch({ onSearch, totalResults }: PlantAdvancedSea
               </label>
               <label className="flex items-center space-x-2">
                 <Checkbox
-                  checked={filters.native || false}
-                  onCheckedChange={(checked) => handleFilterChange("native", checked)}
-                  data-testid="checkbox-native"
-                />
-                <span className="text-sm font-medium">Native</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <Checkbox
                   checked={filters.deer_resistant || false}
                   onCheckedChange={(checked) => handleFilterChange("deer_resistant", checked)}
                   data-testid="checkbox-deer-resistant"
