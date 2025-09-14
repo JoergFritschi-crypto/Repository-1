@@ -28,36 +28,40 @@ STYLE REQUIREMENTS:
 
 TOOL DETAILS: ${description}
 
-COLOR SCHEME (MANDATORY - use these EXACT hex colors):
-- VERY DARK GREEN #004025 (main metal parts) - deep forest green, almost black-green
-- DARK GREEN #2D5D3D (secondary metal elements) - dark forest green
-- DEEPER GREEN #0A5A2A (tertiary metal elements) - deeper forest green  
-- ACCENT GREEN #138A28 (accent details only) - limited use, darker accent
-- WARM GOLD #FFD500 (brass fittings, handles, decorative elements)
-- BRIGHT YELLOW #FFE523 (highlights and metallic reflections only)
+CRITICAL COLOR REQUIREMENTS (MUST BE FOLLOWED EXACTLY):
+- ALL METAL PARTS: Use ONLY the exact color #004025 (very dark British green, almost black-green)
+- NO GRAY, BLACK, OR OTHER GREEN SHADES on metal parts - only #004025
+- Wooden handles: Natural light brown ash wood with visible grain
+- Brass fittings: Warm golden brass color #B8860B (antique brass)
+- NO OTHER COLORS PERMITTED for metal parts - avoid any gray, black, or lighter green tones
+
+BACKGROUND (ABSOLUTELY CRITICAL):
+- PURE WHITE BACKGROUND ONLY: #FFFFFF
+- NO gray backgrounds, NO off-white, NO cream tones
+- Solid pure white like a photography studio backdrop
+- NO transparency effects
+- PURE WHITE #FFFFFF background is mandatory
 
 MATERIAL SPECIFICATIONS:
-- Wooden handles: Natural ash wood with visible grain, golden honey color with brass ferrules
-- Metal parts: British racing green powder-coated steel with realistic wear patterns
-- Brass elements: Polished brass fittings with natural patina and warm gold tones
-- Realistic surface textures: metal scratches, wood grain, brass oxidation
+- ALL metal parts (blades, tines, heads): Dark British green #004025 powder coating
+- Wooden handles: Natural light brown ash wood with subtle grain texture
+- Brass elements: Warm antique brass #B8860B with realistic metal finish
+- Avoid any gray, black, silver, or other metallic colors on the tool itself
 
 COMPOSITION:
 - Single tool positioned at 3/4 angle for depth
-- PURE WHITE BACKGROUND (solid white #FFFFFF background, no transparency)
-- Clean white background like professional product photography
-- Subtle drop shadow on white background for depth
-- Tool should fill 70% of frame
-- Professional product photography style with white studio backdrop
-- Icon-appropriate clarity and contrast
+- Tool centered and filling 70% of frame
+- Professional product photography style
+- Subtle drop shadow on the pure white background for depth
+- Clean, crisp edges with high contrast against white background
 
 LIGHTING:
-- Studio lighting setup with key light from upper left
-- Soft fill lighting to reduce harsh shadows  
-- Rim lighting to separate tool from background
-- Realistic material reflections and specularity
+- Professional studio lighting with key light from upper left
+- Soft fill lighting to eliminate harsh shadows
+- Rim lighting to clearly separate tool from pure white background
+- Realistic material reflections that enhance the #004025 green color
 
-The result should look like a premium, hand-crafted English garden tool photographed for a luxury gardening catalog.`;
+FINAL CHECK: Ensure the metal parts are the exact dark green #004025 color (not gray, black, or light green) and the background is pure white #FFFFFF.`;
 
     console.log(`Generating ${toolName} icon with Gemini 2.0 Flash...`);
 
