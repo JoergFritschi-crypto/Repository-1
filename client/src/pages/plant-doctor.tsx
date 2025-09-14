@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import Navigation from "@/components/layout/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 
 export default function PlantDoctor() {
+  const { t } = useTranslation();
   const [activeService, setActiveService] = useState<"identification" | "disease" | "weed">("identification");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -42,8 +44,8 @@ export default function PlantDoctor() {
     },
     onSuccess: (result) => {
       toast({
-        title: "Analysis Complete",
-        description: "Your plant has been analyzed successfully!",
+        title: t('plants.doctor.analysisComplete'),
+        description: t('plants.doctor.analysisSuccess'),
       });
       queryClient.invalidateQueries({ queryKey: ["/api/plant-doctor/sessions"] });
       setSelectedImage(null);
@@ -52,7 +54,7 @@ export default function PlantDoctor() {
     },
     onError: (error) => {
       toast({
-        title: "Analysis Failed",
+        title: t('plants.doctor.analysisFailed'),
         description: error.message,
         variant: "destructive",
       });
@@ -74,8 +76,8 @@ export default function PlantDoctor() {
   const handleAnalyze = () => {
     if (!selectedImage) {
       toast({
-        title: "No Image Selected",
-        description: "Please select an image to analyze.",
+        title: t('plants.doctor.noImageSelected'),
+        description: t('plants.doctor.selectImagePrompt'),
         variant: "destructive",
       });
       return;
@@ -91,22 +93,22 @@ export default function PlantDoctor() {
 
   const serviceConfig = {
     identification: {
-      title: "Plant Identification",
-      description: "Upload a photo to identify any plant species",
+      title: t('plants.doctor.identification.title'),
+      description: t('plants.doctor.identification.description'),
       icon: Leaf,
       color: "text-accent",
       bgColor: "bg-accent",
     },
     disease: {
-      title: "Disease Diagnosis",
-      description: "Identify plant diseases and get treatment advice",
+      title: t('plants.doctor.disease.title'),
+      description: t('plants.doctor.disease.description'),
       icon: AlertTriangle,
       color: "text-destructive",
       bgColor: "bg-destructive",
     },
     weed: {
-      title: "Weed Identification",
-      description: "Identify weeds and get removal strategies",
+      title: t('plants.doctor.weed.title'),
+      description: t('plants.doctor.weed.description'),
       icon: Bug,
       color: "text-secondary",
       bgColor: "bg-secondary",
@@ -124,10 +126,10 @@ export default function PlantDoctor() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-serif font-semibold text-primary mb-2" data-testid="text-plant-doctor-title">
             <Stethoscope className="w-7 h-7 inline mr-2 text-primary" />
-            Plant Doctor
+            {t('plants.doctor.title')}
           </h1>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto" data-testid="text-plant-doctor-subtitle">
-            AI-powered plant identification and health diagnosis
+            {t('plants.doctor.subtitle')}
           </p>
         </div>
 
@@ -136,7 +138,7 @@ export default function PlantDoctor() {
           <div className="lg:col-span-1 space-y-6">
             <Card className="border-2 border-primary">
               <CardHeader className="py-4">
-                <CardTitle className="text-lg">Select Service</CardTitle>
+                <CardTitle className="text-lg">{t('plants.doctor.selectService')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 pt-0">
                 {(Object.entries(serviceConfig) as [keyof typeof serviceConfig, typeof serviceConfig[keyof typeof serviceConfig]][]).map(([key, config]) => {
@@ -173,27 +175,27 @@ export default function PlantDoctor() {
               <CardContent className="pt-4">
                 <div className="text-center">
                   <Crown className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <h3 className="font-medium text-sm mb-2">Premium Plant Doctor</h3>
+                  <h3 className="font-medium text-sm mb-2">{t('plants.doctor.premium.title')}</h3>
                   <div className="space-y-1 text-xs text-left mb-3">
                     <div className="flex items-center">
                       <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
-                      <span>Advanced disease diagnosis</span>
+                      <span>{t('plants.doctor.premium.feature1')}</span>
                     </div>
                     <div className="flex items-center">
                       <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
-                      <span>Treatment recommendations</span>
+                      <span>{t('plants.doctor.premium.feature2')}</span>
                     </div>
                     <div className="flex items-center">
                       <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
-                      <span>Seasonal care guides</span>
+                      <span>{t('plants.doctor.premium.feature3')}</span>
                     </div>
                     <div className="flex items-center">
                       <CheckCircle className="w-3 h-3 text-primary mr-1.5" />
-                      <span>Expert consultation</span>
+                      <span>{t('plants.doctor.premium.feature4')}</span>
                     </div>
                   </div>
                   <Button variant="default" className="w-full" size="sm" data-testid="button-upgrade-plant-doctor">
-                    Upgrade Now
+                    {t('plants.doctor.premium.upgrade')}
                   </Button>
                 </div>
               </CardContent>
@@ -212,15 +214,15 @@ export default function PlantDoctor() {
               <CardContent>
                 <Tabs defaultValue="upload" className="w-full">
                   <TabsList className="grid w-full grid-cols-2 h-9" data-testid="tabs-plant-doctor">
-                    <TabsTrigger value="upload" className="text-xs" data-testid="tab-upload">Upload Image</TabsTrigger>
-                    <TabsTrigger value="results" className="text-xs" data-testid="tab-results">Recent Results</TabsTrigger>
+                    <TabsTrigger value="upload" className="text-xs" data-testid="tab-upload">{t('plants.doctor.upload.title')}</TabsTrigger>
+                    <TabsTrigger value="results" className="text-xs" data-testid="tab-results">{t('plants.doctor.results.title')}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="upload" className="mt-4">
                     <div className="space-y-4">
                       {/* Image Upload */}
                       <div>
-                        <label className="block text-xs font-medium mb-2">Plant Photo</label>
+                        <label className="block text-xs font-medium mb-2">{t('plants.doctor.upload.photoLabel')}</label>
                         <div className="border-2 border-dashed border-primary/50 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
                           <input
                             type="file"
@@ -239,17 +241,17 @@ export default function PlantDoctor() {
                                   className="max-w-sm mx-auto rounded-lg mb-4"
                                   data-testid="img-preview"
                                 />
-                                <p className="text-sm text-muted-foreground">Click to change image</p>
+                                <p className="text-sm text-muted-foreground">{t('plants.doctor.upload.changeImage')}</p>
                               </div>
                             ) : (
                               <div>
                                 <Upload className="w-10 h-10 text-primary/50 mx-auto mb-3" />
-                                <h4 className="font-medium text-sm mb-1">Upload Plant Photo</h4>
+                                <h4 className="font-medium text-sm mb-1">{t('plants.doctor.upload.title')}</h4>
                                 <p className="text-xs text-muted-foreground mb-3">
-                                  Drag and drop or click to select a clear photo of your plant
+                                  {t('plants.doctor.upload.instructions')}
                                 </p>
                                 <Button type="button" size="sm" variant="outline" data-testid="button-choose-file">
-                                  Choose File
+                                  {t('plants.doctor.upload.chooseFile')}
                                 </Button>
                               </div>
                             )}
@@ -259,9 +261,9 @@ export default function PlantDoctor() {
 
                       {/* Additional Notes */}
                       <div>
-                        <label className="block text-xs font-medium mb-2">Additional Notes (Optional)</label>
+                        <label className="block text-xs font-medium mb-2">{t('plants.doctor.upload.notesLabel')}</label>
                         <Textarea
-                          placeholder="Describe any symptoms, location, or other relevant details..."
+                          placeholder={t('plants.doctor.upload.notesPlaceholder')}
                           value={additionalNotes}
                           onChange={(e) => setAdditionalNotes(e.target.value)}
                           rows={3}
@@ -280,12 +282,12 @@ export default function PlantDoctor() {
                         {identificationMutation.isPending ? (
                           <>
                             <LoadingSpinner size="xs" />
-                            <span className="ml-2">Analyzing...</span>
+                            <span className="ml-2">{t('plants.doctor.analyzing')}</span>
                           </>
                         ) : (
                           <>
                             <currentService.icon className="w-4 h-4 mr-2" />
-                            Analyze Plant
+                            {t('plants.doctor.analyzePlant')}
                           </>
                         )}
                       </Button>
@@ -294,10 +296,10 @@ export default function PlantDoctor() {
                       {identificationMutation.isPending && (
                         <LoadingSteps
                           steps={[
-                            { label: "Preparing image...", status: "completed" },
-                            { label: "Analyzing plant features...", status: "loading" },
-                            { label: "Identifying species...", status: "pending" },
-                            { label: "Generating diagnosis...", status: "pending" }
+                            { label: t('plants.doctor.steps.preparing'), status: "completed" },
+                            { label: t('plants.doctor.steps.analyzing'), status: "loading" },
+                            { label: t('plants.doctor.steps.identifying'), status: "pending" },
+                            { label: t('plants.doctor.steps.diagnosing'), status: "pending" }
                           ]}
                         />
                       )}
@@ -307,9 +309,9 @@ export default function PlantDoctor() {
                   <TabsContent value="results" className="mt-4">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <h3 className="font-medium text-sm" data-testid="text-recent-results">Recent Analysis Results</h3>
+                        <h3 className="font-medium text-sm" data-testid="text-recent-results">{t('plants.doctor.results.title')}</h3>
                         <Badge variant="secondary" data-testid="badge-session-count">
-                          {sessions?.length || 0} sessions
+                          {sessions?.length || 0} {t('plants.doctor.results.sessions')}
                         </Badge>
                       </div>
 
@@ -317,7 +319,7 @@ export default function PlantDoctor() {
                         <SkeletonList count={3} showIcon={true} showActions={true} />
                       ) : sessionsError ? (
                         <ErrorMessage
-                          title="Failed to load sessions"
+                          title={t('plants.doctor.results.loadFailed')}
                           error={sessionsError}
                           onRetry={() => queryClient.invalidateQueries({ queryKey: ["/api/plant-doctor/sessions"] })}
                           variant="card"
@@ -346,14 +348,14 @@ export default function PlantDoctor() {
                                   {session.aiAnalysis && (
                                     <div>
                                       <h4 className="font-medium mb-1" data-testid={`text-analysis-result-${session.id}`}>
-                                        {session.aiAnalysis.identification || "Analysis Result"}
+                                        {session.aiAnalysis.identification || t('plants.doctor.results.analysisResult')}
                                       </h4>
                                       <p className="text-sm text-muted-foreground mb-2">
-                                        {session.aiAnalysis.description || "AI analysis completed"}
+                                        {session.aiAnalysis.description || t('plants.doctor.results.analysisCompleted')}
                                       </p>
                                       {session.confidence && (
                                         <div className="flex items-center">
-                                          <span className="text-sm text-muted-foreground mr-2">Confidence:</span>
+                                          <span className="text-sm text-muted-foreground mr-2">{t('plants.doctor.results.confidence')}:</span>
                                           <Badge 
                                             variant={session.confidence > 0.8 ? "default" : "secondary"}
                                             data-testid={`badge-confidence-${session.id}`}
@@ -374,11 +376,11 @@ export default function PlantDoctor() {
                         </div>
                       ) : (
                         <EmptyState
-                          title="No analysis history"
-                          message="Upload your first plant photo to get started with AI analysis"
+                          title={t('plants.doctor.results.noHistory')}
+                          message={t('plants.doctor.results.noHistoryMessage')}
                           icon={<Stethoscope className="w-8 h-8 text-muted-foreground" />}
                           action={{
-                            label: "Start First Analysis",
+                            label: t('plants.doctor.results.startFirst'),
                             onClick: () => document.getElementById('tab-upload')?.click()
                           }}
                         />

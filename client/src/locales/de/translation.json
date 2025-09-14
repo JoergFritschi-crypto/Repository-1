@@ -670,6 +670,302 @@
       "termsOfService": "Nutzungsbedingungen",
       "contact": "Kontakt",
       "copyright": "© 2024 GardenScape Pro. Alle Rechte vorbehalten."
+    },
+    "plants": {
+      "library": {
+        "title": "Pflanzenbibliothek",
+        "subtitle": "Entdecken und erkunden Sie unsere umfassende Pflanzendatenbank",
+        "searchPlaceholder": "Pflanzen nach deutschem oder wissenschaftlichem Namen suchen...",
+        "searchTip": "Tipp: Verwenden Sie die Filter unten, um Ihre Suche nach Pflanzeneigenschaften einzugrenzen",
+        "filtersActive": "{{count}} Filter aktiv",
+        "plantsFound": "{{count}} Pflanzen gefunden",
+        "noResults": "Keine Pflanzen gefunden",
+        "noResultsDesc": "Versuchen Sie, Ihre Suchbegriffe oder Filter anzupassen",
+        "loading": "Pflanzen werden geladen...",
+        "tabs": {
+          "browse": "Pflanzen durchsuchen",
+          "advanced": "Erweiterte Suche",
+          "collection": "Meine Sammlung"
+        },
+        "sort": {
+          "nameAsc": "Name A-Z",
+          "nameDesc": "Name Z-A",
+          "newest": "Neueste zuerst",
+          "oldest": "Älteste zuerst"
+        },
+        "pagination": {
+          "showing": "Zeige {{start}}-{{end}} von {{total}} Pflanzen",
+          "page": "Seite {{current}} von {{total}}",
+          "previous": "Zurück",
+          "next": "Weiter"
+        },
+        "collection": {
+          "addToCollection": "Zur Sammlung hinzufügen",
+          "removeFromCollection": "Aus Sammlung entfernen",
+          "addedToCollection": "Zur Sammlung hinzugefügt",
+          "removedFromCollection": "Aus Sammlung entfernt",
+          "inCollection": "In Sammlung",
+          "collectionLimit": "Sammlungslimit erreicht",
+          "upgradeToAddMore": "Upgraden Sie, um mehr Pflanzen zu Ihrer Sammlung hinzuzufügen",
+          "duplicatePlant": "Diese Pflanze ist bereits in Ihrer Sammlung",
+          "myCollectionOnly": "Nur meine Sammlung",
+          "emptyCollection": "Ihre Sammlung ist leer",
+          "emptyCollectionDesc": "Beginnen Sie zu stöbern, um Pflanzen zu Ihrer Sammlung hinzuzufügen"
+        }
+      },
+      "card": {
+        "viewDetails": "Details anzeigen",
+        "addToGarden": "Zum Garten hinzufügen",
+        "edit": "Pflanze bearbeiten",
+        "delete": "Pflanze löschen",
+        "verify": "Bestätigen",
+        "reject": "Ablehnen",
+        "generateImages": "Bilder generieren",
+        "admin": "Admin-Aktionen",
+        "pending": "Wartet auf Bestätigung",
+        "verified": "Bestätigt",
+        "moreActions": "Weitere Aktionen",
+        "shareCard": "Pflanzenkarte teilen",
+        "printCard": "Pflanzenkarte drucken",
+        "downloadCard": "Karte herunterladen",
+        "addNotes": "Persönliche Notizen hinzufügen...",
+        "saveNotes": "Notizen speichern",
+        "closeModal": "Schließen",
+        "plantDetails": "Pflanzendetails",
+        "careInstructions": "Pflegeanweisungen",
+        "growingTips": "Anbautipps"
+      },
+      "doctor": {
+        "title": "Pflanzenarzt",
+        "subtitle": "KI-gestützte Pflanzenidentifikation und Gesundheitsdiagnose",
+        "services": {
+          "identification": {
+            "title": "Pflanzenidentifikation",
+            "description": "Laden Sie ein Foto hoch, um jede Pflanzenart zu identifizieren"
+          },
+          "disease": {
+            "title": "Krankheitsdiagnose",
+            "description": "Identifizieren Sie Pflanzenkrankheiten und erhalten Sie Behandlungsempfehlungen"
+          },
+          "weed": {
+            "title": "Unkrautidentifikation",
+            "description": "Identifizieren Sie Unkraut und erhalten Sie Entfernungsstrategien"
+          }
+        },
+        "upload": {
+          "title": "Bild hochladen",
+          "dragDrop": "Ziehen Sie Ihr Bild hierher oder klicken Sie zum Auswählen",
+          "selectImage": "Bild auswählen",
+          "supportedFormats": "Unterstützte Formate: JPG, PNG, WebP",
+          "maxSize": "Maximale Dateigröße: 10MB",
+          "analyzing": "Ihr Bild wird analysiert...",
+          "analysisComplete": "Analyse abgeschlossen",
+          "analysisFailed": "Analyse fehlgeschlagen",
+          "noImageSelected": "Kein Bild ausgewählt",
+          "selectImageFirst": "Bitte wählen Sie zuerst ein Bild zum Analysieren aus",
+          "additionalNotes": "Zusätzliche Notizen (optional)",
+          "notesPlaceholder": "Beschreiben Sie Symptome oder Bedenken..."
+        },
+        "results": {
+          "title": "Aktuelle Ergebnisse",
+          "noResults": "Keine aktuellen Analyseergebnisse",
+          "noResultsDesc": "Laden Sie ein Bild hoch, um mit der Pflanzenidentifikation zu beginnen",
+          "analysisDate": "Analysiert am {{date}}",
+          "confidence": "Vertrauen: {{percentage}}%"
+        },
+        "premium": {
+          "title": "Premium Pflanzenarzt",
+          "features": [
+            "Erweiterte Krankheitsdiagnose",
+            "Behandlungsempfehlungen",
+            "Saisonale Pflegeanleitungen",
+            "Expertenberatung"
+          ],
+          "upgradeNow": "Jetzt upgraden"
+        }
+      },
+      "search": {
+        "advanced": {
+          "title": "Pflanzenfilter & Suche",
+          "description": "Verwenden Sie beliebige Filterkombinationen, um Ihre perfekten Pflanzen zu finden",
+          "clearAll": "Alle löschen",
+          "applyFilters": "Suchen",
+          "activeFilters": "{{count}} aktiv"
+        },
+        "filters": {
+          "plantTypes": "Pflanzentypen (Mehrfachauswahl)",
+          "selectPlantTypes": "Pflanzentypen auswählen",
+          "heightRange": "Höhenbereich",
+          "spreadRange": "Ausbreitungs-/Breitenbereich",
+          "colors": "Farben (Alle zutreffenden auswählen)",
+          "bloomSeasons": "Blütezeiten",
+          "sunlight": "Sonnenanforderungen",
+          "water": "Wasseranforderungen",
+          "soilType": "Bodentyp",
+          "hardiness": "Winterhärtezone",
+          "maintenance": "Pflegeaufwand",
+          "foliageType": "Laubtyp",
+          "growthRate": "Wachstumsrate",
+          "nativeRegion": "Heimatregion"
+        },
+        "plantTypes": {
+          "perennial": "Stauden",
+          "annual": "Einjährige",
+          "biennial": "Zweijährige",
+          "shrub": "Sträucher",
+          "tree": "Bäume",
+          "bulb": "Zwiebelpflanzen",
+          "climber": "Kletterpflanzen",
+          "grass": "Ziergräser",
+          "succulent": "Sukkulenten",
+          "cactus": "Kakteen",
+          "fern": "Farne",
+          "aquatic": "Wasserpflanzen"
+        },
+        "sunlight": {
+          "full_sun": "Vollsonne (6+ Stunden)",
+          "partial_sun": "Teilsonne (4-6 Stunden)",
+          "partial_shade": "Halbschatten (2-4 Stunden)",
+          "full_shade": "Vollschatten (<2 Stunden)"
+        },
+        "water": {
+          "low": "Wenig Wasser",
+          "moderate": "Mäßig Wasser",
+          "high": "Viel Wasser"
+        },
+        "soilTypes": {
+          "clay": "Lehm",
+          "sand": "Sand",
+          "loam": "Humus",
+          "silt": "Schluff",
+          "chalk": "Kalk"
+        },
+        "maintenance": {
+          "low": "Pflegeleicht",
+          "moderate": "Mäßig",
+          "high": "Pflegeintensiv"
+        },
+        "seasons": {
+          "spring": "Frühling",
+          "summer": "Sommer",
+          "autumn": "Herbst",
+          "winter": "Winter"
+        },
+        "colors": {
+          "white": "Weiß",
+          "cream": "Creme",
+          "yellow": "Gelb",
+          "orange": "Orange",
+          "peach": "Pfirsich",
+          "red": "Rot",
+          "pink": "Rosa",
+          "hotPink": "Kräftiges Rosa",
+          "magenta": "Magenta",
+          "purple": "Lila",
+          "lavender": "Lavendel",
+          "blue": "Blau",
+          "lightBlue": "Hellblau",
+          "turquoise": "Türkis",
+          "green": "Grün",
+          "lime": "Limette",
+          "brown": "Braun",
+          "black": "Schwarz"
+        },
+        "height": {
+          "min": "Min: {{value}}",
+          "max": "Max: {{value}}",
+          "any": "Beliebig",
+          "anyHeight": "Beliebige Höhe",
+          "includeLarge": "Große Exemplarbäume einschließen",
+          "largeSpecimens": "(5m+)",
+          "allHeights": "🌳 Alle Höhen",
+          "showingAll": "Zeigt alle Zierbäume einschließlich großer Exemplare",
+          "defaultRange": "Von winzigen Bodendeckern bis zu mittleren Bäumen (bis 5m)",
+          "includes": "Umfasst Araukarien, Zedern und andere Exemplarbäume",
+          "typical": "Standard: Zeigt typische Gartenpflanzen • Kästchen für größere Bäume ankreuzen"
+        },
+        "spread": {
+          "min": "Min: {{value}}",
+          "max": "Max: {{value}}",
+          "any": "Beliebig",
+          "description": "Pflanzenbreite für ordnungsgemäße Abstände",
+          "defaultInfo": "Standard: Zeigt alle Ausbreitungen • Anpassen zum Filtern"
+        }
+      },
+      "recentlyViewed": {
+        "title": "Kürzlich angesehene Pflanzen",
+        "empty": "Noch keine kürzlich angesehenen Pflanzen",
+        "emptyDesc": "Durchsuchen Sie die Pflanzenbibliothek, um Ihren Verlauf aufzubauen",
+        "clearHistory": "Verlauf löschen",
+        "viewedOn": "Angesehen {{time}}"
+      },
+      "characteristics": {
+        "commonName": "Deutscher Name",
+        "scientificName": "Wissenschaftlicher Name",
+        "type": "Pflanzentyp",
+        "height": "Höhe",
+        "spread": "Ausbreitung",
+        "bloomTime": "Blütezeit",
+        "flowerColor": "Blütenfarbe",
+        "foliageColor": "Laubfarbe",
+        "sunlight": "Sonnenlicht",
+        "water": "Wasser",
+        "soil": "Boden",
+        "hardiness": "Winterhärte",
+        "maintenance": "Pflege",
+        "growthRate": "Wachstumsrate",
+        "spacing": "Pflanzabstand",
+        "companion": "Begleitpflanzen",
+        "zone": "Anbauzone",
+        "native": "Heimisch in",
+        "size": {
+          "compact": "Kompakt",
+          "standard": "Standard",
+          "medium": "Mittelgroßer Baum",
+          "large": "Großer Baum",
+          "giant": "Riesenbaum"
+        },
+        "hardiness": {
+          "veryHardy": "Sehr winterhart",
+          "hardy": "Winterhart",
+          "halfHardy": "Bedingt winterhart",
+          "tender": "Frostempfindlich"
+        }
+      },
+      "care": {
+        "watering": "Bewässerung",
+        "sunlight": "Lichtanforderungen",
+        "soil": "Bodenanforderungen",
+        "fertilizing": "Düngung",
+        "pruning": "Schnitt",
+        "planting": "Pflanzung",
+        "spacing": "Abstand",
+        "seasonalCare": "Saisonale Pflege",
+        "problems": "Häufige Probleme",
+        "tips": "Anbautipps",
+        "instructions": "Pflegeanweisungen"
+      },
+      "messages": {
+        "success": {
+          "plantAdded": "{{name}} wurde zu Ihrem Garten hinzugefügt!",
+          "plantRemoved": "{{name}} wurde aus Ihrer Sammlung entfernt",
+          "notesUpdated": "Pflanzennotizen erfolgreich aktualisiert",
+          "imageGenerated": "Pflanzenbilder erfolgreich generiert"
+        },
+        "error": {
+          "failedToAdd": "Fehler beim Hinzufügen der Pflanze zur Sammlung",
+          "failedToRemove": "Fehler beim Entfernen der Pflanze aus der Sammlung",
+          "failedToLoad": "Fehler beim Laden der Pflanzendaten",
+          "failedToSave": "Fehler beim Speichern der Pflanzeninformationen",
+          "alreadyInCollection": "Diese Pflanze ist bereits in Ihrer Sammlung",
+          "limitReached": "Sie haben Ihr Sammlungslimit erreicht"
+        },
+        "warnings": {
+          "unsavedChanges": "Sie haben ungespeicherte Änderungen",
+          "deleteConfirm": "Sind Sie sicher, dass Sie diese Pflanze löschen möchten?",
+          "removeConfirm": "{{name}} aus Ihrer Sammlung entfernen?"
+        }
+      }
     }
   }
 }

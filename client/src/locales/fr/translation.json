@@ -670,6 +670,302 @@
       "termsOfService": "Conditions d'Utilisation",
       "contact": "Contact",
       "copyright": "© 2024 GardenScape Pro. Tous droits réservés."
+    },
+    "plants": {
+      "library": {
+        "title": "Bibliothèque de Plantes",
+        "subtitle": "Découvrez et explorez notre base de données complète de plantes",
+        "searchPlaceholder": "Rechercher des plantes par nom commun ou scientifique...",
+        "searchTip": "Astuce : Utilisez les filtres ci-dessous pour affiner votre recherche par caractéristiques de plantes",
+        "filtersActive": "{{count}} filtres actifs",
+        "plantsFound": "{{count}} plantes trouvées",
+        "noResults": "Aucune plante trouvée",
+        "noResultsDesc": "Essayez d'ajuster vos termes de recherche ou filtres",
+        "loading": "Chargement des plantes...",
+        "tabs": {
+          "browse": "Parcourir les Plantes",
+          "advanced": "Recherche Avancée",
+          "collection": "Ma Collection"
+        },
+        "sort": {
+          "nameAsc": "Nom A-Z",
+          "nameDesc": "Nom Z-A",
+          "newest": "Plus Récentes",
+          "oldest": "Plus Anciennes"
+        },
+        "pagination": {
+          "showing": "Affichage de {{start}}-{{end}} sur {{total}} plantes",
+          "page": "Page {{current}} sur {{total}}",
+          "previous": "Précédent",
+          "next": "Suivant"
+        },
+        "collection": {
+          "addToCollection": "Ajouter à la Collection",
+          "removeFromCollection": "Retirer de la Collection",
+          "addedToCollection": "Ajouté à la Collection",
+          "removedFromCollection": "Retiré de la Collection",
+          "inCollection": "Dans la Collection",
+          "collectionLimit": "Limite de Collection Atteinte",
+          "upgradeToAddMore": "Améliorez pour ajouter plus de plantes à votre collection",
+          "duplicatePlant": "Cette plante est déjà dans votre collection",
+          "myCollectionOnly": "Ma Collection Seulement",
+          "emptyCollection": "Votre collection est vide",
+          "emptyCollectionDesc": "Commencez à parcourir pour ajouter des plantes à votre collection"
+        }
+      },
+      "card": {
+        "viewDetails": "Voir les Détails",
+        "addToGarden": "Ajouter au Jardin",
+        "edit": "Modifier la Plante",
+        "delete": "Supprimer la Plante",
+        "verify": "Vérifier",
+        "reject": "Rejeter",
+        "generateImages": "Générer des Images",
+        "admin": "Actions Admin",
+        "pending": "En Attente de Vérification",
+        "verified": "Vérifié",
+        "moreActions": "Plus d'Actions",
+        "shareCard": "Partager la Fiche de Plante",
+        "printCard": "Imprimer la Fiche de Plante",
+        "downloadCard": "Télécharger la Fiche",
+        "addNotes": "Ajouter des notes personnelles...",
+        "saveNotes": "Enregistrer les Notes",
+        "closeModal": "Fermer",
+        "plantDetails": "Détails de la Plante",
+        "careInstructions": "Instructions d'Entretien",
+        "growingTips": "Conseils de Culture"
+      },
+      "doctor": {
+        "title": "Docteur des Plantes",
+        "subtitle": "Identification de plantes et diagnostic de santé alimentés par l'IA",
+        "services": {
+          "identification": {
+            "title": "Identification de Plantes",
+            "description": "Téléchargez une photo pour identifier n'importe quelle espèce de plante"
+          },
+          "disease": {
+            "title": "Diagnostic de Maladies",
+            "description": "Identifiez les maladies des plantes et obtenez des conseils de traitement"
+          },
+          "weed": {
+            "title": "Identification de Mauvaises Herbes",
+            "description": "Identifiez les mauvaises herbes et obtenez des stratégies de suppression"
+          }
+        },
+        "upload": {
+          "title": "Télécharger une Image",
+          "dragDrop": "Glissez et déposez votre image ici, ou cliquez pour sélectionner",
+          "selectImage": "Sélectionner une Image",
+          "supportedFormats": "Formats supportés : JPG, PNG, WebP",
+          "maxSize": "Taille maximale de fichier : 10MB",
+          "analyzing": "Analyse de votre image...",
+          "analysisComplete": "Analyse Terminée",
+          "analysisFailed": "Analyse Échouée",
+          "noImageSelected": "Aucune Image Sélectionnée",
+          "selectImageFirst": "Veuillez sélectionner une image à analyser",
+          "additionalNotes": "Notes supplémentaires (optionnel)",
+          "notesPlaceholder": "Décrivez les symptômes ou préoccupations..."
+        },
+        "results": {
+          "title": "Résultats Récents",
+          "noResults": "Aucun résultat d'analyse récent",
+          "noResultsDesc": "Téléchargez une image pour commencer l'identification de plantes",
+          "analysisDate": "Analysé le {{date}}",
+          "confidence": "Confiance : {{percentage}}%"
+        },
+        "premium": {
+          "title": "Docteur des Plantes Premium",
+          "features": [
+            "Diagnostic avancé de maladies",
+            "Recommandations de traitement",
+            "Guides d'entretien saisonniers",
+            "Consultation d'experts"
+          ],
+          "upgradeNow": "Mettre à Niveau Maintenant"
+        }
+      },
+      "search": {
+        "advanced": {
+          "title": "Filtres et Recherche de Plantes",
+          "description": "Utilisez n'importe quelle combinaison de filtres pour trouver vos plantes parfaites",
+          "clearAll": "Tout Effacer",
+          "applyFilters": "Rechercher",
+          "activeFilters": "{{count}} actifs"
+        },
+        "filters": {
+          "plantTypes": "Types de Plantes (Sélection Multiple)",
+          "selectPlantTypes": "Sélectionner les Types de Plantes",
+          "heightRange": "Plage de Hauteur",
+          "spreadRange": "Plage d'Étalement/Largeur",
+          "colors": "Couleurs (Sélectionner Toutes Celles Qui S'Appliquent)",
+          "bloomSeasons": "Saisons de Floraison",
+          "sunlight": "Exigences de Soleil",
+          "water": "Exigences d'Eau",
+          "soilType": "Type de Sol",
+          "hardiness": "Zone de Rusticité",
+          "maintenance": "Niveau d'Entretien",
+          "foliageType": "Type de Feuillage",
+          "growthRate": "Taux de Croissance",
+          "nativeRegion": "Région Native"
+        },
+        "plantTypes": {
+          "perennial": "Vivaces",
+          "annual": "Annuelles",
+          "biennial": "Bisannuelles",
+          "shrub": "Arbustes",
+          "tree": "Arbres",
+          "bulb": "Bulbes",
+          "climber": "Grimpantes",
+          "grass": "Graminées Ornementales",
+          "succulent": "Succulentes",
+          "cactus": "Cactus",
+          "fern": "Fougères",
+          "aquatic": "Plantes Aquatiques"
+        },
+        "sunlight": {
+          "full_sun": "Plein Soleil (6+ heures)",
+          "partial_sun": "Soleil Partiel (4-6 heures)",
+          "partial_shade": "Ombre Partielle (2-4 heures)",
+          "full_shade": "Ombre Complète (<2 heures)"
+        },
+        "water": {
+          "low": "Peu d'Eau",
+          "moderate": "Eau Modérée",
+          "high": "Beaucoup d'Eau"
+        },
+        "soilTypes": {
+          "clay": "Argile",
+          "sand": "Sable",
+          "loam": "Terreau",
+          "silt": "Limon",
+          "chalk": "Craie"
+        },
+        "maintenance": {
+          "low": "Entretien Facile",
+          "moderate": "Modéré",
+          "high": "Entretien Intensif"
+        },
+        "seasons": {
+          "spring": "Printemps",
+          "summer": "Été",
+          "autumn": "Automne",
+          "winter": "Hiver"
+        },
+        "colors": {
+          "white": "Blanc",
+          "cream": "Crème",
+          "yellow": "Jaune",
+          "orange": "Orange",
+          "peach": "Pêche",
+          "red": "Rouge",
+          "pink": "Rose",
+          "hotPink": "Rose Vif",
+          "magenta": "Magenta",
+          "purple": "Violet",
+          "lavender": "Lavande",
+          "blue": "Bleu",
+          "lightBlue": "Bleu Clair",
+          "turquoise": "Turquoise",
+          "green": "Vert",
+          "lime": "Citron Vert",
+          "brown": "Marron",
+          "black": "Noir"
+        },
+        "height": {
+          "min": "Min : {{value}}",
+          "max": "Max : {{value}}",
+          "any": "Toute",
+          "anyHeight": "Toute hauteur",
+          "includeLarge": "Inclure les grands arbres spécimens",
+          "largeSpecimens": "(5m+)",
+          "allHeights": "🌳 Toutes hauteurs",
+          "showingAll": "Affichage de tous les arbres ornementaux y compris les grands spécimens",
+          "defaultRange": "Des minuscules couvre-sols aux arbres moyens (jusqu'à 5m)",
+          "includes": "Inclut Araucaria, Cèdres et autres arbres spécimens",
+          "typical": "Défaut : Affiche les plantes de jardin typiques • Cocher pour arbres plus grands"
+        },
+        "spread": {
+          "min": "Min : {{value}}",
+          "max": "Max : {{value}}",
+          "any": "Toute",
+          "description": "Largeur de plante pour espacement approprié",
+          "defaultInfo": "Défaut : Affiche tous les étalements • Ajuster pour filtrer"
+        }
+      },
+      "recentlyViewed": {
+        "title": "Plantes Récemment Vues",
+        "empty": "Aucune plante récemment vue",
+        "emptyDesc": "Parcourez la bibliothèque de plantes pour commencer à construire votre historique",
+        "clearHistory": "Effacer l'Historique",
+        "viewedOn": "Vu {{time}}"
+      },
+      "characteristics": {
+        "commonName": "Nom Commun",
+        "scientificName": "Nom Scientifique",
+        "type": "Type de Plante",
+        "height": "Hauteur",
+        "spread": "Étalement",
+        "bloomTime": "Période de Floraison",
+        "flowerColor": "Couleur des Fleurs",
+        "foliageColor": "Couleur du Feuillage",
+        "sunlight": "Soleil",
+        "water": "Eau",
+        "soil": "Sol",
+        "hardiness": "Rusticité",
+        "maintenance": "Entretien",
+        "growthRate": "Taux de Croissance",
+        "spacing": "Espacement des Plantes",
+        "companion": "Plantes Compagnes",
+        "zone": "Zone de Culture",
+        "native": "Natif de",
+        "size": {
+          "compact": "Compact",
+          "standard": "Standard",
+          "medium": "Arbre Moyen",
+          "large": "Grand Arbre",
+          "giant": "Arbre Géant"
+        },
+        "hardiness": {
+          "veryHardy": "Très Rustique",
+          "hardy": "Rustique",
+          "halfHardy": "Semi-Rustique",
+          "tender": "Sensible"
+        }
+      },
+      "care": {
+        "watering": "Arrosage",
+        "sunlight": "Exigences de Lumière",
+        "soil": "Exigences de Sol",
+        "fertilizing": "Fertilisation",
+        "pruning": "Taille",
+        "planting": "Plantation",
+        "spacing": "Espacement",
+        "seasonalCare": "Soins Saisonniers",
+        "problems": "Problèmes Courants",
+        "tips": "Conseils de Culture",
+        "instructions": "Instructions d'Entretien"
+      },
+      "messages": {
+        "success": {
+          "plantAdded": "{{name}} a été ajouté à votre jardin !",
+          "plantRemoved": "{{name}} a été retiré de votre collection",
+          "notesUpdated": "Notes de plante mises à jour avec succès",
+          "imageGenerated": "Images de plante générées avec succès"
+        },
+        "error": {
+          "failedToAdd": "Échec de l'ajout de la plante à la collection",
+          "failedToRemove": "Échec de la suppression de la plante de la collection",
+          "failedToLoad": "Échec du chargement des données de plante",
+          "failedToSave": "Échec de la sauvegarde des informations de plante",
+          "alreadyInCollection": "Cette plante est déjà dans votre collection",
+          "limitReached": "Vous avez atteint votre limite de collection"
+        },
+        "warnings": {
+          "unsavedChanges": "Vous avez des modifications non sauvegardées",
+          "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette plante ?",
+          "removeConfirm": "Retirer {{name}} de votre collection ?"
+        }
+      }
     }
   }
 }

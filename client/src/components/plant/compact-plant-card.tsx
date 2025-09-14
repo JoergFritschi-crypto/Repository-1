@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -90,10 +91,10 @@ function getHardinessCategory(hardiness: string | undefined): string | null {
   // Zones 8-9: Half Hardy (-5 to 0°C)
   // Zones 10+: Tender (>0°C)
   
-  if (lowestZone <= 5) return "Very Hardy";
-  if (lowestZone <= 7) return "Hardy";
-  if (lowestZone <= 9) return "Half Hardy";
-  return "Tender";
+  if (lowestZone <= 5) return "veryHardy";
+  if (lowestZone <= 7) return "hardy";
+  if (lowestZone <= 9) return "halfHardy";
+  return "tender";
 }
 
 // Get badge color for hardiness category
@@ -126,7 +127,7 @@ function getFlowerColorClass(color: string): string {
 }
 
 // Get plant size category based on maximum height
-function getSizeCategory(heightMaxCm: number | null | undefined): {
+function getSizeCategory(heightMaxCm: number | null | undefined, t: any): {
   category: string;
   label: string;
   color: string;
@@ -140,35 +141,35 @@ function getSizeCategory(heightMaxCm: number | null | undefined): {
   if (heightM <= 2) {
     return {
       category: 'compact',
-      label: 'Compact',
+      label: t('plants.characteristics.size.compact'),
       color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
       icon: '🌱'
     };
   } else if (heightM <= 5) {
     return {
       category: 'standard',
-      label: 'Standard',
+      label: t('plants.characteristics.size.standard'),
       color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
       icon: '🌿'
     };
   } else if (heightM <= 10) {
     return {
       category: 'medium',
-      label: 'Medium Tree',
+      label: t('plants.characteristics.size.medium'),
       color: 'bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary',
       icon: '🌳'
     };
   } else if (heightM <= 20) {
     return {
       category: 'large',
-      label: 'Large Tree',
+      label: t('plants.characteristics.size.large'),
       color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
       icon: '🌲'
     };
   } else {
     return {
       category: 'giant',
-      label: 'Giant Tree',
+      label: t('plants.characteristics.size.giant'),
       color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
       icon: '🌴'
     };
@@ -187,6 +188,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
   onReject,
   onGenerateImages
 }: CompactPlantCardProps) {
+  const { t } = useTranslation();
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -378,7 +380,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
       const result = await response.json();
       
       toast({
-        title: "✓ Validation Complete",
+        title: t('plants.messages.success.notesUpdated'),
         description: `Updated ${result.updatedFields} fields for ${plant.commonName}`,
       });
       
@@ -388,8 +390,8 @@ const CompactPlantCard = memo(function CompactPlantCard({
       setShowAdminDialog(false);
     } catch (error) {
       toast({
-        title: "Validation Failed",
-        description: "Could not validate plant data",
+        title: t('plants.messages.error.failedToSave'),
+        description: t('plants.messages.error.failedToLoad'),
         variant: "destructive"
       });
     } finally {
@@ -404,7 +406,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
       const result = await response.json();
       
       toast({
-        title: "✓ Images Generated",
+        title: t('plants.messages.success.imageGenerated'),
         description: `Generated new images for ${plant.commonName}`,
       });
       
@@ -414,8 +416,8 @@ const CompactPlantCard = memo(function CompactPlantCard({
       setShowAdminDialog(false);
     } catch (error) {
       toast({
-        title: "Image Generation Failed",
-        description: "Could not generate images",
+        title: t('plants.messages.error.failedToSave'),
+        description: t('plants.messages.error.failedToLoad'),
         variant: "destructive"
       });
     } finally {
@@ -477,7 +479,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
               {plant.verificationStatus === 'verified' && (
                 <div className="absolute top-2 right-12 bg-green-500 text-white px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
                   <Check className="w-3 h-3" />
-                  <span className="text-xs font-medium">Verified</span>
+                  <span className="text-xs font-medium">{t('plants.card.verified')}</span>
                 </div>
               )}
               
@@ -485,7 +487,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
               {plant.verificationStatus === 'pending' && (
                 <div className="absolute top-2 right-12 bg-accent text-primary px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
-                  <span className="text-xs font-medium">Pending</span>
+                  <span className="text-xs font-medium">{t('plants.card.pending')}</span>
                 </div>
               )}
             </>
@@ -594,7 +596,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
               
               {/* Size category for trees over 5m */}
               {(() => {
-                const sizeInfo = getSizeCategory(plant.heightMaxCm);
+                const sizeInfo = getSizeCategory(plant.heightMaxCm, t);
                 if (!sizeInfo || sizeInfo.category === 'compact' || sizeInfo.category === 'standard') {
                   return null;
                 }
@@ -604,7 +606,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
                       {sizeInfo.icon} {sizeInfo.label}
                     </span>
                     <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 invisible group-hover/size:visible bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
-                      Best suited for spacious gardens
+                      {t('plants.care.spacing')}
                     </div>
                   </div>
                 );
@@ -622,7 +624,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
                 onClick={() => setShowDetailsDialog(true)}
               >
                 <Eye className="w-3 h-3 mr-0.5" />
-                Details
+                {t('plants.card.viewDetails')}
               </Button>
               {!hideCollectionActions && (
                 !isInCollection ? (
@@ -632,7 +634,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
                     onClick={() => setShowAddDialog(true)}
                   >
                     <Sprout className="w-3 h-3 mr-0.5" />
-                    Add
+                    {t('common.add')}
                   </Button>
                 ) : (
                   <Button
@@ -642,7 +644,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
                     onClick={() => removeFromCollectionMutation.mutate(plant.id)}
                   >
                     <Heart className="w-3 h-3 mr-0.5 fill-current" />
-                    Remove
+                    {t('common.remove')}
                   </Button>
                 )
               )}
@@ -656,7 +658,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
         <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
           <DialogContent className="bg-white text-gray-900">
             <DialogHeader>
-              <DialogTitle className="text-gray-900">Admin Controls</DialogTitle>
+              <DialogTitle className="text-gray-900">{t('plants.card.admin')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 text-gray-900">
               <div>
@@ -669,7 +671,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
                   plant.verificationStatus === 'verified' ? 'default' : 
                   plant.verificationStatus === 'pending' ? 'outline' : 'destructive'
                 }>
-                  Status: {plant.verificationStatus}
+                  {t('common.status')}: {plant.verificationStatus === 'verified' ? t('plants.card.verified') : plant.verificationStatus === 'pending' ? t('plants.card.pending') : plant.verificationStatus}
                 </Badge>
               )}
 
@@ -678,11 +680,11 @@ const CompactPlantCard = memo(function CompactPlantCard({
                   <>
                     <Button onClick={onVerify} className="w-full">
                       <Check className="w-4 h-4 mr-1" />
-                      Verify
+                      {t('plants.card.verify')}
                     </Button>
                     <Button onClick={onReject} variant="destructive" className="w-full">
                       <X className="w-4 h-4 mr-1" />
-                      Reject
+                      {t('plants.card.reject')}
                     </Button>
                   </>
                 )}
@@ -690,7 +692,7 @@ const CompactPlantCard = memo(function CompactPlantCard({
                   <>
                     <Button onClick={onEdit} variant="outline" className="w-full">
                       <Scissors className="w-4 h-4 mr-1" />
-                      Edit
+                      {t('plants.card.edit')}
                     </Button>
                   </>
                 )}
@@ -703,12 +705,12 @@ const CompactPlantCard = memo(function CompactPlantCard({
                   variant="outline"
                   disabled={isValidating}
                   className="w-full"
-                  title="Revalidate all plant data fields using AI"
+                  title={t('plants.card.generateImages')}
                 >
                   {isValidating ? (
-                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Validating</>
+                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> {t('common.loading')}</>
                   ) : (
-                    <><RefreshCw className="w-4 h-4 mr-1" /> Validate Data</>
+                    <><RefreshCw className="w-4 h-4 mr-1" /> {t('plants.card.verify')}</>
                   )}
                 </Button>
                 <Button 
@@ -716,19 +718,19 @@ const CompactPlantCard = memo(function CompactPlantCard({
                   variant="outline"
                   disabled={isGeneratingImages}
                   className="w-full"
-                  title="Generate or replace plant images"
+                  title={t('plants.card.generateImages')}
                 >
                   {isGeneratingImages ? (
-                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Generating</>
+                    <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> {t('common.loading')}</>
                   ) : (
-                    <><Flower2 className="w-4 h-4 mr-1" /> Generate Images</>
+                    <><Flower2 className="w-4 h-4 mr-1" /> {t('plants.card.generateImages')}</>
                   )}
                 </Button>
               </div>
               
               <Button onClick={onDelete} variant="destructive" className="w-full">
                 <Shovel className="w-4 h-4 mr-1" />
-                Delete Plant
+                {t('plants.card.delete')}
               </Button>
 
               {plant.dataSource && (

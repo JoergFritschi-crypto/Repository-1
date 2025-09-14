@@ -1,5 +1,6 @@
 import { useState, useMemo, memo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import Navigation from "@/components/layout/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { Sprout, Search, Heart, ChevronLeft, ChevronRight, ArrowUpDown } from "l
 import type { Plant, PlantSearchFilters } from "@/types/plant";
 
 const PlantLibrary = memo(function PlantLibrary() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [useVirtualScrolling, setUseVirtualScrolling] = useState(true);
@@ -304,11 +306,11 @@ const PlantLibrary = memo(function PlantLibrary() {
         <div className="mb-6">
           <Card className="border-2 border-primary shadow-sm mb-2">
             <CardHeader className="py-6 flower-band-purple rounded-t-lg">
-              <CardTitle className="text-2xl font-serif" data-testid="text-plant-library-title">Plant Library</CardTitle>
+              <CardTitle className="text-2xl font-serif" data-testid="text-plant-library-title">{t('plants.library.title')}</CardTitle>
             </CardHeader>
           </Card>
           <p className="text-sm text-muted-foreground" data-testid="text-plant-library-subtitle">
-            Explore our comprehensive botanical database with over 2,000 ornamental plants
+            {t('plants.library.subtitle')}
           </p>
         </div>
 
@@ -317,11 +319,11 @@ const PlantLibrary = memo(function PlantLibrary() {
           <TabsList className="grid w-full grid-cols-2 h-9" data-testid="tabs-plant-library">
             <TabsTrigger value="browse" className="text-xs" data-testid="tab-browse-plants">
               <Sprout className="w-3 h-3 mr-1.5" />
-              Browse Plants
+              {t('plants.library.tabs.browse')}
             </TabsTrigger>
             <TabsTrigger value="collection" className="text-xs relative" data-testid="tab-my-collection">
               <Heart className="w-3 h-3 mr-1.5" />
-              My Collection ({myCollection?.length || 0}{collectionLimits?.limit > 0 ? `/${collectionLimits.limit}` : ''})
+              {t('plants.library.tabs.collection')} ({myCollection?.length || 0}{collectionLimits?.limit > 0 ? `/${collectionLimits.limit}` : ''})
               {collectionLimits?.userTier === 'premium' && (
                 <Badge className="absolute -top-2 -right-2 text-[10px] px-1 py-0 h-4" variant="default">
                   ∞
@@ -338,17 +340,17 @@ const PlantLibrary = memo(function PlantLibrary() {
                 <CardContent className="py-4">
                   <div className="flex flex-wrap gap-8 items-center">
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">Total Plants</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('plants.library.plantsFound')}</p>
                       <p className="text-2xl font-semibold" data-testid="text-total-plants">{sortedPlants?.length || 0}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">Verified</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('plants.card.verified')}</p>
                       <p className="text-2xl font-semibold text-accent" data-testid="text-verified-plants">
                         {sortedPlants?.filter((p: any) => p.verificationStatus === 'verified').length || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">Available</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('common.available')}</p>
                       <p className="text-2xl font-semibold text-green-600" data-testid="text-available-plants">
                         {sortedPlants?.length || 0}
                       </p>
@@ -358,13 +360,13 @@ const PlantLibrary = memo(function PlantLibrary() {
                       <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
                         <SelectTrigger className="w-[180px]" data-testid="select-sort">
                           <ArrowUpDown className="w-4 h-4 mr-2" />
-                          <SelectValue placeholder="Sort by" />
+                          <SelectValue placeholder={t('common.sort')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                          <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                          <SelectItem value="newest">Newly Added</SelectItem>
-                          <SelectItem value="oldest">Oldest First</SelectItem>
+                          <SelectItem value="name-asc">{t('plants.library.sort.nameAsc')}</SelectItem>
+                          <SelectItem value="name-desc">{t('plants.library.sort.nameDesc')}</SelectItem>
+                          <SelectItem value="newest">{t('plants.library.sort.newest')}</SelectItem>
+                          <SelectItem value="oldest">{t('plants.library.sort.oldest')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -393,7 +395,7 @@ const PlantLibrary = memo(function PlantLibrary() {
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle>Plant Database</CardTitle>
+                    <CardTitle>{t('plants.library.title')}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -402,7 +404,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                     <SkeletonCardGrid count={9} variant="plant" />
                   ) : plantsError ? (
                     <ErrorMessage
-                      title="Failed to load plants"
+                      title={t('plants.messages.error.failedToLoad')}
                       error={plantsError}
                       onRetry={refetchPlants}
                       variant="card"
@@ -416,7 +418,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                         columns={3}
                         itemHeight={460}
                         gap={16}
-                        emptyMessage="No plants found"
+                        emptyMessage={t('plants.library.noResults')}
                         onClearFilters={clearFilters}
                       />
                     ) : (
@@ -432,11 +434,11 @@ const PlantLibrary = memo(function PlantLibrary() {
                     )
                   ) : (
                     <EmptyState
-                      title="No plants found"
-                      message="Try adjusting your search criteria or clearing filters"
+                      title={t('plants.library.noResults')}
+                      message={t('plants.library.noResultsDesc')}
                       icon={<Sprout className="w-8 h-8 text-muted-foreground" />}
                       action={{
-                        label: "Clear Search & Filters",
+                        label: t('plants.search.advanced.clearAll'),
                         onClick: clearFilters
                       }}
                     />
@@ -455,7 +457,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                           data-testid="button-prev-page"
                         >
                           <ChevronLeft className="w-4 h-4" />
-                          Previous
+                          {t('plants.library.pagination.previous')}
                         </Button>
                         
                         {/* Page Numbers */}
@@ -498,7 +500,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                           disabled={currentPage === totalPages}
                           data-testid="button-next-page"
                         >
-                          Next
+                          {t('plants.library.pagination.next')}
                           <ChevronRight className="w-4 h-4" />
                         </Button>
                   </div>
@@ -514,7 +516,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                 <CardContent className="py-4">
                   <div className="flex flex-wrap gap-8 items-center">
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">Total in Collection</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('plants.library.collection.inCollection')}</p>
                       <div className="flex items-baseline gap-2">
                         <p className="text-2xl font-semibold" data-testid="text-total-collection">
                           {myCollection?.length || 0}
@@ -529,7 +531,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                         )}
                         {collectionLimits?.userTier === 'premium' && (
                           <Badge variant="secondary" className="ml-2">
-                            Unlimited
+                            {t('common.unlimited')}
                           </Badge>
                         )}
                       </div>
@@ -549,13 +551,13 @@ const PlantLibrary = memo(function PlantLibrary() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">Perennials</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('plants.search.plantTypes.perennial')}</p>
                       <p className="text-2xl font-semibold text-accent" data-testid="text-perennials-collection">
                         {myCollection?.filter((item: any) => item.plant?.type === 'perennial').length || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground font-medium">Annuals</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('plants.search.plantTypes.annual')}</p>
                       <p className="text-2xl font-semibold text-green-600" data-testid="text-annuals-collection">
                         {myCollection?.filter((item: any) => item.plant?.type === 'annual').length || 0}
                       </p>
@@ -572,7 +574,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                           data-testid="button-upgrade-premium"
                         >
                           <Sprout className="w-4 h-4 mr-1" />
-                          Upgrade to Premium
+                          {t('plants.library.collection.upgradeToAddMore')}
                         </Button>
                       )}
                       <Button 
@@ -584,7 +586,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                                  collectionLimits.current >= collectionLimits.limit}
                       >
                         <Heart className="w-4 h-4 mr-1" />
-                        Add Plants
+                        {t('plants.library.collection.addToCollection')}
                       </Button>
                     </div>
                   </div>
@@ -604,7 +606,7 @@ const PlantLibrary = memo(function PlantLibrary() {
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle>My Plant Collection</CardTitle>
+                    <CardTitle>{t('plants.library.tabs.collection')}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -612,7 +614,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                     <SkeletonCardGrid count={9} variant="plant" />
                   ) : collectionError ? (
                     <ErrorMessage
-                      title="Failed to load collection"
+                      title={t('plants.messages.error.failedToLoad')}
                       error={collectionError}
                       onRetry={() => window.location.reload()}
                       variant="card"
@@ -630,11 +632,11 @@ const PlantLibrary = memo(function PlantLibrary() {
                     </div>
                   ) : (
                     <EmptyState
-                      title="Your collection is empty"
-                      message="Start building your personal plant collection by browsing our database"
+                      title={t('plants.library.collection.emptyCollection')}
+                      message={t('plants.library.collection.emptyCollectionDesc')}
                       icon={<Heart className="w-8 h-8 text-muted-foreground" />}
                       action={{
-                        label: "Browse Plants",
+                        label: t('plants.library.tabs.browse'),
                         onClick: () => setActiveTab("browse")
                       }}
                     />
@@ -653,7 +655,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                     data-testid="button-collection-prev-page"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    Previous
+                    {t('plants.library.pagination.previous')}
                   </Button>
                   
                   {/* Page Numbers */}
@@ -696,7 +698,7 @@ const PlantLibrary = memo(function PlantLibrary() {
                     disabled={currentCollectionPage === totalCollectionPages}
                     data-testid="button-collection-next-page"
                   >
-                    Next
+                    {t('plants.library.pagination.next')}
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
