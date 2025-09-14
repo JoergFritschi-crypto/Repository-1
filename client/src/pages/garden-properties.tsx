@@ -2594,8 +2594,8 @@ export default function GardenProperties() {
                   userTier={user?.userTier || 'free'}
                 />
                 
-                {/* Step 4 Navigation Buttons */}
-                <div className="flex justify-between mt-6 sticky bottom-0 bg-background/95 backdrop-blur p-4 border-t-2 border-[#FFD700]/20 -mx-4 mb-[-1rem]">
+                {/* Step 4 Navigation Buttons - Below Canvas */}
+                <div className="flex justify-between mt-8 p-4 border-t-2 border-[#FFD700]/20">
                   <Button
                     type="button"
                     variant="outline"
