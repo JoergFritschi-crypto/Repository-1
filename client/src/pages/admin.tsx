@@ -21,6 +21,7 @@ import { ImageComparisonTool } from "@/components/admin/image-comparison-tool";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { PlantImportWizard } from "@/components/admin/plant-import-wizard";
 import { TodoList } from "@/components/admin/todo-list";
+import { SecuritySettings } from "@/components/admin/security-settings";
 import { useLocation } from "wouter";
 import { 
   Settings, 
@@ -1121,20 +1122,7 @@ export default function Admin() {
               </TabsContent>
 
               <TabsContent value="security" className="mt-8">
-                <Card>
-                  <CardHeader>
-                    <CardTitle data-testid="text-security-title">Security Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12" data-testid="security-placeholder">
-                      <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">Security Settings</h3>
-                      <p className="text-muted-foreground">
-                        Manage security policies and access controls
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <SecuritySettings />
               </TabsContent>
 
 

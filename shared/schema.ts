@@ -1181,3 +1181,148 @@ export function createGardenScene3D(
     }
   };
 }
+
+// Security event type enum
+export const securityEventTypeEnum = pgEnum("security_event_type", [
+  "login_success",
+  "login_failed",
+  "logout",
+  "password_change",
+  "api_key_created",
+  "api_key_revoked",
+  "admin_action",
+  "data_export",
+  "data_deletion",
+  "permission_change",
+  "suspicious_activity",
+  "rate_limit_exceeded",
+  "ip_blocked",
+  "session_revoked"
+]);
+
+// Security audit logs table
+export const securityAuditLogs = pgTable("security_audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "set null" }),
+  eventType: securityEventTypeEnum("event_type").notNull(),
+  eventDescription: text("event_description").notNull(),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  metadata: jsonb("metadata"),
+  severity: varchar("severity").default("info"), // info, warning, error, critical
+  success: boolean("success").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Failed login attempts table
+export const failedLoginAttempts = pgTable("failed_login_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email"),
+  ipAddress: varchar("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  reason: varchar("reason"), // invalid_credentials, account_locked, etc.
+  attemptCount: integer("attempt_count").default(1),
+  lastAttemptAt: timestamp("last_attempt_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Active sessions monitoring table
+export const activeSessions = pgTable("active_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  sessionId: varchar("session_id").notNull(),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  location: varchar("location"), // Geo-location if available
+  lastActivity: timestamp("last_activity").defaultNow(),
+  isActive: boolean("is_active").default(true),
+  revokedAt: timestamp("revoked_at"),
+  revokedBy: varchar("revoked_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+});
+
+// IP blocking/allowlisting table
+export const ipAccessControl = pgTable("ip_access_control", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ipAddress: varchar("ip_address").notNull().unique(),
+  type: varchar("type").notNull(), // block, allow
+  reason: text("reason"),
+  addedBy: varchar("added_by").references(() => users.id, { onDelete: "set null" }),
+  expiresAt: timestamp("expires_at"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Security settings table
+export const securitySettings = pgTable("security_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  settingKey: varchar("setting_key").unique().notNull(),
+  settingValue: jsonb("setting_value"),
+  settingType: varchar("setting_type"), // password_policy, rate_limit, session, etc.
+  description: text("description"),
+  isEnabled: boolean("is_enabled").default(true),
+  updatedBy: varchar("updated_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Rate limit violations table
+export const rateLimitViolations = pgTable("rate_limit_violations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ipAddress: varchar("ip_address").notNull(),
+  endpoint: varchar("endpoint").notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "set null" }),
+  violationCount: integer("violation_count").default(1),
+  windowStart: timestamp("window_start").defaultNow(),
+  lastViolationAt: timestamp("last_violation_at").defaultNow(),
+  metadata: jsonb("metadata"),
+});
+
+// Security recommendations table
+export const securityRecommendations = pgTable("security_recommendations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  category: varchar("category"), // authentication, api, data, config, etc.
+  severity: varchar("severity"), // low, medium, high, critical
+  status: varchar("status").default("pending"), // pending, implemented, dismissed
+  actionUrl: varchar("action_url"),
+  metadata: jsonb("metadata"),
+  dismissedBy: varchar("dismissed_by").references(() => users.id, { onDelete: "set null" }),
+  dismissedAt: timestamp("dismissed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Export types for security tables
+export type SecurityAuditLog = typeof securityAuditLogs.$inferSelect;
+export type InsertSecurityAuditLog = typeof securityAuditLogs.$inferInsert;
+
+export type FailedLoginAttempt = typeof failedLoginAttempts.$inferSelect;
+export type InsertFailedLoginAttempt = typeof failedLoginAttempts.$inferInsert;
+
+export type ActiveSession = typeof activeSessions.$inferSelect;
+export type InsertActiveSession = typeof activeSessions.$inferInsert;
+
+export type IpAccessControl = typeof ipAccessControl.$inferSelect;
+export type InsertIpAccessControl = typeof ipAccessControl.$inferInsert;
+
+export type SecuritySetting = typeof securitySettings.$inferSelect;
+export type InsertSecuritySetting = typeof securitySettings.$inferInsert;
+
+export type RateLimitViolation = typeof rateLimitViolations.$inferSelect;
+export type InsertRateLimitViolation = typeof rateLimitViolations.$inferInsert;
+
+export type SecurityRecommendation = typeof securityRecommendations.$inferSelect;
+export type InsertSecurityRecommendation = typeof securityRecommendations.$inferInsert;
+
+// Create insert schemas using drizzle-zod
+export const insertSecurityAuditLogSchema = createInsertSchema(securityAuditLogs);
+export const insertFailedLoginAttemptSchema = createInsertSchema(failedLoginAttempts);
+export const insertActiveSessionSchema = createInsertSchema(activeSessions);
+export const insertIpAccessControlSchema = createInsertSchema(ipAccessControl);
+export const insertSecuritySettingSchema = createInsertSchema(securitySettings);
+export const insertRateLimitViolationSchema = createInsertSchema(rateLimitViolations);
+export const insertSecurityRecommendationSchema = createInsertSchema(securityRecommendations);

@@ -35,7 +35,16 @@ import {
   scrapePlantFromUrlSchema,
   uploadFileSchema,
   adminUpdateUserSchema,
-  adminGenerateIconsSchema
+  adminGenerateIconsSchema,
+  // Security validation schemas
+  auditLogFiltersSchema,
+  sessionFilterSchema,
+  ipControlFilterSchema,
+  addIpControlSchema,
+  updateSecuritySettingSchema,
+  updateRecommendationSchema,
+  securityIdParamSchema,
+  ipAddressParamSchema
 } from "./validation";
 import Stripe from "stripe";
 import PerplexityAI from "./perplexityAI";
@@ -126,22 +135,53 @@ function errorHandler(err: Error, req: Request, res: Response, next: NextFunctio
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Security headers with helmet
+  // Security headers with helmet - hardened for production
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-        connectSrc: ["'self'", "wss:", "ws:", "https:", "http:"],
-        fontSrc: ["'self'", "https:", "http:", "data:"],
+        scriptSrc: isDevelopment 
+          ? ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"]
+          : ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+        styleSrc: isDevelopment
+          ? ["'self'", "'unsafe-inline'", "https:", "http:"]
+          : ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: [
+          "'self'",
+          "wss:",
+          "ws:",
+          "https://api.openai.com",
+          "https://api.anthropic.com",
+          "https://api.perplexity.ai",
+          "https://generativelanguage.googleapis.com",
+          "https://api.stripe.com",
+          "https://weather.visualcrossing.com",
+          "https://api.mapbox.com",
+          "https://api.runware.ai",
+          "https://api.firecrawl.dev",
+          isDevelopment ? "http://localhost:*" : ""
+        ].filter(Boolean),
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         objectSrc: ["'none'"],
-        mediaSrc: ["'self'", "https:", "http:"],
-        frameSrc: ["'self'", "https:", "http:"]
+        mediaSrc: ["'self'", "https:"],
+        frameSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"]
       }
     },
-    crossOriginEmbedderPolicy: false
+    crossOriginEmbedderPolicy: false,
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    },
+    noSniff: true,
+    xssFilter: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
   }));
   
   // Auth middleware
@@ -2005,6 +2045,364 @@ Rules:
     } catch (error) {
       console.error('Simple image generation error:', error);
       res.status(500).json({ error: 'Failed to generate image' });
+    }
+  });
+
+  // Admin Security Management Routes
+  app.get('/api/admin/security/stats', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const stats = await storage.getSecurityStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching security stats:", error);
+      res.status(500).json({ message: "Failed to fetch security stats" });
+    }
+  });
+
+  app.get('/api/admin/security/audit-logs', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const filters = {
+        userId: req.query.userId as string | undefined,
+        eventType: req.query.eventType as string | undefined,
+        severity: req.query.severity as string | undefined,
+        startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
+        endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : 100
+      };
+      
+      const logs = await storage.getSecurityAuditLogs(filters);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
+  app.get('/api/admin/security/sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const userId = req.query.userId as string | undefined;
+      const sessions = await storage.getActiveSessions(userId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+      res.status(500).json({ message: "Failed to fetch sessions" });
+    }
+  });
+
+  app.post('/api/admin/security/sessions/:sessionId/revoke', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      await storage.revokeSession(req.params.sessionId, req.user.claims.sub);
+      
+      // Log the action
+      await storage.createSecurityAuditLog({
+        userId: req.user.claims.sub,
+        eventType: 'session_revoked',
+        eventDescription: `Admin revoked session ${req.params.sessionId}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        severity: 'warning',
+        success: true
+      });
+      
+      res.json({ message: "Session revoked successfully" });
+    } catch (error) {
+      console.error("Error revoking session:", error);
+      res.status(500).json({ message: "Failed to revoke session" });
+    }
+  });
+
+  app.get('/api/admin/security/failed-logins', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const ipAddress = req.query.ipAddress as string | undefined;
+      const attempts = await storage.getFailedLoginAttempts(ipAddress);
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching failed logins:", error);
+      res.status(500).json({ message: "Failed to fetch failed login attempts" });
+    }
+  });
+
+  app.post('/api/admin/security/failed-logins/:ipAddress/clear', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      await storage.clearFailedLoginAttempts(req.params.ipAddress);
+      
+      // Log the action
+      await storage.createSecurityAuditLog({
+        userId: req.user.claims.sub,
+        eventType: 'admin_action',
+        eventDescription: `Cleared failed login attempts for IP ${req.params.ipAddress}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        severity: 'info',
+        success: true
+      });
+      
+      res.json({ message: "Failed login attempts cleared" });
+    } catch (error) {
+      console.error("Error clearing failed logins:", error);
+      res.status(500).json({ message: "Failed to clear failed login attempts" });
+    }
+  });
+
+  app.get('/api/admin/security/ip-controls', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const type = req.query.type as 'block' | 'allow' | undefined;
+      const controls = await storage.getIpAccessControl(type);
+      res.json(controls);
+    } catch (error) {
+      console.error("Error fetching IP controls:", error);
+      res.status(500).json({ message: "Failed to fetch IP controls" });
+    }
+  });
+
+  app.post('/api/admin/security/ip-controls', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { ipAddress, type, reason, expiresAt } = req.body;
+      
+      if (!ipAddress || !type || !['block', 'allow'].includes(type)) {
+        return res.status(400).json({ message: "Invalid IP control data" });
+      }
+      
+      const control = await storage.addIpAccessControl({
+        ipAddress,
+        type,
+        reason,
+        addedBy: req.user.claims.sub,
+        expiresAt: expiresAt ? new Date(expiresAt) : undefined
+      });
+      
+      // Log the action
+      await storage.createSecurityAuditLog({
+        userId: req.user.claims.sub,
+        eventType: type === 'block' ? 'ip_blocked' : 'admin_action',
+        eventDescription: `${type === 'block' ? 'Blocked' : 'Allowed'} IP ${ipAddress}: ${reason || 'No reason provided'}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        severity: type === 'block' ? 'warning' : 'info',
+        success: true
+      });
+      
+      res.status(201).json(control);
+    } catch (error) {
+      console.error("Error adding IP control:", error);
+      res.status(500).json({ message: "Failed to add IP control" });
+    }
+  });
+
+  app.delete('/api/admin/security/ip-controls/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      await storage.removeIpAccessControl(req.params.id);
+      
+      // Log the action
+      await storage.createSecurityAuditLog({
+        userId: req.user.claims.sub,
+        eventType: 'admin_action',
+        eventDescription: `Removed IP access control ${req.params.id}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        severity: 'info',
+        success: true
+      });
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error removing IP control:", error);
+      res.status(500).json({ message: "Failed to remove IP control" });
+    }
+  });
+
+  app.get('/api/admin/security/settings', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const settings = await storage.getSecuritySettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching security settings:", error);
+      res.status(500).json({ message: "Failed to fetch security settings" });
+    }
+  });
+
+  app.put('/api/admin/security/settings', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { key, value } = req.body;
+      
+      if (!key) {
+        return res.status(400).json({ message: "Setting key is required" });
+      }
+      
+      const setting = await storage.updateSecuritySetting(key, value, req.user.claims.sub);
+      
+      // Log the action
+      await storage.createSecurityAuditLog({
+        userId: req.user.claims.sub,
+        eventType: 'admin_action',
+        eventDescription: `Updated security setting ${key}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        metadata: { key, value },
+        severity: 'info',
+        success: true
+      });
+      
+      res.json(setting);
+    } catch (error) {
+      console.error("Error updating security setting:", error);
+      res.status(500).json({ message: "Failed to update security setting" });
+    }
+  });
+
+  app.get('/api/admin/security/rate-limits', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const filters = {
+        ipAddress: req.query.ipAddress as string | undefined,
+        endpoint: req.query.endpoint as string | undefined,
+        startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined
+      };
+      
+      const violations = await storage.getRateLimitViolations(filters);
+      res.json(violations);
+    } catch (error) {
+      console.error("Error fetching rate limit violations:", error);
+      res.status(500).json({ message: "Failed to fetch rate limit violations" });
+    }
+  });
+
+  app.get('/api/admin/security/recommendations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const status = req.query.status as string | undefined;
+      const recommendations = await storage.getSecurityRecommendations(status);
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error fetching security recommendations:", error);
+      res.status(500).json({ message: "Failed to fetch security recommendations" });
+    }
+  });
+
+  app.put('/api/admin/security/recommendations/:id', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { status } = req.body;
+      
+      if (!status || !['pending', 'implemented', 'dismissed'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const recommendation = await storage.updateRecommendationStatus(
+        req.params.id,
+        status,
+        status === 'dismissed' ? req.user.claims.sub : undefined
+      );
+      
+      // Log the action
+      await storage.createSecurityAuditLog({
+        userId: req.user.claims.sub,
+        eventType: 'admin_action',
+        eventDescription: `Updated security recommendation ${req.params.id} to ${status}`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        severity: 'info',
+        success: true
+      });
+      
+      res.json(recommendation);
+    } catch (error) {
+      console.error("Error updating recommendation:", error);
+      res.status(500).json({ message: "Failed to update recommendation" });
+    }
+  });
+
+  app.post('/api/admin/security/cleanup-sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const cleanedCount = await storage.cleanupExpiredSessions();
+      
+      // Log the action
+      await storage.createSecurityAuditLog({
+        userId: req.user.claims.sub,
+        eventType: 'admin_action',
+        eventDescription: `Cleaned up ${cleanedCount} expired sessions`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        severity: 'info',
+        success: true
+      });
+      
+      res.json({ message: `Cleaned up ${cleanedCount} expired sessions` });
+    } catch (error) {
+      console.error("Error cleaning up sessions:", error);
+      res.status(500).json({ message: "Failed to cleanup sessions" });
     }
   });
 
@@ -5642,6 +6040,260 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     } catch (error) {
       console.error("Error saving seasonal images:", error);
       res.status(500).json({ message: "Failed to save seasonal images" });
+    }
+  });
+
+  // Admin Security Routes
+  // IMPORTANT: All state-changing operations require admin privileges and CSRF protection
+  
+  // CSRF middleware for admin state-changing operations
+  const requireAdminWithCSRF = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      // Check if user is authenticated
+      if (!req.user || !req.user.claims.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Check if user is admin
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // CSRF protection for state-changing operations
+      if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+        // Check Origin header
+        const origin = req.headers.origin || req.headers.referer;
+        if (!origin) {
+          return res.status(403).json({ message: "CSRF protection: Missing origin" });
+        }
+        
+        // In production, validate origin against allowed domains
+        if (process.env.NODE_ENV === 'production') {
+          const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+          const originUrl = new URL(origin);
+          if (!allowedOrigins.includes(originUrl.origin)) {
+            return res.status(403).json({ message: "CSRF protection: Invalid origin" });
+          }
+        }
+      }
+      
+      next();
+    } catch (error) {
+      console.error("Admin auth error:", error);
+      res.status(500).json({ message: "Authentication error" });
+    }
+  };
+  
+  // Get security statistics
+  app.get('/api/admin/security/stats', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const stats = await storage.getSecurityStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching security stats:", error);
+      res.status(500).json({ message: "Failed to fetch security statistics" });
+    }
+  });
+  
+  // Get audit logs with filters
+  app.get('/api/admin/security/audit-logs', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const filters = validateQueryParams(auditLogFiltersSchema, req.query);
+      const logs = await storage.getSecurityAuditLogs(filters);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+  
+  // Get active sessions
+  app.get('/api/admin/security/sessions', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const filters = validateQueryParams(sessionFilterSchema, req.query);
+      const sessions = await storage.getActiveSessions(filters.userId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+      res.status(500).json({ message: "Failed to fetch sessions" });
+    }
+  });
+  
+  // Revoke a session
+  app.post('/api/admin/security/sessions/:id/revoke', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const params = validateRouteParams(securityIdParamSchema, req.params);
+      await storage.revokeSession(params.id, req.user.claims.sub);
+      res.json({ message: "Session revoked successfully" });
+    } catch (error) {
+      console.error("Error revoking session:", error);
+      res.status(500).json({ message: "Failed to revoke session" });
+    }
+  });
+  
+  // Get failed login attempts
+  app.get('/api/admin/security/failed-logins', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const attempts = await storage.getFailedLoginAttempts();
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching failed logins:", error);
+      res.status(500).json({ message: "Failed to fetch failed login attempts" });
+    }
+  });
+  
+  // Clear failed login attempts for an IP
+  app.post('/api/admin/security/failed-logins/:ipAddress/clear', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const ipAddress = req.params.ipAddress;
+      await storage.clearFailedLoginAttempts(ipAddress);
+      res.json({ message: "Failed login attempts cleared" });
+    } catch (error) {
+      console.error("Error clearing failed logins:", error);
+      res.status(500).json({ message: "Failed to clear failed login attempts" });
+    }
+  });
+  
+  // Get IP access controls
+  app.get('/api/admin/security/ip-controls', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const filters = validateQueryParams(ipControlFilterSchema, req.query);
+      const controls = await storage.getIpAccessControl(filters.type);
+      res.json(controls);
+    } catch (error) {
+      console.error("Error fetching IP controls:", error);
+      res.status(500).json({ message: "Failed to fetch IP controls" });
+    }
+  });
+  
+  // Add IP access control
+  app.post('/api/admin/security/ip-controls', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const data = validateRequestBody(addIpControlSchema, req.body);
+      const control = await storage.addIpAccessControl({
+        ...data,
+        addedBy: req.user.claims.sub,
+        isActive: true
+      });
+      res.json(control);
+    } catch (error) {
+      console.error("Error adding IP control:", error);
+      res.status(500).json({ message: "Failed to add IP control" });
+    }
+  });
+  
+  // Remove IP access control
+  app.delete('/api/admin/security/ip-controls/:id', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const params = validateRouteParams(securityIdParamSchema, req.params);
+      await storage.removeIpAccessControl(params.id);
+      res.json({ message: "IP control removed" });
+    } catch (error) {
+      console.error("Error removing IP control:", error);
+      res.status(500).json({ message: "Failed to remove IP control" });
+    }
+  });
+  
+  // Get security settings
+  app.get('/api/admin/security/settings', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const settings = await storage.getSecuritySettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching security settings:", error);
+      res.status(500).json({ message: "Failed to fetch security settings" });
+    }
+  });
+  
+  // Update security setting
+  app.put('/api/admin/security/settings', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const data = validateRequestBody(updateSecuritySettingSchema, req.body);
+      const setting = await storage.updateSecuritySetting(data.key, data.value, req.user.claims.sub);
+      res.json(setting);
+    } catch (error) {
+      console.error("Error updating security setting:", error);
+      res.status(500).json({ message: "Failed to update security setting" });
+    }
+  });
+  
+  // Get rate limit violations
+  app.get('/api/admin/security/rate-limits', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const violations = await storage.getRateLimitViolations();
+      res.json(violations);
+    } catch (error) {
+      console.error("Error fetching rate limit violations:", error);
+      res.status(500).json({ message: "Failed to fetch rate limit violations" });
+    }
+  });
+  
+  // Get security recommendations
+  app.get('/api/admin/security/recommendations', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const recommendations = await storage.getSecurityRecommendations();
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      res.status(500).json({ message: "Failed to fetch security recommendations" });
+    }
+  });
+  
+  // Update recommendation status
+  app.put('/api/admin/security/recommendations/:id', requireAdminWithCSRF, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const params = validateRouteParams(securityIdParamSchema, req.params);
+      const data = validateRequestBody(updateRecommendationSchema, req.body);
+      const recommendation = await storage.updateRecommendationStatus(
+        params.id, 
+        data.status,
+        data.status === 'dismissed' ? req.user.claims.sub : undefined
+      );
+      res.json(recommendation);
+    } catch (error) {
+      console.error("Error updating recommendation:", error);
+      res.status(500).json({ message: "Failed to update recommendation" });
     }
   });
 

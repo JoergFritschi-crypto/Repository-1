@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Request, Response, NextFunction } from "express";
 
 // Request/Response type definitions
-export type AuthenticatedRequest = express.Request & {
+export type AuthenticatedRequest = Request & {
   user: {
     claims: {
       sub: string;
@@ -265,6 +265,49 @@ export function validateRouteParams<T>(schema: z.ZodSchema<T>, params: unknown):
   }
   return result.data;
 }
+
+// Security validation schemas
+export const auditLogFiltersSchema = z.object({
+  userId: z.string().optional(),
+  eventType: z.string().optional(),
+  severity: z.enum(['info', 'warning', 'error', 'critical']).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(1000).optional()
+});
+
+export const sessionFilterSchema = z.object({
+  userId: z.string().optional()
+});
+
+export const ipControlFilterSchema = z.object({
+  type: z.enum(['block', 'allow']).optional()
+});
+
+export const addIpControlSchema = z.object({
+  ipAddress: z.string().ip(),
+  type: z.enum(['block', 'allow']),
+  reason: z.string().max(500).optional(),
+  expiresAt: z.string().datetime().optional()
+});
+
+export const updateSecuritySettingSchema = z.object({
+  key: z.string().min(1).max(100),
+  value: z.any()
+});
+
+export const updateRecommendationSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(['pending', 'implemented', 'dismissed'])
+});
+
+export const securityIdParamSchema = z.object({
+  id: z.string()
+});
+
+export const ipAddressParamSchema = z.object({
+  ipAddress: z.string().ip()
+});
 
 // Custom validation error class
 export class ValidationError extends Error {

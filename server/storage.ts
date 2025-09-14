@@ -10,6 +10,13 @@ import {
   fileVault,
   scrapingProgress,
   todoTasks,
+  securityAuditLogs,
+  failedLoginAttempts,
+  activeSessions,
+  ipAccessControl,
+  securitySettings,
+  rateLimitViolations,
+  securityRecommendations,
   type User,
   type UpsertUser,
   type Garden,
@@ -32,6 +39,20 @@ import {
   type InsertScrapingProgress,
   type TodoTask,
   type InsertTodoTask,
+  type SecurityAuditLog,
+  type InsertSecurityAuditLog,
+  type FailedLoginAttempt,
+  type InsertFailedLoginAttempt,
+  type ActiveSession,
+  type InsertActiveSession,
+  type IpAccessControl,
+  type InsertIpAccessControl,
+  type SecuritySetting,
+  type InsertSecuritySetting,
+  type RateLimitViolation,
+  type InsertRateLimitViolation,
+  type SecurityRecommendation,
+  type InsertSecurityRecommendation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, or, desc, isNotNull, isNull, lte, sql, gte } from "drizzle-orm";
@@ -140,6 +161,44 @@ export interface IStorage {
   getAllTodoTasks(): Promise<TodoTask[]>;
   createTodoTask(task: InsertTodoTask): Promise<TodoTask>;
   deleteTodoTask(id: string): Promise<void>;
+  
+  // Security operations
+  createSecurityAuditLog(log: InsertSecurityAuditLog): Promise<SecurityAuditLog>;
+  getSecurityAuditLogs(filters?: { userId?: string; eventType?: string; severity?: string; startDate?: Date; endDate?: Date; limit?: number }): Promise<SecurityAuditLog[]>;
+  
+  recordFailedLoginAttempt(attempt: InsertFailedLoginAttempt): Promise<FailedLoginAttempt>;
+  getFailedLoginAttempts(ipAddress?: string): Promise<FailedLoginAttempt[]>;
+  clearFailedLoginAttempts(ipAddress: string): Promise<void>;
+  
+  createActiveSession(session: InsertActiveSession): Promise<ActiveSession>;
+  getActiveSessions(userId?: string): Promise<ActiveSession[]>;
+  updateSessionActivity(sessionId: string): Promise<void>;
+  revokeSession(sessionId: string, revokedBy: string): Promise<void>;
+  cleanupExpiredSessions(): Promise<number>;
+  
+  addIpAccessControl(control: InsertIpAccessControl): Promise<IpAccessControl>;
+  getIpAccessControl(type?: 'block' | 'allow'): Promise<IpAccessControl[]>;
+  checkIpAccess(ipAddress: string): Promise<{ allowed: boolean; reason?: string }>;
+  removeIpAccessControl(id: string): Promise<void>;
+  
+  getSecuritySettings(): Promise<SecuritySetting[]>;
+  updateSecuritySetting(key: string, value: any, updatedBy: string): Promise<SecuritySetting>;
+  
+  recordRateLimitViolation(violation: InsertRateLimitViolation): Promise<RateLimitViolation>;
+  getRateLimitViolations(filters?: { ipAddress?: string; endpoint?: string; startDate?: Date }): Promise<RateLimitViolation[]>;
+  
+  getSecurityRecommendations(status?: string): Promise<SecurityRecommendation[]>;
+  updateRecommendationStatus(id: string, status: string, dismissedBy?: string): Promise<SecurityRecommendation>;
+  createSecurityRecommendation(recommendation: InsertSecurityRecommendation): Promise<SecurityRecommendation>;
+  
+  getSecurityStats(): Promise<{
+    totalUsers: number;
+    activeSessionsCount: number;
+    failedLoginsLast24h: number;
+    blockedIpsCount: number;
+    securityScore: number;
+    recentEvents: SecurityAuditLog[];
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -927,6 +986,442 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTodoTask(id: string): Promise<void> {
     await db.delete(todoTasks).where(eq(todoTasks.id, id));
+  }
+
+  // Security operation implementations
+  async createSecurityAuditLog(log: InsertSecurityAuditLog): Promise<SecurityAuditLog> {
+    const [newLog] = await db.insert(securityAuditLogs).values(log).returning();
+    return newLog;
+  }
+
+  async getSecurityAuditLogs(filters?: { 
+    userId?: string; 
+    eventType?: string; 
+    severity?: string; 
+    startDate?: Date; 
+    endDate?: Date; 
+    limit?: number 
+  }): Promise<SecurityAuditLog[]> {
+    let query = db.select().from(securityAuditLogs);
+    const conditions: any[] = [];
+    
+    if (filters?.userId) {
+      conditions.push(eq(securityAuditLogs.userId, filters.userId));
+    }
+    if (filters?.eventType) {
+      conditions.push(eq(securityAuditLogs.eventType as any, filters.eventType));
+    }
+    if (filters?.severity) {
+      conditions.push(eq(securityAuditLogs.severity, filters.severity));
+    }
+    if (filters?.startDate) {
+      conditions.push(gte(securityAuditLogs.createdAt, filters.startDate));
+    }
+    if (filters?.endDate) {
+      conditions.push(lte(securityAuditLogs.createdAt, filters.endDate));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    query = query.orderBy(desc(securityAuditLogs.createdAt)) as any;
+    
+    if (filters?.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+    
+    return await query;
+  }
+
+  async recordFailedLoginAttempt(attempt: InsertFailedLoginAttempt): Promise<FailedLoginAttempt> {
+    // Check if there's an existing record for this IP
+    const [existing] = await db
+      .select()
+      .from(failedLoginAttempts)
+      .where(eq(failedLoginAttempts.ipAddress, attempt.ipAddress))
+      .orderBy(desc(failedLoginAttempts.lastAttemptAt))
+      .limit(1);
+    
+    if (existing && existing.lastAttemptAt) {
+      // If last attempt was within last hour, update count
+      const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      if (existing.lastAttemptAt > hourAgo) {
+        const [updated] = await db
+          .update(failedLoginAttempts)
+          .set({
+            attemptCount: (existing.attemptCount || 0) + 1,
+            lastAttemptAt: new Date(),
+            email: attempt.email || existing.email,
+            userAgent: attempt.userAgent || existing.userAgent,
+            reason: attempt.reason || existing.reason
+          })
+          .where(eq(failedLoginAttempts.id, existing.id))
+          .returning();
+        return updated;
+      }
+    }
+    
+    // Create new record
+    const [newAttempt] = await db.insert(failedLoginAttempts).values(attempt).returning();
+    return newAttempt;
+  }
+
+  async getFailedLoginAttempts(ipAddress?: string): Promise<FailedLoginAttempt[]> {
+    if (ipAddress) {
+      return await db
+        .select()
+        .from(failedLoginAttempts)
+        .where(eq(failedLoginAttempts.ipAddress, ipAddress))
+        .orderBy(desc(failedLoginAttempts.lastAttemptAt));
+    }
+    return await db
+      .select()
+      .from(failedLoginAttempts)
+      .orderBy(desc(failedLoginAttempts.lastAttemptAt));
+  }
+
+  async clearFailedLoginAttempts(ipAddress: string): Promise<void> {
+    await db.delete(failedLoginAttempts).where(eq(failedLoginAttempts.ipAddress, ipAddress));
+  }
+
+  async createActiveSession(session: InsertActiveSession): Promise<ActiveSession> {
+    const [newSession] = await db.insert(activeSessions).values(session).returning();
+    return newSession;
+  }
+
+  async getActiveSessions(userId?: string): Promise<ActiveSession[]> {
+    const conditions: any[] = [eq(activeSessions.isActive, true)];
+    
+    if (userId) {
+      conditions.push(eq(activeSessions.userId, userId));
+    }
+    
+    return await db
+      .select()
+      .from(activeSessions)
+      .where(and(...conditions))
+      .orderBy(desc(activeSessions.lastActivity));
+  }
+
+  async updateSessionActivity(sessionId: string): Promise<void> {
+    await db
+      .update(activeSessions)
+      .set({ lastActivity: new Date() })
+      .where(eq(activeSessions.sessionId, sessionId));
+  }
+
+  async revokeSession(sessionId: string, revokedBy: string): Promise<void> {
+    await db
+      .update(activeSessions)
+      .set({
+        isActive: false,
+        revokedAt: new Date(),
+        revokedBy
+      })
+      .where(eq(activeSessions.sessionId, sessionId));
+  }
+
+  async cleanupExpiredSessions(): Promise<number> {
+    const now = new Date();
+    const result = await db
+      .update(activeSessions)
+      .set({ isActive: false })
+      .where(and(
+        eq(activeSessions.isActive, true),
+        lte(activeSessions.expiresAt as any, now)
+      ))
+      .returning();
+    return result.length;
+  }
+
+  async addIpAccessControl(control: InsertIpAccessControl): Promise<IpAccessControl> {
+    const [newControl] = await db.insert(ipAccessControl).values(control).returning();
+    return newControl;
+  }
+
+  async getIpAccessControl(type?: 'block' | 'allow'): Promise<IpAccessControl[]> {
+    const conditions: any[] = [eq(ipAccessControl.isActive, true)];
+    
+    if (type) {
+      conditions.push(eq(ipAccessControl.type, type));
+    }
+    
+    return await db
+      .select()
+      .from(ipAccessControl)
+      .where(and(...conditions))
+      .orderBy(desc(ipAccessControl.createdAt));
+  }
+
+  async checkIpAccess(ipAddress: string): Promise<{ allowed: boolean; reason?: string }> {
+    const [blocked] = await db
+      .select()
+      .from(ipAccessControl)
+      .where(and(
+        eq(ipAccessControl.ipAddress, ipAddress),
+        eq(ipAccessControl.type, 'block'),
+        eq(ipAccessControl.isActive, true)
+      ))
+      .limit(1);
+    
+    if (blocked) {
+      return { allowed: false, reason: blocked.reason || 'IP address is blocked' };
+    }
+    
+    const [allowed] = await db
+      .select()
+      .from(ipAccessControl)
+      .where(and(
+        eq(ipAccessControl.ipAddress, ipAddress),
+        eq(ipAccessControl.type, 'allow'),
+        eq(ipAccessControl.isActive, true)
+      ))
+      .limit(1);
+    
+    if (allowed) {
+      return { allowed: true };
+    }
+    
+    // Default to allow if not in any list
+    return { allowed: true };
+  }
+
+  async removeIpAccessControl(id: string): Promise<void> {
+    await db
+      .update(ipAccessControl)
+      .set({ isActive: false })
+      .where(eq(ipAccessControl.id, id));
+  }
+
+  async getSecuritySettings(): Promise<SecuritySetting[]> {
+    return await db
+      .select()
+      .from(securitySettings)
+      .where(eq(securitySettings.isEnabled, true))
+      .orderBy(securitySettings.settingKey);
+  }
+
+  async updateSecuritySetting(key: string, value: any, updatedBy: string): Promise<SecuritySetting> {
+    const [existingSetting] = await db
+      .select()
+      .from(securitySettings)
+      .where(eq(securitySettings.settingKey, key))
+      .limit(1);
+    
+    if (existingSetting) {
+      const [updated] = await db
+        .update(securitySettings)
+        .set({
+          settingValue: value,
+          updatedBy,
+          updatedAt: new Date()
+        })
+        .where(eq(securitySettings.settingKey, key))
+        .returning();
+      return updated;
+    } else {
+      const [newSetting] = await db
+        .insert(securitySettings)
+        .values({
+          settingKey: key,
+          settingValue: value,
+          updatedBy
+        })
+        .returning();
+      return newSetting;
+    }
+  }
+
+  async recordRateLimitViolation(violation: InsertRateLimitViolation): Promise<RateLimitViolation> {
+    // Check for existing violation in current window
+    const windowStart = new Date(Date.now() - 15 * 60 * 1000); // 15 minute window
+    const [existing] = await db
+      .select()
+      .from(rateLimitViolations)
+      .where(and(
+        eq(rateLimitViolations.ipAddress, violation.ipAddress),
+        eq(rateLimitViolations.endpoint, violation.endpoint),
+        gte(rateLimitViolations.windowStart, windowStart)
+      ))
+      .limit(1);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(rateLimitViolations)
+        .set({
+          violationCount: (existing.violationCount || 0) + 1,
+          lastViolationAt: new Date(),
+          metadata: violation.metadata || existing.metadata
+        })
+        .where(eq(rateLimitViolations.id, existing.id))
+        .returning();
+      return updated;
+    }
+    
+    const [newViolation] = await db.insert(rateLimitViolations).values(violation).returning();
+    return newViolation;
+  }
+
+  async getRateLimitViolations(filters?: { 
+    ipAddress?: string; 
+    endpoint?: string; 
+    startDate?: Date 
+  }): Promise<RateLimitViolation[]> {
+    const conditions: any[] = [];
+    
+    if (filters?.ipAddress) {
+      conditions.push(eq(rateLimitViolations.ipAddress, filters.ipAddress));
+    }
+    if (filters?.endpoint) {
+      conditions.push(eq(rateLimitViolations.endpoint, filters.endpoint));
+    }
+    if (filters?.startDate) {
+      conditions.push(gte(rateLimitViolations.windowStart, filters.startDate));
+    }
+    
+    let query = db.select().from(rateLimitViolations);
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    return await query.orderBy(desc(rateLimitViolations.lastViolationAt));
+  }
+
+  async getSecurityRecommendations(status?: string): Promise<SecurityRecommendation[]> {
+    if (status) {
+      return await db
+        .select()
+        .from(securityRecommendations)
+        .where(eq(securityRecommendations.status, status))
+        .orderBy(desc(securityRecommendations.severity), desc(securityRecommendations.createdAt));
+    }
+    return await db
+      .select()
+      .from(securityRecommendations)
+      .orderBy(desc(securityRecommendations.severity), desc(securityRecommendations.createdAt));
+  }
+
+  async updateRecommendationStatus(id: string, status: string, dismissedBy?: string): Promise<SecurityRecommendation> {
+    const updateData: any = {
+      status,
+      updatedAt: new Date()
+    };
+    
+    if (status === 'dismissed' && dismissedBy) {
+      updateData.dismissedBy = dismissedBy;
+      updateData.dismissedAt = new Date();
+    }
+    
+    const [updated] = await db
+      .update(securityRecommendations)
+      .set(updateData)
+      .where(eq(securityRecommendations.id, id))
+      .returning();
+    return updated;
+  }
+
+  async createSecurityRecommendation(recommendation: InsertSecurityRecommendation): Promise<SecurityRecommendation> {
+    const [newRecommendation] = await db
+      .insert(securityRecommendations)
+      .values(recommendation)
+      .returning();
+    return newRecommendation;
+  }
+
+  async getSecurityStats(): Promise<{
+    totalSessions: number;
+    failedLogins24h: number;
+    blockedIps: number;
+    auditLogsToday: number;
+    securityScore: number;
+    lastAuditTime: Date | null;
+    activeThreats: number;
+    rateLimitViolations: number;
+  }> {
+    // Get total active sessions count
+    const activeSessionsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(activeSessions)
+      .where(eq(activeSessions.isActive, true));
+    const totalSessions = Number(activeSessionsResult[0]?.count || 0);
+    
+    // Get failed logins in last 24 hours
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const failedLoginsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(failedLoginAttempts)
+      .where(gte(failedLoginAttempts.lastAttemptAt, twentyFourHoursAgo));
+    const failedLogins24h = Number(failedLoginsResult[0]?.count || 0);
+    
+    // Get blocked IPs count
+    const blockedIpsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(ipAccessControl)
+      .where(and(
+        eq(ipAccessControl.type, 'block'),
+        eq(ipAccessControl.isActive, true)
+      ));
+    const blockedIps = Number(blockedIpsResult[0]?.count || 0);
+    
+    // Get audit logs today count
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const auditLogsTodayResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(securityAuditLogs)
+      .where(gte(securityAuditLogs.createdAt, todayStart));
+    const auditLogsToday = Number(auditLogsTodayResult[0]?.count || 0);
+    
+    // Get last audit time
+    const lastAuditResult = await db
+      .select({ createdAt: securityAuditLogs.createdAt })
+      .from(securityAuditLogs)
+      .orderBy(desc(securityAuditLogs.createdAt))
+      .limit(1);
+    const lastAuditTime = lastAuditResult[0]?.createdAt || null;
+    
+    // Count active threats (critical or error severity events in last 24 hours)
+    const activeThreatsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(securityAuditLogs)
+      .where(and(
+        gte(securityAuditLogs.createdAt, twentyFourHoursAgo),
+        or(
+          eq(securityAuditLogs.severity, 'critical'),
+          eq(securityAuditLogs.severity, 'error')
+        )
+      ));
+    const activeThreats = Number(activeThreatsResult[0]?.count || 0);
+    
+    // Get rate limit violations in last 24 hours
+    const rateLimitResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(rateLimitViolations)
+      .where(gte(rateLimitViolations.lastAttempt, twentyFourHoursAgo));
+    const rateLimitViolationCount = Number(rateLimitResult[0]?.count || 0);
+    
+    // Calculate security score (more comprehensive formula)
+    let securityScore = 100;
+    if (failedLogins24h > 10) securityScore -= 10;
+    if (failedLogins24h > 50) securityScore -= 20;
+    if (blockedIps > 5) securityScore -= 5;
+    if (blockedIps > 20) securityScore -= 10;
+    if (activeThreats > 0) securityScore -= (activeThreats * 5);
+    if (rateLimitViolationCount > 100) securityScore -= 10;
+    if (rateLimitViolationCount > 500) securityScore -= 20;
+    
+    return {
+      totalSessions,
+      failedLogins24h,
+      blockedIps,
+      auditLogsToday,
+      securityScore: Math.max(0, securityScore),
+      lastAuditTime,
+      activeThreats,
+      rateLimitViolations: rateLimitViolationCount
+    };
   }
 }
 
