@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import LanguageSelector from "@/components/layout/LanguageSelector";
 import gardenImage from '@assets/generated_images/Mixed_perennial_garden_scene_5872224a.png';
 
 export default function Landing() {
@@ -67,6 +68,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <LanguageSelector />
               {!isAuthenticated ? (
                 <>
                   <a href="/api/login" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors" title={t('landing.navigation.signInTooltip')}>
