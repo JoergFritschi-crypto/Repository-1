@@ -12,8 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { APIMonitoring } from "@/components/admin/api-monitoring";
-import { APIKeysManager } from "@/components/admin/api-keys-manager";
+import APIManagement from "@/components/admin/api-management";
 import { PlantAdvancedSearch } from "@/components/admin/plant-advanced-search";
 import { CompactPlantCard } from "@/components/plant/compact-plant-card";
 import { ImageGenerationMonitor } from "@/components/admin/image-generation-monitor";
@@ -468,11 +467,10 @@ export default function Admin() {
     { id: "icon-gallery", label: "Icon Gallery", icon: Palette },
     { id: "image-gen", label: "Image Generation", icon: ImageIcon },
     { id: "image-test", label: "Image Testing", icon: FlaskConical },
-    { id: "api-monitor", label: "API Monitor", icon: Server },
+    { id: "api-management", label: "API Management", icon: Server },
     { id: "import", label: "Import Wizard", icon: Upload },
     { id: "testing", label: "Testing Tools", icon: FlaskConical },
     { id: "security", label: "Security", icon: Shield },
-    { id: "api-keys", label: "API Keys", icon: Key },
   ];
 
   // Batch validation handler
@@ -1134,12 +1132,8 @@ export default function Admin() {
                 <ImageComparisonTool />
               </TabsContent>
 
-              <TabsContent value="api-monitor" className="mt-8">
-                <APIMonitoring />
-              </TabsContent>
-
-              <TabsContent value="api-keys" className="mt-8">
-                <APIKeysManager />
+              <TabsContent value="api-management" className="mt-8">
+                <APIManagement />
               </TabsContent>
 
               {/* Icon Gallery */}
