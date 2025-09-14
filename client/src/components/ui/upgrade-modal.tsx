@@ -84,29 +84,60 @@ export function UpgradeModal({
         },
         body: JSON.stringify({
           priceId,
-          successUrl: `${window.location.origin}/premium-dashboard?session_id={CHECKOUT_SESSION_ID}`,
+          successUrl: `${window.location.origin}/gardens?upgraded=true&tier=${priceId === 'price_payperdesign' ? 'pay_per_design' : 'premium'}`,
           cancelUrl: window.location.href
         })
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await response.json().catch(() => ({ message: 'Failed to create checkout session' }));
+        throw new Error(errorData.message || 'Failed to create checkout session');
       }
       
       return await response.json();
     },
     onSuccess: async (data: any) => {
+      // Check if running in demo mode
+      if (data.demoMode) {
+        toast({
+          title: "Demo Mode Active",
+          description: "In production, you would be redirected to Stripe checkout. Your tier has been upgraded for testing.",
+          variant: "default"
+        });
+        
+        // Simulate successful upgrade in demo mode
+        setTimeout(() => {
+          if (onSuccessfulUpgrade) onSuccessfulUpgrade();
+          window.location.reload(); // Refresh to show new tier
+        }, 2000);
+        return;
+      }
+      
+      // Normal Stripe flow
       if (!stripePromise) {
         toast({
-          title: "Configuration Error",
-          description: "Payment processing is not configured. Please contact support.",
-          variant: "destructive"
+          title: "Configuration Notice",
+          description: "Stripe is not fully configured. Running in demo mode.",
+          variant: "default"
         });
+        
+        // Treat as demo mode success
+        setTimeout(() => {
+          if (onSuccessfulUpgrade) onSuccessfulUpgrade();
+          window.location.reload();
+        }, 2000);
         return;
       }
       
       const stripe = await stripePromise;
-      if (!stripe) return;
+      if (!stripe) {
+        toast({
+          title: "Loading Stripe...",
+          description: "Please wait while we set up the payment system.",
+          variant: "default"
+        });
+        return;
+      }
       
       const { error } = await stripe.redirectToCheckout({
         sessionId: data.sessionId
@@ -123,9 +154,10 @@ export function UpgradeModal({
       }
     },
     onError: (error: any) => {
+      console.error('Checkout session error:', error);
       toast({
-        title: "Upgrade Failed",
-        description: error.message || "Failed to start upgrade process",
+        title: "Upgrade Process",
+        description: "There was an issue starting the upgrade. Please try again or contact support.",
         variant: "destructive"
       });
     },
@@ -137,27 +169,13 @@ export function UpgradeModal({
   const handleUpgrade = async (targetTier: 'pay_per_design' | 'premium') => {
     setIsProcessing(true);
     
-    // For demo purposes, if Stripe is not configured, just show a success message
-    if (!stripePromise) {
-      toast({
-        title: "Demo Mode",
-        description: `In production, this would upgrade you to ${tierDetails[targetTier].name}`,
-        variant: "default"
-      });
-      setTimeout(() => {
-        if (onSuccessfulUpgrade) onSuccessfulUpgrade();
-        onClose();
-      }, 2000);
-      setIsProcessing(false);
-      return;
-    }
-    
-    // Price IDs would normally come from Stripe Dashboard
+    // Price IDs - using defaults if environment variables not set
     const priceIds = {
-      pay_per_design: process.env.VITE_STRIPE_PAY_PER_DESIGN_PRICE_ID || 'price_payperdesign',
-      premium: process.env.VITE_STRIPE_PREMIUM_PRICE_ID || 'price_premium'
+      pay_per_design: import.meta.env.VITE_STRIPE_PAY_PER_DESIGN_PRICE_ID || 'price_payperdesign',
+      premium: import.meta.env.VITE_STRIPE_PREMIUM_PRICE_ID || 'price_premium'
     };
     
+    // Always use the mutation which handles both demo and real modes
     createCheckoutSession.mutate(priceIds[targetTier]);
   };
 

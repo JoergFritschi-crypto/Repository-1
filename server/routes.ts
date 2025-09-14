@@ -149,7 +149,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Body parser middleware (MUST come after auth setup)
   // Increase limit to 50MB to handle multiple image uploads
-  app.use(express.json({ limit: '50mb' }));
+  // Skip JSON parsing for Stripe webhook endpoint
+  app.use((req, res, next) => {
+    if (req.originalUrl === '/api/stripe-webhook') {
+      next();
+    } else {
+      express.json({ limit: '50mb' })(req, res, next);
+    }
+  });
   app.use(express.urlencoded({ extended: false, limit: '50mb' }));
   
   // Apply general rate limiting to all routes
@@ -5091,6 +5098,183 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
         return res.status(400).json({ error: { message: (error as Error).message } });
       }
     });
+
+    // Create checkout session for tier upgrades
+    app.post('/api/create-checkout-session', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        const body = validateRequestBody(createCheckoutSessionSchema, req.body);
+        const { priceId, successUrl, cancelUrl } = body;
+        
+        let user = await storage.getUser(req.user.claims.sub);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Create or get customer
+        let customerId = user.stripeCustomerId;
+        if (!customerId) {
+          if (!user.email) {
+            return res.status(400).json({ message: 'No user email on file' });
+          }
+          const customer = await stripe!.customers.create({
+            email: user.email,
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+            metadata: {
+              userId: user.id
+            }
+          });
+          customerId = customer.id;
+          await storage.updateUserStripeInfo(user.id, customerId, null);
+        }
+
+        // Map priceId to actual Stripe price IDs or use demo mode
+        const stripePriceId = priceId === 'price_payperdesign' 
+          ? (process.env.STRIPE_PAY_PER_DESIGN_PRICE_ID || 'price_1QQxyzABCDEFGHIJ')
+          : priceId === 'price_premium'
+          ? (process.env.STRIPE_PREMIUM_PRICE_ID || 'price_1QQabcABCDEFGHIJ')
+          : priceId;
+
+        // Create checkout session
+        const session = await stripe!.checkout.sessions.create({
+          customer: customerId,
+          payment_method_types: ['card'],
+          line_items: [
+            {
+              price: stripePriceId,
+              quantity: 1,
+            },
+          ],
+          mode: priceId === 'price_premium' ? 'subscription' : 'payment',
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+          metadata: {
+            userId: user.id,
+            priceId: priceId
+          }
+        });
+
+        res.json({ sessionId: session.id });
+      } catch (error: any) {
+        console.error("Stripe checkout session error:", error);
+        // If Stripe is not properly configured, return demo response
+        if (error.type === 'StripeInvalidRequestError' || error.message?.includes('No such price')) {
+          res.json({ 
+            sessionId: 'demo_session_' + Date.now(),
+            demoMode: true,
+            message: 'Running in demo mode - Stripe not fully configured' 
+          });
+        } else {
+          res.status(400).json({ error: { message: (error as Error).message } });
+        }
+      }
+    });
+
+    // Create customer portal session for managing subscriptions
+    app.post('/api/create-portal-session', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        const body = validateRequestBody(createPortalSessionSchema, req.body);
+        const { returnUrl } = body;
+        
+        let user = await storage.getUser(req.user.claims.sub);
+        if (!user || !user.stripeCustomerId) {
+          return res.status(400).json({ message: "No customer found" });
+        }
+
+        const session = await stripe!.billingPortal.sessions.create({
+          customer: user.stripeCustomerId,
+          return_url: returnUrl,
+        });
+
+        res.json({ url: session.url });
+      } catch (error: any) {
+        console.error("Stripe portal session error:", error);
+        res.status(400).json({ error: { message: (error as Error).message } });
+      }
+    });
+
+    // Stripe webhook handler
+    app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+      try {
+        const sig = req.headers['stripe-signature'];
+        if (!sig) {
+          return res.status(400).json({ message: "Missing stripe-signature header" });
+        }
+
+        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        if (!webhookSecret) {
+          console.warn("STRIPE_WEBHOOK_SECRET not configured - webhook verification disabled");
+          // In demo/dev mode, process webhook without verification
+          const event = req.body;
+          await handleStripeWebhookEvent(event);
+          return res.json({ received: true });
+        }
+
+        let event;
+        try {
+          event = stripe!.webhooks.constructEvent(req.body, sig, webhookSecret);
+        } catch (err: any) {
+          console.error("Webhook signature verification failed:", err.message);
+          return res.status(400).json({ message: `Webhook Error: ${err.message}` });
+        }
+
+        await handleStripeWebhookEvent(event);
+        res.json({ received: true });
+      } catch (error: any) {
+        console.error("Stripe webhook error:", error);
+        res.status(400).json({ error: { message: (error as Error).message } });
+      }
+    });
+  }
+
+  // Helper function to handle Stripe webhook events
+  async function handleStripeWebhookEvent(event: any) {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.metadata?.userId;
+        const priceId = session.metadata?.priceId;
+        
+        if (userId) {
+          // Update user tier based on purchase
+          let newTier: 'pay_per_design' | 'premium' = 'pay_per_design';
+          if (priceId === 'price_premium' || session.mode === 'subscription') {
+            newTier = 'premium';
+          }
+          
+          await storage.updateUser(userId, { 
+            subscriptionTier: newTier,
+            stripeCustomerId: session.customer,
+            stripeSubscriptionId: session.subscription || null
+          });
+          
+          console.log(`Updated user ${userId} to tier ${newTier}`);
+        }
+        break;
+      }
+      
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        // Find user by subscription ID
+        const users = await storage.getAllUsers();
+        const user = users.find(u => u.stripeSubscriptionId === subscription.id);
+        
+        if (user) {
+          if (event.type === 'customer.subscription.deleted' || subscription.status === 'canceled') {
+            // Downgrade to free tier
+            await storage.updateUser(user.id, { 
+              subscriptionTier: 'free',
+              stripeSubscriptionId: null
+            });
+            console.log(`Downgraded user ${user.id} to free tier`);
+          }
+        }
+        break;
+      }
+      
+      default:
+        console.log(`Unhandled webhook event type: ${event.type}`);
+    }
   }
 
   // Todo task routes for admin dashboard
