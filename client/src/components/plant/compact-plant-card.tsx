@@ -106,21 +106,22 @@ function getHardinessBadgeColor(category: string | null): string {
   }
 }
 
-// Get flower color class
+// Get flower color class - uses actual colors instead of theme colors
 function getFlowerColorClass(color: string): string {
   const colorLower = color?.toLowerCase() || '';
   
-  if (colorLower.includes('purple') || colorLower.includes('violet')) return 'bg-primary';
-  if (colorLower.includes('blue')) return 'bg-accent';
-  if (colorLower.includes('pink')) return 'bg-secondary';
-  if (colorLower.includes('red')) return 'bg-destructive';
-  if (colorLower.includes('orange')) return 'bg-canary';
-  if (colorLower.includes('yellow') || colorLower.includes('gold')) return 'bg-canary';
-  if (colorLower.includes('white')) return 'bg-card';
-  if (colorLower.includes('lavender')) return 'bg-secondary';
-  if (colorLower.includes('green')) return 'bg-primary';
+  // Return actual colors that match the flower colors  
+  if (colorLower.includes('purple') || colorLower.includes('violet')) return 'bg-purple-500';
+  if (colorLower.includes('lavender')) return 'bg-purple-300';
+  if (colorLower.includes('blue')) return 'bg-blue-500';
+  if (colorLower.includes('pink') || colorLower.includes('rose')) return 'bg-pink-500';
+  if (colorLower.includes('red') || colorLower.includes('crimson') || colorLower.includes('burgundy')) return 'bg-red-500';
+  if (colorLower.includes('orange')) return 'bg-orange-500';
+  if (colorLower.includes('yellow') || colorLower.includes('gold')) return 'bg-yellow-400';
+  if (colorLower.includes('white') || colorLower.includes('cream')) return 'bg-white border border-gray-300';
+  if (colorLower.includes('green')) return 'bg-green-500';
   
-  return 'bg-muted';
+  return 'bg-gray-400';
 }
 
 // Get plant size category based on maximum height
