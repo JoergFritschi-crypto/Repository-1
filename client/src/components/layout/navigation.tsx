@@ -71,7 +71,7 @@ export default function Navigation() {
             )}
             
             <Link 
-              href="/" 
+              href={user ? "/home" : "/"} 
               className="flex items-center space-x-2 group transition-transform duration-200 hover:scale-105" 
               data-testid="link-home"
               aria-label={t('mainNavigation.homeAriaLabel')}
