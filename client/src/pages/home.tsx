@@ -52,7 +52,7 @@ const Home = memo(function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="max-w-4xl mx-auto px-8 text-center">
-              <h1 className="text-3xl font-serif font-bold text-[#FFD700] mb-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <h1 className="text-3xl font-serif font-bold mb-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" style={{ color: '#FFD700' }}>
                 {t('home.heroTitle')}
               </h1>
               <p className="text-base text-white mb-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] max-w-3xl mx-auto">
