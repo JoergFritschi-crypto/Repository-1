@@ -2354,6 +2354,20 @@ async function testDatabaseConnection(): Promise<boolean> {
 
 // Initialize storage with fallback
 (async () => {
+  // Check for Supabase HTTP API configuration first
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+    try {
+      const { SupabaseHttpStorage } = await import('./supabaseHttpStorage');
+      storage = new SupabaseHttpStorage();
+      console.log('✅ Using Supabase HTTP API for storage');
+      return;
+    } catch (error) {
+      console.error('Failed to initialize Supabase storage:', error);
+      // Fall through to other options
+    }
+  }
+  
+  // Try direct database connection (for local development or other PostgreSQL)
   const isDatabaseAvailable = await testDatabaseConnection();
   
   if (isDatabaseAvailable) {

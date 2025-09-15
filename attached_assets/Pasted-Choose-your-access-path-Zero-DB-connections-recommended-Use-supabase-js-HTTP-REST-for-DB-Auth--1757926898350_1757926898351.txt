@@ -1,0 +1,51 @@
+Choose your access path
+Zero-DB-connections (recommended): Use supabase-js (HTTP/REST) for DB, Auth, Storage, Realtime. Stable in serverless, no TCP to Postgres needed.
+SQL connections (only if you must): Use the pooler (PgBouncer) on port 6543 with SSL and disable prepared statements. Keep pool sizes tiny (1–5).
+Environment variables (Replit → Secrets)
+SUPABASE_URL = https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_ANON_KEY = [from Dashboard → Project Settings → API]
+SUPABASE_SERVICE_ROLE_KEY = [backend-only, never expose to browser]
+DATABASE_URL = postgresql://postgres:64717821fF*@db.uytzrsaagqzjhnmgbslq.supabase.co:6543/postgres?pgbouncer=true&sslmode=require
+DIRECT_URL = postgresql://postgres:64717821fF*@db.uytzrsaagqzjhnmgbslq.supabase.co:5432/postgres?sslmode=require Notes:
+Use DATABASE_URL (pooler) for app runtime.
+Use DIRECT_URL (5432) only for migrations from your laptop/CI. Avoid running migrations from Replit.
+If your password has @ / : ? #, percent-encode in the URL.
+If using supabase-js (preferred)
+Install: npm i npm:@supabase/supabase-js@2
+Minimal server code: import { createClient } from "npm:@supabase/supabase-js@2"; const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, { auth: { persistSession: false }, global: { fetch }, // Deno/Web fetch available }); // Example read const { data, error } = await supabase.from('profiles').select('*').limit(1); if (error) console.error(error); else console.log(data); Why this is best on Replit: uses HTTPS to PostgREST with RLS; avoids TCP, pool limits, and prepared statement issues.
+If you must use SQL from Replit (node-postgres)
+Install: npm i pg
+Minimal pool config: const { Pool } = require('pg'); const pool = new Pool({ connectionString: process.env.DATABASE_URL, // pooler: 6543 ssl: { rejectUnauthorized: false }, statement_mode: 'simple', // disable prepared statements for PgBouncer txn mode max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 5000, }); // simple test console.log((await pool.query('select 1')).rows); Tips:
+Set statement_timeout on session if needed: await pool.query('set statement_timeout=8000');
+Use small pools and short timeouts; Replit instances are ephemeral.
+Prisma (only if needed)
+.env: DATABASE_URL="postgresql://postgres:...:6543/postgres?pgbouncer=true&sslmode=require&connection_limit=1" DIRECT_URL="postgresql://postgres:...:5432/postgres?sslmode=require"
+schema.prisma: datasource db { provider = "postgresql" url = env("DATABASE_URL") directUrl = env("DIRECT_URL") } Guidelines:
+Run prisma migrate via DIRECT_URL on your laptop/CI, not from Replit.
+At runtime in Replit, Prisma uses DATABASE_URL (pooler).
+Keep connection_limit=1 for serverless.
+Starter schema with secure RLS Run this once (from your local SQL runner or SQL editor in Dashboard) to create a basic profiles table tied to auth.users:
+CREATE TABLE public.profiles ( id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, username text UNIQUE, created_at timestamp with time zone DEFAULT now() ); CREATE INDEX idx_profiles_user_id ON public.profiles(user_id); ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY; GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated; CREATE POLICY "Profile select own" ON public.profiles FOR SELECT TO authenticated USING ((SELECT auth.uid()) = user_id); CREATE POLICY "Profile insert own" ON public.profiles FOR INSERT TO authenticated WITH CHECK ((SELECT auth.uid()) = user_id); CREATE POLICY "Profile update own" ON public.profiles FOR UPDATE TO authenticated USING ((SELECT auth.uid()) = user_id) WITH CHECK ((SELECT auth.uid()) = user_id); CREATE POLICY "Profile delete own" ON public.profiles FOR DELETE TO authenticated USING ((SELECT auth.uid()) = user_id);
+
+Auth, Storage, Realtime on Replit
+Auth: Use supabase-js; verify JWT in your backend routes if needed with supabase.auth.getUser().
+Storage: Use supabase-js Storage API; set RLS policies per bucket.
+Realtime: Uses WebSockets via SUPABASE_URL and anon key, no DB TCP.
+Service role key: Only in Replit server code for trusted admin tasks; never send to client.
+Operational safeguards
+Retries: Add lightweight retry with exponential backoff for transient ECONNRESET/timeout on pg or HTTP 5xx on supabase-js.
+Timeouts: Keep query and HTTP timeouts modest (5–8s).
+Connection hygiene: Reuse a single Pool instance; don’t create per-request.
+Logging: Log error.code/message, and the last query text (without secrets).
+Monitoring: In Supabase Dashboard → Reports/Logs; run Advisors to catch RLS/permissions/performance issues.
+Migration workflow that won’t “blow out”
+Make schema changes locally with psql or Prisma migrate against DIRECT_URL.
+Review in a feature branch; apply in CI with a single job that runs migrations to DIRECT_URL.
+App/runtime in Replit keeps using DATABASE_URL (pooler) with zero downtime.
+Quick checklist for Replit’s Agent
+Set env vars (SUPABASE_URL, SUPABASE_ANON_KEY, SERVICE_ROLE if needed, DATABASE_URL pooled, DIRECT_URL direct).
+Prefer supabase-js for CRUD; only use SQL when necessary.
+If using SQL: use port 6543, sslmode=require, statement_mode=simple, pool max 1–3.
+Don’t run migrations from Replit; run from CI/local over 5432.
+Enable and test RLS early; index user_id/tenant_id used in policies.
+If you share your current stack choice (supabase-js only vs Prisma/pg), I can provide a drop-in starter repo snippet tailored to Replit.
