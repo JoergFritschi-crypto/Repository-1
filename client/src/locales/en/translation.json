@@ -230,7 +230,8 @@
           "requiredFields": "Required Fields Missing",
           "requiredFieldsList": "Please fill in the following required fields: {{fields}}",
           "atLeastOneZone": "At least one Hardiness Zone (USDA or RHS)"
-        }
+        },
+        "buttonLabel": "Next: Site Details"
       },
       "step2": {
         "title": "Garden Details",
@@ -299,7 +300,8 @@
           "description": "Mark the orientation of your garden",
           "set": "Set Orientation",
           "notSet": "Orientation not set - this helps with plant placement recommendations"
-        }
+        },
+        "buttonLabel": "Next: Design Approach"
       },
       "step3": {
         "title": "Choose Your Design Approach",
@@ -344,7 +346,8 @@
             "Arrange plants exactly as you envision",
             "See real-time spacing and compatibility feedback"
           ]
-        }
+        },
+        "buttonLabel": "Next: Design Your Garden"
       },
       "step4": {
         "title": "Garden Design Canvas",
@@ -391,7 +394,8 @@
           "noPlantsTitle": "No Plants Placed",
           "noPlantsAI": "Click 'Generate AI Garden Design' above to automatically design your garden",
           "noPlantsManual": "Use the plant search to find and add plants to your garden canvas"
-        }
+        },
+        "buttonLabel": "Next: Generate Seasonal Views"
       },
       "step5": {
         "title": "Seasonal Garden Visualization",
@@ -434,7 +438,8 @@
           "selectDate": "Select a date to see your garden:",
           "currentSeason": "Current Season: {{season}}",
           "downloadImage": "Download Image"
-        }
+        },
+        "buttonLabel": "Next: Review & Download"
       },
       "step6": {
         "title": "Garden Design Complete!",
@@ -483,7 +488,8 @@
           "saveFirst": "Please save your garden before sharing",
           "copied": "Link Copied",
           "success": "Garden link has been copied to clipboard"
-        }
+        },
+        "buttonLabel": "Complete Garden Design"
       }
     }
   },
