@@ -2356,12 +2356,25 @@ async function testDatabaseConnection(): Promise<boolean> {
 
 // Initialize storage with fallback
 (async () => {
-  // Check for Supabase HTTP API configuration first
+  // Check for Supabase HTTP API configuration first - Use resilient version
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const { ResilientSupabaseStorage } = await import('./resilientSupabaseStorage');
+      storage = new ResilientSupabaseStorage();
+      console.log('✅ Using Resilient Supabase HTTP API for storage with retry logic and circuit breaker');
+      return;
+    } catch (error) {
+      console.error('Failed to initialize Resilient Supabase storage:', error);
+      // Fall through to regular Supabase storage
+    }
+  }
+  
+  // Try regular Supabase storage if resilient version fails
   if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
     try {
       const { SupabaseHttpStorage } = await import('./supabaseHttpStorage');
       storage = new SupabaseHttpStorage();
-      console.log('✅ Using Supabase HTTP API for storage');
+      console.log('✅ Using Supabase HTTP API for storage (without retry logic)');
       return;
     } catch (error) {
       console.error('Failed to initialize Supabase storage:', error);
