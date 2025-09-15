@@ -758,7 +758,7 @@ export class SupabaseHttpStorage implements IStorage {
         .from('user_plant_collections')
         .select('*')
         .eq('user_id', userId)
-        .order('added_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
