@@ -29,8 +29,8 @@ const getOidcConfig = memoize(
         process.env.REPL_ID!
       );
       console.log('🔐 [AUTH] OIDC Discovery successful');
-      console.log('🔐 [AUTH] Authorization endpoint:', config.authorization_endpoint);
-      console.log('🔐 [AUTH] Token endpoint:', config.token_endpoint);
+      console.log('🔐 [AUTH] Authorization endpoint:', config.serverMetadata().authorization_endpoint);
+      console.log('🔐 [AUTH] Token endpoint:', config.serverMetadata().token_endpoint);
       return config;
     } catch (error) {
       console.error('❌ [AUTH] OIDC Discovery failed:', error);
@@ -100,14 +100,14 @@ function updateUserSession(
 
 async function upsertUser(claims: any, user: any) {
   // Check if user is admin from OIDC claims
-  const isAdmin = claims["is_admin"] === true || claims["role"] === "admin";
+  const isAdmin = claims?.["is_admin"] === true || claims?.["role"] === "admin";
   
   const dbUser = await storage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
+    id: claims?.["sub"] || '',
+    email: claims?.["email"] || '',
+    firstName: claims?.["first_name"] || '',
+    lastName: claims?.["last_name"] || '',
+    profileImageUrl: claims?.["profile_image_url"] || '',
     // Set isAdmin from OIDC claims
     isAdmin: isAdmin,
   });
@@ -132,12 +132,12 @@ export async function setupAuth(app: Express) {
       console.log('🔐 [AUTH] Starting OIDC verification process');
       const claims = tokens.claims();
       console.log('🔐 [AUTH] OIDC claims received:', {
-        sub: claims.sub,
-        email: claims.email,
-        first_name: claims.first_name,
-        last_name: claims.last_name,
-        is_admin: claims.is_admin,
-        exp: claims.exp
+        sub: claims?.sub,
+        email: claims?.email,
+        first_name: claims?.first_name,
+        last_name: claims?.last_name,
+        is_admin: claims?.is_admin,
+        exp: claims?.exp
       });
 
       const user = {};
@@ -179,12 +179,15 @@ export async function setupAuth(app: Express) {
     cb(null, user);
   });
   
+  // Track logged users to prevent spam
+  const loggedUserIds = new Set<string>();
+  
   passport.deserializeUser((user: Express.User, cb) => {
     // Only log once per session for cleaner logs
     const userId = (user as any)?.databaseId;
-    if (userId && !passport.deserializeUser._logged) {
+    if (userId && !loggedUserIds.has(userId)) {
       console.log('🔐 [AUTH] User session restored:', userId);
-      (passport.deserializeUser as any)._logged = true;
+      loggedUserIds.add(userId);
     }
     cb(null, user);
   });
