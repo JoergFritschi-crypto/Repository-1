@@ -1,0 +1,40 @@
+ou’re correct: from Replit you should use Supabase’s connection pooling (PgBouncer) instead of the direct Postgres port.
+
+What to copy from the Dashboard
+
+Supabase Dashboard → Settings → Database → Connection Pooling
+Choose: Transaction pooling
+Copy the provided “Pooling” connection string. It will:
+Use port 6543
+Include pgbouncer=true
+Require SSL (sslmode=require)
+It looks like: postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:6543/postgres?pgbouncer=true&sslmode=require
+
+Quick client setups
+
+node-postgres (pg)
+
+Prefer using the URL directly; ensure SSL is on and disable prepared statements.
+Example:
+Env: DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:6543/postgres?pgbouncer=true&sslmode=require
+Code: const { Pool } = require('pg'); const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, statement_mode: 'simple', // disables prepared statements max: 5, // keep small in serverless }); module.exports = pool;
+Prisma
+
+Use the pooled URL for runtime, direct URL for migrations (run migrations locally/CI).
+.env: DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:5432/postgres?sslmode=require" # direct, for prisma migrate only DATABASE_URL_POOLED="postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:6543/postgres?pgbouncer=true&sslmode=require&connection_limit=1"
+prisma/schema.prisma datasource: datasource db { provider = "postgresql" url = env("DATABASE_URL_POOLED") }
+Notes:
+connection_limit=1 is recommended for PgBouncer in serverless.
+Avoid migrations from Replit; run them using the direct URL from a dev machine/CI.
+Python (psycopg)
+
+URL: DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:6543/postgres?pgbouncer=true&sslmode=require"
+Code: import os import psycopg conn = psycopg.connect(os.environ["DATABASE_URL"]) # sslmode=require in URL with conn.cursor() as cur: cur.execute("select 1") print(cur.fetchone())
+Common pitfalls to avoid
+
+Using the direct port 5432 from Replit. Use the pooler port 6543 instead.
+Missing SSL. Always include sslmode=require (some clients also need ssl: { rejectUnauthorized: false }).
+Prepared statements with PgBouncer transaction pooling. Disable them (pg: statement_mode: 'simple'; Prisma: pgbouncer=true).
+Too many connections from serverless. Keep pool sizes small (e.g., 1–5).
+Running Prisma migrations through the pooler. Use the direct connection (5432) for migrate only, outside Replit.
+If you paste your current connection string (with secrets redacted), I can adjust it to the correct pooler format for Replit.

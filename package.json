@@ -47,6 +47,7 @@
     "@runware/sdk-js": "^1.1.44",
     "@stripe/react-stripe-js": "^4.0.0",
     "@stripe/stripe-js": "^7.9.0",
+    "@supabase/supabase-js": "^2.57.4",
     "@tanstack/react-query": "^5.60.5",
     "@types/cookie-parser": "^1.4.9",
     "@types/lodash": "^4.17.20",

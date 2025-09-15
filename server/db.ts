@@ -32,14 +32,29 @@ function getDatabaseUrl(): string {
 const DATABASE_URL = getDatabaseUrl();
 
 // Configure connection pool with proper settings for PostgreSQL
-export const pool = new Pool({ 
+// Special configuration for Supabase pooler connection
+const isSupabase = process.env.SUPABASE_DATABASE_URL && DATABASE_URL.includes('supabase.co');
+const poolConfig: any = {
   connectionString: DATABASE_URL,
-  max: 10, // maximum number of connections in the pool
-  idleTimeoutMillis: 30000, // close idle clients after 30 seconds
-  connectionTimeoutMillis: 10000, // timeout for new connection attempts
-  maxUses: 7500, // close (and replace) connection after this many uses
-  allowExitOnIdle: false, // keep the pool alive
-});
+  max: isSupabase ? 5 : 10, // Smaller pool for Supabase pooler
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+  maxUses: 7500,
+  allowExitOnIdle: false,
+};
+
+// Add SSL configuration for Supabase
+if (isSupabase) {
+  poolConfig.ssl = {
+    rejectUnauthorized: false
+  };
+  // For PgBouncer, disable prepared statements
+  poolConfig.statement_timeout = 0;
+  poolConfig.query_timeout = 0;
+  poolConfig.application_name = 'gardenscape-pro';
+}
+
+export const pool = new Pool(poolConfig);
 
 // Handle pool errors to prevent crashes
 pool.on('error', (err) => {

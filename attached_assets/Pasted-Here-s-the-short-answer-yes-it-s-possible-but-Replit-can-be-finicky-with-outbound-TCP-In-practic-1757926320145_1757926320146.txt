@@ -1,0 +1,28 @@
+Here’s the short answer: yes, it’s possible, but Replit can be finicky with outbound TCP. In practice, many people hit issues with direct DB connections from Replit. The most reliable path is to use the Supabase HTTP APIs (supabase-js/PostgREST) or an Edge Function as a proxy. If you must use a DB driver, use the pooler with the right flags and keep expectations low.
+
+What I recommend (in order)
+
+Prefer HTTP over raw TCP from Replit
+Use supabase-js with RLS policies. This uses HTTPS and works reliably in Replit.
+For complex SQL or admin tasks, create a small Supabase Edge Function and call it from Replit via HTTPS. This avoids TCP restrictions entirely.
+If you still want a direct DB connection from Replit (possible but brittle)
+Use the Pooler URL (port 6543) with SSL and disable prepared statements:
+URL: postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:6543/postgres?pgbouncer=true&sslmode=require
+node-postgres example: const { Pool } = require('pg'); const pool = new Pool({ connectionString: process.env.DATABASE_URL, // use the pooled URL above ssl: { rejectUnauthorized: false }, statement_mode: 'simple', // critical for PgBouncer txn pooling max: 3, // small in serverless idleTimeoutMillis: 10000, connectionTimeoutMillis: 10000, });
+Connect per request, don’t keep global long-lived connections (Replit sleeps/restarts).
+Avoid features PgBouncer blocks in transaction pooling: prepared statements (disabled above), LISTEN/NOTIFY, temp tables, session vars.
+If using Prisma, run migrations off-Replit using the direct 5432 URL; use the pooled URL at runtime in Replit.
+Common failure causes on Replit
+
+Outbound port blocking to 5432/6543. If both fail, you won’t be able to use a driver; use HTTP APIs instead.
+Missing SSL or prepared statements enabled. Always include ?sslmode=require and disable prepared statements.
+URL encoding issues in password. If it has special chars, URL-encode it or switch to a simpler generated password to test.
+Too many connections. Keep pool sizes tiny (1–3).
+IPv6/DNS quirks. If you can toggle IPv6 off in your client or Replit environment, try that. Otherwise rely on HTTP.
+Minimal connectivity test you can paste into Replit
+
+Add env DATABASE_URL with your pooled URL: postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:6543/postgres?pgbouncer=true&sslmode=require
+index.js: const { Pool } = require('pg'); (async () => { const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, statement_mode: 'simple', max: 1, }); try { const { rows } = await pool.query('select 1 as ok;'); console.log(rows); } catch (e) { console.error('DB error:', e); } finally { await pool.end(); } })();
+If this fails on Replit but works locally, it’s almost certainly Replit’s outbound TCP constraints—use supabase-js or Edge Functions.
+
+If you share the exact error Replit logs (sanitize secrets), I can pinpoint whether it’s SSL, pooling, DNS, or port blocking and suggest the precise fix.
