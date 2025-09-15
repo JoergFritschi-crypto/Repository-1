@@ -54,13 +54,12 @@ function Router() {
   const publicRoutes = ['/', '/welcome', '/privacy', '/terms', '/contact'];
   const isPublicRoute = publicRoutes.includes(location);
   
-  // Show loading spinner for authenticated routes when auth is being checked
-  // But only if we haven't completed the initial auth check
-  if (isLoading && !isPublicRoute) {
+  // For non-public routes, show loading spinner while auth is being checked
+  if (!isPublicRoute && isLoading) {
     return <PageLoader />;
   }
   
-  // For authenticated routes, wait for auth check to complete before deciding
+  // For non-public routes, wait for auth check to complete before deciding
   // This prevents the 404 flash when auth state is transitioning
   if (!isPublicRoute && !authCheckComplete) {
     return <PageLoader />;
@@ -69,15 +68,15 @@ function Router() {
   return (
     <ErrorBoundary level="page" showDetails={process.env.NODE_ENV === 'development'}>
       <Switch>
-        {/* Public pages available to everyone */}
+        {/* Public pages - always available */}
         <Route path="/" component={Landing} />
         <Route path="/welcome" component={Landing} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/terms" component={Terms} />
         <Route path="/contact" component={Contact} />
         
-        {/* Authenticated routes - only render if authenticated and auth check is complete */}
-        {isAuthenticated && authCheckComplete && (
+        {/* Authenticated routes - only render if user is authenticated */}
+        {isAuthenticated ? (
           <>
             <Route path="/home" component={Home} />
             <Route path="/garden-setup">
@@ -120,7 +119,9 @@ function Router() {
               {(params) => <LazyRoute component={TestI18n} {...params} />}
             </Route>
           </>
-        )}
+        ) : null}
+        
+        {/* 404 fallback - only for non-public routes or when no other route matches */}
         <Route component={NotFound} />
       </Switch>
     </ErrorBoundary>
