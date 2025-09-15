@@ -1,0 +1,82 @@
+Sub-task checklist:
+
+Inspect your database schema to verify tables and columns mentioned.
+Identify conflicts with Supabase Auth best practices and Replit ID approach.
+Propose a safe migration strategy (or alternative) and generate SQL accordingly.
+Warn about destructive/unsafe changes and confirm before proceeding.
+list_tables
+Sub-task checklist:
+
+Compare the requested ALTERs with your actual schema.
+Flag anything that will break Auth or fail to run.
+Propose a safe migration that works with Replit IDs without rewriting PK types.
+Provide ready-to-run SQL for the safe path; ask confirmation for destructive path.
+Key findings from your schema
+
+profiles.id is uuid and has a foreign key to auth.users.id. Changing it to text will break that FK and anything relying on Supabase Auth.
+The agent’s script mentions columns that do not exist in your DB:
+climate_data.user_id — not present
+todo_tasks.user_id — not present
+api_alerts.user_id — not present
+security_audit_logs.target_user_id — not present
+Many tables already reference profiles(id) as uuid:
+gardens.user_id, user_plant_collections.user_id, plant_doctor_sessions.user_id, design_generations.user_id, api_usage_stats.user_id, file_vault.user_id, security_audit_logs.user_id, active_sessions.user_id, active_sessions.revoked_by, ip_access_control.added_by, security_settings.last_modified_by, security_recommendations.dismissed_by, rate_limit_violations.user_id.
+Dropping trigger on auth.users and function handle_new_user():
+There is no such trigger/function in your project, and altering objects in the auth schema often requires elevated permissions. Those DROP statements will either no-op or fail with permission denied.
+Recommended approach (safe, aligns with Supabase best practices)
+
+Keep Supabase Auth with uuid primary keys.
+Add a separate column on profiles to store Replit’s text user ID. Do not change PK/FK types.
+Use this column in your application to map Replit users to the Supabase auth user.
+Run this migration:
+
+Adds a unique text column for Replit IDs.
+Would you like me to run the following?
+
+Add a replit_id column on profiles with a unique constraint.
+Optional: add an index on email if you rely on it for lookups (you already have a unique constraint).
+If yes, I’ll execute:
+
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS replit_id text UNIQUE;
+Why this is preferable
+
+No breakage of auth.users linkage or existing RLS/policies.
+You can onboard users from Replit by:
+Creating a Supabase auth user (uuid).
+Inserting/updating the matching row in public.profiles with profiles.id = auth.users.id and profiles.replit_id = '<replit user id>'.
+Your app can query profiles by replit_id and still enjoy RLS and Supabase tooling.
+If you still want to convert everything to text IDs
+
+This is destructive and will disconnect profiles from auth.users. You will need to:
+Drop the FK profiles.id -> auth.users.id.
+ALTER profiles.id to text.
+ALTER all dependent FK columns to text and recreate constraints.
+Update all RLS policies that compare auth.uid() (uuid) to user_id to account for type change (or you’ll lose RLS protections for authenticated access).
+The real list of columns to change in your project (based on your schema) is:
+public.profiles.id
+public.gardens.user_id
+public.user_plant_collections.user_id
+public.plant_doctor_sessions.user_id
+public.design_generations.user_id
+public.api_usage_stats.user_id
+public.file_vault.user_id
+public.security_audit_logs.user_id
+public.active_sessions.user_id
+public.active_sessions.revoked_by
+public.ip_access_control.added_by
+public.security_settings.last_modified_by
+public.security_recommendations.dismissed_by
+public.rate_limit_violations.user_id
+Columns mentioned by your agent that do not exist and would cause errors if you ran their script:
+climate_data.user_id
+todo_tasks.user_id
+api_alerts.user_id
+security_audit_logs.target_user_id
+Confirm if you want me to draft the full conversion script; I’ll include safe ordering (drop constraints, alter types, recreate FKs, update RLS), but I strongly advise against this path unless you’re fully abandoning Supabase Auth.
+Next step
+
+Confirm which path you want:
+Recommended: Add profiles.replit_id text UNIQUE and keep UUID PKs.
+Destructive: Convert PK/FKs to text and sever the Auth FK.
+I’m ready to run the migration for option 1 immediately on your confirmation.
+
