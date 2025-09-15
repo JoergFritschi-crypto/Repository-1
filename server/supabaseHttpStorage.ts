@@ -44,19 +44,20 @@ export class SupabaseHttpStorage implements IStorage {
 
   constructor() {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY environment variables are required');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required');
     }
 
-    this.supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    this.supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
-        persistSession: false // Server-side usage
+        persistSession: false, // Server-side usage
+        autoRefreshToken: false
       }
     });
 
-    console.log('✅ SupabaseHttpStorage initialized - Using Supabase HTTP API for persistent storage');
+    console.log('✅ SupabaseHttpStorage initialized - Using Supabase HTTP API with service role key for persistent storage');
   }
 
   // Helper method to generate IDs
