@@ -47,16 +47,22 @@ const LazyRoute = ({ component: Component, ...props }: any) => (
 );
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, authCheckComplete } = useAuth();
   const [location] = useLocation();
   
   // Define public routes that should be accessible without authentication
   const publicRoutes = ['/', '/welcome', '/privacy', '/terms', '/contact'];
   const isPublicRoute = publicRoutes.includes(location);
   
-  // Only show loading spinner for authenticated routes when auth is being checked
-  // Public routes should render immediately
+  // Show loading spinner for authenticated routes when auth is being checked
+  // But only if we haven't completed the initial auth check
   if (isLoading && !isPublicRoute) {
+    return <PageLoader />;
+  }
+  
+  // For authenticated routes, wait for auth check to complete before deciding
+  // This prevents the 404 flash when auth state is transitioning
+  if (!isPublicRoute && !authCheckComplete) {
     return <PageLoader />;
   }
 
@@ -70,8 +76,8 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/contact" component={Contact} />
         
-        {/* Authenticated routes - only render if authenticated */}
-        {isAuthenticated && (
+        {/* Authenticated routes - only render if authenticated and auth check is complete */}
+        {isAuthenticated && authCheckComplete && (
           <>
             <Route path="/home" component={Home} />
             <Route path="/garden-setup">
