@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -48,9 +48,15 @@ const LazyRoute = ({ component: Component, ...props }: any) => (
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-
-  // Show loading spinner while auth is being checked
-  if (isLoading) {
+  const [location] = useLocation();
+  
+  // Define public routes that should be accessible without authentication
+  const publicRoutes = ['/', '/welcome', '/privacy', '/terms', '/contact'];
+  const isPublicRoute = publicRoutes.includes(location);
+  
+  // Only show loading spinner for authenticated routes when auth is being checked
+  // Public routes should render immediately
+  if (isLoading && !isPublicRoute) {
     return <PageLoader />;
   }
 

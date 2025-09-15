@@ -57,47 +57,50 @@ const detectionOptions = {
   checkWhitelist: true,
 };
 
-i18n
-  // Use language detector
-  .use(LanguageDetector)
-  // Pass the i18n instance to react-i18next
-  .use(initReactI18next)
-  // Initialize i18next
-  .init({
-    resources,
-    
-    // Language detection configuration
-    detection: detectionOptions,
-    
-    // Fallback language
-    fallbackLng: 'en',
-    
-    // Allowed languages
-    supportedLngs: Object.keys(supportedLanguages),
-    
-    // Language to use if current language is not in supportedLngs
-    nonExplicitSupportedLngs: false,
-    
-    // Namespace configuration
-    ns: ['translation'],
-    defaultNS: 'translation',
-    
-    // Interpolation configuration
-    interpolation: {
-      escapeValue: false, // React already does escaping
-    },
-    
-    // React configuration
-    react: {
-      useSuspense: false, // Disable suspense for better error handling
-    },
-    
-    // Development configuration
-    debug: process.env.NODE_ENV === 'development',
-    
-    // Return key if translation is missing
-    returnNull: false,
-    returnEmptyString: false,
-  });
+// Initialize i18n only if it hasn't been initialized yet
+if (!i18n.isInitialized) {
+  i18n
+    // Use language detector
+    .use(LanguageDetector)
+    // Pass the i18n instance to react-i18next
+    .use(initReactI18next)
+    // Initialize i18next
+    .init({
+      resources,
+      
+      // Language detection configuration
+      detection: detectionOptions,
+      
+      // Fallback language
+      fallbackLng: 'en',
+      
+      // Allowed languages
+      supportedLngs: Object.keys(supportedLanguages),
+      
+      // Language to use if current language is not in supportedLngs
+      nonExplicitSupportedLngs: false,
+      
+      // Namespace configuration
+      ns: ['translation'],
+      defaultNS: 'translation',
+      
+      // Interpolation configuration
+      interpolation: {
+        escapeValue: false, // React already does escaping
+      },
+      
+      // React configuration
+      react: {
+        useSuspense: false, // Disable suspense for better error handling
+      },
+      
+      // Development configuration
+      debug: process.env.NODE_ENV === 'development',
+      
+      // Return key if translation is missing
+      returnNull: false,
+      returnEmptyString: false,
+    });
+}
 
 export default i18n;
