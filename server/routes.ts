@@ -269,10 +269,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authReq = req as AuthenticatedRequest;
       const userId = getUserId(authReq);
+      console.log('🔐 [AUTH] Fetching user data for userId:', userId);
+      
+      // Get user from database
       const user = await storage.getUser(userId);
+      
+      if (!user) {
+        console.log('⚠️ [AUTH] User not found in database, upserting from session');
+        // If user doesn't exist in DB, upsert from session data
+        const sessionUser = authReq.user;
+        if (sessionUser && sessionUser.claims) {
+          const newUser = await storage.upsertUser({
+            id: userId,
+            email: sessionUser.claims.email || '',
+            username: sessionUser.claims.sub || userId,
+            isAdmin: sessionUser.claims.is_admin === true,
+            firstName: sessionUser.claims.first_name || null,
+            lastName: sessionUser.claims.last_name || null,
+            profilePicture: sessionUser.claims.profile || null,
+            userTier: 'free',
+            premiumUntil: null,
+          });
+          console.log('✅ [AUTH] User upserted in database:', newUser.id);
+          return res.json(newUser);
+        } else {
+          console.error('❌ [AUTH] No session data to upsert user');
+          return res.status(500).json({ message: "User data not available" });
+        }
+      }
+      
+      console.log('✅ [AUTH] User found in database:', user.id);
       res.json(user);
     } catch (error) {
-      console.error("Error fetching user:", error);
+      console.error("❌ [AUTH] Error in /api/auth/user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
