@@ -5,7 +5,7 @@
 -- Compatible with Supabase PostgreSQL
 -- 
 -- Tables included:
--- - User management (users, sessions)
+-- - User management (profiles linked to auth.users)
 -- - Garden design (gardens, plants, garden_plants)
 -- - User collections (user_plant_collections)
 -- - AI features (plant_doctor_sessions, design_generations)
@@ -16,9 +16,10 @@
 -- - Scraping and queue management
 -- =============================================
 
--- Enable necessary extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+-- Enable necessary extensions in the extensions schema
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" SCHEMA extensions;
 
 -- =============================================
 -- ENUM TYPES
@@ -61,45 +62,35 @@ CREATE TYPE security_event_type AS ENUM (
 -- CORE TABLES
 -- =============================================
 
--- Sessions table (required for Replit Auth)
--- Stores user session data for authentication
-CREATE TABLE IF NOT EXISTS sessions (
-  sid VARCHAR PRIMARY KEY,
-  sess JSONB NOT NULL,
-  expire TIMESTAMP NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_session_expire ON sessions(expire);
-
--- Users table
+-- Profiles table (linked to auth.users)
 -- Stores user profile and subscription information
-CREATE TABLE IF NOT EXISTS users (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  email VARCHAR UNIQUE,
-  first_name VARCHAR,
-  last_name VARCHAR,
-  profile_image_url VARCHAR,
-  stripe_customer_id VARCHAR,
-  stripe_subscription_id VARCHAR,
-  subscription_status VARCHAR,
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE,
+  first_name TEXT,
+  last_name TEXT,
+  profile_image_url TEXT,
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
+  subscription_status TEXT,
   user_tier user_tier DEFAULT 'free',
   design_credits INTEGER DEFAULT 1,
   is_admin BOOLEAN DEFAULT false,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_tier ON users(user_tier);
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
+CREATE INDEX IF NOT EXISTS idx_profiles_tier ON profiles(user_tier);
 
 -- Gardens table
 -- Stores garden design information and parameters
 CREATE TABLE IF NOT EXISTS gardens (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name VARCHAR NOT NULL,
-  location VARCHAR NOT NULL,
-  units VARCHAR NOT NULL DEFAULT 'metric',
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  location TEXT NOT NULL,
+  units TEXT NOT NULL DEFAULT 'metric',
   shape garden_shape NOT NULL,
   dimensions JSONB NOT NULL,
   slope_percentage DECIMAL(5,2),
@@ -111,18 +102,18 @@ CREATE TABLE IF NOT EXISTS gardens (
   soil_ph DECIMAL(3,1),
   has_soil_analysis BOOLEAN DEFAULT false,
   soil_analysis JSONB,
-  hardiness_zone VARCHAR,
-  usda_zone VARCHAR,
-  rhs_zone VARCHAR,
-  hardiness_category VARCHAR,
+  hardiness_zone TEXT,
+  usda_zone TEXT,
+  rhs_zone TEXT,
+  hardiness_category TEXT,
   climate_data JSONB,
   preferences JSONB,
-  design_approach VARCHAR DEFAULT 'ai',
+  design_approach TEXT DEFAULT 'ai',
   layout_data JSONB,
   ai_generated BOOLEAN DEFAULT false,
-  status VARCHAR DEFAULT 'draft',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  status TEXT DEFAULT 'draft',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_gardens_user_id ON gardens(user_id);
@@ -131,20 +122,20 @@ CREATE INDEX IF NOT EXISTS idx_gardens_status ON gardens(status);
 -- Plants table
 -- Master plant database with botanical and horticultural information
 CREATE TABLE IF NOT EXISTS plants (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   perenual_id INTEGER UNIQUE,
-  external_id VARCHAR UNIQUE,
+  external_id TEXT UNIQUE,
   
   -- Core botanical identity
-  scientific_name VARCHAR NOT NULL UNIQUE,
-  genus VARCHAR NOT NULL,
-  species VARCHAR,
-  cultivar VARCHAR,
-  common_name VARCHAR NOT NULL,
-  family VARCHAR,
+  scientific_name TEXT NOT NULL UNIQUE,
+  genus TEXT NOT NULL,
+  species TEXT,
+  cultivar TEXT,
+  common_name TEXT NOT NULL,
+  family TEXT,
   
   -- Basic characteristics
-  type VARCHAR,
+  type TEXT,
   dimension JSONB,
   
   -- Numeric dimensions for filtering (metric and imperial)
@@ -157,37 +148,37 @@ CREATE TABLE IF NOT EXISTS plants (
   spread_min_inches INTEGER,
   spread_max_inches INTEGER,
   
-  cycle VARCHAR,
-  foliage VARCHAR,
+  cycle TEXT,
+  foliage TEXT,
   
   -- Growing conditions
-  hardiness VARCHAR,
+  hardiness TEXT,
   hardiness_location JSONB,
   sunlight JSONB,
   soil JSONB,
-  soil_ph VARCHAR,
-  watering VARCHAR,
+  soil_ph TEXT,
+  watering TEXT,
   watering_general_benchmark JSONB,
-  watering_period VARCHAR,
+  watering_period TEXT,
   depth_water_requirement JSONB,
   volume_water_requirement JSONB,
   
   -- Plant characteristics
-  growth_rate VARCHAR,
+  growth_rate TEXT,
   drought_tolerant BOOLEAN DEFAULT false,
   salt_tolerant BOOLEAN DEFAULT false,
   thorny BOOLEAN DEFAULT false,
   tropical BOOLEAN DEFAULT false,
   invasive BOOLEAN DEFAULT false,
   indoor BOOLEAN DEFAULT false,
-  care_level VARCHAR,
-  maintenance VARCHAR,
+  care_level TEXT,
+  maintenance TEXT,
   
   -- Availability scoring
   base_availability_score INTEGER,
-  cultivation_difficulty VARCHAR,
-  propagation_method VARCHAR,
-  commercial_production VARCHAR,
+  cultivation_difficulty TEXT,
+  propagation_method TEXT,
+  commercial_production TEXT,
   climate_adaptability INTEGER,
   regional_availability JSONB,
   
@@ -195,9 +186,9 @@ CREATE TABLE IF NOT EXISTS plants (
   leaf JSONB,
   leaf_color JSONB,
   flower_color JSONB,
-  flowering_season VARCHAR,
+  flowering_season TEXT,
   fruit_color JSONB,
-  harvest_season VARCHAR,
+  harvest_season TEXT,
   
   -- Bloom timing (legacy and precise)
   bloom_start_month INTEGER,
@@ -205,12 +196,12 @@ CREATE TABLE IF NOT EXISTS plants (
   bloom_start_day_of_year INTEGER,
   bloom_end_day_of_year INTEGER,
   bloom_windows JSONB,
-  bloom_precision VARCHAR,
+  bloom_precision TEXT,
   
   -- Safety (RHS/HTA 3-tier classification)
-  toxicity_category VARCHAR DEFAULT 'low',
-  toxicity_to_humans VARCHAR DEFAULT 'low',
-  toxicity_to_pets VARCHAR DEFAULT 'low',
+  toxicity_category TEXT DEFAULT 'low',
+  toxicity_to_humans TEXT DEFAULT 'low',
+  toxicity_to_pets TEXT DEFAULT 'low',
   toxicity_notes TEXT,
   child_safe BOOLEAN DEFAULT true,
   pet_safe BOOLEAN DEFAULT true,
@@ -230,30 +221,30 @@ CREATE TABLE IF NOT EXISTS plants (
   pruning_count JSONB,
   seeds INTEGER,
   pest_susceptibility JSONB,
-  pest_susceptibility_api VARCHAR,
+  pest_susceptibility_api TEXT,
   
   -- Content and guides
   description TEXT,
-  care_guides VARCHAR,
+  care_guides TEXT,
   
   -- Image generation fields
-  thumbnail_image VARCHAR,
-  full_image VARCHAR,
-  detail_image VARCHAR,
-  image_generation_status VARCHAR DEFAULT 'pending',
-  image_generation_started_at TIMESTAMP,
-  image_generation_completed_at TIMESTAMP,
+  thumbnail_image TEXT,
+  full_image TEXT,
+  detail_image TEXT,
+  image_generation_status TEXT DEFAULT 'pending',
+  image_generation_started_at TIMESTAMPTZ,
+  image_generation_completed_at TIMESTAMPTZ,
   image_generation_error TEXT,
   image_generation_attempts INTEGER DEFAULT 0,
-  last_image_generation_at TIMESTAMP,
+  last_image_generation_at TIMESTAMPTZ,
   
   -- System fields
-  generated_image_url VARCHAR,
-  data_source VARCHAR DEFAULT 'perenual',
-  imported_at TIMESTAMP,
-  verification_status VARCHAR DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  generated_image_url TEXT,
+  data_source TEXT DEFAULT 'perenual',
+  imported_at TIMESTAMPTZ,
+  verification_status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_plants_scientific_name ON plants(scientific_name);
@@ -269,12 +260,12 @@ CREATE INDEX IF NOT EXISTS idx_plants_image_status ON plants(image_generation_st
 -- User plant collections
 -- Stores user's favorite and saved plants
 CREATE TABLE IF NOT EXISTS user_plant_collections (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  plant_id VARCHAR NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  plant_id UUID NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
   notes TEXT,
   is_favorite BOOLEAN DEFAULT false,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_plants_user ON user_plant_collections(user_id);
@@ -283,14 +274,14 @@ CREATE INDEX IF NOT EXISTS idx_user_plants_plant ON user_plant_collections(plant
 -- Garden plants
 -- Links plants to specific positions in garden designs
 CREATE TABLE IF NOT EXISTS garden_plants (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  garden_id VARCHAR NOT NULL REFERENCES gardens(id) ON DELETE CASCADE,
-  plant_id VARCHAR NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  garden_id UUID NOT NULL REFERENCES gardens(id) ON DELETE CASCADE,
+  plant_id UUID NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
   position_x DECIMAL(10,2),
   position_y DECIMAL(10,2),
   quantity INTEGER DEFAULT 1,
   notes TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_garden_plants_garden ON garden_plants(garden_id);
@@ -303,31 +294,32 @@ CREATE INDEX IF NOT EXISTS idx_garden_plants_plant ON garden_plants(plant_id);
 -- Plant doctor sessions
 -- Stores plant identification and diagnosis sessions
 CREATE TABLE IF NOT EXISTS plant_doctor_sessions (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
-  session_type VARCHAR NOT NULL,
-  image_url VARCHAR,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  session_type TEXT NOT NULL,
+  image_url TEXT,
   ai_analysis JSONB,
   confidence DECIMAL(5,4),
-  identified_plant_id VARCHAR REFERENCES plants(id),
+  identified_plant_id UUID REFERENCES plants(id),
   user_feedback JSONB,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_plant_doctor_user ON plant_doctor_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_plant_doctor_plant ON plant_doctor_sessions(identified_plant_id);
 
 -- Design generations
 -- Tracks AI design generation for tier limits
 CREATE TABLE IF NOT EXISTS design_generations (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  garden_id VARCHAR REFERENCES gardens(id) ON DELETE SET NULL,
-  style_id VARCHAR NOT NULL,
-  generation_type VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  garden_id UUID REFERENCES gardens(id) ON DELETE SET NULL,
+  style_id TEXT NOT NULL,
+  generation_type TEXT NOT NULL,
   success BOOLEAN DEFAULT false,
   error_message TEXT,
   tokens_used INTEGER,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_design_gen_user ON design_generations(user_id);
@@ -340,33 +332,33 @@ CREATE INDEX IF NOT EXISTS idx_design_gen_garden ON design_generations(garden_id
 -- Climate data cache
 -- Stores location-specific climate information
 CREATE TABLE IF NOT EXISTS climate_data (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  location VARCHAR NOT NULL UNIQUE,
-  hardiness_zone VARCHAR,
-  usda_zone VARCHAR,
-  rhs_zone VARCHAR,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  location TEXT NOT NULL UNIQUE,
+  hardiness_zone TEXT,
+  usda_zone TEXT,
+  rhs_zone TEXT,
   ahs_heat_zone INTEGER,
-  koppen_climate VARCHAR,
-  hardiness_category VARCHAR,
-  temperature_range VARCHAR,
+  koppen_climate TEXT,
+  hardiness_category TEXT,
+  temperature_range TEXT,
   annual_rainfall DECIMAL(7,2),
   avg_temp_min DECIMAL(5,2),
   avg_temp_max DECIMAL(5,2),
   avg_humidity DECIMAL(5,2),
   avg_wind_speed DECIMAL(5,2),
   sunshine_percent DECIMAL(5,2),
-  wettest_month VARCHAR,
+  wettest_month TEXT,
   wettest_month_precip DECIMAL(7,2),
-  driest_month VARCHAR,
+  driest_month TEXT,
   driest_month_precip DECIMAL(7,2),
   monthly_precip_pattern JSONB,
   frost_dates JSONB,
   growing_season JSONB,
   monthly_data JSONB,
   gardening_advice TEXT,
-  data_source VARCHAR DEFAULT 'visual_crossing',
+  data_source TEXT DEFAULT 'visual_crossing',
   data_range JSONB,
-  last_updated TIMESTAMP DEFAULT NOW()
+  last_updated TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_climate_location ON climate_data(location);
@@ -378,42 +370,43 @@ CREATE INDEX IF NOT EXISTS idx_climate_location ON climate_data(location);
 -- Image generation queue
 -- Manages bulk image generation with rate limiting
 CREATE TABLE IF NOT EXISTS image_generation_queue (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  plant_id VARCHAR NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
-  image_type VARCHAR NOT NULL,
-  status VARCHAR DEFAULT 'pending',
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plant_id UUID NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
+  image_type TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
   priority INTEGER DEFAULT 0,
   retry_count INTEGER DEFAULT 0,
   max_retries INTEGER DEFAULT 3,
   error_message TEXT,
-  generated_image_path VARCHAR,
-  scheduled_for TIMESTAMP,
-  started_at TIMESTAMP,
-  completed_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW()
+  generated_image_path TEXT,
+  scheduled_for TIMESTAMPTZ,
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_img_queue_plant ON image_generation_queue(plant_id);
 CREATE INDEX IF NOT EXISTS idx_img_queue_status ON image_generation_queue(status);
+CREATE INDEX IF NOT EXISTS idx_img_queue_scheduled ON image_generation_queue(scheduled_for);
 
 -- Scraping progress
 -- Tracks web scraping progress
 CREATE TABLE IF NOT EXISTS scraping_progress (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  url VARCHAR NOT NULL UNIQUE,
-  status VARCHAR NOT NULL DEFAULT 'in_progress',
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  url TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'in_progress',
   total_batches INTEGER DEFAULT 0,
   completed_batches INTEGER DEFAULT 0,
   total_plants INTEGER DEFAULT 0,
   saved_plants INTEGER DEFAULT 0,
   duplicate_plants INTEGER DEFAULT 0,
   failed_plants INTEGER DEFAULT 0,
-  last_product_url VARCHAR,
+  last_product_url TEXT,
   product_urls JSONB,
   errors JSONB,
-  started_at TIMESTAMP DEFAULT NOW(),
-  completed_at TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT NOW()
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -423,47 +416,49 @@ CREATE TABLE IF NOT EXISTS scraping_progress (
 -- API health checks
 -- Monitors external API status
 CREATE TABLE IF NOT EXISTS api_health_checks (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  service VARCHAR NOT NULL,
-  status VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  service TEXT NOT NULL,
+  status TEXT NOT NULL,
   response_time INTEGER,
   error_message TEXT,
   quota_used INTEGER,
   quota_limit INTEGER,
-  last_checked TIMESTAMP DEFAULT NOW(),
+  last_checked TIMESTAMPTZ DEFAULT NOW(),
   metadata JSONB
 );
 
 CREATE INDEX IF NOT EXISTS idx_api_health_service ON api_health_checks(service);
+CREATE INDEX IF NOT EXISTS idx_api_health_checked ON api_health_checks(last_checked);
 
 -- API usage statistics
 -- Tracks API usage for cost monitoring
 CREATE TABLE IF NOT EXISTS api_usage_stats (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  service VARCHAR NOT NULL,
-  endpoint VARCHAR,
-  user_id VARCHAR REFERENCES users(id) ON DELETE SET NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  service TEXT NOT NULL,
+  endpoint TEXT,
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   request_count INTEGER DEFAULT 1,
   tokens_used INTEGER,
   cost DECIMAL(10,4),
-  date TIMESTAMP DEFAULT NOW(),
-  created_at TIMESTAMP DEFAULT NOW()
+  date TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_api_usage_service ON api_usage_stats(service);
 CREATE INDEX IF NOT EXISTS idx_api_usage_user ON api_usage_stats(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_date ON api_usage_stats(date);
 
 -- API alerts
 -- Alert configurations for monitoring
 CREATE TABLE IF NOT EXISTS api_alerts (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  service VARCHAR NOT NULL,
-  alert_type VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  service TEXT NOT NULL,
+  alert_type TEXT NOT NULL,
   threshold INTEGER,
   is_active BOOLEAN DEFAULT true,
-  last_triggered TIMESTAMP,
+  last_triggered TIMESTAMPTZ,
   notifications_sent INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -473,21 +468,22 @@ CREATE TABLE IF NOT EXISTS api_alerts (
 -- File vault
 -- Stores user files with tier-based retention
 CREATE TABLE IF NOT EXISTS file_vault (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  file_name VARCHAR NOT NULL,
-  file_type VARCHAR NOT NULL,
-  content_type VARCHAR NOT NULL,
-  file_path VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  file_name TEXT NOT NULL,
+  file_type TEXT NOT NULL,
+  content_type TEXT NOT NULL,
+  file_path TEXT NOT NULL,
   metadata JSONB,
-  expires_at TIMESTAMP,
+  expires_at TIMESTAMPTZ,
   access_count INTEGER DEFAULT 0,
-  last_accessed_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW()
+  last_accessed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_file_vault_user ON file_vault(user_id);
 CREATE INDEX IF NOT EXISTS idx_file_vault_type ON file_vault(file_type);
+CREATE INDEX IF NOT EXISTS idx_file_vault_expires ON file_vault(expires_at);
 
 -- =============================================
 -- ADMIN TABLES
@@ -496,9 +492,9 @@ CREATE INDEX IF NOT EXISTS idx_file_vault_type ON file_vault(file_type);
 -- Todo tasks
 -- Simple todo list for admin dashboard
 CREATE TABLE IF NOT EXISTS todo_tasks (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   task TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -508,128 +504,139 @@ CREATE TABLE IF NOT EXISTS todo_tasks (
 -- Security audit logs
 -- Tracks all security-relevant events
 CREATE TABLE IF NOT EXISTS security_audit_logs (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id VARCHAR REFERENCES users(id) ON DELETE SET NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   event_type security_event_type NOT NULL,
   event_description TEXT NOT NULL,
-  ip_address VARCHAR,
+  ip_address TEXT,
   user_agent TEXT,
   metadata JSONB,
   severity security_severity NOT NULL DEFAULT 'info',
   success BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_user ON security_audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_event ON security_audit_logs(event_type);
 CREATE INDEX IF NOT EXISTS idx_audit_severity ON security_audit_logs(severity);
+CREATE INDEX IF NOT EXISTS idx_audit_created ON security_audit_logs(created_at);
 
 -- Active sessions
 -- Monitors currently active user sessions
 CREATE TABLE IF NOT EXISTS active_sessions (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  session_token VARCHAR NOT NULL UNIQUE,
-  ip_address VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  session_token TEXT NOT NULL UNIQUE,
+  ip_address TEXT NOT NULL,
   user_agent TEXT,
-  last_activity TIMESTAMP DEFAULT NOW(),
-  login_time TIMESTAMP DEFAULT NOW(),
-  expires_at TIMESTAMP,
+  last_activity TIMESTAMPTZ DEFAULT NOW(),
+  login_time TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ,
   is_active BOOLEAN DEFAULT true,
-  revoked_at TIMESTAMP,
-  revoked_by VARCHAR REFERENCES users(id),
-  created_at TIMESTAMP DEFAULT NOW()
+  revoked_at TIMESTAMPTZ,
+  revoked_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_active_sessions_user ON active_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_active_sessions_token ON active_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_active_sessions_expires ON active_sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_active_sessions_revoked_by ON active_sessions(revoked_by);
 
 -- Failed login attempts
 -- Tracks failed logins for security monitoring
 CREATE TABLE IF NOT EXISTS failed_login_attempts (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  ip_address VARCHAR NOT NULL,
-  attempted_email VARCHAR,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ip_address TEXT NOT NULL,
+  attempted_email TEXT,
   user_agent TEXT,
   attempt_count INTEGER DEFAULT 1,
-  last_attempt TIMESTAMP DEFAULT NOW(),
-  blocked_until TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW()
+  last_attempt TIMESTAMPTZ DEFAULT NOW(),
+  blocked_until TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_failed_login_ip ON failed_login_attempts(ip_address);
+CREATE INDEX IF NOT EXISTS idx_failed_login_blocked ON failed_login_attempts(blocked_until);
 
 -- IP access control
 -- Manages IP-based access rules
 CREATE TABLE IF NOT EXISTS ip_access_control (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  ip_address VARCHAR NOT NULL,
-  ip_range VARCHAR,
-  type VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ip_address TEXT NOT NULL,
+  ip_range TEXT,
+  type TEXT NOT NULL,
   reason TEXT,
-  added_by VARCHAR REFERENCES users(id),
-  expires_at TIMESTAMP,
+  added_by UUID REFERENCES profiles(id),
+  expires_at TIMESTAMPTZ,
   is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_ip_control_address ON ip_access_control(ip_address);
+CREATE INDEX IF NOT EXISTS idx_ip_control_active ON ip_access_control(is_active);
+CREATE INDEX IF NOT EXISTS idx_ip_control_added_by ON ip_access_control(added_by);
 
 -- Security settings
 -- Stores security configuration
 CREATE TABLE IF NOT EXISTS security_settings (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  key VARCHAR NOT NULL UNIQUE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key TEXT NOT NULL UNIQUE,
   value JSONB NOT NULL,
   description TEXT,
-  last_modified_by VARCHAR REFERENCES users(id),
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  last_modified_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_security_settings_modified_by ON security_settings(last_modified_by);
 
 -- Security recommendations
 -- System-generated security improvement suggestions
 CREATE TABLE IF NOT EXISTS security_recommendations (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  title VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
   description TEXT NOT NULL,
   severity security_severity NOT NULL,
-  category VARCHAR NOT NULL,
-  status VARCHAR DEFAULT 'pending',
+  category TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
   priority INTEGER DEFAULT 0,
   implementation_guide TEXT,
-  dismissed_by VARCHAR REFERENCES users(id),
-  dismissed_at TIMESTAMP,
+  dismissed_by UUID REFERENCES profiles(id),
+  dismissed_at TIMESTAMPTZ,
   dismissal_reason TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_security_rec_dismissed_by ON security_recommendations(dismissed_by);
 
 -- Rate limit violations
 -- Tracks rate limit violations
 CREATE TABLE IF NOT EXISTS rate_limit_violations (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  ip_address VARCHAR NOT NULL,
-  user_id VARCHAR REFERENCES users(id) ON DELETE SET NULL,
-  endpoint VARCHAR NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ip_address TEXT NOT NULL,
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  endpoint TEXT NOT NULL,
   violation_count INTEGER DEFAULT 1,
-  window_start TIMESTAMP DEFAULT NOW(),
-  window_end TIMESTAMP,
+  window_start TIMESTAMPTZ DEFAULT NOW(),
+  window_end TIMESTAMPTZ,
   blocked BOOLEAN DEFAULT false,
-  blocked_until TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW()
+  blocked_until TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_rate_limit_ip ON rate_limit_violations(ip_address);
 CREATE INDEX IF NOT EXISTS idx_rate_limit_user ON rate_limit_violations(user_id);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_blocked ON rate_limit_violations(blocked_until);
 
 -- =============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- =============================================
 
 -- Enable RLS on user-scoped tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gardens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_plant_collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE garden_plants ENABLE ROW LEVEL SECURITY;
@@ -638,107 +645,143 @@ ALTER TABLE design_generations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE file_vault ENABLE ROW LEVEL SECURITY;
 ALTER TABLE active_sessions ENABLE ROW LEVEL SECURITY;
 
--- Note: Since we're using HTTP API (not direct database connection),
--- these RLS policies are primarily for defense-in-depth.
--- The actual authorization happens in the Express backend.
+-- Profiles policies
+CREATE POLICY profiles_select_own ON profiles
+  FOR SELECT TO authenticated
+  USING (auth.uid() = id);
 
--- Users can only see their own profile
-CREATE POLICY users_select_own ON users
-  FOR SELECT USING (auth.uid()::text = id OR auth.uid() IS NULL);
+CREATE POLICY profiles_insert_own ON profiles
+  FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = id);
 
-CREATE POLICY users_update_own ON users
-  FOR UPDATE USING (auth.uid()::text = id);
+CREATE POLICY profiles_update_own ON profiles
+  FOR UPDATE TO authenticated
+  USING (auth.uid() = id);
 
--- Users can only access their own gardens
+-- Gardens policies
 CREATE POLICY gardens_select_own ON gardens
-  FOR SELECT USING (auth.uid()::text = user_id OR auth.uid() IS NULL);
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE POLICY gardens_insert_own ON gardens
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+  FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY gardens_update_own ON gardens
-  FOR UPDATE USING (auth.uid()::text = user_id);
+  FOR UPDATE TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE POLICY gardens_delete_own ON gardens
-  FOR DELETE USING (auth.uid()::text = user_id);
+  FOR DELETE TO authenticated
+  USING (auth.uid() = user_id);
 
--- Users can only access their own plant collections
+-- User plant collections policies
 CREATE POLICY user_plants_select_own ON user_plant_collections
-  FOR SELECT USING (auth.uid()::text = user_id OR auth.uid() IS NULL);
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE POLICY user_plants_insert_own ON user_plant_collections
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+  FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY user_plants_update_own ON user_plant_collections
-  FOR UPDATE USING (auth.uid()::text = user_id);
+  FOR UPDATE TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE POLICY user_plants_delete_own ON user_plant_collections
-  FOR DELETE USING (auth.uid()::text = user_id);
+  FOR DELETE TO authenticated
+  USING (auth.uid() = user_id);
 
--- Garden plants access through garden ownership
+-- Garden plants policies (through garden ownership)
 CREATE POLICY garden_plants_select ON garden_plants
-  FOR SELECT USING (
+  FOR SELECT TO authenticated
+  USING (
     EXISTS (
       SELECT 1 FROM gardens 
       WHERE gardens.id = garden_plants.garden_id 
-      AND (gardens.user_id = auth.uid()::text OR auth.uid() IS NULL)
+      AND gardens.user_id = auth.uid()
     )
   );
 
 CREATE POLICY garden_plants_insert ON garden_plants
-  FOR INSERT WITH CHECK (
+  FOR INSERT TO authenticated
+  WITH CHECK (
     EXISTS (
       SELECT 1 FROM gardens 
       WHERE gardens.id = garden_plants.garden_id 
-      AND gardens.user_id = auth.uid()::text
+      AND gardens.user_id = auth.uid()
     )
   );
 
 CREATE POLICY garden_plants_update ON garden_plants
-  FOR UPDATE USING (
+  FOR UPDATE TO authenticated
+  USING (
     EXISTS (
       SELECT 1 FROM gardens 
       WHERE gardens.id = garden_plants.garden_id 
-      AND gardens.user_id = auth.uid()::text
+      AND gardens.user_id = auth.uid()
     )
   );
 
 CREATE POLICY garden_plants_delete ON garden_plants
-  FOR DELETE USING (
+  FOR DELETE TO authenticated
+  USING (
     EXISTS (
       SELECT 1 FROM gardens 
       WHERE gardens.id = garden_plants.garden_id 
-      AND gardens.user_id = auth.uid()::text
+      AND gardens.user_id = auth.uid()
     )
   );
 
--- Plant doctor sessions
+-- Plant doctor sessions policies
 CREATE POLICY plant_doctor_select_own ON plant_doctor_sessions
-  FOR SELECT USING (auth.uid()::text = user_id OR auth.uid() IS NULL);
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE POLICY plant_doctor_insert_own ON plant_doctor_sessions
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+  FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
 
--- Design generations
+-- Design generations policies
 CREATE POLICY design_gen_select_own ON design_generations
-  FOR SELECT USING (auth.uid()::text = user_id OR auth.uid() IS NULL);
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE POLICY design_gen_insert_own ON design_generations
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+  FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
 
--- File vault
+-- File vault policies
 CREATE POLICY file_vault_select_own ON file_vault
-  FOR SELECT USING (auth.uid()::text = user_id OR auth.uid() IS NULL);
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
 
 CREATE POLICY file_vault_insert_own ON file_vault
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+  FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY file_vault_delete_own ON file_vault
-  FOR DELETE USING (auth.uid()::text = user_id);
+  FOR DELETE TO authenticated
+  USING (auth.uid() = user_id);
 
--- Active sessions
+-- Active sessions policies
 CREATE POLICY active_sessions_select_own ON active_sessions
-  FOR SELECT USING (auth.uid()::text = user_id OR auth.uid() IS NULL);
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+-- =============================================
+-- PUBLIC ACCESS POLICIES
+-- =============================================
+
+-- Plants table is public read-only
+CREATE POLICY plants_public_read ON plants
+  FOR SELECT TO anon, authenticated
+  USING (true);
+
+-- Climate data is public read-only
+CREATE POLICY climate_public_read ON climate_data
+  FOR SELECT TO anon, authenticated
+  USING (true);
 
 -- =============================================
 -- TRIGGER FUNCTIONS
@@ -753,8 +796,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to automatically create profile on user signup
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email)
+  VALUES (NEW.id, NEW.email);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to create profile when user signs up
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
 -- Add update triggers to tables with updated_at column
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_gardens_updated_at BEFORE UPDATE ON gardens
@@ -789,18 +847,20 @@ INSERT INTO security_settings (key, value, description) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 -- =============================================
--- GRANT PERMISSIONS (for Supabase service role)
+-- GRANT PERMISSIONS
 -- =============================================
 
 -- Grant all permissions to authenticated users for reading plants
--- (Plants are public data, not user-specific)
-GRANT SELECT ON plants TO authenticated;
-GRANT SELECT ON climate_data TO authenticated;
+GRANT SELECT ON plants TO anon, authenticated;
+GRANT SELECT ON climate_data TO anon, authenticated;
 
 -- Grant permissions to service role (used by backend)
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO service_role;
+
+-- Grant usage on extensions schema
+GRANT USAGE ON SCHEMA extensions TO anon, authenticated, service_role;
 
 -- =============================================
 -- END OF SCHEMA

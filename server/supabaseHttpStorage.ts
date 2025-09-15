@@ -71,7 +71,7 @@ export class SupabaseHttpStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     try {
       const { data, error } = await this.supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', id)
         .single();
@@ -92,7 +92,7 @@ export class SupabaseHttpStorage implements IStorage {
   async upsertUser(userData: UpsertUser): Promise<User> {
     try {
       const { data, error } = await this.supabase
-        .from('users')
+        .from('profiles')
         .upsert(
           {
             ...userData,
@@ -129,7 +129,7 @@ export class SupabaseHttpStorage implements IStorage {
   async updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User> {
     try {
       const { data, error } = await this.supabase
-        .from('users')
+        .from('profiles')
         .update({
           stripe_customer_id: stripeCustomerId,
           stripe_subscription_id: stripeSubscriptionId,
@@ -166,7 +166,7 @@ export class SupabaseHttpStorage implements IStorage {
       updateData.updated_at = new Date().toISOString();
 
       const { data: updatedUser, error } = await this.supabase
-        .from('users')
+        .from('profiles')
         .update(updateData)
         .eq('id', userId)
         .select()
@@ -183,7 +183,7 @@ export class SupabaseHttpStorage implements IStorage {
   async getAllUsers(): Promise<User[]> {
     try {
       const { data, error } = await this.supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -663,7 +663,7 @@ export class SupabaseHttpStorage implements IStorage {
     try {
       // Get user tier
       const { data: user, error: userError } = await this.supabase
-        .from('users')
+        .from('profiles')
         .select('user_tier')
         .eq('id', userId)
         .single();
