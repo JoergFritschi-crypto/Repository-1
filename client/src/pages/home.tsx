@@ -80,7 +80,7 @@ const Home = memo(function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         {/* Welcome Section */}
         <div className="mb-3">
-          <h1 className="text-lg font-serif font-bold text-foreground" data-testid="text-welcome-title">
+          <h1 className="text-lg font-serif font-bold text-canary" data-testid="text-welcome-title">
             {user?.firstName ? t('home.welcomeTitle', { name: user.firstName }) : t('home.welcomeTitleFallback')}
           </h1>
           <p className="text-xs text-muted-foreground" data-testid="text-welcome-subtitle">
