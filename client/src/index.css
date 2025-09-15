@@ -184,6 +184,9 @@
     /* Pure gold color - full, undiminished */
     color: #FFD700 !important;
     -webkit-text-fill-color: #FFD700 !important;
+    background: none !important;
+    background-clip: unset !important;
+    -webkit-background-clip: unset !important;
     /* Add green outline using text-shadow - doesn't reduce gold area */
     text-shadow: 
       /* Thin green outline */

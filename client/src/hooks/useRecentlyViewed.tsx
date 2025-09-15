@@ -23,6 +23,28 @@ export function useRecentlyViewed() {
 
   // Load from localStorage on mount and clean up invalid entries
   useEffect(() => {
+    // First, clear any localStorage keys that might contain legacy user IDs
+    const allKeys = Object.keys(localStorage);
+    let clearedLegacyData = false;
+    
+    allKeys.forEach(key => {
+      try {
+        const value = localStorage.getItem(key);
+        if (value && value.includes('47166530')) {
+          localStorage.removeItem(key);
+          console.log(`Cleared legacy user data from localStorage key: ${key}`);
+          clearedLegacyData = true;
+        }
+      } catch (error) {
+        // Ignore errors for non-JSON values
+      }
+    });
+    
+    if (clearedLegacyData) {
+      console.log('Successfully cleared legacy user data from localStorage');
+    }
+    
+    // Now handle recently viewed plants
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
