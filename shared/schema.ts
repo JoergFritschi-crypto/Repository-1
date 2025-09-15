@@ -33,9 +33,9 @@ export const userTierEnum = pgEnum("user_tier", [
   "premium"
 ]);
 
-// User storage table.
+// User storage table - using 'profiles' to match Supabase
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
-export const users = pgTable("users", {
+export const profiles = pgTable("profiles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
@@ -47,9 +47,13 @@ export const users = pgTable("users", {
   userTier: userTierEnum("user_tier").default("free"),
   designCredits: integer("design_credits").default(1), // For pay-per-design users
   isAdmin: boolean("is_admin").default(false),
+  replitId: varchar("replit_id"), // Replit user ID from auth
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Keep 'users' as an alias for backward compatibility
+export const users = profiles;
 
 // Garden shape enum
 export const gardenShapeEnum = pgEnum("garden_shape", [
@@ -268,7 +272,8 @@ export const plants = pgTable("plants", {
   generatedImageUrl: varchar("generated_image_url"), // Legacy field, kept for compatibility
   dataSource: varchar("data_source").default("perenual"), // perenual, manual, etc.
   importedAt: timestamp("imported_at"),
-  verificationStatus: varchar("verification_status").default("pending"),
+  verificationStatus: varchar("verification_status").default("pending"), // pending, verified, rejected
+  verifiedAt: timestamp("verified_at"), // When the plant was verified
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

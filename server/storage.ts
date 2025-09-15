@@ -541,6 +541,7 @@ export class DatabaseStorage implements IStorage {
       .update(plants)
       .set({ 
         verificationStatus: "verified",
+        verifiedAt: new Date(),
         updatedAt: new Date() 
       })
       .where(eq(plants.id, id))
@@ -1664,6 +1665,7 @@ export class MemStorage implements IStorage {
     const plant = this.plants.get(id);
     if (!plant) throw new Error('Plant not found');
     plant.verificationStatus = 'verified';
+    plant.verifiedAt = new Date();
     plant.updatedAt = new Date();
     return plant;
   }

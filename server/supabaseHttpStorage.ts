@@ -102,6 +102,7 @@ export class SupabaseHttpStorage implements IStorage {
       userTier: data.user_tier || 'free',
       designCredits: data.design_credits || 1,
       isAdmin: data.is_admin || false,
+      replitId: data.replit_id, // Add the replitId field
       createdAt: data.created_at ? new Date(data.created_at) : new Date(),
       updatedAt: data.updated_at ? new Date(data.updated_at) : new Date()
     };
@@ -245,6 +246,7 @@ export class SupabaseHttpStorage implements IStorage {
         userTier: userData.userTier ?? 'free',
         designCredits: userData.designCredits ?? 1,
         isAdmin: userData.isAdmin ?? false,
+        replitId: userData.id!, // Use the provided id as replitId
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -722,7 +724,7 @@ export class SupabaseHttpStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('plants')
         .select('*')
-        .eq('is_verified', false)
+        .eq('verification_status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -738,7 +740,7 @@ export class SupabaseHttpStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('plants')
         .update({
-          is_verified: true,
+          verification_status: 'verified',
           verified_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -837,7 +839,7 @@ export class SupabaseHttpStorage implements IStorage {
         user_id: collection.userId,
         plant_id: collection.plantId,
         notes: collection.notes,
-        quantity: collection.quantity || 1,
+        is_favorite: collection.isFavorite || false,
         added_at: new Date().toISOString()
       };
 
@@ -894,10 +896,9 @@ export class SupabaseHttpStorage implements IStorage {
         id: this.generateId(),
         garden_id: gardenPlant.gardenId,
         plant_id: gardenPlant.plantId,
-        x_position: gardenPlant.xPosition,
-        y_position: gardenPlant.yPosition,
+        x_position: gardenPlant.position_x,
+        y_position: gardenPlant.position_y,
         quantity: gardenPlant.quantity || 1,
-        planting_date: gardenPlant.plantingDate || new Date().toISOString(),
         notes: gardenPlant.notes,
         planted_at: new Date().toISOString()
       };
@@ -920,10 +921,9 @@ export class SupabaseHttpStorage implements IStorage {
     try {
       const updateData: any = {};
       
-      if (gardenPlant.xPosition !== undefined) updateData.x_position = gardenPlant.xPosition;
-      if (gardenPlant.yPosition !== undefined) updateData.y_position = gardenPlant.yPosition;
+      if (gardenPlant.position_x !== undefined) updateData.x_position = gardenPlant.position_x;
+      if (gardenPlant.position_y !== undefined) updateData.y_position = gardenPlant.position_y;
       if (gardenPlant.quantity !== undefined) updateData.quantity = gardenPlant.quantity;
-      if (gardenPlant.plantingDate !== undefined) updateData.planting_date = gardenPlant.plantingDate;
       if (gardenPlant.notes !== undefined) updateData.notes = gardenPlant.notes;
 
       const { data, error } = await this.supabase
@@ -962,12 +962,12 @@ export class SupabaseHttpStorage implements IStorage {
       const sessionData: any = {
         id: this.generateId(),
         user_id: session.userId,
-        plant_id: session.plantId,
-        symptoms: session.symptoms,
+        session_type: session.sessionType,
         image_url: session.imageUrl,
-        diagnosis: session.diagnosis,
-        treatment: session.treatment,
-        severity: session.severity,
+        ai_analysis: session.aiAnalysis,
+        confidence: session.confidence,
+        identified_plant_id: session.identifiedPlantId,
+        user_feedback: session.userFeedback,
         created_at: new Date().toISOString()
       };
 
@@ -1005,11 +1005,12 @@ export class SupabaseHttpStorage implements IStorage {
     try {
       const updateData: any = {};
       
-      if (session.diagnosis !== undefined) updateData.diagnosis = session.diagnosis;
-      if (session.treatment !== undefined) updateData.treatment = session.treatment;
-      if (session.severity !== undefined) updateData.severity = session.severity;
-      if (session.followUpDate !== undefined) updateData.follow_up_date = session.followUpDate;
-      if (session.resolved !== undefined) updateData.resolved = session.resolved;
+      if (session.sessionType !== undefined) updateData.session_type = session.sessionType;
+      if (session.imageUrl !== undefined) updateData.image_url = session.imageUrl;
+      if (session.aiAnalysis !== undefined) updateData.ai_analysis = session.aiAnalysis;
+      if (session.confidence !== undefined) updateData.confidence = session.confidence;
+      if (session.identifiedPlantId !== undefined) updateData.identified_plant_id = session.identifiedPlantId;
+      if (session.userFeedback !== undefined) updateData.user_feedback = session.userFeedback;
 
       const { data, error } = await this.supabase
         .from('plant_doctor_sessions')
@@ -1051,9 +1052,10 @@ export class SupabaseHttpStorage implements IStorage {
         user_id: generation.userId,
         garden_id: generation.gardenId,
         style_id: generation.styleId,
-        prompt: generation.prompt,
-        image_url: generation.imageUrl,
-        metadata: generation.metadata,
+        generation_type: generation.generationType,
+        success: generation.success,
+        error_message: generation.errorMessage,
+        tokens_used: generation.tokensUsed,
         created_at: new Date().toISOString()
       };
 
@@ -1116,15 +1118,17 @@ export class SupabaseHttpStorage implements IStorage {
       const climateData: any = {
         id: this.generateId(),
         location: climate.location,
-        hardiness_zone: climate.hardinessZone,
-        usda_zone: climate.usdaZone,
-        rhs_zone: climate.rhsZone,
-        koppen_climate: climate.koppenClimate,
-        average_rainfall: climate.averageRainfall,
-        average_temperature: climate.averageTemperature,
-        frost_dates: climate.frostDates,
-        growing_season: climate.growingSeason,
-        metadata: climate.metadata,
+        hardiness_zone: climate.hardiness_zone,
+        usda_zone: climate.usda_zone,
+        rhs_zone: climate.rhs_zone,
+        koppen_climate: climate.koppen_climate,
+        annual_rainfall: climate.annual_rainfall,
+        avg_temp_min: climate.avg_temp_min,
+        avg_temp_max: climate.avg_temp_max,
+        frost_dates: climate.frost_dates,
+        growing_season: climate.growing_season,
+        monthly_data: climate.monthly_data,
+        data_range: climate.data_range,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -1149,15 +1153,17 @@ export class SupabaseHttpStorage implements IStorage {
         updated_at: new Date().toISOString()
       };
       
-      if (climate.hardinessZone !== undefined) updateData.hardiness_zone = climate.hardinessZone;
-      if (climate.usdaZone !== undefined) updateData.usda_zone = climate.usdaZone;
-      if (climate.rhsZone !== undefined) updateData.rhs_zone = climate.rhsZone;
-      if (climate.koppenClimate !== undefined) updateData.koppen_climate = climate.koppenClimate;
-      if (climate.averageRainfall !== undefined) updateData.average_rainfall = climate.averageRainfall;
-      if (climate.averageTemperature !== undefined) updateData.average_temperature = climate.averageTemperature;
-      if (climate.frostDates !== undefined) updateData.frost_dates = climate.frostDates;
-      if (climate.growingSeason !== undefined) updateData.growing_season = climate.growingSeason;
-      if (climate.metadata !== undefined) updateData.metadata = climate.metadata;
+      if (climate.hardiness_zone !== undefined) updateData.hardiness_zone = climate.hardiness_zone;
+      if (climate.usda_zone !== undefined) updateData.usda_zone = climate.usda_zone;
+      if (climate.rhs_zone !== undefined) updateData.rhs_zone = climate.rhs_zone;
+      if (climate.koppen_climate !== undefined) updateData.koppen_climate = climate.koppen_climate;
+      if (climate.annual_rainfall !== undefined) updateData.annual_rainfall = climate.annual_rainfall;
+      if (climate.avg_temp_min !== undefined) updateData.avg_temp_min = climate.avg_temp_min;
+      if (climate.avg_temp_max !== undefined) updateData.avg_temp_max = climate.avg_temp_max;
+      if (climate.frost_dates !== undefined) updateData.frost_dates = climate.frost_dates;
+      if (climate.growing_season !== undefined) updateData.growing_season = climate.growing_season;
+      if (climate.monthly_data !== undefined) updateData.monthly_data = climate.monthly_data;
+      if (climate.data_range !== undefined) updateData.data_range = climate.data_range;
 
       const { data, error } = await this.supabase
         .from('climate_data')
@@ -1184,8 +1190,7 @@ export class SupabaseHttpStorage implements IStorage {
         file_type: vaultItem.fileType,
         file_name: vaultItem.fileName,
         file_path: vaultItem.filePath,
-        file_size: vaultItem.fileSize,
-        mime_type: vaultItem.mimeType,
+        content_type: vaultItem.contentType,
         metadata: vaultItem.metadata,
         expires_at: vaultItem.expiresAt,
         created_at: new Date().toISOString(),
@@ -1342,10 +1347,13 @@ export class SupabaseHttpStorage implements IStorage {
         id: this.generateId(),
         url: progress.url,
         status: progress.status,
-        current_page: progress.currentPage || 1,
-        total_pages: progress.totalPages,
-        processed_plants: progress.processedPlants || 0,
-        error_message: progress.errorMessage,
+        total_batches: progress.totalBatches,
+        completed_batches: progress.completedBatches || 0,
+        total_plants: progress.totalPlants || 0,
+        saved_plants: progress.savedPlants || 0,
+        duplicate_plants: progress.duplicatePlants || 0,
+        failed_plants: progress.failedPlants || 0,
+        errors: progress.errors,
         started_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -1371,10 +1379,13 @@ export class SupabaseHttpStorage implements IStorage {
       };
       
       if (progress.status !== undefined) updateData.status = progress.status;
-      if (progress.currentPage !== undefined) updateData.current_page = progress.currentPage;
-      if (progress.totalPages !== undefined) updateData.total_pages = progress.totalPages;
-      if (progress.processedPlants !== undefined) updateData.processed_plants = progress.processedPlants;
-      if (progress.errorMessage !== undefined) updateData.error_message = progress.errorMessage;
+      if (progress.totalBatches !== undefined) updateData.total_batches = progress.totalBatches;
+      if (progress.completedBatches !== undefined) updateData.completed_batches = progress.completedBatches;
+      if (progress.totalPlants !== undefined) updateData.total_plants = progress.totalPlants;
+      if (progress.savedPlants !== undefined) updateData.saved_plants = progress.savedPlants;
+      if (progress.duplicatePlants !== undefined) updateData.duplicate_plants = progress.duplicatePlants;
+      if (progress.failedPlants !== undefined) updateData.failed_plants = progress.failedPlants;
+      if (progress.errors !== undefined) updateData.errors = progress.errors;
 
       const { data, error } = await this.supabase
         .from('scraping_progress')
@@ -1505,11 +1516,7 @@ export class SupabaseHttpStorage implements IStorage {
     try {
       const taskData: any = {
         id: this.generateId(),
-        title: task.title,
-        description: task.description,
-        priority: task.priority || 'medium',
-        status: task.status || 'pending',
-        category: task.category,
+        task: task.task,
         created_at: new Date().toISOString()
       };
 
@@ -1550,7 +1557,7 @@ export class SupabaseHttpStorage implements IStorage {
         user_id: log.userId,
         event_type: log.eventType,
         severity: log.severity,
-        description: log.description,
+        event_description: log.eventDescription,
         ip_address: log.ipAddress,
         user_agent: log.userAgent,
         metadata: log.metadata,
@@ -1633,7 +1640,7 @@ export class SupabaseHttpStorage implements IStorage {
           .update({
             attempt_count: existing.attempt_count + 1,
             last_attempt: new Date().toISOString(),
-            email: attempt.email || existing.email,
+            attempted_email: attempt.attemptedEmail || existing.attempted_email,
             user_agent: attempt.userAgent || existing.user_agent
           })
           .eq('id', existing.id)
@@ -1647,7 +1654,7 @@ export class SupabaseHttpStorage implements IStorage {
         const attemptData: any = {
           id: this.generateId(),
           ip_address: attempt.ipAddress,
-          email: attempt.email,
+          attempted_email: attempt.attemptedEmail,
           attempt_count: 1,
           last_attempt: new Date().toISOString(),
           user_agent: attempt.userAgent,
@@ -1707,7 +1714,7 @@ export class SupabaseHttpStorage implements IStorage {
     try {
       const sessionData: any = {
         id: this.generateId(),
-        session_id: session.sessionId,
+        session_token: session.sessionToken,
         user_id: session.userId,
         ip_address: session.ipAddress,
         user_agent: session.userAgent,
@@ -1968,10 +1975,12 @@ export class SupabaseHttpStorage implements IStorage {
         id: this.generateId(),
         ip_address: violation.ipAddress,
         endpoint: violation.endpoint,
-        attempts: violation.attempts,
+        violation_count: violation.violationCount,
         window_start: violation.windowStart,
+        window_end: violation.windowEnd,
         user_id: violation.userId,
-        user_agent: violation.userAgent,
+        blocked: violation.blocked,
+        blocked_until: violation.blockedUntil,
         created_at: new Date().toISOString()
       };
 
