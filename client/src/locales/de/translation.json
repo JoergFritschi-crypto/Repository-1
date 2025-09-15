@@ -834,7 +834,12 @@
       "sunlight": "Sonnenlicht",
       "water": "Wasser",
       "soil": "Boden",
-      "hardiness": "Winterhärte",
+      "hardiness": {
+        "veryHardy": "Sehr winterhart",
+        "hardy": "Winterhart",
+        "halfHardy": "Halbwinterhart",
+        "tender": "Empfindlich"
+      },
       "maintenance": "Pflege",
       "growthRate": "Wachstumsrate",
       "spacing": "Pflanzabstand",
@@ -847,12 +852,6 @@
         "medium": "Mittelgroßer Baum",
         "large": "Großer Baum",
         "giant": "Riesenbaum"
-      },
-      "hardiness": {
-        "veryHardy": "Sehr winterhart",
-        "hardy": "Winterhart",
-        "halfHardy": "Halbwinterhart",
-        "tender": "Empfindlich"
       }
     },
     "care": {
@@ -980,5 +979,10 @@
       "contact": "Kontakt",
       "copyright": "© 2024 GardenScape Pro. Alle Rechte vorbehalten."
     }
-  }
+  },
+  ";": ";",
+  "=": "=",
+  "Information copied to clipboard!": "Information Copied To Clipboard!",
+  "Link copied to clipboard!": "Link Copied To Clipboard!",
+  "Report details copied to clipboard!": "Report Details Copied To Clipboard!"
 }

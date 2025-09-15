@@ -834,7 +834,12 @@
       "sunlight": "Ensoleillement",
       "water": "Eau",
       "soil": "Sol",
-      "hardiness": "Rusticité",
+      "hardiness": {
+        "veryHardy": "Très Rustique",
+        "hardy": "Rustique",
+        "halfHardy": "Semi-Rustique",
+        "tender": "Délicat"
+      },
       "maintenance": "Entretien",
       "growthRate": "Taux de Croissance",
       "spacing": "Espacement des Plantes",
@@ -847,12 +852,6 @@
         "medium": "Arbre Moyen",
         "large": "Grand Arbre",
         "giant": "Arbre Géant"
-      },
-      "hardiness": {
-        "veryHardy": "Très Rustique",
-        "hardy": "Rustique",
-        "halfHardy": "Semi-Rustique",
-        "tender": "Délicat"
       }
     },
     "care": {
@@ -980,5 +979,10 @@
       "contact": "Contact",
       "copyright": "© 2024 GardenScape Pro. Tous droits réservés."
     }
-  }
+  },
+  ";": ";",
+  "=": "=",
+  "Information copied to clipboard!": "Information Copied To Clipboard!",
+  "Link copied to clipboard!": "Link Copied To Clipboard!",
+  "Report details copied to clipboard!": "Report Details Copied To Clipboard!"
 }

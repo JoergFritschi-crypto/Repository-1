@@ -834,7 +834,12 @@
       "sunlight": "Światło Słoneczne",
       "water": "Woda",
       "soil": "Gleba",
-      "hardiness": "Mrozoodporność",
+      "hardiness": {
+        "veryHardy": "Bardzo Mrozoodporna",
+        "hardy": "Mrozoodporna",
+        "halfHardy": "Częściowo Mrozoodporna",
+        "tender": "Delikatna"
+      },
       "maintenance": "Utrzymanie",
       "growthRate": "Tempo Wzrostu",
       "spacing": "Rozstaw Roślin",
@@ -847,12 +852,6 @@
         "medium": "Średnie Drzewo",
         "large": "Duże Drzewo",
         "giant": "Ogromne Drzewo"
-      },
-      "hardiness": {
-        "veryHardy": "Bardzo Mrozoodporna",
-        "hardy": "Mrozoodporna",
-        "halfHardy": "Częściowo Mrozoodporna",
-        "tender": "Delikatna"
       }
     },
     "care": {
@@ -980,5 +979,10 @@
       "contact": "Kontakt",
       "copyright": "© 2024 GardenScape Pro. Wszystkie prawa zastrzeżone."
     }
-  }
+  },
+  ";": ";",
+  "=": "=",
+  "Information copied to clipboard!": "Information Copied To Clipboard!",
+  "Link copied to clipboard!": "Link Copied To Clipboard!",
+  "Report details copied to clipboard!": "Report Details Copied To Clipboard!"
 }

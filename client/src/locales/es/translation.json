@@ -834,7 +834,12 @@
       "sunlight": "Luz Solar",
       "water": "Agua",
       "soil": "Suelo",
-      "hardiness": "Resistencia",
+      "hardiness": {
+        "veryHardy": "Muy Resistente",
+        "hardy": "Resistente",
+        "halfHardy": "Semi Resistente",
+        "tender": "Delicado"
+      },
       "maintenance": "Mantenimiento",
       "growthRate": "Tasa de Crecimiento",
       "spacing": "Espaciado de Plantas",
@@ -847,12 +852,6 @@
         "medium": "Árbol Mediano",
         "large": "Árbol Grande",
         "giant": "Árbol Gigante"
-      },
-      "hardiness": {
-        "veryHardy": "Muy Resistente",
-        "hardy": "Resistente",
-        "halfHardy": "Semi Resistente",
-        "tender": "Delicado"
       }
     },
     "care": {
@@ -980,5 +979,10 @@
       "contact": "Contacto",
       "copyright": "© 2024 GardenScape Pro. Todos los derechos reservados."
     }
-  }
+  },
+  ";": ";",
+  "=": "=",
+  "Information copied to clipboard!": "Information Copied To Clipboard!",
+  "Link copied to clipboard!": "Link Copied To Clipboard!",
+  "Report details copied to clipboard!": "Report Details Copied To Clipboard!"
 }

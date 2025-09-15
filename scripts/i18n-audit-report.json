@@ -1,0 +1,3002 @@
+{
+  "summary": {
+    "totalFiles": 150,
+    "staticKeysFound": 5,
+    "dynamicKeysFound": 597,
+    "timestamp": "2025-09-15T13:26:05.705Z"
+  },
+  "staticKeys": [
+    ";",
+    "=",
+    "Information copied to clipboard!",
+    "Link copied to clipboard!",
+    "Report details copied to clipboard!"
+  ],
+  "dynamicKeys": [
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-keys-manager.tsx",
+      "pattern": "{\n        title: \"API Key Test Complete\",\n        description: `${service} key is ${data.valid ? 'valid' : 'invalid'}`,\n        variant: data.valid ? \"default\" : \"destructive\",\n      }",
+      "line": 132
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-keys-manager.tsx",
+      "pattern": "{\n        title: \"Test Failed\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 140
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-management.tsx",
+      "pattern": "{\n        title: \"API Key Updated\",\n        description: `Successfully updated ${data.service} key`,\n      }",
+      "line": 179
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-management.tsx",
+      "pattern": "{\n        title: \"Update Failed\",\n        description: error.message || \"Failed to update API key\",\n        variant: \"destructive\",\n      }",
+      "line": 187
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-management.tsx",
+      "pattern": "{\n        title: data.success ? \"Test Successful\" : \"Test Failed\",\n        description: data.message,\n        variant: data.success ? \"default\" : \"destructive\",\n      }",
+      "line": 202
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-management.tsx",
+      "pattern": "{\n        title: \"Test Failed\",\n        description: error.message || \"Failed to test API key\",\n        variant: \"destructive\",\n      }",
+      "line": 209
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-management.tsx",
+      "pattern": "{\n        title: \"Health Check Complete\",\n        description: \"API health status has been updated\",\n      }",
+      "line": 224
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-management.tsx",
+      "pattern": "{\n        title: \"Health Check Failed\",\n        description: error.message || \"Failed to run health check\",\n        variant: \"destructive\",\n      }",
+      "line": 231
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-management.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Please enter a key value\",\n        variant: \"destructive\",\n      }",
+      "line": 242
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-monitoring.tsx",
+      "pattern": "{\n        title: \"Health Check Complete\",\n        description: \"All API services have been checked\",\n      }",
+      "line": 92
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-monitoring.tsx",
+      "pattern": "{\n        title: \"Health Check Failed\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 100
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-monitoring.tsx",
+      "pattern": "(",
+      "line": 115
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-monitoring.tsx",
+      "pattern": "new Date(service.lastChecked",
+      "line": 305
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/api-monitoring.tsx",
+      "pattern": "new Date(service.lastChecked",
+      "line": 347
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-comparison-tool.tsx",
+      "pattern": "images.map(img => img.plantName",
+      "line": 31
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-comparison-tool.tsx",
+      "pattern": "(",
+      "line": 50
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-comparison-tool.tsx",
+      "pattern": "{\n        title: \"No Plants Available\",\n        description: \"No plant data available for test generation\",\n        variant: \"destructive\"\n      }",
+      "line": 57
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-comparison-tool.tsx",
+      "pattern": "{\n              title: \"Generating\",\n              description: `${plant} - ${approach} - ${imageType}`,\n            }",
+      "line": 73
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-comparison-tool.tsx",
+      "pattern": "{\n      title: \"Generation Complete\",\n      description: `Generated ${results.length} test images`,\n    }",
+      "line": 96
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-generation-monitor.tsx",
+      "pattern": "{\n        title: \"Bulk Generation Started\",\n        description: `Successfully queued ${data.queued} out of ${data.total} plants for image generation`,\n      }",
+      "line": 87
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-generation-monitor.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 95
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-generation-monitor.tsx",
+      "pattern": "{\n        title: \"Queue Cleared\",\n        description: `Removed ${data.cleared} completed/failed items from the queue`,\n      }",
+      "line": 110
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-generation-monitor.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Failed to clear queue\",\n        variant: \"destructive\",\n      }",
+      "line": 118
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-generation-monitor.tsx",
+      "pattern": "{\n        title: \"Reset Stuck Items\",\n        description: `Reset ${data.reset || 0} stuck items back to pending`,\n      }",
+      "line": 133
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/image-generation-monitor.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Failed to reset stuck items\",\n        variant: \"destructive\",\n      }",
+      "line": 141
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-card.tsx",
+      "pattern": "plant.sunlight",
+      "line": 144
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "(",
+      "line": 188
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Please enter a search term\",\n        variant: \"destructive\"\n      }",
+      "line": 225
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "searchTerm",
+      "line": 239
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"✓ Perenual Search Complete\",\n        description: `Found ${plants.length} plants from Perenual`,\n      }",
+      "line": 256
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Search Failed\",\n        description: \"Failed to search Perenual database\",\n        variant: \"destructive\"\n      }",
+      "line": 268
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "term",
+      "line": 286
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "p.scientific_name || '', gbifPlant.scientific_name || ''",
+      "line": 306
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"✓ GBIF Search Complete\",\n        description: `Found ${gbifPlants.length} plants (${enrichedCount} enriched, ${newCount} new",
+      "line": 334
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"GBIF Search Failed\",\n        description: \"Continuing without GBIF data\",\n        variant: \"destructive\"\n      }",
+      "line": 341
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "originalSearchTerm",
+      "line": 359
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "p.scientific_name || '', inatPlant.scientific_name || ''",
+      "line": 379
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"✓ iNaturalist Search Complete\",\n        description: `Found ${inatPlants.length} plants (${enrichedCount} enriched, ${newCount} new",
+      "line": 409
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"iNaturalist Search Failed\",\n        description: \"Continuing without iNaturalist data\",\n        variant: \"destructive\"\n      }",
+      "line": 419
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n          title: \"All fields complete\",\n          description: \"No validation needed - all plants have complete data\",\n        }",
+      "line": 444
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"✓ Validation Complete\",\n        description: `Validated ${plantsToValidate.length} plants with Perplexity (5x faster!",
+      "line": 491
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Validation Failed\",\n        description: \"Could not validate with Perplexity\",\n        variant: \"destructive\"\n      }",
+      "line": 498
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"✓ Import Successful\",\n        description: `Imported ${result.imported} plants successfully`,\n      }",
+      "line": 526
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Import Failed\",\n        description: \"Failed to import plants to database\",\n        variant: \"destructive\"\n      }",
+      "line": 542
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n          title: \"✓ Scraping Complete\",\n          description: `Successfully saved ${progress.saved} plants to database`,\n        }",
+      "line": 721
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "(",
+      "line": 742
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Please enter a website URL\",\n        variant: \"destructive\"\n      }",
+      "line": 753
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n          title: hasErrors ? \"⚠️ Scraping Completed with Issues\" : \"✓ Scraping Complete\",\n          description: hasErrors \n            ? `Successfully saved ${savedCount} plants to database, but encountered some errors during processing`\n            : `Successfully scraped ${savedCount} plants from the website`,\n          variant: hasErrors ? \"default\" : \"default\"\n        }",
+      "line": 794
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n          title: \"⚠️ Scraping Completed\",\n          description: \"No new plants were found or saved from this website\",\n          variant: \"default\"\n        }",
+      "line": 802
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n              title: \"⚠️ Import May Have Partially Succeeded\",\n              description: `Check the plant database - some plants may have been imported despite the error. See ${recentCount} recent verified plants.`,\n              variant: \"default\"\n            }",
+      "line": 822
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n              title: \"Scraping Failed\",\n              description: \"Failed to scrape the website. Please check the URL and try again.\",\n              variant: \"destructive\"\n            }",
+      "line": 828
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n            title: \"Scraping Failed\",\n            description: \"Failed to scrape the website. Please check the URL and try again.\",\n            variant: \"destructive\"\n          }",
+      "line": 835
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n          title: \"Scraping Failed\",\n          description: \"Failed to scrape the website. Please check the URL and try again.\",\n          variant: \"destructive\"\n        }",
+      "line": 842
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Please select plants to validate\",\n        variant: \"destructive\"\n      }",
+      "line": 856
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Please select at least one validation source\",\n        variant: \"destructive\"\n      }",
+      "line": 866
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n              title: \"✓ Validation Complete\",\n              description: message,\n            }",
+      "line": 945
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n          title: \"GBIF Validation\",\n          description: \"GBIF-only validation is not yet implemented. Please use Perenual or Perplexity.\",\n        }",
+      "line": 959
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Validation Failed\",\n        description: \"Failed to validate plants. You can still import without validation.\",\n        variant: \"destructive\"\n      }",
+      "line": 966
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"No plants selected for import\",\n        variant: \"destructive\"\n      }",
+      "line": 984
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"✓ Import Successful\",\n        description: `Imported ${result.imported} plants successfully`,\n      }",
+      "line": 1007
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/plant-import-wizard.tsx",
+      "pattern": "{\n        title: \"Import Failed\",\n        description: \"Failed to import plants to database\",\n        variant: \"destructive\"\n      }",
+      "line": 1020
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "{ title: 'Session revoked successfully' }",
+      "line": 222
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "{ title: 'Failed login attempts cleared' }",
+      "line": 238
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "{ title: 'IP control added successfully' }",
+      "line": 255
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "{ title: 'IP control removed' }",
+      "line": 270
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "{ title: 'Security setting updated' }",
+      "line": 287
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "{ title: 'Recommendation updated' }",
+      "line": 304
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "{ title: data.message }",
+      "line": 319
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(stats.lastAuditTime",
+      "line": 522
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(log.createdAt",
+      "line": 555
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(session.lastActivity",
+      "line": 610
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(session.createdAt",
+      "line": 613
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(session.expiresAt",
+      "line": 614
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(attempt.lastAttempt",
+      "line": 649
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(attempt.blockedUntil",
+      "line": 653
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(control.createdAt",
+      "line": 705
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(control.expiresAt",
+      "line": 706
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(violation.windowStart",
+      "line": 753
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(violation.lastAttempt",
+      "line": 756
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/security-settings.tsx",
+      "pattern": "new Date(log.createdAt",
+      "line": 858
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/todo-list.tsx",
+      "pattern": "{\n        title: \"Task Added\",\n        description: \"New task has been added to the list\",\n      }",
+      "line": 37
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/todo-list.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 44
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/todo-list.tsx",
+      "pattern": "{\n        title: \"Task Completed\",\n        description: \"Task has been removed from the list\",\n      }",
+      "line": 60
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/admin/todo-list.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 66
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/climate-report-modal.tsx",
+      "pattern": "2, 1fr",
+      "line": 51
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/climate-report-modal.tsx",
+      "pattern": "text",
+      "line": 132
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/climate-report.tsx",
+      "pattern": "match[0]",
+      "line": 61
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/climate-report.tsx",
+      "pattern": "{ location, climateData, isLoading }: ClimateReportProps",
+      "line": 89
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/climate-report.tsx",
+      "pattern": "hardiness_zone?.match(/\\d+/",
+      "line": 409
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "(",
+      "line": 142
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "selectedImages",
+      "line": 158
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "seasonalImages.map((_, i",
+      "line": 169
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"Image Downloaded\",\n        description: `Saved ${fileName}`,\n      }",
+      "line": 184
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"Download Failed\",\n        description: \"Could not download the image\",\n        variant: \"destructive\"\n      }",
+      "line": 189
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"No Images Selected\",\n        description: \"Please select at least one image to download\",\n        variant: \"destructive\"\n      }",
+      "line": 200
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"Batch Download Complete\",\n        description: `Downloaded ${selectedImages.size} images`,\n      }",
+      "line": 251
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"Download Failed\",\n        description: \"Could not create ZIP file\",\n        variant: \"destructive\"\n      }",
+      "line": 259
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n      title: \"Garden Data Exported\",\n      description: \"Your complete garden design has been exported as JSON\",\n    }",
+      "line": 285
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "plant.plantName",
+      "line": 296
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "plant.plantName, count + 1",
+      "line": 297
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n      title: \"Plant List Exported\",\n      description: \"Your plant list has been exported as CSV\",\n    }",
+      "line": 316
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "gardenSummary.gardenName, pageWidth / 2, margin + 10, { align: 'center' }",
+      "line": 334
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "format(new Date(",
+      "line": 338
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "detail, margin, yPos",
+      "line": 359
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "plant.plantName",
+      "line": 371
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "plant.plantName, count + 1",
+      "line": 372
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"PDF Generated\",\n        description: \"Your printable garden plan has been created\",\n      }",
+      "line": 401
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"PDF Generation Failed\",\n        description: \"Could not create the PDF document\",\n        variant: \"destructive\"\n      }",
+      "line": 406
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "new Date(",
+      "line": 482
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"Project Archive Created\",\n        description: \"Your complete garden project has been archived\",\n      }",
+      "line": 497
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"Archive Creation Failed\",\n        description: \"Could not create project archive\",\n        variant: \"destructive\"\n      }",
+      "line": 502
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "shareUrl",
+      "line": 516
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "{\n        title: \"Link Copied\",\n        description: \"Share link has been copied to clipboard\",\n      }",
+      "line": 517
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "shareUrl",
+      "line": 534
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "new Date(gardenSummary.createdAt || Date.now(",
+      "line": 598
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "value",
+      "line": 666
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "t(`Check out my garden design: ${gardenSummary.gardenName}`)",
+      "line": 526
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "t(`I've created a beautiful garden design using GardenScape Pro!\\n\\nView it here: ${shareUrl}\\n\\nGarden Details:\\n- Style: ${gardenSummary.gardenStyle}\\n- Total Plants: ${gardenSummary.totalPlants}\\n- Location: ${gardenSummary.city || 'N/A'}, ${gardenSummary.country || 'N/A'}`)",
+      "line": 527
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/final-review-gallery.tsx",
+      "pattern": "t(`Check out my ${gardenSummary.gardenStyle} garden design!`)",
+      "line": 533
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "placedPlants.map(p => p.plantId",
+      "line": 183
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "cacheKey",
+      "line": 198
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 209
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "cacheKey, texture",
+      "line": 225
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0.5, 0.5",
+      "line": 243
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "plant.position.x, plant.position.y, 0.01",
+      "line": 246
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "scaleFactor, scaleFactor, 1",
+      "line": 250
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "initialCameraSettings.distance,\n      initialCameraSettings.height,\n      initialCameraSettings.distance",
+      "line": 337
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0, 0, 0",
+      "line": 342
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0, 0, 0",
+      "line": 346
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0, 0, 0",
+      "line": 383
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0xffffff, 0.7",
+      "line": 401
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0xffffff, 1.0",
+      "line": 406
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "5, 10, 5",
+      "line": 407
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "(",
+      "line": 432
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "bounds.center.x, 0, bounds.center.y",
+      "line": 469
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "x * x + z * z",
+      "line": 518
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "bounds.center.x, 0, bounds.center.y",
+      "line": 539
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0, 0, 128, 128",
+      "line": 600
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0.2, 0.2, 1",
+      "line": 622
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "arrowLength / 2 + 0.15, 0.1, 0",
+      "line": 623
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "compassDistance * 0.7, 0.05, -compassDistance * 0.7",
+      "line": 642
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "lighting.sun.color,\n      lighting.sun.intensity",
+      "line": 827
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "sunX, sunHeight, sunZ",
+      "line": 849
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "rotatedX, sunHeight, rotatedZ",
+      "line": 855
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "lighting.ambient.color,\n      Math.min(1.2, lighting.ambient.intensity * 2",
+      "line": 898
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "max(0, distance^2 - height^2",
+      "line": 982
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "Math.max(0, clampedDistance * clampedDistance - clampedHeight * clampedHeight",
+      "line": 983
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "cameraX, clampedHeight, cameraZ",
+      "line": 991
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "gardenBoundsRef.current.center.x,\n      0,\n      gardenBoundsRef.current.center.y",
+      "line": 992
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "fixedX, 0.02, fixedZ",
+      "line": 1050
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "(",
+      "line": 1195
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "(",
+      "line": 1200
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "timer",
+      "line": 1208
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "(",
+      "line": 1219
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "(",
+      "line": 1224
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "(",
+      "line": 1267
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "{\n      title: \"Image Exported\",\n      description: \"Your 3D garden view has been saved as an image.\",\n    }",
+      "line": 1329
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "gardenBounds ? gardenBounds.minX - 0.5 : -2.5, 0, 0.02",
+      "line": 1458
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "gardenBounds ? gardenBounds.maxX + 0.5 : 2.5, 0, 0.02",
+      "line": 1468
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0, gardenBounds ? gardenBounds.maxY + 0.5 : 2, 0.02",
+      "line": 1486
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "0, gardenBounds ? gardenBounds.maxY + 0.8 : 2.3, 0.02",
+      "line": 1496
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "{\n          title: \"Photorealistic View Generated\",\n          description: `Your enhanced garden visualization has been created! ${data.context ? `(${data.context.plantCount} plants in ${data.context.seasonalContext}",
+      "line": 1584
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: error.message || \"Failed to generate photorealistic view. Please try again.\",\n        variant: \"destructive\"\n      }",
+      "line": 1593
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "placedPlants.map(p => p.plantName",
+      "line": 1712
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "placedPlants.map(p => p.plantName",
+      "line": 1713
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "placedPlants.map(p => p.plantName",
+      "line": 1714
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-3d-view.tsx",
+      "pattern": "2, '0'",
+      "line": 1841
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"No garden selected to save\",\n        variant: \"destructive\"\n      }",
+      "line": 78
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n        title: \"Design Saved\",\n        description: \"Your garden design has been saved successfully\"\n      }",
+      "line": 100
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Failed to save garden design\",\n        variant: \"destructive\"\n      }",
+      "line": 106
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n          title: \"Design Loaded\",\n          description: `Loaded design from ${garden.name}`\n        }",
+      "line": 125
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n          title: \"No Design Found\",\n          description: \"This garden doesn't have a saved design yet\",\n          variant: \"destructive\"\n        }",
+      "line": 130
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Failed to load garden design\",\n        variant: \"destructive\"\n      }",
+      "line": 139
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Failed to fetch available gardens\",\n        variant: \"destructive\"\n      }",
+      "line": 158
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "(",
+      "line": 307
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "(",
+      "line": 359
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "(",
+      "line": 379
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "(",
+      "line": 427
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "(",
+      "line": 434
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "placedPlants.map(p => p.plantId",
+      "line": 436
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "(",
+      "line": 479
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "plant",
+      "line": 531
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "placedPlant as any",
+      "line": 538
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "null",
+      "line": 546
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n      title: \"Plant Removed\",\n      description: \"Plant has been removed from the canvas\",\n    }",
+      "line": 552
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "null",
+      "line": 598
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "null",
+      "line": 678
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "0",
+      "line": 794
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "plant, e",
+      "line": 1114
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "plant.id",
+      "line": 1128
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "plant.id",
+      "line": 1151
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n                    title: \"Test Plants Added\",\n                    description: \"Added 4 test plants to the canvas\"\n                  }",
+      "line": 1288
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "{\n                    title: \"Error\",\n                    description: \"Failed to add test plants\",\n                    variant: \"destructive\"\n                  }",
+      "line": 1294
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-layout-canvas.tsx",
+      "pattern": "plant, e",
+      "line": 1373
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "textureCache.current.values(",
+      "line": 150
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey",
+      "line": 207
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 221
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "x, y, 2, 8",
+      "line": 227
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 233
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "x, y, 3, 3",
+      "line": 239
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 245
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 260
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "x, y, 8, 3",
+      "line": 266
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey, texture",
+      "line": 278
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey",
+      "line": 287
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 299
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "x, y, width, height",
+      "line": 307
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 312
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 325
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "x + offset, y, brickWidth, brickHeight",
+      "line": 334
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 340
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 342
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 347
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey, texture",
+      "line": 358
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "repeatX, repeatY",
+      "line": 376
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "bounds.center.x, bounds.center.y, 0",
+      "line": 454
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "4, 1",
+      "line": 473
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "dx * dx + dy * dy",
+      "line": 488
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(current.x + next.x",
+      "line": 495
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "dx * dx + dy * dy",
+      "line": 527
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(x1 + x2",
+      "line": 533
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "dx * dx + dy * dy",
+      "line": 565
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(x1 + x2",
+      "line": 571
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "dx * dx + dy * dy",
+      "line": 597
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(current.x + next.x",
+      "line": 604
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "dx * dx + dy * dy",
+      "line": 632
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(current.x + next.x",
+      "line": 639
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "dx * dx + dy * dy",
+      "line": 665
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(current.x + next.x",
+      "line": 672
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, 1",
+      "line": 822
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "10, -10, 8",
+      "line": 825
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, 0",
+      "line": 826
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, 0.01",
+      "line": 836
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0x87ceeb, 0.4",
+      "line": 847
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0xffffff, 0.8",
+      "line": 850
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "10, 10, 20",
+      "line": 851
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey",
+      "line": 883
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 894
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey, texture",
+      "line": 910
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0.5, 0.5",
+      "line": 928
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "plant.position.x, plant.position.y, 0.01",
+      "line": 931
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "scaleFactor, scaleFactor, 1",
+      "line": 935
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey",
+      "line": 966
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0, 0, size, size",
+      "line": 977
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(size - trunkWidth",
+      "line": 985
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "size * 0.47, size * 0.5, size * 0.06, size * 0.5",
+      "line": 1013
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cacheKey, texture",
+      "line": 1046
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0.5, 0",
+      "line": 1060
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "plant.position.x, plant.position.y, plant.position.z",
+      "line": 1068
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "scaleW, scaleH, 1",
+      "line": 1074
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(",
+      "line": 1167
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cameraParams.position.x,\n          cameraParams.position.y,\n          cameraParams.position.z",
+      "line": 1178
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cameraParams.target.x,\n          cameraParams.target.y,\n          cameraParams.target.z",
+      "line": 1184
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Cannot Generate 3D Scene\",\n        description: \"Please add some plants to your garden first.\",\n        variant: \"destructive\"\n      }",
+      "line": 1210
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cameraParams.position.x,\n          cameraParams.position.y,\n          cameraParams.position.z",
+      "line": 1256
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "cameraParams.target.x,\n          cameraParams.target.y,\n          cameraParams.target.z",
+      "line": 1262
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n          title: \"3D Scene Generated\",\n          description: `Your garden has been rendered in 3D with ${scene3DData.plants.length} plant billboards.`,\n        }",
+      "line": 1282
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: \"Failed to generate 3D scene. Please try again.\",\n        variant: \"destructive\"\n      }",
+      "line": 1290
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Export Failed\",\n        description: \"3D scene not ready for export.\",\n        variant: \"destructive\"\n      }",
+      "line": 1303
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n          title: \"Export Successful\",\n          description: `Garden exported as PNG (${width}x${height}",
+      "line": 1372
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Export Failed\",\n        description: \"Failed to export 3D scene.\",\n        variant: \"destructive\"\n      }",
+      "line": 1381
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Step 1: Runware Processing\",\n        description: \"Creating intermediate photorealistic image for review...\",\n      }",
+      "line": 1397
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n          title: \"Runware Complete\",\n          description: \"Intermediate image ready. Please review before final processing.\",\n        }",
+      "line": 1464
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Runware Failed\",\n        description: \"Failed to create intermediate image. Please try again.\",\n        variant: \"destructive\"\n      }",
+      "line": 1471
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Step 2: Gemini 2.5 Flash Processing\",\n        description: \"Creating final botanical seasonal images...\",\n      }",
+      "line": 1491
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n          title: \"Final Image Complete\",\n          description: \"Your garden has been enhanced with botanical accuracy.\",\n        }",
+      "line": 1540
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Using Intermediate Image\",\n        description: \"Gemini enhancement failed. Using Runware result instead.\",\n        variant: \"destructive\"\n      }",
+      "line": 1550
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"No Photorealized Image\",\n        description: \"Please photorealize the garden first before generating seasonal variations.\",\n        variant: \"destructive\"\n      }",
+      "line": 1570
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n          title: \"Seasonal Variations Generated\",\n          description: `Successfully generated ${result.generatedSeasons.length} seasonal variations using Gemini 2.5.`,\n        }",
+      "line": 1633
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: \"Failed to generate seasonal variations. Please try again.\",\n        variant: \"destructive\"\n      }",
+      "line": 1640
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Scene Not Ready\",\n        description: \"Please ensure the 3D garden scene is generated before creating seasonal images.\",\n        variant: \"destructive\"\n      }",
+      "line": 1654
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"No Plants\",\n        description: \"Please add plants to your garden before generating seasonal variations.\",\n        variant: \"destructive\"\n      }",
+      "line": 1663
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n          title: \"Seasonal Timeline Generated\",\n          description: `Successfully generated ${viewerImages.length} seasonal images for your selected date range.`,\n        }",
+      "line": 1771
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: error instanceof Error ? error.message : \"Failed to generate seasonal timeline. Please try again.\",\n        variant: \"destructive\"\n      }",
+      "line": 1781
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(",
+      "line": 1797
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(",
+      "line": 1869
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "0",
+      "line": 2628
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(a, b",
+      "line": 2632
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(",
+      "line": 2650
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-renderer-3d.tsx",
+      "pattern": "(a, b",
+      "line": 2766
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-sketch.tsx",
+      "pattern": "(",
+      "line": 70
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-sketch.tsx",
+      "pattern": "(",
+      "line": 217
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-sketch.tsx",
+      "pattern": "usdaZone",
+      "line": 292
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-sketch.tsx",
+      "pattern": "tips",
+      "line": 322
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-sketch.tsx",
+      "pattern": "true",
+      "line": 323
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "(",
+      "line": 82
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "prev => prev + 1",
+      "line": 204
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "{\n        title: \"Images Generated\",\n        description: `Successfully generated ${images.length} seasonal visualizations`\n      }",
+      "line": 207
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: (error as Error",
+      "line": 214
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "(",
+      "line": 225
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "(",
+      "line": 237
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "resolve, 500",
+      "line": 282
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "{\n      title: \"Downloads Started\",\n      description: `Downloading ${generatedImages.length} images to your downloads folder`\n    }",
+      "line": 285
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "{\n        title: \"Images Saved\",\n        description: \"Seasonal images have been saved to your garden\"\n      }",
+      "line": 297
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "{\n        title: \"Save Failed\",\n        description: \"Failed to save images to garden\",\n        variant: \"destructive\"\n      }",
+      "line": 302
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/garden-visualization.tsx",
+      "pattern": "parseInt(val",
+      "line": 335
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/interactive-canvas.tsx",
+      "pattern": "plant.color",
+      "line": 63
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/interactive-canvas.tsx",
+      "pattern": "(",
+      "line": 128
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/interactive-canvas.tsx",
+      "pattern": "elementId",
+      "line": 178
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/interactive-canvas.tsx",
+      "pattern": "null",
+      "line": 343
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/interactive-canvas.tsx",
+      "pattern": "0",
+      "line": 434
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/photo-upload.tsx",
+      "pattern": "{\n        title: 'Analysis Complete',\n        description: 'Claude has analyzed your garden photos successfully!'\n      }",
+      "line": 100
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/photo-upload.tsx",
+      "pattern": "{\n        title: 'Analysis Failed',\n        description: 'Unable to analyze photos. Please try again.',\n        variant: 'destructive'\n      }",
+      "line": 107
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/photo-upload.tsx",
+      "pattern": "{\n        title: 'Some files were skipped',\n        description: 'Only image files under 10MB are accepted.',\n        variant: 'destructive'\n      }",
+      "line": 126
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/photo-upload.tsx",
+      "pattern": "{\n        title: 'Photo limit reached',\n        description: `You can only upload ${maxPhotos} photos total.`,\n        variant: 'destructive'\n      }",
+      "line": 137
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-date-selector.tsx",
+      "pattern": "date, 'MMM'",
+      "line": 115
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-date-selector.tsx",
+      "pattern": "startDate, 'MMM d'",
+      "line": 140
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-date-selector.tsx",
+      "pattern": "endDate, 'MMM d'",
+      "line": 140
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-date-selector.tsx",
+      "pattern": "startDate, 'MMM d'",
+      "line": 143
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-date-selector.tsx",
+      "pattern": "endDate, 'MMM d'",
+      "line": 143
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "date, 'MMM d, yyyy'",
+      "line": 185
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "date, 'MMM d'",
+      "line": 191
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "(",
+      "line": 220
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "(",
+      "line": 231
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "(",
+      "line": 250
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "(",
+      "line": 323
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "(",
+      "line": 332
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "(",
+      "line": 346
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "{\n        title: \"Jumped to Date\",\n        description: `Viewing ${images[newIndex]?.date}`,\n      }",
+      "line": 350
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "{\n        title: \"Download Started\",\n        description: `Downloading ${currentImage.date} image`,\n      }",
+      "line": 365
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "{\n          title: \"Images Generated!\",\n          description: `Generated ${data.images.length} new seasonal images`,\n        }",
+      "line": 396
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: error.message || \"Failed to generate seasonal images\",\n        variant: \"destructive\"\n      }",
+      "line": 406
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "(",
+      "line": 429
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "0",
+      "line": 599
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "value",
+      "line": 770
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/seasonal-viewer.tsx",
+      "pattern": "range",
+      "line": 833
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/shape-selector.tsx",
+      "pattern": "value",
+      "line": 75
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/soil-testing-modal.tsx",
+      "pattern": "shareText",
+      "line": 94
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/soil-testing-modal.tsx",
+      "pattern": "location",
+      "line": 102
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step1Welcome.tsx",
+      "pattern": "{\n                title: t('garden.workflow.step1.siteConditions.soilAnalysis.label'",
+      "line": 68
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step1Welcome.tsx",
+      "pattern": "{\n                    title: t('garden.workflow.step1.validation.requiredFields'",
+      "line": 378
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 126
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 145
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 168
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 190
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 213
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 232
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 260
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 279
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 300
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 319
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step2SiteDetails.tsx",
+      "pattern": "e.target.value",
+      "line": 381
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step4InteractiveDesign.tsx",
+      "pattern": "(",
+      "line": 59
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step4InteractiveDesign.tsx",
+      "pattern": "{\n        title: t('garden.workflow.step4.aiGeneration.errors.notSaved'",
+      "line": 66
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step4InteractiveDesign.tsx",
+      "pattern": "{\n        title: t('garden.workflow.step4.aiGeneration.success.title'",
+      "line": 128
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step4InteractiveDesign.tsx",
+      "pattern": "{\n        title: t('garden.workflow.step4.aiGeneration.errors.failed'",
+      "line": 135
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step4InteractiveDesign.tsx",
+      "pattern": "{\n              title: t('garden.workflow.step4.plantSearch.plantAdded.title'",
+      "line": 156
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step4InteractiveDesign.tsx",
+      "pattern": "{\n            title: t('garden.workflow.step4.plantSearch.plantAdded.title'",
+      "line": 177
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step4InteractiveDesign.tsx",
+      "pattern": "{\n                    title: \"Filters Cleared\",\n                    description: \"All plant filters have been reset\",\n                  }",
+      "line": 258
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step5SeasonalGeneration.tsx",
+      "pattern": "placedPlants.map(p => p.plantName",
+      "line": 64
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step6FinalReview.tsx",
+      "pattern": "placedPlants.map(p => p.scientificName || p.plantName",
+      "line": 39
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step6FinalReview.tsx",
+      "pattern": "{\n        title: t('garden.workflow.step6.download.errors.notSaved'",
+      "line": 65
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step6FinalReview.tsx",
+      "pattern": "{\n          title: t('garden.workflow.step6.download.success.title'",
+      "line": 89
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step6FinalReview.tsx",
+      "pattern": "{\n        title: t('garden.workflow.step6.download.errors.failed'",
+      "line": 96
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step6FinalReview.tsx",
+      "pattern": "{\n        title: t('garden.workflow.step6.share.errors.notSaved'",
+      "line": 107
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step6FinalReview.tsx",
+      "pattern": "shareUrl",
+      "line": 129
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/Step6FinalReview.tsx",
+      "pattern": "{\n        title: t('garden.workflow.step6.share.copied.title'",
+      "line": 130
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/types.ts",
+      "pattern": "{\n  name: z.string(",
+      "line": 5
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/types.ts",
+      "pattern": "{}",
+      "line": 14
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/types.ts",
+      "pattern": "0",
+      "line": 21
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/types.ts",
+      "pattern": "{\n    ph: z.number(",
+      "line": 26
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/steps/types.ts",
+      "pattern": "{\n    style: z.string(",
+      "line": 50
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "{\n        title: 'AI Recommendations Ready',\n        description: `Claude has analyzed your garden and recommended ${data.length} styles`\n      }",
+      "line": 126
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "{\n        title: 'Recommendation Failed',\n        description: 'Unable to get AI recommendations. You can still choose manually.',\n        variant: 'destructive'\n      }",
+      "line": 132
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "(",
+      "line": 141
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "(a, b",
+      "line": 148
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "styleId",
+      "line": 184
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "styleId",
+      "line": 189
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "style.id",
+      "line": 255
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/style-selector.tsx",
+      "pattern": "style.id",
+      "line": 351
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "(",
+      "line": 53
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "(",
+      "line": 55
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "timer",
+      "line": 58
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "(",
+      "line": 63
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "0",
+      "line": 70
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "async (",
+      "line": 78
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "checkCanvasTimer",
+      "line": 101
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "prev => prev + 1",
+      "line": 115
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "placedPlants.map(p => p.plantName",
+      "line": 137
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "resolve, 800",
+      "line": 149
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "{\n            title: \"Generating Basic Visualization\",\n            description: \"Creating visualization without 3D enhancement. For best results, wait for the 3D view to load fully before generating.\",\n            duration: 5000\n          }",
+      "line": 175
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "resolve, 2000",
+      "line": 204
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "{\n          title: \"3D Visualization Generated\",\n          description: \"Your garden visualization is ready!\",\n        }",
+      "line": 214
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/garden/visualization-generation-modal.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: error.message || \"Failed to generate visualization\",\n        variant: \"destructive\"\n      }",
+      "line": 226
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "feetMatch[1]",
+      "line": 61
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "feetMatch[2]",
+      "line": 62
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "match[0]",
+      "line": 86
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "(",
+      "line": 210
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n        title: \"Added to Collection\",\n        description: `${plant.commonName} has been added to your collection!`,\n      }",
+      "line": 235
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n          title: \"Already in Collection\",\n          description: \"This plant is already in your collection.\",\n          variant: \"destructive\"\n        }",
+      "line": 249
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n          title: \"Failed to Add\",\n          description: error.message || \"Could not add plant to collection\",\n          variant: \"destructive\"\n        }",
+      "line": 255
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n        title: \"Removed\",\n        description: `${plant.commonName} removed from collection.`,\n      }",
+      "line": 270
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "window.location.href",
+      "line": 320
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n          title: \"Link Copied\",\n          description: \"Plant link copied to clipboard!\",\n        }",
+      "line": 321
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n          title: \"Image Saved\",\n          description: \"Plant card saved as image!\",\n        }",
+      "line": 361
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n        title: \"Save Failed\",\n        description: \"Could not save plant card\",\n        variant: \"destructive\"\n      }",
+      "line": 368
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n        title: t('plants.messages.success.notesUpdated'",
+      "line": 382
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n        title: t('plants.messages.error.failedToSave'",
+      "line": 392
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n        title: t('plants.messages.success.imageGenerated'",
+      "line": 408
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/compact-plant-card.tsx",
+      "pattern": "{\n        title: t('plants.messages.error.failedToSave'",
+      "line": 418
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/enhanced-plant-card.tsx",
+      "pattern": "{\n        title: \"Added to Collection\",\n        description: `${plant.commonName} has been added to your collection!`,\n      }",
+      "line": 57
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/enhanced-plant-card.tsx",
+      "pattern": "(",
+      "line": 65
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/enhanced-plant-card.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 70
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/enhanced-plant-card.tsx",
+      "pattern": "{\n        title: \"Removed from Collection\",\n        description: `${plant.commonName} has been removed.`,\n      }",
+      "line": 83
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/enhanced-plant-card.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 90
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "{\n        title: \"Added to Collection\",\n        description: `${plant.commonName} has been added to your collection!`,\n      }",
+      "line": 52
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "{\n          title: \"Unauthorized\",\n          description: \"You are logged out. Logging in again...\",\n          variant: \"destructive\",\n        }",
+      "line": 60
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "(",
+      "line": 65
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 70
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "{\n        title: \"Removed from Collection\",\n        description: `${plant.commonName} has been removed from your collection.`,\n      }",
+      "line": 83
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "{\n          title: \"Unauthorized\",\n          description: \"You are logged out. Logging in again...\",\n          variant: \"destructive\",\n        }",
+      "line": 91
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "(",
+      "line": 96
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 101
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-card.tsx",
+      "pattern": "{ plant }: { plant: Plant }",
+      "line": 439
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search-modal.tsx",
+      "pattern": "plant",
+      "line": 38
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search-results.tsx",
+      "pattern": "plantId, { quantity: 1 }",
+      "line": 152
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search-results.tsx",
+      "pattern": "plantId, { quantity }",
+      "line": 161
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search-results.tsx",
+      "pattern": "plantId, { plant, quantity: info.quantity }",
+      "line": 171
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search-results.tsx",
+      "pattern": "plant.id",
+      "line": 245
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search-results.tsx",
+      "pattern": "plant.id",
+      "line": 259
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search-results.tsx",
+      "pattern": "e.target.value",
+      "line": 299
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant/plant-search.tsx",
+      "pattern": "(",
+      "line": 81
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant-card-display.tsx",
+      "pattern": "plant.sunlight",
+      "line": 187
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant-detail-view.tsx",
+      "pattern": "window.location.href",
+      "line": 112
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/plant-detail-view.tsx",
+      "pattern": "dataStr",
+      "line": 120
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/test/error-boundary-test.tsx",
+      "pattern": "resolve, 500",
+      "line": 46
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/test/error-boundary-test.tsx",
+      "pattern": "scenario",
+      "line": 130
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/test/error-boundary-test.tsx",
+      "pattern": "(",
+      "line": 186
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/carousel.tsx",
+      "pattern": "CarouselContext",
+      "line": 34
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/carousel.tsx",
+      "pattern": "api.canScrollNext(",
+      "line": 75
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/carousel.tsx",
+      "pattern": "(",
+      "line": 99
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/carousel.tsx",
+      "pattern": "(",
+      "line": 107
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/carousel.tsx",
+      "pattern": "api",
+      "line": 112
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/chart.tsx",
+      "pattern": "ChartContext",
+      "line": 28
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/command.tsx",
+      "pattern": "[hidden]",
+      "line": 28
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/error-boundary.tsx",
+      "pattern": "(",
+      "line": 78
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/error-boundary.tsx",
+      "pattern": "this.resetTimeoutId",
+      "line": 107
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/error-boundary.tsx",
+      "pattern": "(",
+      "line": 122
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/form.tsx",
+      "pattern": "FormFieldContext",
+      "line": 45
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/form.tsx",
+      "pattern": "FormItemContext",
+      "line": 46
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/input-otp.tsx",
+      "pattern": "OTPInputContext",
+      "line": 35
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/lazy-image.tsx",
+      "pattern": "(",
+      "line": 49
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/lazy-image.tsx",
+      "pattern": "(",
+      "line": 88
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/lazy-image.tsx",
+      "pattern": "new Error(`Failed to preload image: ${src}`",
+      "line": 220
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/lazy-image.tsx",
+      "pattern": "0, 0, width, height",
+      "line": 240
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/sidebar.tsx",
+      "pattern": "SidebarContext",
+      "line": 45
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/sidebar.tsx",
+      "pattern": "(",
+      "line": 103
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/skeleton-table.tsx",
+      "pattern": "{ \n  count = 5, \n  showIcon = false,\n  showActions = false,\n  className \n}: { \n  count?: number;\n  showIcon?: boolean;\n  showActions?: boolean;\n  className?: string;\n}",
+      "line": 86
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/skeleton-text.tsx",
+      "pattern": "{ \n  className, \n  lines = 1,\n  width = \"full\",\n  height = \"base\"\n}: SkeletonTextProps",
+      "line": 10
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/skeleton-text.tsx",
+      "pattern": "{ label = true, className }: SkeletonStatProps",
+      "line": 107
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/toggle-group.tsx",
+      "pattern": "ToggleGroupContext",
+      "line": 40
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "{\n          title: \"Demo Mode Active\",\n          description: \"In production, you would be redirected to Stripe checkout. Your tier has been upgraded for testing.\",\n          variant: \"default\"\n        }",
+      "line": 102
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "(",
+      "line": 109
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "{\n          title: \"Configuration Notice\",\n          description: \"Stripe is not fully configured. Running in demo mode.\",\n          variant: \"default\"\n        }",
+      "line": 118
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "(",
+      "line": 125
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "{\n          title: \"Loading Stripe...\",\n          description: \"Please wait while we set up the payment system.\",\n          variant: \"default\"\n        }",
+      "line": 134
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "{\n        sessionId: data.sessionId\n      }",
+      "line": 142
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "{\n          title: \"Payment Error\",\n          description: error.message,\n          variant: \"destructive\"\n        }",
+      "line": 147
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/upgrade-modal.tsx",
+      "pattern": "{\n        title: \"Upgrade Process\",\n        description: \"There was an issue starting the upgrade. Please try again or contact support.\",\n        variant: \"destructive\"\n      }",
+      "line": 158
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "(",
+      "line": 52
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "savedPosition, 10",
+      "line": 56
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "scrollTimeoutRef.current",
+      "line": 73
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "(",
+      "line": 77
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "(",
+      "line": 89
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "scrollTimeoutRef.current",
+      "line": 97
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "${columns}, 1fr",
+      "line": 124
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "(",
+      "line": 171
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/ui/virtual-scroll.tsx",
+      "pattern": "window.innerHeight",
+      "line": 177
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/use-mobile.tsx",
+      "pattern": "(",
+      "line": 8
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/use-toast.ts",
+      "pattern": "(",
+      "line": 63
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/use-toast.ts",
+      "pattern": "toastId, timeout",
+      "line": 71
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/use-toast.ts",
+      "pattern": "{ ...props }: Toast",
+      "line": 142
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/use-toast.ts",
+      "pattern": "(",
+      "line": 174
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAuth.ts",
+      "pattern": "(",
+      "line": 15
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAuth.ts",
+      "pattern": "(",
+      "line": 41
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAuth.ts",
+      "pattern": "(",
+      "line": 48
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 80
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "{\n          title: \"Auto-save failed\",\n          description: `Retrying in ${retryDelay / 1000} seconds... (Attempt ${retryCountRef.current}/${maxRetries}",
+      "line": 94
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 100
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "{\n          title: \"Auto-save failed\",\n          description: \"Your changes could not be saved. Please check your connection and try saving manually.\",\n          variant: \"destructive\",\n        }",
+      "line": 107
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 122
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "saveTimerRef.current",
+      "line": 129
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 133
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "saveTimerRef.current",
+      "line": 139
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 145
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 164
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 189
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "{\n          title: \"Connection restored\",\n          description: \"Syncing your changes...\",\n        }",
+      "line": 192
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "{\n        title: \"Connection lost\",\n        description: \"Your changes will be saved when connection is restored\",\n        variant: \"destructive\",\n      }",
+      "line": 201
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "saveTimerRef.current",
+      "line": 220
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useAutoSave.ts",
+      "pattern": "(",
+      "line": 226
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useRecentlyViewed.tsx",
+      "pattern": "(",
+      "line": 19
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useStepNavigation.ts",
+      "pattern": "(",
+      "line": 35
+    },
+    {
+      "file": "/home/runner/workspace/client/src/hooks/useStepNavigation.ts",
+      "pattern": "{\n        title: \"Required Fields Missing\",\n        description: `Please fill in the following required fields: ${errors.join(\", \"",
+      "line": 56
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/authUtils.ts",
+      "pattern": "error.message",
+      "line": 2
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/authUtils.ts",
+      "pattern": "(",
+      "line": 9
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/csrf.ts",
+      "pattern": "value",
+      "line": 14
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/i18n.ts",
+      "pattern": "{\n    resources,\n    \n    // Language detection configuration\n    detection: detectionOptions,\n    \n    // Fallback language\n    fallbackLng: 'en',\n    \n    // Allowed languages\n    supportedLngs: Object.keys(supportedLanguages",
+      "line": 66
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/performance.ts",
+      "pattern": "name, mark",
+      "line": 34
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/performance.ts",
+      "pattern": "name",
+      "line": 47
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/performance.ts",
+      "pattern": "timeoutId",
+      "line": 228
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/performance.ts",
+      "pattern": "(",
+      "line": 229
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/performance.ts",
+      "pattern": "(",
+      "line": 246
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/performance.ts",
+      "pattern": "key",
+      "line": 264
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/performance.ts",
+      "pattern": "key, result",
+      "line": 268
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/queryClient.ts",
+      "pattern": "method: string,\n  url: string,\n  data?: unknown | undefined,",
+      "line": 18
+    },
+    {
+      "file": "/home/runner/workspace/client/src/lib/queryClient.ts",
+      "pattern": "{\n  defaultOptions: {\n    queries: {\n      queryFn: getQueryFn({ on401: \"throw\" }",
+      "line": 90
+    },
+    {
+      "file": "/home/runner/workspace/client/src/main.tsx",
+      "pattern": "document.getElementById(\"root\"",
+      "line": 31
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Please enter a plant name\",\n        variant: \"destructive\"\n      }",
+      "line": 25
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "{\n          title: \"Success\",\n          description: \"Sprite generated successfully!\"\n        }",
+      "line": 44
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: (error as Error",
+      "line": 53
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "{\n          title: \"Success\",\n          description: \"Composite garden created!\"\n        }",
+      "line": 80
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "{\n        title: \"Composite Failed\",\n        description: (error as Error",
+      "line": 89
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "{\n          title: \"Success\",\n          description: \"Gemini enhanced the composite!\"\n        }",
+      "line": 109
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "{\n        title: \"Enhancement Failed\",\n        description: (error as Error",
+      "line": 118
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "#808080 0% 25%, transparent 0% 50%",
+      "line": 209
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "40,1fr",
+      "line": 306
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-sprite-test.tsx",
+      "pattern": "30,1fr",
+      "line": 306
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-test-visualization.tsx",
+      "pattern": "{\n        title: \"Test Garden Created\",\n        description: `Garden ID: ${newGarden.id}. Redirecting to design page...`\n      }",
+      "line": 45
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-test-visualization.tsx",
+      "pattern": "(",
+      "line": 51
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-test-visualization.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Failed to create test garden\",\n        variant: \"destructive\"\n      }",
+      "line": 57
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-test-visualization.tsx",
+      "pattern": "{\n              title: \"Return to Design\",\n              description: \"This would return to the garden design in production\"\n            }",
+      "line": 154
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n          title: \"Success! 🎨\",\n          description: `Generated ${data.paths?.length || 0} photorealistic garden tool icons using Gemini AI`,\n        }",
+      "line": 160
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n          title: \"Generation Failed\",\n          description: error.message || \"Failed to generate icons. Please try again.\",\n          variant: \"destructive\",\n        }",
+      "line": 168
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "(",
+      "line": 323
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Testing Mode Activated\",\n        description: `Now testing as ${testingTier.replace('_', ' '",
+      "line": 328
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "(",
+      "line": 339
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Unauthorized\",\n        description: \"You are logged out. Logging in again...\",\n        variant: \"destructive\",\n      }",
+      "line": 341
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "(",
+      "line": 346
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Access Denied\",\n        description: \"You need admin privileges to access this page\",\n        variant: \"destructive\",\n      }",
+      "line": 354
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "(",
+      "line": 360
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Plant Verified\",\n        description: \"Plant has been verified successfully!\",\n      }",
+      "line": 390
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n          title: \"Unauthorized\",\n          description: \"You are logged out. Logging in again...\",\n          variant: \"destructive\",\n        }",
+      "line": 406
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "(",
+      "line": 411
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 416
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Plant Deleted\",\n        description: \"Plant has been removed from the database.\",\n      }",
+      "line": 441
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: \"Failed to delete plant.\",\n        variant: \"destructive\",\n      }",
+      "line": 456
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "resolve, 200",
+      "line": 510
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Batch Validation Complete\",\n        description: `Successfully validated ${successCount} plants${failCount > 0 ? `, ${failCount} failed` : ''}`,\n      }",
+      "line": 514
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Batch Validation Failed\",\n        description: error.message || \"Failed to validate plants\",\n        variant: \"destructive\",\n      }",
+      "line": 524
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "resolve, 500",
+      "line": 569
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Image Generation Complete\",\n        description: `Successfully generated images for ${successCount} plants${failCount > 0 ? `, ${failCount} failed` : ''}`,\n      }",
+      "line": 573
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Image Generation Failed\",\n        description: error.message || \"Failed to generate images\",\n        variant: \"destructive\",\n      }",
+      "line": 582
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 606
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                                title: \"Refreshed\",\n                                description: \"Plant database has been refreshed\",\n                              }",
+      "line": 760
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                          title: \"Search Complete\",\n                          description: `Found ${data.length} plant${data.length !== 1 ? 's' : ''} matching your criteria`,\n                        }",
+      "line": 803
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                          title: \"Search Error\",\n                          description: \"Failed to search plants. Please try again.\",\n                          variant: \"destructive\",\n                        }",
+      "line": 808
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                                title: \"Search Cleared\",\n                                description: \"Showing all plants\",\n                              }",
+      "line": 842
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                              title: \"Plants Refreshed\",\n                              description: \"Plant database has been updated with latest data and images.\",\n                            }",
+      "line": 859
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                                    title: \"Edit Feature\",\n                                    description: \"Plant editing feature coming soon.\",\n                                  }",
+      "line": 908
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                                      title: \"Image Generation Started\",\n                                      description: \"Images are being generated. This may take a few minutes.\",\n                                    }",
+      "line": 918
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                                      title: \"Error\",\n                                      description: \"Failed to start image generation\",\n                                      variant: \"destructive\",\n                                    }",
+      "line": 924
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin.tsx",
+      "pattern": "{\n                                title: \"Coming Soon\",\n                                description: \"Database seeding will be available soon\",\n                              }",
+      "line": 1057
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "(",
+      "line": 62
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n      title: \"Plant Added\",\n      description: `${plant.commonName} added to inventory`,\n    }",
+      "line": 100
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n      title: \"Plants Added\",\n      description: `Added ${plants.length} plant${plants.length !== 1 ? 's' : ''} to your inventory`,\n    }",
+      "line": 108
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n        title: \"Design Saved\",\n        description: \"Your garden design has been saved successfully!\",\n      }",
+      "line": 120
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 127
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n        title: \"AI Design Generated\",\n        description: \"Your AI-powered garden design is ready!\",\n      }",
+      "line": 141
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n        title: \"Error\",\n        description: error.message,\n        variant: \"destructive\",\n      }",
+      "line": 148
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n                        title: \"Search Complete\",\n                        description: `Found ${results.length} matching plants`,\n                      }",
+      "line": 342
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-design.tsx",
+      "pattern": "{\n                        title: \"Search Error\",\n                        description: \"Failed to search plants\",\n                        variant: \"destructive\",\n                      }",
+      "line": 348
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n  name: z.string(",
+      "line": 35
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{}",
+      "line": 44
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "0",
+      "line": 51
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n    ph: z.number(",
+      "line": 56
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n    style: z.string(",
+      "line": 80
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n          title: t('garden.workflow.messages.created.title'",
+      "line": 224
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Save Failed\",\n        description: error.message || \"Failed to save garden\",\n        variant: \"destructive\",\n      }",
+      "line": 232
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Garden Updated\",\n        description: \"Your changes have been saved\",\n      }",
+      "line": 246
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Update Failed\",\n        description: error.message || \"Failed to update garden\",\n        variant: \"destructive\",\n      }",
+      "line": 253
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Garden Saved\",\n        description: \"Your garden has been saved successfully\",\n      }",
+      "line": 298
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Save Failed\",\n        description: \"Failed to save your garden. Please try again.\",\n        variant: \"destructive\",\n      }",
+      "line": 303
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Garden Design Complete!\",\n        description: \"Your garden design has been successfully created\",\n      }",
+      "line": 378
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "(",
+      "line": 386
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        name: existingGarden.name || '',\n        city: existingGarden.city || undefined,\n        zipCode: existingGarden.zipCode || undefined,\n        country: existingGarden.country || undefined,\n        usdaZone: existingGarden.usdaZone || undefined,\n        rhsZone: existingGarden.rhsZone || undefined,\n        heatZone: existingGarden.heatZone || undefined,\n        shape: existingGarden.shape || 'rectangle',\n        dimensions: existingGarden.dimensions || {},\n        units: existingGarden.units || 'meters',\n        sunExposure: existingGarden.sunExposure || undefined,\n        soilType: existingGarden.soilType || undefined,\n        soilPh: existingGarden.soilPh || undefined,\n        hasSoilAnalysis: existingGarden.hasSoilAnalysis || false,\n        slopeDirection: existingGarden.slopeDirection || 'N',\n        slopePercentage: existingGarden.slopePercentage || 0,\n        design_approach: existingGarden.design_approach || undefined,\n        selectedStyle: existingGarden.selectedStyle || undefined,\n        soilAnalysis: existingGarden.soilAnalysis || {},\n        preferences: existingGarden.preferences || {},\n      }",
+      "line": 389
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "(",
+      "line": 422
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Cannot Generate Views\",\n        description: \"Please save your garden and add plants first\",\n        variant: \"destructive\"\n      }",
+      "line": 430
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n          title: \"Seasonal Views Generated\",\n          description: \"Your garden has been visualized through all four seasons\",\n        }",
+      "line": 460
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "{\n        title: \"Generation Failed\",\n        description: error.message || \"Failed to generate seasonal views\",\n        variant: \"destructive\"\n      }",
+      "line": 467
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/garden-properties.tsx",
+      "pattern": "(",
+      "line": 573
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/inpainting-comparison.tsx",
+      "pattern": "{\n          title: \"Comparison Complete\",\n          description: \"Generated images using both composite and inpainting approaches\",\n        }",
+      "line": 29
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/inpainting-comparison.tsx",
+      "pattern": "{\n        title: \"Comparison Failed\",\n        description: error instanceof Error ? error.message : \"Failed to run comparison\",\n        variant: \"destructive\"\n      }",
+      "line": 38
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/plant-doctor.tsx",
+      "pattern": "{\n        title: t('plants.doctor.analysisComplete'",
+      "line": 46
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/plant-doctor.tsx",
+      "pattern": "{\n        title: t('plants.doctor.analysisFailed'",
+      "line": 56
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/plant-doctor.tsx",
+      "pattern": "{\n        title: t('plants.doctor.noImageSelected'",
+      "line": 78
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/plant-library.tsx",
+      "pattern": "(a, b",
+      "line": 270
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/plant-library.tsx",
+      "pattern": "(a, b",
+      "line": 272
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/plant-library.tsx",
+      "pattern": "(a, b",
+      "line": 274
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/plant-library.tsx",
+      "pattern": "(a, b",
+      "line": 276
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/premium-dashboard.tsx",
+      "pattern": "(",
+      "line": 54
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/premium-dashboard.tsx",
+      "pattern": "{\n        title: \"Unauthorized\",\n        description: \"You are logged out. Logging in again...\",\n        variant: \"destructive\",\n      }",
+      "line": 56
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/premium-dashboard.tsx",
+      "pattern": "(",
+      "line": 61
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/simple-image-gen.tsx",
+      "pattern": "e.target.value",
+      "line": 37
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/test-seasonal-selector.tsx",
+      "pattern": "{\n      title: \"Date Range Selected\",\n      description: `Selected days ${startDay} to ${endDay} for seasonal image generation`,\n    }",
+      "line": 15
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/test-seasonal-selector.tsx",
+      "pattern": "resolve, 2000",
+      "line": 21
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/test-seasonal-selector.tsx",
+      "pattern": "{\n      title: \"Test Complete\",\n      description: \"Seasonal date selector is working correctly!\",\n    }",
+      "line": 24
+    }
+  ]
+}

@@ -91,10 +91,7 @@
       "saving": "Saving...",
       "saved": "Saved",
       "navigation": {
-        "next": "Next Step",
-        "back": "Previous Step",
-        "complete": "Complete Design",
-        "home": "Back to Home"
+        "save": "Save & Exit"
       },
       "step1": {
         "title": "Welcome to Garden Design",
@@ -490,6 +487,44 @@
           "success": "Garden link has been copied to clipboard"
         },
         "buttonLabel": "Complete Garden Design"
+      },
+      "steps": {
+        "step1": {
+          "title": "Welcome to Garden Design",
+          "subtitle": "Let's create your perfect garden together",
+          "description": "Tell us about your garden location",
+          "buttonLabel": "Next: Site Details"
+        },
+        "step2": {
+          "title": "Garden Details",
+          "subtitle": "Define your garden's physical characteristics",
+          "description": "Define your garden space",
+          "buttonLabel": "Next: Design Approach"
+        },
+        "step3": {
+          "title": "Choose Your Design Approach",
+          "subtitle": "Select how you'd like to create your garden design",
+          "description": "AI-assisted or manual design",
+          "buttonLabel": "Next: Design Your Garden"
+        },
+        "step4": {
+          "title": "Garden Design Canvas",
+          "subtitle": "Choose and place your plants",
+          "description": "Choose and place your plants",
+          "buttonLabel": "Next: Generate Seasonal Views"
+        },
+        "step5": {
+          "title": "Seasonal Garden Visualization",
+          "subtitle": "Generate photorealistic views of your garden throughout the year",
+          "description": "Generate your seasonal visualization",
+          "buttonLabel": "Next: Review & Download"
+        },
+        "step6": {
+          "title": "Garden Design Complete!",
+          "subtitle": "Your design is ready. Review your design below and download or share it.",
+          "description": "Save and share your garden",
+          "buttonLabel": "Complete Garden Design"
+        }
       }
     }
   },
@@ -844,7 +879,12 @@
       "sunlight": "Sunlight",
       "water": "Water",
       "soil": "Soil",
-      "hardiness": "Hardiness",
+      "hardiness": {
+        "veryHardy": "Very Hardy",
+        "hardy": "Hardy",
+        "halfHardy": "Half Hardy",
+        "tender": "Tender"
+      },
       "maintenance": "Maintenance",
       "growthRate": "Growth Rate",
       "spacing": "Plant Spacing",
@@ -857,12 +897,6 @@
         "medium": "Medium Tree",
         "large": "Large Tree",
         "giant": "Giant Tree"
-      },
-      "hardiness": {
-        "veryHardy": "Very Hardy",
-        "hardy": "Hardy",
-        "halfHardy": "Half Hardy",
-        "tender": "Tender"
       }
     },
     "care": {
@@ -990,5 +1024,10 @@
       "contact": "Contact",
       "copyright": "© 2024 GardenScape Pro. All rights reserved."
     }
-  }
+  },
+  ";": ";",
+  "=": "=",
+  "Information copied to clipboard!": "Information Copied To Clipboard!",
+  "Link copied to clipboard!": "Link Copied To Clipboard!",
+  "Report details copied to clipboard!": "Report Details Copied To Clipboard!"
 }
