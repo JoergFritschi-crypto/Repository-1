@@ -18,6 +18,8 @@ export interface AuthUser {
   access_token?: string;
   refresh_token?: string;
   expires_at?: number;
+  // Add the resolved database UUID
+  databaseId?: string;
 }
 
 // Properly typed authenticated request
@@ -33,9 +35,18 @@ export function isAuthenticatedRequest(req: Request): req is AuthenticatedReques
          'sub' in (req.user as any).claims;
 }
 
-// Helper to safely get user ID
+// Helper to safely get user ID - returns the database UUID, not the Replit ID
 export function getUserId(req: AuthenticatedRequest): string {
-  return req.user.claims.sub;
+  // If we have the resolved database ID, use that
+  if (req.user.databaseId) {
+    return req.user.databaseId;
+  }
+  
+  // Otherwise, fall back to claims.sub but log a warning
+  const replitId = req.user.claims.sub;
+  console.warn(`Using Replit ID as fallback: ${replitId} - database ID should be resolved during authentication`);
+  
+  return replitId;
 }
 
 // Helper to check if user is admin

@@ -132,11 +132,12 @@ function updateUserSession(
 
 async function upsertUser(
   claims: any,
+  user: any
 ) {
   // Check if user is admin from OIDC claims
   const isAdmin = claims["is_admin"] === true || claims["role"] === "admin";
   
-  await storage.upsertUser({
+  const dbUser = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
@@ -145,6 +146,9 @@ async function upsertUser(
     // Set isAdmin from OIDC claims
     isAdmin: isAdmin,
   });
+  
+  // Store the resolved database UUID on the user object
+  user.databaseId = dbUser.id;
 }
 
 export async function setupAuth(app: Express) {
@@ -161,7 +165,7 @@ export async function setupAuth(app: Express) {
   ) => {
     const user = {};
     updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
+    await upsertUser(tokens.claims(), user);
     verified(null, user);
   };
 
