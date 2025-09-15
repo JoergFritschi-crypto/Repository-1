@@ -12,25 +12,47 @@ interface RecentlyViewedPlant {
 const STORAGE_KEY = 'recentlyViewedPlants';
 const MAX_PLANTS = 15;
 
+// Helper function to check if a string is a valid UUID
+const isValidUUID = (str: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+};
+
 export function useRecentlyViewed() {
   const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedPlant[]>([]);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount and clean up invalid entries
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setRecentlyViewed(parsed);
+        // Filter out entries with invalid UUIDs
+        const validEntries = parsed.filter((plant: RecentlyViewedPlant) => 
+          plant.id && isValidUUID(plant.id)
+        );
+        
+        // If we filtered out any invalid entries, update localStorage
+        if (validEntries.length !== parsed.length) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(validEntries));
+          console.log(`Cleaned up ${parsed.length - validEntries.length} invalid plant entries from recently viewed`);
+        }
+        
+        setRecentlyViewed(validEntries);
       } catch (error) {
         console.error('Failed to parse recently viewed plants:', error);
+        // Clear corrupted data
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
   }, []);
 
   // Add a plant to recently viewed
   const addToRecentlyViewed = useCallback((plant: Partial<Plant>) => {
-    if (!plant.id) return;
+    if (!plant.id || !isValidUUID(plant.id)) {
+      console.warn('Invalid plant ID format, skipping recently viewed:', plant.id);
+      return;
+    }
 
     const newItem: RecentlyViewedPlant = {
       id: plant.id,
