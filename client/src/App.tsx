@@ -16,6 +16,7 @@ import Home from "@/pages/home";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
 import Contact from "@/pages/contact";
+import AuthRequired from "@/pages/auth-required";
 
 // Lazy load heavy pages with lots of images/complex components
 const PlantLibrary = lazy(() => import("@/pages/plant-library"));
@@ -54,15 +55,26 @@ function Router() {
   const publicRoutes = ['/', '/welcome', '/privacy', '/terms', '/contact'];
   const isPublicRoute = publicRoutes.includes(location);
   
-  // For non-public routes, show loading spinner while auth is being checked
-  if (!isPublicRoute && isLoading) {
+  // Define protected route patterns
+  const protectedRoutePrefixes = [
+    '/home', '/garden', '/plant', '/premium', '/admin', '/test'
+  ];
+  const isProtectedRoute = protectedRoutePrefixes.some(prefix => location.startsWith(prefix));
+  
+  // For protected routes, show loading spinner while auth is being checked
+  if (isProtectedRoute && isLoading) {
     return <PageLoader />;
   }
   
-  // For non-public routes, wait for auth check to complete before deciding
+  // For protected routes, wait for auth check to complete before deciding
   // This prevents the 404 flash when auth state is transitioning
-  if (!isPublicRoute && !authCheckComplete) {
+  if (isProtectedRoute && !authCheckComplete) {
     return <PageLoader />;
+  }
+  
+  // If trying to access a protected route while not authenticated, show auth required page
+  if (isProtectedRoute && !isAuthenticated && authCheckComplete) {
+    return <AuthRequired />;
   }
 
   return (
