@@ -76,7 +76,7 @@ const Step1Welcome = memo(({
 
       <Card className="border-2 border-primary shadow-sm" data-testid="step-welcome">
         <CardHeader className="py-7 flower-band-summer rounded-t-lg">
-          <CardTitle className="text-base">{t('garden.workflow.step1.title')}</CardTitle>
+          <CardTitle className="text-base text-canary">{t('garden.workflow.step1.title')}</CardTitle>
           <CardDescription>
             {t('garden.workflow.step1.subtitle')}
           </CardDescription>

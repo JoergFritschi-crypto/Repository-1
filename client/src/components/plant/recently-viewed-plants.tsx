@@ -35,14 +35,13 @@ const RecentlyViewedPlants = memo(({
     queryFn: async () => {
       if (recentlyViewed.length === 0) return [];
       
-      const response = await fetch('/api/plants/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: recentlyViewed.slice(0, maxItems).map(p => p.id) })
+      // Import apiRequest dynamically to avoid circular dependency
+      const { apiRequest } = await import('@/lib/queryClient');
+      const response = await apiRequest('POST', '/api/plants/batch', { 
+        ids: recentlyViewed.slice(0, maxItems).map(p => p.id) 
       });
       
-      if (!response.ok) return [];
-      return response.json();
+      return await response.json();
     },
     enabled: recentlyViewed.length > 0
   });
@@ -139,7 +138,7 @@ const RecentlyViewedPlants = memo(({
         <div className="w-full overflow-hidden">
           <div 
             ref={scrollRef}
-            className="flex gap-3 pb-2 overflow-x-auto no-scrollbar"
+            className="flex gap-3 pb-2 overflow-x-auto no-scrollbar md:px-6"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitScrollbar: { display: 'none' } }}
           >
             {isLoading ? (
@@ -194,8 +193,8 @@ const RecentlyViewedPlants = memo(({
                           </div>
                           
                           {/* Plant info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm truncate mb-1" data-testid={`text-plant-name-${plant.id}`}>
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <h4 className="font-medium text-sm truncate mb-1 max-w-full" data-testid={`text-plant-name-${plant.id}`}>
                               {plant.commonName}
                             </h4>
                             {plant.scientificName && (
