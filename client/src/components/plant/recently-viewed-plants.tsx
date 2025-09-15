@@ -4,7 +4,6 @@ import { Link } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/error-message';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -137,10 +136,11 @@ const RecentlyViewedPlants = memo(({
         </Button>
 
         {/* Scrollable container */}
-        <ScrollArea className="w-full">
+        <div className="w-full overflow-hidden">
           <div 
             ref={scrollRef}
-            className="flex gap-3 pb-2"
+            className="flex gap-3 pb-2 overflow-x-auto no-scrollbar"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitScrollbar: { display: 'none' } }}
           >
             {isLoading ? (
               // Loading skeletons
@@ -227,8 +227,7 @@ const RecentlyViewedPlants = memo(({
               })
             )}
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
