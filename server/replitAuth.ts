@@ -35,17 +35,14 @@ const getOidcConfig = memoize(
   { maxAge: 3600 * 1000 }
 );
 
-// Get database URL if PG* environment variables exist
+// Get database URL from environment variables
 function getDatabaseUrl(): string | null {
-  // Check if PG* variables exist (created by create_postgresql_database_tool)
-  if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
-      process.env.PGPASSWORD && process.env.PGDATABASE) {
-    // Construct DATABASE_URL from PG* variables with SSL required
-    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}?sslmode=require`;
-    return url;
+  // Priority: Use Supabase if configured
+  if (process.env.SUPABASE_DATABASE_URL) {
+    return process.env.SUPABASE_DATABASE_URL;
   }
   
-  // Fall back to DATABASE_URL if PG* variables don't exist
+  // Fall back to DATABASE_URL if Supabase not configured
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }

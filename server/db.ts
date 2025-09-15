@@ -2,30 +2,30 @@ import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
 
-// Automatically construct DATABASE_URL from PG* environment variables if they exist
+// Automatically construct DATABASE_URL from environment variables
 function getDatabaseUrl(): string {
-  // Check if PG* variables exist (created by create_postgresql_database_tool)
-  if (process.env.PGHOST && process.env.PGPORT && process.env.PGUSER && 
-      process.env.PGPASSWORD && process.env.PGDATABASE) {
-    // Construct DATABASE_URL from PG* variables with SSL required
-    const url = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}?sslmode=require`;
-    console.log('Using PostgreSQL database from PG* environment variables');
-    // Override DATABASE_URL to use the new database
-    if (process.env.DATABASE_URL) {
-      console.log('Overriding DATABASE_URL with PostgreSQL database from PG* environment variables');
-    }
-    process.env.DATABASE_URL = url;
-    return url;
+  console.log('Available environment variables:');
+  console.log('SUPABASE_DATABASE_URL:', process.env.SUPABASE_DATABASE_URL ? 'Set' : 'Not set');
+  console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
+  
+  // Priority 1: Check for Supabase database URL (user-configured)
+  if (process.env.SUPABASE_DATABASE_URL) {
+    console.log('✅ Using Supabase database');
+    console.log('Supabase host:', new URL(process.env.SUPABASE_DATABASE_URL).hostname);
+    process.env.DATABASE_URL = process.env.SUPABASE_DATABASE_URL;
+    return process.env.SUPABASE_DATABASE_URL;
   }
   
-  // Fall back to DATABASE_URL if PG* variables don't exist
+  // Removed Neon PG* variables check - now using Supabase exclusively
+  
+  // Priority 3: Fall back to DATABASE_URL if neither exists
   if (process.env.DATABASE_URL) {
     console.log('Using DATABASE_URL environment variable');
     return process.env.DATABASE_URL;
   }
   
   throw new Error(
-    "Database configuration not found. Either set DATABASE_URL or provision a database using create_postgresql_database_tool.",
+    "Database configuration not found. Either set SUPABASE_DATABASE_URL, DATABASE_URL, or provision a database.",
   );
 }
 
