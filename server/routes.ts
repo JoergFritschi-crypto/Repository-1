@@ -66,6 +66,10 @@ import { geminiImageGenerator } from "./geminiImageGenerator";
 import { buildPhotorealizationContext, buildPhotorealizationPrompt } from "./photorealizationService";
 import { calculateDayRange, selectDaysForImages, dayToDateInfo, getPlantsBloomingOnDay, generateWeatherDescription } from "./dayRangeUtils";
 import path from "path";
+import { responseTimeTracker } from "./utils/responseTimeTracker";
+import { fallbackStorage } from "./utils/fallbackStorage";
+import { CircuitState } from "./utils/retryUtils";
+import os from "os";
 
 // Initialize Stripe if API key is available
 let stripe: Stripe | null = null;
@@ -233,6 +237,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cookie parser middleware (needed for CSRF)
   app.use(cookieParser());
   
+  // Response time tracking middleware (before auth to track all requests)
+  app.use(responseTimeTracker.middleware());
+  
   // Auth middleware
   await setupAuth(app);
   
@@ -308,6 +315,268 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CSRF token endpoint for frontend
   app.get('/api/csrf-token', (req, res) => {
     res.json({ csrfToken: req.cookies['csrf-token'] || '' });
+  });
+
+  // Health check endpoints
+  
+  // Public health check endpoint - basic status
+  app.get('/api/health', async (req, res) => {
+    try {
+      const startTime = Date.now();
+      const uptime = process.uptime();
+      
+      // Basic database check
+      let dbStatus = 'unknown';
+      let dbResponseTime = 0;
+      let dbMessage = '';
+      
+      try {
+        const dbStartTime = Date.now();
+        // Simple query to check database connectivity
+        await storage.getAllPlants(); // Light query
+        dbResponseTime = Date.now() - dbStartTime;
+        dbStatus = 'up';
+        dbMessage = 'Database connection successful';
+      } catch (error: any) {
+        dbStatus = 'down';
+        dbMessage = `Database error: ${error.message}`;
+      }
+
+      // Check auth status
+      const authStatus = process.env.REPL_ID ? 'up' : 'down';
+
+      // Basic memory metrics
+      const memUsage = process.memoryUsage();
+      const memoryUsed = Math.round(memUsage.heapUsed / 1024 / 1024);
+      const memoryTotal = Math.round(memUsage.heapTotal / 1024 / 1024);
+
+      // Get request metrics
+      const requestStats = responseTimeTracker.getStats();
+
+      // Determine overall health status
+      let overallStatus = 'healthy';
+      if (dbStatus === 'down') {
+        overallStatus = 'unhealthy';
+      } else if (requestStats.errorRate > 10) {
+        overallStatus = 'degraded';
+      }
+
+      const response = {
+        status: overallStatus,
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor(uptime),
+        components: {
+          database: {
+            status: dbStatus,
+            responseTime: dbResponseTime,
+            message: dbMessage
+          },
+          auth: {
+            status: authStatus,
+            provider: 'replit-oidc'
+          }
+        },
+        metrics: {
+          memory: {
+            used: memoryUsed,
+            total: memoryTotal
+          },
+          requests: {
+            total: requestStats.totalRequests,
+            avgResponseTime: requestStats.avgResponseTime
+          }
+        },
+        version: process.env.npm_package_version || '1.0.0'
+      };
+
+      res.json(response);
+    } catch (error: any) {
+      console.error('Error in health check:', error);
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: error.message
+      });
+    }
+  });
+
+  // Detailed health check endpoint - requires authentication
+  app.get('/api/health/detailed', isAuthenticated, async (req, res) => {
+    try {
+      const startTime = Date.now();
+      const uptime = process.uptime();
+      
+      // Detailed database check
+      let dbStatus = 'unknown';
+      let dbResponseTime = 0;
+      let dbMessage = '';
+      let circuitBreakerStatus = null;
+      let fallbackCacheStats = null;
+      
+      try {
+        const dbStartTime = Date.now();
+        // Try to get more detailed database info
+        const plantCount = await storage.getAllPlants();
+        dbResponseTime = Date.now() - dbStartTime;
+        dbStatus = 'up';
+        dbMessage = `Database connection successful. ${plantCount.length} plants in database`;
+        
+        // Try to get circuit breaker status if using ResilientSupabaseStorage
+        if (storage && typeof (storage as any).getCircuitBreakerStatus === 'function') {
+          circuitBreakerStatus = (storage as any).getCircuitBreakerStatus();
+        } else if (storage && (storage as any).circuitBreaker) {
+          const cb = (storage as any).circuitBreaker;
+          if (cb && typeof cb.getStatus === 'function') {
+            circuitBreakerStatus = cb.getStatus();
+          }
+        }
+      } catch (error: any) {
+        dbStatus = 'down';
+        dbMessage = `Database error: ${error.message}`;
+      }
+
+      // Get fallback storage stats
+      fallbackCacheStats = fallbackStorage.getStats();
+
+      // Check auth status with more details
+      const authStatus = process.env.REPL_ID ? 'up' : 'down';
+      const authDetails = {
+        status: authStatus,
+        provider: 'replit-oidc',
+        replId: process.env.REPL_ID || 'not-configured',
+        domain: process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.repl.co` : 'unknown'
+      };
+
+      // Detailed memory metrics
+      const memUsage = process.memoryUsage();
+      const memoryMetrics = {
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+        rss: Math.round(memUsage.rss / 1024 / 1024),
+        external: Math.round(memUsage.external / 1024 / 1024),
+        arrayBuffers: Math.round(memUsage.arrayBuffers / 1024 / 1024)
+      };
+
+      // System metrics
+      const systemMetrics = {
+        platform: os.platform(),
+        arch: os.arch(),
+        nodeVersion: process.version,
+        cpus: os.cpus().length,
+        loadAverage: os.loadavg(),
+        freeMemory: Math.round(os.freemem() / 1024 / 1024),
+        totalMemory: Math.round(os.totalmem() / 1024 / 1024)
+      };
+
+      // Get detailed request metrics
+      const requestStats = responseTimeTracker.getStats();
+      const recentRequests = responseTimeTracker.getRecentMetrics(10);
+
+      // External API status (check if configured)
+      const externalApis = {
+        stripe: !!process.env.STRIPE_SECRET_KEY ? 'configured' : 'not-configured',
+        openai: !!process.env.OPENAI_API_KEY ? 'configured' : 'not-configured',
+        anthropic: !!process.env.ANTHROPIC_API_KEY ? 'configured' : 'not-configured',
+        gemini: !!process.env.GEMINI_API_KEY ? 'configured' : 'not-configured',
+        perplexity: !!process.env.PERPLEXITY_API_KEY ? 'configured' : 'not-configured',
+        runware: !!process.env.RUNWARE_API_KEY ? 'configured' : 'not-configured',
+        firecrawl: !!process.env.FIRECRAWL_API_KEY ? 'configured' : 'not-configured',
+        perenual: !!process.env.PERENUAL_API_KEY ? 'configured' : 'not-configured',
+        mapbox: !!process.env.MAPBOX_API_KEY ? 'configured' : 'not-configured',
+        huggingface: !!process.env.HUGGINGFACE_API_KEY ? 'configured' : 'not-configured'
+      };
+
+      // Environment details
+      const environment = {
+        nodeEnv: process.env.NODE_ENV || 'development',
+        port: process.env.PORT || 5000,
+        supabaseConfigured: !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+      };
+
+      // Determine overall health status
+      let overallStatus = 'healthy';
+      let healthIssues = [];
+      
+      if (dbStatus === 'down') {
+        overallStatus = 'unhealthy';
+        healthIssues.push('Database connection failed');
+      }
+      
+      if (circuitBreakerStatus && circuitBreakerStatus.state !== 'CLOSED') {
+        overallStatus = overallStatus === 'unhealthy' ? 'unhealthy' : 'degraded';
+        healthIssues.push(`Circuit breaker is ${circuitBreakerStatus.state}`);
+      }
+      
+      if (requestStats.errorRate > 10) {
+        overallStatus = overallStatus === 'unhealthy' ? 'unhealthy' : 'degraded';
+        healthIssues.push(`High error rate: ${requestStats.errorRate.toFixed(2)}%`);
+      }
+      
+      if (fallbackCacheStats.isActive) {
+        overallStatus = overallStatus === 'unhealthy' ? 'unhealthy' : 'degraded';
+        healthIssues.push('Fallback cache is active (primary storage unavailable)');
+      }
+
+      const response = {
+        status: overallStatus,
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor(uptime),
+        healthIssues,
+        components: {
+          database: {
+            status: dbStatus,
+            responseTime: dbResponseTime,
+            message: dbMessage
+          },
+          auth: authDetails,
+          cache: {
+            status: fallbackCacheStats.isActive ? 'active' : 'standby',
+            entries: fallbackCacheStats.totalEntries,
+            users: fallbackCacheStats.users,
+            gardens: fallbackCacheStats.gardens,
+            plants: fallbackCacheStats.plants,
+            collections: fallbackCacheStats.collections,
+            lastSync: fallbackCacheStats.lastSync
+          },
+          circuitBreaker: circuitBreakerStatus || { status: 'not-available' }
+        },
+        metrics: {
+          memory: memoryMetrics,
+          system: systemMetrics,
+          requests: {
+            total: requestStats.totalRequests,
+            recent: requestStats.recentRequests,
+            avgResponseTime: requestStats.avgResponseTime,
+            recentAvgResponseTime: requestStats.recentAvgResponseTime,
+            p50: requestStats.p50,
+            p95: requestStats.p95,
+            p99: requestStats.p99,
+            errorRate: requestStats.errorRate,
+            slowestEndpoints: requestStats.slowestEndpoints,
+            recentRequests: recentRequests.map(r => ({
+              method: r.method,
+              path: r.path,
+              status: r.statusCode,
+              responseTime: r.responseTime,
+              timestamp: r.timestamp
+            }))
+          }
+        },
+        externalApis,
+        environment,
+        version: process.env.npm_package_version || '1.0.0',
+        responseTime: Date.now() - startTime
+      };
+
+      res.json(response);
+    } catch (error: any) {
+      console.error('Error in detailed health check:', error);
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: error.message
+      });
+    }
   });
 
   // Garden routes

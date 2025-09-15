@@ -281,6 +281,33 @@ export class CircuitBreaker {
     return this.state;
   }
 
+  /**
+   * Get comprehensive status information for health checks
+   */
+  getStatus(): {
+    state: CircuitState;
+    failureCount: number;
+    successCount: number;
+    lastFailureTime: number | null;
+    timeSinceLastFailure: number | null;
+    threshold: number;
+    isHealthy: boolean;
+  } {
+    const timeSinceLastFailure = this.lastFailureTime 
+      ? Date.now() - this.lastFailureTime 
+      : null;
+    
+    return {
+      state: this.state,
+      failureCount: this.failureCount,
+      successCount: this.successCount,
+      lastFailureTime: this.lastFailureTime,
+      timeSinceLastFailure,
+      threshold: this.options.failureThreshold || 5,
+      isHealthy: this.state === CircuitState.CLOSED
+    };
+  }
+
   reset(): void {
     this.state = CircuitState.CLOSED;
     this.failureCount = 0;

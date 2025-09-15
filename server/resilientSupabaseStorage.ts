@@ -176,6 +176,38 @@ export class ResilientSupabaseStorage implements IStorage {
   }
 
   /**
+   * Get circuit breaker status for health monitoring
+   */
+  getCircuitBreakerStatus(): any {
+    if (!this.circuitBreaker) {
+      return {
+        state: 'NOT_INITIALIZED',
+        isHealthy: false,
+        message: 'Circuit breaker not initialized'
+      };
+    }
+    
+    return this.circuitBreaker.getStatus();
+  }
+
+  /**
+   * Get overall storage health status
+   */
+  getHealthStatus(): {
+    isHealthy: boolean;
+    lastHealthCheck: Date | null;
+    circuitBreaker: any;
+    fallbackActive: boolean;
+  } {
+    return {
+      isHealthy: this.isHealthy,
+      lastHealthCheck: this.lastHealthCheck,
+      circuitBreaker: this.getCircuitBreakerStatus(),
+      fallbackActive: fallbackStorage.isActive()
+    };
+  }
+
+  /**
    * Helper method to generate IDs
    */
   private generateId(): string {
