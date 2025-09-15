@@ -125,14 +125,37 @@ export class SupabaseHttpStorage implements IStorage {
         .single();
 
       let dbData: any;
+      let result: any;
       
-      if (existingUser) {
+      if (existingUser && !fetchError) {
         // User exists, update with the existing UUID id
         dbData = {
-          id: existingUser.id, // Keep the existing UUID
           replit_id: replitId,
           updated_at: new Date().toISOString()
         };
+        
+        // Map TypeScript fields (camelCase) to database fields (snake_case)
+        if (userData.email !== undefined) dbData.email = userData.email;
+        if (userData.firstName !== undefined) dbData.first_name = userData.firstName;
+        if (userData.lastName !== undefined) dbData.last_name = userData.lastName;
+        if (userData.profileImageUrl !== undefined) dbData.profile_image_url = userData.profileImageUrl;
+        if (userData.stripeCustomerId !== undefined) dbData.stripe_customer_id = userData.stripeCustomerId;
+        if (userData.stripeSubscriptionId !== undefined) dbData.stripe_subscription_id = userData.stripeSubscriptionId;
+        if (userData.subscriptionStatus !== undefined) dbData.subscription_status = userData.subscriptionStatus;
+        if (userData.userTier !== undefined) dbData.user_tier = userData.userTier;
+        if (userData.designCredits !== undefined) dbData.design_credits = userData.designCredits;
+        if (userData.isAdmin !== undefined) dbData.is_admin = userData.isAdmin;
+        
+        // Update existing user
+        const { data, error } = await this.supabase
+          .from('profiles')
+          .update(dbData)
+          .eq('id', existingUser.id)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        result = data;
       } else {
         // New user, generate a UUID for id
         dbData = {
@@ -141,29 +164,31 @@ export class SupabaseHttpStorage implements IStorage {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
+        
+        // Map TypeScript fields (camelCase) to database fields (snake_case)
+        if (userData.email !== undefined) dbData.email = userData.email;
+        if (userData.firstName !== undefined) dbData.first_name = userData.firstName;
+        if (userData.lastName !== undefined) dbData.last_name = userData.lastName;
+        if (userData.profileImageUrl !== undefined) dbData.profile_image_url = userData.profileImageUrl;
+        if (userData.stripeCustomerId !== undefined) dbData.stripe_customer_id = userData.stripeCustomerId;
+        if (userData.stripeSubscriptionId !== undefined) dbData.stripe_subscription_id = userData.stripeSubscriptionId;
+        if (userData.subscriptionStatus !== undefined) dbData.subscription_status = userData.subscriptionStatus;
+        if (userData.userTier !== undefined) dbData.user_tier = userData.userTier;
+        if (userData.designCredits !== undefined) dbData.design_credits = userData.designCredits;
+        if (userData.isAdmin !== undefined) dbData.is_admin = userData.isAdmin;
+        
+        // Insert new user
+        const { data, error } = await this.supabase
+          .from('profiles')
+          .insert(dbData)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        result = data;
       }
       
-      // Map TypeScript fields (camelCase) to database fields (snake_case)
-      if (userData.email !== undefined) dbData.email = userData.email;
-      if (userData.firstName !== undefined) dbData.first_name = userData.firstName;
-      if (userData.lastName !== undefined) dbData.last_name = userData.lastName;
-      if (userData.profileImageUrl !== undefined) dbData.profile_image_url = userData.profileImageUrl;
-      if (userData.stripeCustomerId !== undefined) dbData.stripe_customer_id = userData.stripeCustomerId;
-      if (userData.stripeSubscriptionId !== undefined) dbData.stripe_subscription_id = userData.stripeSubscriptionId;
-      if (userData.subscriptionStatus !== undefined) dbData.subscription_status = userData.subscriptionStatus;
-      if (userData.userTier !== undefined) dbData.user_tier = userData.userTier;
-      if (userData.designCredits !== undefined) dbData.design_credits = userData.designCredits;
-      if (userData.isAdmin !== undefined) dbData.is_admin = userData.isAdmin;
-
-      const { data, error } = await this.supabase
-        .from('profiles')
-        .upsert(dbData, { onConflict: 'replit_id' })
-        .select()
-        .single();
-
-      if (error) throw error;
-      
-      return this.mapDbUserToUser(data);
+      return this.mapDbUserToUser(result);
     } catch (error) {
       console.error('Error in upsertUser:', error);
       // Fallback to return user data for auth to continue
