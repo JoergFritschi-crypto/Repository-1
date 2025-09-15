@@ -68,7 +68,7 @@ export class SupabaseHttpStorage implements IStorage {
   // Helper method to map database user to User type
   private mapDbUserToUser(data: any): User {
     return {
-      id: data.id,
+      id: data.replit_id || data.id, // Use replit_id as the main ID for the app
       email: data.email,
       firstName: data.first_name,
       lastName: data.last_name,
@@ -87,13 +87,13 @@ export class SupabaseHttpStorage implements IStorage {
   // ==================== USER OPERATIONS ====================
   // CRITICAL for Replit Auth - these must work correctly
 
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(replitId: string): Promise<User | undefined> {
     try {
-      // Use match to avoid UUID casting issues - match works with text columns
+      // Query by replit_id since that's what the app provides
       const { data, error } = await this.supabase
         .from('profiles')
         .select('*')
-        .match({ id: id })
+        .eq('replit_id', replitId)
         .single();
 
       if (error?.code === 'PGRST116') return undefined; // Not found
@@ -115,12 +115,35 @@ export class SupabaseHttpStorage implements IStorage {
 
   async upsertUser(userData: UpsertUser): Promise<User> {
     try {
-      // Map TypeScript fields (camelCase) to database fields (snake_case)
-      const dbData: any = {
-        id: userData.id,
-        updated_at: new Date().toISOString()
-      };
+      const replitId = userData.id; // This is the Replit ID
       
+      // First check if user exists by replit_id
+      const { data: existingUser, error: fetchError } = await this.supabase
+        .from('profiles')
+        .select('*')
+        .eq('replit_id', replitId)
+        .single();
+
+      let dbData: any;
+      
+      if (existingUser) {
+        // User exists, update with the existing UUID id
+        dbData = {
+          id: existingUser.id, // Keep the existing UUID
+          replit_id: replitId,
+          updated_at: new Date().toISOString()
+        };
+      } else {
+        // New user, generate a UUID for id
+        dbData = {
+          id: this.generateId(), // Generate new UUID
+          replit_id: replitId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+      
+      // Map TypeScript fields (camelCase) to database fields (snake_case)
       if (userData.email !== undefined) dbData.email = userData.email;
       if (userData.firstName !== undefined) dbData.first_name = userData.firstName;
       if (userData.lastName !== undefined) dbData.last_name = userData.lastName;
@@ -134,28 +157,13 @@ export class SupabaseHttpStorage implements IStorage {
 
       const { data, error } = await this.supabase
         .from('profiles')
-        .upsert(dbData, { onConflict: 'id' })
+        .upsert(dbData, { onConflict: 'replit_id' })
         .select()
         .single();
 
       if (error) throw error;
       
-      // Map database fields back to TypeScript fields
-      return {
-        id: data.id,
-        email: data.email,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        profileImageUrl: data.profile_image_url,
-        stripeCustomerId: data.stripe_customer_id,
-        stripeSubscriptionId: data.stripe_subscription_id,
-        subscriptionStatus: data.subscription_status,
-        userTier: data.user_tier || 'free',
-        designCredits: data.design_credits || 1,
-        isAdmin: data.is_admin || false,
-        createdAt: data.created_at ? new Date(data.created_at) : new Date(),
-        updatedAt: data.updated_at ? new Date(data.updated_at) : new Date()
-      };
+      return this.mapDbUserToUser(data);
     } catch (error) {
       console.error('Error in upsertUser:', error);
       // Fallback to return user data for auth to continue
@@ -177,7 +185,7 @@ export class SupabaseHttpStorage implements IStorage {
     }
   }
 
-  async updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User> {
+  async updateUserStripeInfo(replitId: string, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User> {
     try {
       const { data, error } = await this.supabase
         .from('profiles')
@@ -186,35 +194,20 @@ export class SupabaseHttpStorage implements IStorage {
           stripe_subscription_id: stripeSubscriptionId,
           updated_at: new Date().toISOString()
         })
-        .filter('id', 'eq', userId)
+        .eq('replit_id', replitId) // Query by replit_id
         .select()
         .single();
 
       if (error) throw error;
       
-      // Map database fields back to TypeScript fields
-      return {
-        id: data.id,
-        email: data.email,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        profileImageUrl: data.profile_image_url,
-        stripeCustomerId: data.stripe_customer_id,
-        stripeSubscriptionId: data.stripe_subscription_id,
-        subscriptionStatus: data.subscription_status,
-        userTier: data.user_tier || 'free',
-        designCredits: data.design_credits || 1,
-        isAdmin: data.is_admin || false,
-        createdAt: data.created_at ? new Date(data.created_at) : new Date(),
-        updatedAt: data.updated_at ? new Date(data.updated_at) : new Date()
-      };
+      return this.mapDbUserToUser(data);
     } catch (error) {
       console.error('Error updating user Stripe info:', error);
       throw error;
     }
   }
 
-  async updateUser(userId: string, data: Partial<User>): Promise<User> {
+  async updateUser(replitId: string, data: Partial<User>): Promise<User> {
     try {
       const updateData: any = {};
       
@@ -235,28 +228,13 @@ export class SupabaseHttpStorage implements IStorage {
       const { data: updatedUser, error } = await this.supabase
         .from('profiles')
         .update(updateData)
-        .filter('id', 'eq', userId)
+        .eq('replit_id', replitId) // Query by replit_id
         .select()
         .single();
 
       if (error) throw error;
       
-      // Map database fields back to TypeScript fields
-      return {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        firstName: updatedUser.first_name,
-        lastName: updatedUser.last_name,
-        profileImageUrl: updatedUser.profile_image_url,
-        stripeCustomerId: updatedUser.stripe_customer_id,
-        stripeSubscriptionId: updatedUser.stripe_subscription_id,
-        subscriptionStatus: updatedUser.subscription_status,
-        userTier: updatedUser.user_tier || 'free',
-        designCredits: updatedUser.design_credits || 1,
-        isAdmin: updatedUser.is_admin || false,
-        createdAt: updatedUser.created_at ? new Date(updatedUser.created_at) : new Date(),
-        updatedAt: updatedUser.updated_at ? new Date(updatedUser.updated_at) : new Date()
-      };
+      return this.mapDbUserToUser(updatedUser);
     } catch (error) {
       console.error('Error updating user:', error);
       throw error;
@@ -273,21 +251,7 @@ export class SupabaseHttpStorage implements IStorage {
       if (error) throw error;
       
       // Map database fields to TypeScript fields for each user
-      return (data || []).map(user => ({
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        profileImageUrl: user.profile_image_url,
-        stripeCustomerId: user.stripe_customer_id,
-        stripeSubscriptionId: user.stripe_subscription_id,
-        subscriptionStatus: user.subscription_status,
-        userTier: user.user_tier || 'free',
-        designCredits: user.design_credits || 1,
-        isAdmin: user.is_admin || false,
-        createdAt: user.created_at ? new Date(user.created_at) : new Date(),
-        updatedAt: user.updated_at ? new Date(user.updated_at) : new Date()
-      }));
+      return (data || []).map(user => this.mapDbUserToUser(user));
     } catch (error) {
       console.error('Error fetching all users:', error);
       return [];
