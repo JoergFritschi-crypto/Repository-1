@@ -4,3 +4,13 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Environment variables - NEVER commit these!
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# Security audit reports (may contain sensitive findings)
+*_AUDIT_*.md
