@@ -16,18 +16,22 @@ import { GardenDesignIcon, PlantLibraryIcon, PlantDoctorIcon, PremiumIcon } from
 import LazyImage from "@/components/ui/lazy-image";
 import RecentlyViewedPlants from "@/components/plant/recently-viewed-plants";
 import heroImage from '@assets/generated_images/Rudbeckia_Delphinium_Salvia_garden_e6d90be8.png';
+import type { Garden } from "@/types/garden";
+import type { UserPlantCollection } from "@/types/plant";
 
 const Home = memo(function Home() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const { t } = useTranslation();
   
-  const { data: gardens, isLoading: gardensLoading } = useQuery({
+  const { data: gardens = [], isLoading: gardensLoading } = useQuery<Garden[]>({
     queryKey: ["/api/gardens"],
+    select: (data) => Array.isArray(data) ? data : [],
   });
 
-  const { data: plantCollection, isLoading: collectionLoading } = useQuery({
+  const { data: plantCollection = [], isLoading: collectionLoading } = useQuery<UserPlantCollection[]>({
     queryKey: ["/api/my-collection"],
+    select: (data) => Array.isArray(data) ? data : [],
   });
   
   const handlePlantClick = (plant: any) => {
@@ -170,9 +174,9 @@ const Home = memo(function Home() {
               <CardContent>
                 {gardensLoading ? (
                   <SkeletonList count={3} showIcon={false} showActions={true} />
-                ) : gardens && gardens.length > 0 ? (
+                ) : gardens.length > 0 ? (
                   <div className="space-y-2">
-                    {gardens.slice(0, 3).map((garden: any) => (
+                    {gardens.slice(0, 3).map((garden) => (
                       <div key={garden.id} className="flex items-center justify-between p-3 border border-border rounded-lg" data-testid={`garden-item-${garden.id}`}>
                         <div>
                           <h3 className="text-sm font-medium" data-testid={`text-garden-name-${garden.id}`}>{garden.name}</h3>
@@ -271,9 +275,9 @@ const Home = memo(function Home() {
               <CardContent>
                 {collectionLoading ? (
                   <SkeletonList count={3} showIcon={true} showActions={false} />
-                ) : plantCollection && plantCollection.length > 0 ? (
+                ) : plantCollection.length > 0 ? (
                   <div className="space-y-2">
-                    {plantCollection.slice(0, 3).map((item: any) => (
+                    {plantCollection.slice(0, 3).map((item) => (
                       <div key={item.id} className="flex items-center space-x-2 p-1.5 rounded" data-testid={`collection-item-${item.id}`}>
                         <div className="w-6 h-6 bg-accent rounded-full flex-shrink-0"></div>
                         <div className="flex-1 min-w-0">
