@@ -66,10 +66,32 @@ export class SupabaseHttpStorage implements IStorage {
            (Math.random().toString(36).substring(2) + Date.now().toString(36));
   }
 
+  // Helper method to resolve profile UUID from replit_id
+  private async resolveProfileId(replitId: string): Promise<string | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from('profiles')
+        .select('id')
+        .eq('replit_id', replitId)
+        .single();
+
+      if (error?.code === 'PGRST116') return null; // Not found
+      if (error) {
+        console.error('Error resolving profile ID:', error);
+        return null;
+      }
+
+      return data?.id || null;
+    } catch (error) {
+      console.error('Error in resolveProfileId:', error);
+      return null;
+    }
+  }
+
   // Helper method to map database user to User type
   private mapDbUserToUser(data: any): User {
     return {
-      id: data.replit_id || data.id, // Use replit_id as the main ID for the app
+      id: data.id, // Use the actual UUID from the database
       email: data.email,
       firstName: data.first_name,
       lastName: data.last_name,
@@ -307,12 +329,19 @@ export class SupabaseHttpStorage implements IStorage {
     }
   }
 
-  async getUserGardens(userId: string): Promise<Garden[]> {
+  async getUserGardens(replitId: string): Promise<Garden[]> {
     try {
+      // Resolve the replit_id to the actual profile UUID
+      const profileId = await this.resolveProfileId(replitId);
+      if (!profileId) {
+        console.log(`No profile found for replit_id: ${replitId}`);
+        return [];
+      }
+
       const { data, error } = await this.supabase
         .from('gardens')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', profileId) // Use the resolved UUID
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -325,9 +354,15 @@ export class SupabaseHttpStorage implements IStorage {
 
   async createGarden(garden: InsertGarden): Promise<Garden> {
     try {
+      // Resolve the replit_id to the actual profile UUID
+      const profileId = await this.resolveProfileId(garden.userId);
+      if (!profileId) {
+        throw new Error(`No profile found for replit_id: ${garden.userId}`);
+      }
+
       const gardenData: any = {
         id: this.generateId(),
-        user_id: garden.userId,
+        user_id: profileId, // Use the resolved UUID
         name: garden.name,
         location: garden.location,
         units: garden.units || 'metric',
