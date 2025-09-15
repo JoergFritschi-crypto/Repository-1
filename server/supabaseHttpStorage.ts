@@ -65,15 +65,35 @@ export class SupabaseHttpStorage implements IStorage {
            (Math.random().toString(36).substring(2) + Date.now().toString(36));
   }
 
+  // Helper method to map database user to User type
+  private mapDbUserToUser(data: any): User {
+    return {
+      id: data.id,
+      email: data.email,
+      firstName: data.first_name,
+      lastName: data.last_name,
+      profileImageUrl: data.profile_image_url,
+      stripeCustomerId: data.stripe_customer_id,
+      stripeSubscriptionId: data.stripe_subscription_id,
+      subscriptionStatus: data.subscription_status,
+      userTier: data.user_tier || 'free',
+      designCredits: data.design_credits || 1,
+      isAdmin: data.is_admin || false,
+      createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+      updatedAt: data.updated_at ? new Date(data.updated_at) : new Date()
+    };
+  }
+
   // ==================== USER OPERATIONS ====================
   // CRITICAL for Replit Auth - these must work correctly
 
   async getUser(id: string): Promise<User | undefined> {
     try {
+      // Use match to avoid UUID casting issues - match works with text columns
       const { data, error } = await this.supabase
         .from('profiles')
         .select('*')
-        .eq('id', id)
+        .match({ id: id })
         .single();
 
       if (error?.code === 'PGRST116') return undefined; // Not found
@@ -82,23 +102,8 @@ export class SupabaseHttpStorage implements IStorage {
         return undefined;
       }
 
-      // Map database fields (snake_case) to TypeScript fields (camelCase)
       if (data) {
-        return {
-          id: data.id,
-          email: data.email,
-          firstName: data.first_name,
-          lastName: data.last_name,
-          profileImageUrl: data.profile_image_url,
-          stripeCustomerId: data.stripe_customer_id,
-          stripeSubscriptionId: data.stripe_subscription_id,
-          subscriptionStatus: data.subscription_status,
-          userTier: data.user_tier || 'free',
-          designCredits: data.design_credits || 1,
-          isAdmin: data.is_admin || false,
-          createdAt: data.created_at ? new Date(data.created_at) : new Date(),
-          updatedAt: data.updated_at ? new Date(data.updated_at) : new Date()
-        };
+        return this.mapDbUserToUser(data);
       }
 
       return undefined;
@@ -181,7 +186,7 @@ export class SupabaseHttpStorage implements IStorage {
           stripe_subscription_id: stripeSubscriptionId,
           updated_at: new Date().toISOString()
         })
-        .eq('id', userId)
+        .filter('id', 'eq', userId)
         .select()
         .single();
 
@@ -230,7 +235,7 @@ export class SupabaseHttpStorage implements IStorage {
       const { data: updatedUser, error } = await this.supabase
         .from('profiles')
         .update(updateData)
-        .eq('id', userId)
+        .filter('id', 'eq', userId)
         .select()
         .single();
 
