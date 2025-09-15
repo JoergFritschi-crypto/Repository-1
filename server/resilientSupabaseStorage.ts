@@ -1319,39 +1319,855 @@ export class ResilientSupabaseStorage implements IStorage {
     // Implementation would follow same pattern
   }
 
+  // ==================== SECURITY OPERATIONS ====================
+
+  async createSecurityAuditLog(log: InsertSecurityAuditLog): Promise<SecurityAuditLog> {
+    const operation = async () => {
+      const { data, error } = await this.supabase
+        .from('security_audit_logs')
+        .insert({
+          id: this.generateId(),
+          user_id: log.userId,
+          event_type: log.eventType,
+          severity: log.severity,
+          event_description: log.eventDescription,
+          ip_address: log.ipAddress,
+          user_agent: log.userAgent,
+          metadata: log.metadata,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'createSecurityAuditLog',
+        operation,
+        this.circuitBreaker,
+        QUICK_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to create security audit log:', error.message);
+      throw error;
+    }
+  }
+
+  async getSecurityAuditLogs(filters?: { userId?: string; eventType?: string; severity?: string; startDate?: Date; endDate?: Date; limit?: number }): Promise<SecurityAuditLog[]> {
+    const operation = async () => {
+      let queryBuilder = this.supabase
+        .from('security_audit_logs')
+        .select('*');
+
+      if (filters?.userId) {
+        queryBuilder = queryBuilder.eq('user_id', filters.userId);
+      }
+      if (filters?.eventType) {
+        queryBuilder = queryBuilder.eq('event_type', filters.eventType);
+      }
+      if (filters?.severity) {
+        queryBuilder = queryBuilder.eq('severity', filters.severity);
+      }
+      if (filters?.startDate) {
+        queryBuilder = queryBuilder.gte('created_at', filters.startDate.toISOString());
+      }
+      if (filters?.endDate) {
+        queryBuilder = queryBuilder.lte('created_at', filters.endDate.toISOString());
+      }
+
+      queryBuilder = queryBuilder.order('created_at', { ascending: false });
+      
+      if (filters?.limit) {
+        queryBuilder = queryBuilder.limit(filters.limit);
+      }
+
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+      return data || [];
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getSecurityAuditLogs',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get security audit logs:', error.message);
+      return [];
+    }
+  }
+
+  async recordFailedLoginAttempt(attempt: InsertFailedLoginAttempt): Promise<FailedLoginAttempt> {
+    const operation = async () => {
+      // Check for existing record
+      const { data: existing, error: fetchError } = await this.supabase
+        .from('failed_login_attempts')
+        .select('*')
+        .eq('ip_address', attempt.ipAddress)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+
+      if (existing) {
+        // Update existing record
+        const { data, error } = await this.supabase
+          .from('failed_login_attempts')
+          .update({
+            attempt_count: existing.attempt_count + 1,
+            last_attempt: new Date().toISOString(),
+            attempted_email: attempt.attemptedEmail,
+            user_agent: attempt.userAgent
+          })
+          .eq('id', existing.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } else {
+        // Create new record
+        const { data, error } = await this.supabase
+          .from('failed_login_attempts')
+          .insert({
+            id: this.generateId(),
+            ip_address: attempt.ipAddress,
+            attempted_email: attempt.attemptedEmail,
+            user_agent: attempt.userAgent,
+            attempt_count: 1,
+            last_attempt: new Date().toISOString(),
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'recordFailedLoginAttempt',
+        operation,
+        this.circuitBreaker,
+        CRITICAL_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to record failed login attempt:', error.message);
+      throw error;
+    }
+  }
+
+  async getFailedLoginAttempts(ipAddress?: string): Promise<FailedLoginAttempt[]> {
+    const operation = async () => {
+      let queryBuilder = this.supabase
+        .from('failed_login_attempts')
+        .select('*');
+
+      if (ipAddress) {
+        queryBuilder = queryBuilder.eq('ip_address', ipAddress);
+      }
+
+      queryBuilder = queryBuilder.order('last_attempt', { ascending: false });
+
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+      return data || [];
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getFailedLoginAttempts',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get failed login attempts:', error.message);
+      return [];
+    }
+  }
+
+  async clearFailedLoginAttempts(ipAddress: string): Promise<void> {
+    const operation = async () => {
+      const { error } = await this.supabase
+        .from('failed_login_attempts')
+        .delete()
+        .eq('ip_address', ipAddress);
+
+      if (error) throw error;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'clearFailedLoginAttempts',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to clear failed login attempts:', error.message);
+      throw error;
+    }
+  }
+
+  async createActiveSession(session: InsertActiveSession): Promise<ActiveSession> {
+    const operation = async () => {
+      const { data, error } = await this.supabase
+        .from('active_sessions')
+        .insert({
+          id: this.generateId(),
+          user_id: session.userId,
+          session_id: session.sessionId,
+          ip_address: session.ipAddress,
+          user_agent: session.userAgent,
+          last_activity: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'createActiveSession',
+        operation,
+        this.circuitBreaker,
+        CRITICAL_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to create active session:', error.message);
+      throw error;
+    }
+  }
+
+  async getActiveSessions(userId?: string): Promise<ActiveSession[]> {
+    const operation = async () => {
+      let queryBuilder = this.supabase
+        .from('active_sessions')
+        .select('*')
+        .eq('is_active', true);
+
+      if (userId) {
+        queryBuilder = queryBuilder.eq('user_id', userId);
+      }
+
+      queryBuilder = queryBuilder.order('last_activity', { ascending: false });
+
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+      return data || [];
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getActiveSessions',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get active sessions:', error.message);
+      return [];
+    }
+  }
+
+  async updateSessionActivity(sessionId: string): Promise<void> {
+    const operation = async () => {
+      const { error } = await this.supabase
+        .from('active_sessions')
+        .update({ last_activity: new Date().toISOString() })
+        .eq('session_id', sessionId);
+
+      if (error) throw error;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'updateSessionActivity',
+        operation,
+        this.circuitBreaker,
+        QUICK_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to update session activity:', error.message);
+      // Don't throw for session activity updates
+    }
+  }
+
+  async revokeSession(sessionId: string, revokedBy: string): Promise<void> {
+    const operation = async () => {
+      const { error } = await this.supabase
+        .from('active_sessions')
+        .update({ 
+          is_active: false,
+          revoked_by: revokedBy,
+          revoked_at: new Date().toISOString()
+        })
+        .eq('session_id', sessionId);
+
+      if (error) throw error;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'revokeSession',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to revoke session:', error.message);
+      throw error;
+    }
+  }
+
+  async cleanupExpiredSessions(): Promise<number> {
+    const operation = async () => {
+      // Mark sessions as inactive if no activity for 24 hours
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      
+      const { data, error } = await this.supabase
+        .from('active_sessions')
+        .update({ is_active: false })
+        .lt('last_activity', oneDayAgo.toISOString())
+        .eq('is_active', true)
+        .select('id');
+
+      if (error) throw error;
+      return data?.length || 0;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'cleanupExpiredSessions',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to cleanup expired sessions:', error.message);
+      return 0;
+    }
+  }
+
+  async addIpAccessControl(control: InsertIpAccessControl): Promise<IpAccessControl> {
+    const operation = async () => {
+      const { data, error } = await this.supabase
+        .from('ip_access_control')
+        .insert({
+          id: this.generateId(),
+          ip_address: control.ipAddress,
+          type: control.type,
+          reason: control.reason,
+          added_by: control.addedBy,
+          expires_at: control.expiresAt,
+          is_active: true,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'addIpAccessControl',
+        operation,
+        this.circuitBreaker,
+        CRITICAL_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to add IP access control:', error.message);
+      throw error;
+    }
+  }
+
+  async getIpAccessControl(type?: 'block' | 'allow'): Promise<IpAccessControl[]> {
+    const operation = async () => {
+      let queryBuilder = this.supabase
+        .from('ip_access_control')
+        .select('*')
+        .eq('is_active', true);
+
+      if (type) {
+        queryBuilder = queryBuilder.eq('type', type);
+      }
+
+      const { data, error } = await queryBuilder.order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getIpAccessControl',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get IP access control:', error.message);
+      return [];
+    }
+  }
+
+  async checkIpAccess(ipAddress: string): Promise<{ allowed: boolean; reason?: string }> {
+    const operation = async () => {
+      const { data: controls, error } = await this.supabase
+        .from('ip_access_control')
+        .select('*')
+        .eq('ip_address', ipAddress)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      const blockedControl = controls?.find(c => c.type === 'block');
+      if (blockedControl) {
+        return { allowed: false, reason: blockedControl.reason };
+      }
+
+      const allowedControl = controls?.find(c => c.type === 'allow');
+      if (allowedControl) {
+        return { allowed: true };
+      }
+
+      return { allowed: true };
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'checkIpAccess',
+        operation,
+        this.circuitBreaker,
+        QUICK_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to check IP access:', error.message);
+      return { allowed: true }; // Default to allowed on error
+    }
+  }
+
+  async removeIpAccessControl(id: string): Promise<void> {
+    const operation = async () => {
+      const { error } = await this.supabase
+        .from('ip_access_control')
+        .update({ is_active: false })
+        .eq('id', id);
+
+      if (error) throw error;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'removeIpAccessControl',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to remove IP access control:', error.message);
+      throw error;
+    }
+  }
+
   async getSecuritySettings(): Promise<SecuritySetting[]> {
-    // Implementation would follow same pattern
-    return [];
+    const operation = async () => {
+      const { data, error } = await this.supabase
+        .from('security_settings')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getSecuritySettings',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get security settings:', error.message);
+      return [];
+    }
   }
 
-  async updateSecuritySetting(key: string, data: Partial<InsertSecuritySetting>): Promise<SecuritySetting> {
-    // Implementation would follow same pattern
-    throw new Error('Not implemented');
+  async updateSecuritySetting(key: string, value: any, updatedBy: string): Promise<SecuritySetting> {
+    const operation = async () => {
+      const { data: existing, error: fetchError } = await this.supabase
+        .from('security_settings')
+        .select('*')
+        .eq('key', key)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+
+      if (existing) {
+        // Update existing setting
+        const { data, error } = await this.supabase
+          .from('security_settings')
+          .update({
+            value: value,
+            updated_by: updatedBy,
+            updated_at: new Date().toISOString()
+          })
+          .eq('key', key)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } else {
+        // Create new setting
+        const { data, error } = await this.supabase
+          .from('security_settings')
+          .insert({
+            id: this.generateId(),
+            key: key,
+            value: value,
+            updated_by: updatedBy,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'updateSecuritySetting',
+        operation,
+        this.circuitBreaker,
+        CRITICAL_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to update security setting:', error.message);
+      throw error;
+    }
   }
 
-  async createRateLimitViolation(violation: InsertRateLimitViolation): Promise<RateLimitViolation> {
-    // Implementation would follow same pattern
-    throw new Error('Not implemented');
+  async recordRateLimitViolation(violation: InsertRateLimitViolation): Promise<RateLimitViolation> {
+    const operation = async () => {
+      const { data, error } = await this.supabase
+        .from('rate_limit_violations')
+        .insert({
+          id: this.generateId(),
+          ip_address: violation.ipAddress,
+          endpoint: violation.endpoint,
+          attempt_count: violation.attemptCount,
+          window_start: violation.windowStart.toISOString(),
+          last_attempt: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'recordRateLimitViolation',
+        operation,
+        this.circuitBreaker,
+        CRITICAL_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to record rate limit violation:', error.message);
+      throw error;
+    }
   }
 
-  async getRateLimitViolations(filters?: any): Promise<RateLimitViolation[]> {
-    // Implementation would follow same pattern
-    return [];
+  async getRateLimitViolations(filters?: { ipAddress?: string; endpoint?: string; startDate?: Date }): Promise<RateLimitViolation[]> {
+    const operation = async () => {
+      let queryBuilder = this.supabase
+        .from('rate_limit_violations')
+        .select('*');
+
+      if (filters?.ipAddress) {
+        queryBuilder = queryBuilder.eq('ip_address', filters.ipAddress);
+      }
+      if (filters?.endpoint) {
+        queryBuilder = queryBuilder.eq('endpoint', filters.endpoint);
+      }
+      if (filters?.startDate) {
+        queryBuilder = queryBuilder.gte('created_at', filters.startDate.toISOString());
+      }
+
+      queryBuilder = queryBuilder.order('created_at', { ascending: false });
+
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+      return data || [];
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getRateLimitViolations',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get rate limit violations:', error.message);
+      return [];
+    }
   }
 
-  async getSecurityRecommendations(): Promise<SecurityRecommendation[]> {
-    // Implementation would follow same pattern
-    return [];
+  async getSecurityRecommendations(status?: string): Promise<SecurityRecommendation[]> {
+    const operation = async () => {
+      let queryBuilder = this.supabase
+        .from('security_recommendations')
+        .select('*');
+
+      if (status) {
+        queryBuilder = queryBuilder.eq('status', status);
+      }
+
+      queryBuilder = queryBuilder.order('created_at', { ascending: false });
+
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+      return data || [];
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getSecurityRecommendations',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get security recommendations:', error.message);
+      return [];
+    }
   }
 
-  async updateSecurityRecommendation(id: string, data: Partial<InsertSecurityRecommendation>): Promise<SecurityRecommendation> {
-    // Implementation would follow same pattern
-    throw new Error('Not implemented');
+  async updateRecommendationStatus(id: string, status: string, dismissedBy?: string): Promise<SecurityRecommendation> {
+    const operation = async () => {
+      const updateData: any = {
+        status: status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (dismissedBy) {
+        updateData.dismissed_by = dismissedBy;
+        updateData.dismissed_at = new Date().toISOString();
+      }
+
+      const { data, error } = await this.supabase
+        .from('security_recommendations')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'updateRecommendationStatus',
+        operation,
+        this.circuitBreaker,
+        DEFAULT_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to update recommendation status:', error.message);
+      throw error;
+    }
   }
 
-  async getSecurityStats(): Promise<any> {
-    // Implementation would follow same pattern
-    return {};
+  async createSecurityRecommendation(recommendation: InsertSecurityRecommendation): Promise<SecurityRecommendation> {
+    const operation = async () => {
+      const { data, error } = await this.supabase
+        .from('security_recommendations')
+        .insert({
+          id: this.generateId(),
+          title: recommendation.title,
+          description: recommendation.description,
+          severity: recommendation.severity,
+          category: recommendation.category,
+          status: 'pending',
+          priority: recommendation.priority || 0,
+          implementation_guide: recommendation.implementationGuide,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'createSecurityRecommendation',
+        operation,
+        this.circuitBreaker,
+        CRITICAL_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to create security recommendation:', error.message);
+      throw error;
+    }
+  }
+
+  async getSecurityStats(): Promise<{
+    totalUsers: number;
+    activeSessionsCount: number;
+    failedLoginsLast24h: number;
+    blockedIpsCount: number;
+    securityScore: number;
+    recentEvents: SecurityAuditLog[];
+  }> {
+    try {
+      // Get multiple stats in parallel with circuit breaker protection
+      const [
+        totalUsersOp,
+        activeSessionsOp,
+        failedLoginsOp,
+        blockedIpsOp,
+        recentEventsOp
+      ] = await Promise.allSettled([
+        this.getTotalUsers(),
+        this.getActiveSessions(),
+        this.getFailedLoginAttempts(),
+        this.getIpAccessControl('block'),
+        this.getSecurityAuditLogs({ limit: 10 })
+      ]);
+
+      const totalUsers = totalUsersOp.status === 'fulfilled' ? totalUsersOp.value : 0;
+      const activeSessions = activeSessionsOp.status === 'fulfilled' ? activeSessionsOp.value.length : 0;
+      const failedLogins = failedLoginsOp.status === 'fulfilled' ? failedLoginsOp.value : [];
+      const blockedIps = blockedIpsOp.status === 'fulfilled' ? blockedIpsOp.value.length : 0;
+      const recentEvents = recentEventsOp.status === 'fulfilled' ? recentEventsOp.value : [];
+
+      // Calculate failed logins in last 24 hours
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const failedLoginsLast24h = failedLogins.filter(attempt => 
+        attempt.lastAttempt && new Date(attempt.lastAttempt) >= twentyFourHoursAgo
+      ).length;
+
+      // Calculate security score based on various factors
+      let securityScore = 100;
+      
+      // Database health impact
+      if (!this.isHealthy) {
+        securityScore -= 30;
+      }
+      
+      // Circuit breaker impact
+      const circuitStatus = this.getCircuitBreakerStatus();
+      if (circuitStatus.state === 'OPEN') {
+        securityScore -= 20;
+      } else if (circuitStatus.state === 'HALF_OPEN') {
+        securityScore -= 10;
+      }
+      
+      // Failed login attempts impact
+      if (failedLoginsLast24h > 10) securityScore -= 10;
+      if (failedLoginsLast24h > 50) securityScore -= 20;
+      
+      // Blocked IPs impact
+      if (blockedIps > 5) securityScore -= 5;
+      if (blockedIps > 20) securityScore -= 10;
+
+      return {
+        totalUsers,
+        activeSessionsCount: activeSessions,
+        failedLoginsLast24h,
+        blockedIpsCount: blockedIps,
+        securityScore: Math.max(0, securityScore),
+        recentEvents
+      };
+    } catch (error: any) {
+      console.error('Failed to get security stats:', error.message);
+      return {
+        totalUsers: 0,
+        activeSessionsCount: 0,
+        failedLoginsLast24h: 0,
+        blockedIpsCount: 0,
+        securityScore: 0,
+        recentEvents: []
+      };
+    }
+  }
+
+  private async getTotalUsers(): Promise<number> {
+    const operation = async () => {
+      const { data, error } = await this.supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true });
+
+      if (error) throw error;
+      return data?.length || 0;
+    };
+
+    try {
+      const resilientOp = createResilientOperation(
+        'getTotalUsers',
+        operation,
+        this.circuitBreaker,
+        QUICK_RETRY_OPTIONS
+      );
+      return await resilientOp();
+    } catch (error: any) {
+      console.error('Failed to get total users:', error.message);
+      return 0;
+    }
+  }
+
+  // Legacy method name support
+  async getIpAccessControls(): Promise<IpAccessControl[]> {
+    return this.getIpAccessControl();
   }
 
   /**

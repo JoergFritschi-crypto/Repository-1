@@ -128,6 +128,80 @@ interface SecurityRecommendation {
   dismissedBy?: string;
 }
 
+interface EnhancedHealthData {
+  timestamp: string;
+  database: {
+    status: string;
+    circuitBreaker: any;
+    isHealthy: boolean;
+    lastHealthCheck: string | null;
+    fallbackActive: boolean;
+  };
+  security: {
+    totalActiveThreats: number;
+    recentFailedLogins: number;
+    blockedIpsCount: number;
+    rlsStatus: string;
+    connectionSecurity: string;
+  };
+  apis: {
+    responseTime: number;
+    errorRate: number;
+    availability: number;
+  };
+}
+
+interface CircuitBreakerStatus {
+  state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' | 'NOT_AVAILABLE';
+  isHealthy: boolean;
+  failureCount: number;
+  lastFailureTime: string | null;
+  nextAttemptTime: string | null;
+  message: string;
+}
+
+interface DatabaseSecurityStatus {
+  connectionStatus: string;
+  rlsPolicies: Array<{
+    table: string;
+    status: string;
+    policy: string;
+  }>;
+  recentSecurityEvents: Array<{
+    id: string;
+    eventType: string;
+    severity: string;
+    timestamp: string;
+    description: string;
+    ipAddress?: string;
+  }>;
+  connectionSecurity: string;
+  encryptionStatus: string;
+}
+
+interface ThreatDetection {
+  id: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  ipAddress?: string;
+  detectedAt: string;
+  status: string;
+  metadata?: any;
+}
+
+interface ServiceConfiguration {
+  name: string;
+  displayName: string;
+  enabled: boolean;
+  critical: boolean;
+  purpose: string;
+  status: 'connected' | 'disconnected' | 'degraded';
+  responseTime?: number;
+  errorMessage?: string;
+  metadata?: any;
+}
+
 export function SecuritySettings() {
   const [activeTab, setActiveTab] = useState('overview');
   const [auditLogFilters, setAuditLogFilters] = useState({
@@ -206,6 +280,36 @@ export function SecuritySettings() {
   // Fetch security recommendations
   const { data: recommendations, isLoading: recommendationsLoading } = useQuery<SecurityRecommendation[]>({
     queryKey: ['/api/admin/security/recommendations']
+  });
+
+  // Fetch enhanced health data
+  const { data: healthData, isLoading: healthLoading } = useQuery<EnhancedHealthData>({
+    queryKey: ['/api/admin/security/health'],
+    refetchInterval: 15000 // Refresh every 15 seconds
+  });
+
+  // Fetch circuit breaker status
+  const { data: circuitBreakerStatus, isLoading: circuitBreakerLoading } = useQuery<CircuitBreakerStatus>({
+    queryKey: ['/api/admin/security/circuit-breaker'],
+    refetchInterval: 10000 // Refresh every 10 seconds
+  });
+
+  // Fetch database security status
+  const { data: databaseSecurity, isLoading: databaseSecurityLoading } = useQuery<DatabaseSecurityStatus>({
+    queryKey: ['/api/admin/security/database-status'],
+    refetchInterval: 20000 // Refresh every 20 seconds
+  });
+
+  // Fetch real-time threats
+  const { data: threats, isLoading: threatsLoading } = useQuery<ThreatDetection[]>({
+    queryKey: ['/api/admin/security/threats'],
+    refetchInterval: 5000 // Refresh every 5 seconds for real-time monitoring
+  });
+
+  // Fetch service configuration and status
+  const { data: services, isLoading: servicesLoading } = useQuery<ServiceConfiguration[]>({
+    queryKey: ['/api/admin/security/services'],
+    refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   // Mutations
@@ -355,8 +459,8 @@ export function SecuritySettings() {
 
   return (
     <div className="space-y-6">
-      {/* Security Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Enhanced Security Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="bg-gradient-to-br from-green-50 to-white dark:from-green-950 dark:to-gray-900">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -382,68 +486,377 @@ export function SecuritySettings() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium">Active Threats</CardTitle>
-              <AlertTriangle className={`h-5 w-5 ${(stats?.activeThreats ?? 0) > 0 ? 'text-red-500' : 'text-green-500'}`} />
+              <AlertTriangle className={`h-5 w-5 ${(threats?.length ?? 0) > 0 ? 'text-red-500' : 'text-green-500'}`} />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats?.activeThreats || 0}</div>
+            <div className="text-3xl font-bold">{threats?.length || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {stats?.failedLogins24h || 0} failed logins (24h)
+              {healthData?.security.recentFailedLogins || 0} failed logins (24h)
             </p>
           </CardContent>
         </Card>
 
-        <Card data-testid="card-active-sessions">
+        <Card data-testid="card-database-health">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
-              <Users className="h-5 w-5 text-blue-500" />
+              <CardTitle className="text-sm font-medium">Database Health</CardTitle>
+              <Database className={`h-5 w-5 ${healthData?.database.isHealthy ? 'text-green-500' : 'text-red-500'}`} />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats?.totalSessions || 0}</div>
+            <div className={`text-lg font-bold ${healthData?.database.isHealthy ? 'text-green-600' : 'text-red-600'}`}>
+              {healthData?.database.status?.toUpperCase() || 'UNKNOWN'}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {stats?.blockedIps || 0} IPs blocked
+              {healthData?.database.fallbackActive ? 'Fallback Active' : 'Primary Connection'}
             </p>
           </CardContent>
         </Card>
 
-        <Card data-testid="card-audit-activity">
+        <Card data-testid="card-circuit-breaker">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Audit Activity</CardTitle>
-              <Activity className="h-5 w-5 text-purple-500" />
+              <CardTitle className="text-sm font-medium">Circuit Breaker</CardTitle>
+              <Zap className={`h-5 w-5 ${
+                circuitBreakerStatus?.state === 'CLOSED' ? 'text-green-500' :
+                circuitBreakerStatus?.state === 'OPEN' ? 'text-red-500' :
+                circuitBreakerStatus?.state === 'HALF_OPEN' ? 'text-yellow-500' :
+                'text-gray-500'
+              }`} />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats?.auditLogsToday || 0}</div>
+            <div className={`text-lg font-bold ${
+              circuitBreakerStatus?.state === 'CLOSED' ? 'text-green-600' :
+              circuitBreakerStatus?.state === 'OPEN' ? 'text-red-600' :
+              circuitBreakerStatus?.state === 'HALF_OPEN' ? 'text-yellow-600' :
+              'text-gray-600'
+            }`}>
+              {circuitBreakerStatus?.state || 'UNKNOWN'}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Events today
+              {circuitBreakerStatus?.failureCount || 0} failures
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-api-health">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium">API Health</CardTitle>
+              <Globe className={`h-5 w-5 ${(healthData?.apis.availability ?? 0) > 95 ? 'text-green-500' : 'text-yellow-500'}`} />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {healthData?.apis.availability?.toFixed(1) || '0.0'}%
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {healthData?.apis.responseTime || 0}ms avg response
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Security Alerts */}
-      {(stats?.activeThreats ?? 0) > 0 && (
+      {/* Enhanced Security Alerts with Real-time Threat Detection */}
+      {((threats?.length ?? 0) > 0 || circuitBreakerStatus?.state === 'OPEN' || !healthData?.database.isHealthy) && (
         <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
           <AlertCircle className="h-4 w-4 text-red-600" />
-          <AlertTitle>Security Alerts</AlertTitle>
+          <AlertTitle>🚨 Active Security Alerts</AlertTitle>
           <AlertDescription>
             <ul className="mt-2 space-y-1 text-sm">
-              {(stats?.failedLogins24h ?? 0) > 10 && (
-                <li>• High number of failed login attempts detected ({stats?.failedLogins24h} in last 24h)</li>
+              {circuitBreakerStatus?.state === 'OPEN' && (
+                <li className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-red-500" />
+                  <strong>CRITICAL:</strong> Database circuit breaker is OPEN - system experiencing failures
+                </li>
               )}
-              {(stats?.rateLimitViolations ?? 0) > 50 && (
-                <li>• Excessive rate limit violations detected ({stats?.rateLimitViolations})</li>
+              {!healthData?.database.isHealthy && (
+                <li className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-red-500" />
+                  <strong>CRITICAL:</strong> Database health check failed - fallback mode active
+                </li>
               )}
-              {(stats?.blockedIps ?? 0) > 5 && (
-                <li>• Multiple IPs have been blocked ({stats?.blockedIps})</li>
+              {threats?.filter(t => t.severity === 'critical').map(threat => (
+                <li key={threat.id} className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                  <strong>CRITICAL:</strong> {threat.description}
+                </li>
+              ))}
+              {threats?.filter(t => t.severity === 'high').map(threat => (
+                <li key={threat.id} className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-orange-500" />
+                  <strong>HIGH:</strong> {threat.description}
+                </li>
+              ))}
+              {(healthData?.apis.availability ?? 100) < 95 && (
+                <li className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-yellow-500" />
+                  <strong>WARNING:</strong> API availability below 95% ({healthData?.apis.availability?.toFixed(1)}%)
+                </li>
               )}
             </ul>
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Real-time System Status Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Real-time Security System Status
+          </CardTitle>
+          <CardDescription>
+            Live monitoring of all security systems and components
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Database & Circuit Breaker Health */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                Database Security Status
+              </h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Connection Status:</span>
+                  <Badge variant={databaseSecurity?.connectionStatus === 'healthy' ? 'default' : 'destructive'}>
+                    {databaseSecurity?.connectionStatus?.toUpperCase() || 'UNKNOWN'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Security:</span>
+                  <Badge variant={databaseSecurity?.connectionSecurity === 'secure' ? 'default' : 'destructive'}>
+                    {databaseSecurity?.connectionSecurity?.toUpperCase() || 'UNKNOWN'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Encryption:</span>
+                  <Badge variant="default">
+                    {databaseSecurity?.encryptionStatus || 'TLS_1.3'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">RLS Policies:</span>
+                  <Badge variant="default">
+                    {databaseSecurity?.rlsPolicies?.filter(p => p.status === 'active').length || 0} Active
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Circuit Breaker Status
+              </h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">State:</span>
+                  <Badge variant={
+                    circuitBreakerStatus?.state === 'CLOSED' ? 'default' :
+                    circuitBreakerStatus?.state === 'OPEN' ? 'destructive' :
+                    circuitBreakerStatus?.state === 'HALF_OPEN' ? 'secondary' :
+                    'outline'
+                  }>
+                    {circuitBreakerStatus?.state || 'UNKNOWN'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Health:</span>
+                  <Badge variant={circuitBreakerStatus?.isHealthy ? 'default' : 'destructive'}>
+                    {circuitBreakerStatus?.isHealthy ? 'HEALTHY' : 'DEGRADED'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Failure Count:</span>
+                  <span className="text-sm font-medium">{circuitBreakerStatus?.failureCount || 0}</span>
+                </div>
+                {circuitBreakerStatus?.lastFailureTime && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Last Failure:</span>
+                    <span className="text-xs">{format(new Date(circuitBreakerStatus.lastFailureTime), 'PPp')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* API Health & Performance */}
+          <div>
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              API Health & Performance
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-3 border rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {healthData?.apis.availability?.toFixed(1) || '0.0'}%
+                </div>
+                <div className="text-xs text-muted-foreground">Availability</div>
+              </div>
+              <div className="text-center p-3 border rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {healthData?.apis.responseTime || 0}ms
+                </div>
+                <div className="text-xs text-muted-foreground">Avg Response Time</div>
+              </div>
+              <div className="text-center p-3 border rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">
+                  {healthData?.apis.errorRate || 0}%
+                </div>
+                <div className="text-xs text-muted-foreground">Error Rate</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Real-time Threat Detection & Supabase Security Monitoring */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Active Threats Detection */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Real-time Threat Detection
+              <Badge variant={threats?.length ? 'destructive' : 'default'}>
+                {threats?.length || 0} Active
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Live monitoring of security threats and suspicious activities
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px]">
+              <div className="space-y-3">
+                {threats?.length ? threats.map((threat) => (
+                  <div key={threat.id} className="p-3 border rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant={
+                            threat.severity === 'critical' ? 'destructive' :
+                            threat.severity === 'high' ? 'destructive' :
+                            threat.severity === 'medium' ? 'secondary' :
+                            'default'
+                          }>
+                            {threat.severity.toUpperCase()}
+                          </Badge>
+                          <span className="text-sm font-medium">{threat.type.replace(/_/g, ' ')}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{threat.description}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                          <span>🕒 {format(new Date(threat.detectedAt), 'PPp')}</span>
+                          {threat.ipAddress && <span>🌐 {threat.ipAddress}</span>}
+                          <span>📊 {threat.status}</span>
+                        </div>
+                      </div>
+                      <AlertTriangle className={`h-4 w-4 ${
+                        threat.severity === 'critical' ? 'text-red-500' :
+                        threat.severity === 'high' ? 'text-orange-500' :
+                        threat.severity === 'medium' ? 'text-yellow-500' :
+                        'text-blue-500'
+                      }`} />
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-center py-8">
+                    <ShieldCheck className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                    <h3 className="text-sm font-medium text-green-700">No Active Threats</h3>
+                    <p className="text-xs text-muted-foreground">Your system is secure and monitoring normally</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        {/* Supabase Security Compliance */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-blue-500" />
+              Supabase Security Compliance
+              <Badge variant="default">
+                {databaseSecurity?.rlsPolicies?.filter(p => p.status === 'active').length || 0} Policies
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Database security policies and compliance monitoring
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* RLS Policies */}
+            <div>
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Row Level Security (RLS) Policies
+              </h4>
+              <div className="space-y-2">
+                {databaseSecurity?.rlsPolicies?.map((policy, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                    <div>
+                      <span className="text-sm font-medium">{policy.table}</span>
+                      <p className="text-xs text-muted-foreground">{policy.policy}</p>
+                    </div>
+                    <Badge variant={policy.status === 'active' ? 'default' : 'destructive'}>
+                      {policy.status.toUpperCase()}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Security Events */}
+            <div>
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Recent Security Events
+              </h4>
+              <ScrollArea className="h-[140px]">
+                <div className="space-y-1">
+                  {databaseSecurity?.recentSecurityEvents?.slice(0, 5).map((event) => (
+                    <div key={event.id} className="flex items-center justify-between text-xs p-2 border-b">
+                      <div className="flex-1">
+                        <span className="font-medium">{event.eventType}</span>
+                        <p className="text-muted-foreground truncate">{event.description}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Badge variant={
+                          event.severity === 'critical' ? 'destructive' :
+                          event.severity === 'warning' ? 'secondary' :
+                          'default'
+                        } className="text-xs">
+                          {event.severity}
+                        </Badge>
+                      </div>
+                    </div>
+                  )) || (
+                    <p className="text-xs text-muted-foreground text-center py-4">No recent events</p>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Security Metrics */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-2 border rounded">
+                <div className="text-lg font-bold text-green-600">{healthData?.security.rlsStatus === 'active' ? '✓' : '✗'}</div>
+                <div className="text-xs text-muted-foreground">RLS Active</div>
+              </div>
+              <div className="text-center p-2 border rounded">
+                <div className="text-lg font-bold text-blue-600">{databaseSecurity?.encryptionStatus ? '🔒' : '🔓'}</div>
+                <div className="text-xs text-muted-foreground">Encrypted</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Main Security Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -979,12 +1392,43 @@ export function SecuritySettings() {
                 <div>
                   <h3 className="text-sm font-semibold mb-3">Third-party Integrations</h3>
                   <div className="space-y-2">
-                    {['OpenAI', 'Gemini', 'Perplexity', 'Stripe', 'Mapbox'].map(service => (
-                      <div key={service} className="flex items-center justify-between p-2 border rounded">
-                        <span className="text-sm">{service}</span>
-                        <Badge variant="default">Connected</Badge>
-                      </div>
-                    ))}
+                    {servicesLoading ? (
+                      <div className="text-sm text-muted-foreground">Loading services...</div>
+                    ) : !services || services.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No services configured</div>
+                    ) : (
+                      services.map(service => (
+                        <div key={service.name} className="flex items-center justify-between p-2 border rounded">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{service.displayName}</span>
+                              {service.critical && (
+                                <Badge variant="outline" className="text-xs">Critical</Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{service.purpose}</p>
+                            {service.errorMessage && (
+                              <p className="text-xs text-red-500 mt-1">{service.errorMessage}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {service.responseTime && (
+                              <span className="text-xs text-muted-foreground">{service.responseTime}ms</span>
+                            )}
+                            <Badge 
+                              variant={
+                                service.status === 'connected' ? 'default' :
+                                service.status === 'degraded' ? 'secondary' : 'destructive'
+                              }
+                              data-testid={`badge-status-${service.name}`}
+                            >
+                              {service.status === 'connected' ? 'Connected' :
+                               service.status === 'degraded' ? 'Degraded' : 'Disconnected'}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
