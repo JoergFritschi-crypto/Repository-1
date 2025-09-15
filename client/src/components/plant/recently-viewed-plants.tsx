@@ -162,7 +162,7 @@ const RecentlyViewedPlants = memo(({
             ) : (
               // Plant cards
               displayPlants.map((recentPlant) => {
-                const fullPlant = plantsData?.find((p: Plant) => p.id === recentPlant.id);
+                const fullPlant = plantsData?.find((p: Plant) => p && p.id === recentPlant.id);
                 const plant = fullPlant || recentPlant;
                 
                 return (
