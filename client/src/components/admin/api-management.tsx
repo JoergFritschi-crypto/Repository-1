@@ -39,98 +39,83 @@ interface ServiceInfo {
   category: 'critical' | 'auxiliary';
 }
 
-const SERVICE_INFO: Record<string, ServiceInfo> = {
-  // Critical Services - Essential for core functionality
-  anthropic: {
-    name: 'Anthropic Claude',
-    endpoint: 'https://api.anthropic.com',
-    requiredKeys: ['ANTHROPIC_API_KEY'],
-    documentation: 'https://docs.anthropic.com',
-    testEndpoint: '/v1/messages',
-    category: 'critical'
-  },
-  gemini: {
-    name: 'Google Gemini',
-    endpoint: 'https://generativelanguage.googleapis.com',
-    requiredKeys: ['GEMINI_API_KEY'],
-    documentation: 'https://ai.google.dev/docs',
-    testEndpoint: '/v1beta/models',
-    category: 'critical'
-  },
-  stripe: {
-    name: 'Stripe',
-    endpoint: 'https://api.stripe.com',
-    requiredKeys: ['STRIPE_SECRET_KEY', 'VITE_STRIPE_PUBLIC_KEY'],
-    documentation: 'https://stripe.com/docs/api',
-    testEndpoint: '/v1/customers',
-    category: 'critical'
-  },
-  perplexity: {
-    name: 'Perplexity AI',
-    endpoint: 'https://api.perplexity.ai',
-    requiredKeys: ['PERPLEXITY_API_KEY'],
-    documentation: 'https://docs.perplexity.ai',
-    testEndpoint: '/chat/completions',
-    category: 'critical'
-  },
+interface AdminConfig {
+  refreshIntervals: {
+    apiHealth: number;
+    imageGeneration: number;
+  };
+  serviceCategories: {
+    critical: string[];
+    auxiliary: string[];
+  };
+  lastUpdated: string;
+}
+
+// Dynamic service information based on actual system configuration
+const getServiceInfo = (serviceName: string, category: 'critical' | 'auxiliary'): ServiceInfo => {
+  const serviceNames: Record<string, string> = {
+    anthropic: 'Anthropic Claude',
+    gemini: 'Google Gemini', 
+    stripe: 'Stripe',
+    perplexity: 'Perplexity AI',
+    perenual: 'Perenual Plant Database',
+    gbif: 'GBIF Species Data',
+    mapbox: 'Mapbox Geocoding',
+    visual_crossing: 'Visual Crossing Weather',
+    huggingface: 'HuggingFace AI',
+    runware: 'Runware Images',
+    firecrawl: 'FireCrawl Web'
+  };
   
-  // Auxiliary Services - Additional features and enhancements
-  perenual: {
-    name: 'Perenual Plant Database',
-    endpoint: 'https://perenual.com/api',
-    requiredKeys: ['PERENUAL_API_KEY'],
-    documentation: 'https://perenual.com/docs/api',
-    testEndpoint: '/species-list',
-    category: 'auxiliary'
-  },
-  gbif: {
-    name: 'GBIF Species Data',
-    endpoint: 'https://api.gbif.org',
-    requiredKeys: ['GBIF_EMAIL', 'GBIF_PASSWORD'],
-    documentation: 'https://www.gbif.org/developer',
-    testEndpoint: '/v1/species/search',
-    category: 'auxiliary'
-  },
-  mapbox: {
-    name: 'Mapbox Geocoding',
-    endpoint: 'https://api.mapbox.com',
-    requiredKeys: ['MAPBOX_API_KEY'],
-    documentation: 'https://docs.mapbox.com/api/',
-    testEndpoint: '/geocoding/v5/mapbox.places',
-    category: 'auxiliary'
-  },
-  visual_crossing: {
-    name: 'Visual Crossing Weather',
-    endpoint: 'https://weather.visualcrossing.com',
-    requiredKeys: ['VISUAL_CROSSING_API_KEY'],
-    documentation: 'https://www.visualcrossing.com/resources/documentation',
-    testEndpoint: '/VisualCrossingWebServices/rest/services/timeline',
-    category: 'auxiliary'
-  },
-  huggingface: {
-    name: 'HuggingFace AI',
-    endpoint: 'https://api-inference.huggingface.co',
-    requiredKeys: ['HUGGINGFACE_API_KEY'],
-    documentation: 'https://huggingface.co/docs/api-inference',
-    testEndpoint: '/models',
-    category: 'auxiliary'
-  },
-  runware: {
-    name: 'Runware Images',
-    endpoint: 'https://api.runware.ai',
-    requiredKeys: ['RUNWARE_API_KEY'],
-    documentation: 'https://docs.runware.ai',
-    testEndpoint: '/v1',
-    category: 'auxiliary'
-  },
-  firecrawl: {
-    name: 'FireCrawl Web',
-    endpoint: 'https://api.firecrawl.dev',
-    requiredKeys: ['FIRECRAWL_API_KEY'],
-    documentation: 'https://docs.firecrawl.dev',
-    testEndpoint: '/v1/scrape',
-    category: 'auxiliary'
-  }
+  const endpoints: Record<string, string> = {
+    anthropic: 'https://api.anthropic.com',
+    gemini: 'https://generativelanguage.googleapis.com',
+    stripe: 'https://api.stripe.com',
+    perplexity: 'https://api.perplexity.ai',
+    perenual: 'https://perenual.com/api',
+    gbif: 'https://api.gbif.org',
+    mapbox: 'https://api.mapbox.com',
+    visual_crossing: 'https://weather.visualcrossing.com',
+    huggingface: 'https://api-inference.huggingface.co',
+    runware: 'https://api.runware.ai',
+    firecrawl: 'https://api.firecrawl.dev'
+  };
+  
+  const docs: Record<string, string> = {
+    anthropic: 'https://docs.anthropic.com',
+    gemini: 'https://ai.google.dev/docs',
+    stripe: 'https://stripe.com/docs/api',
+    perplexity: 'https://docs.perplexity.ai',
+    perenual: 'https://perenual.com/docs/api',
+    gbif: 'https://www.gbif.org/developer',
+    mapbox: 'https://docs.mapbox.com/api/',
+    visual_crossing: 'https://www.visualcrossing.com/resources/documentation',
+    huggingface: 'https://huggingface.co/docs/api-inference',
+    runware: 'https://docs.runware.ai',
+    firecrawl: 'https://docs.firecrawl.dev'
+  };
+  
+  const requiredKeys: Record<string, string[]> = {
+    anthropic: ['ANTHROPIC_API_KEY'],
+    gemini: ['GEMINI_API_KEY'],
+    stripe: ['STRIPE_SECRET_KEY', 'VITE_STRIPE_PUBLIC_KEY'],
+    perplexity: ['PERPLEXITY_API_KEY'],
+    perenual: ['PERENUAL_API_KEY'],
+    gbif: ['GBIF_EMAIL', 'GBIF_PASSWORD'],
+    mapbox: ['MAPBOX_API_KEY'],
+    visual_crossing: ['VISUAL_CROSSING_API_KEY'],
+    huggingface: ['HUGGINGFACE_API_KEY'],
+    runware: ['RUNWARE_API_KEY'],
+    firecrawl: ['FIRECRAWL_API_KEY']
+  };
+  
+  return {
+    name: serviceNames[serviceName] || serviceName.charAt(0).toUpperCase() + serviceName.slice(1),
+    endpoint: endpoints[serviceName] || '',
+    requiredKeys: requiredKeys[serviceName] || [],
+    documentation: docs[serviceName] || '',
+    category
+  };
 };
 
 export default function APIManagement() {
@@ -138,13 +123,21 @@ export default function APIManagement() {
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [keyValues, setKeyValues] = useState<Record<string, string>>({});
 
-  // Query for API health status
+  // Fetch admin configuration for dynamic settings
+  const { data: adminConfig, isLoading: configLoading } = useQuery<AdminConfig>({
+    queryKey: ['/api/admin/config'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false
+  });
+
+  // Query for API health status with dynamic refresh interval
   const { data: healthData, isLoading: isLoadingHealth, refetch: refetchHealth } = useQuery({
     queryKey: ['/api/admin/api-health'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/admin/api-health');
       return response.json();
-    }
+    },
+    refetchInterval: adminConfig?.refreshIntervals.apiHealth || 60000
   });
 
   // Query for API usage metrics
@@ -267,6 +260,17 @@ export default function APIManagement() {
     return keysStatus.keys[`${service}_${keyName}`] || { configured: false, lastUsed: null };
   };
 
+  // Get all available services from admin config and health data
+  const getAllServices = () => {
+    if (!adminConfig) return [];
+    
+    const allServices = [...adminConfig.serviceCategories.critical, ...adminConfig.serviceCategories.auxiliary];
+    return allServices.map(serviceName => ({
+      ...getServiceInfo(serviceName, adminConfig.serviceCategories.critical.includes(serviceName) ? 'critical' : 'auxiliary'),
+      status: getServiceStatus(serviceName)
+    }));
+  };
+
   return (
     <div className="space-y-6">
       {/* Overall Status Overview */}
@@ -314,7 +318,7 @@ export default function APIManagement() {
               <CardContent className="pt-6">
                 <div className="text-2xl font-bold flex items-center gap-2">
                   <Activity className="w-6 h-6 text-blue-500" />
-                  {healthData?.activeServices || 0} / {Object.keys(SERVICE_INFO).length}
+                  {healthData?.activeServices || 0} / {getAllServices().length}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Active Services</p>
               </CardContent>
@@ -353,53 +357,73 @@ export default function APIManagement() {
         </TabsList>
 
         <TabsContent value="critical" className="space-y-4">
-          {Object.entries(SERVICE_INFO)
-            .filter(([_, info]) => info.category === 'critical')
-            .map(([serviceKey, serviceInfo]) => (
-              <ServiceCard
-                key={serviceKey}
-                serviceKey={serviceKey}
-                serviceInfo={serviceInfo}
-                status={getServiceStatus(serviceKey)}
-                keysStatus={serviceInfo.requiredKeys.map(key => ({
-                  name: key,
-                  ...getKeyStatus(serviceKey, key)
-                }))}
-                showKeys={showKeys}
-                keyValues={keyValues}
-                onToggleVisibility={toggleKeyVisibility}
-                onUpdateKey={handleUpdateKey}
-                onTestKey={handleTestKey}
-                onKeyValueChange={(key: string, value: string) => setKeyValues(prev => ({ ...prev, [key]: value }))}
-                isUpdating={updateKeyMutation.isPending}
-                isTesting={testKeyMutation.isPending}
-              />
-            ))}
+          {configLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-3 text-muted-foreground">Loading service configuration...</span>
+            </div>
+          ) : (
+            getAllServices()
+              .filter(service => service.category === 'critical')
+              .map(service => {
+                const serviceKey = service.name.toLowerCase().replace(/\s+/g, '_');
+                return (
+                  <ServiceCard
+                    key={serviceKey}
+                    serviceKey={serviceKey}
+                    serviceInfo={service}
+                    status={service.status || 'unknown'}
+                    keysStatus={service.requiredKeys.map(key => ({
+                      name: key,
+                      ...getKeyStatus(serviceKey, key)
+                    }))}
+                    showKeys={showKeys}
+                    keyValues={keyValues}
+                    onToggleVisibility={toggleKeyVisibility}
+                    onUpdateKey={handleUpdateKey}
+                    onTestKey={handleTestKey}
+                    onKeyValueChange={(key: string, value: string) => setKeyValues(prev => ({ ...prev, [key]: value }))}
+                    isUpdating={updateKeyMutation.isPending}
+                    isTesting={testKeyMutation.isPending}
+                  />
+                );
+              })
+          )}
         </TabsContent>
 
         <TabsContent value="auxiliary" className="space-y-4">
-          {Object.entries(SERVICE_INFO)
-            .filter(([_, info]) => info.category === 'auxiliary')
-            .map(([serviceKey, serviceInfo]) => (
-              <ServiceCard
-                key={serviceKey}
-                serviceKey={serviceKey}
-                serviceInfo={serviceInfo}
-                status={getServiceStatus(serviceKey)}
-                keysStatus={serviceInfo.requiredKeys.map(key => ({
-                  name: key,
-                  ...getKeyStatus(serviceKey, key)
-                }))}
-                showKeys={showKeys}
-                keyValues={keyValues}
-                onToggleVisibility={toggleKeyVisibility}
-                onUpdateKey={handleUpdateKey}
-                onTestKey={handleTestKey}
-                onKeyValueChange={(key: string, value: string) => setKeyValues(prev => ({ ...prev, [key]: value }))}
-                isUpdating={updateKeyMutation.isPending}
-                isTesting={testKeyMutation.isPending}
-              />
-            ))}
+          {configLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-3 text-muted-foreground">Loading service configuration...</span>
+            </div>
+          ) : (
+            getAllServices()
+              .filter(service => service.category === 'auxiliary')
+              .map(service => {
+                const serviceKey = service.name.toLowerCase().replace(/\s+/g, '_');
+                return (
+                  <ServiceCard
+                    key={serviceKey}
+                    serviceKey={serviceKey}
+                    serviceInfo={service}
+                    status={service.status || 'unknown'}
+                    keysStatus={service.requiredKeys.map(key => ({
+                      name: key,
+                      ...getKeyStatus(serviceKey, key)
+                    }))}
+                    showKeys={showKeys}
+                    keyValues={keyValues}
+                    onToggleVisibility={toggleKeyVisibility}
+                    onUpdateKey={handleUpdateKey}
+                    onTestKey={handleTestKey}
+                    onKeyValueChange={(key: string, value: string) => setKeyValues(prev => ({ ...prev, [key]: value }))}
+                    isUpdating={updateKeyMutation.isPending}
+                    isTesting={testKeyMutation.isPending}
+                  />
+                );
+              })
+          )}
         </TabsContent>
       </Tabs>
     </div>

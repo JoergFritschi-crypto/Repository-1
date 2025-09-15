@@ -6770,6 +6770,129 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
       res.status(500).json({ message: "Failed to fetch rate limit violations" });
     }
   });
+
+  // Get admin configuration for dynamic settings
+  app.get('/api/admin/config', requireAdmin, async (req: Request, res) => {
+    try {
+      const user = await storage.getUser(getUserId(req as AuthenticatedRequest));
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get existing security settings from storage
+      const securitySettings = await storage.getSecuritySettings();
+      const settingsMap = securitySettings.reduce((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {} as Record<string, any>);
+      
+      // Provide dynamic configuration with fallbacks to reasonable defaults
+      const config = {
+        refreshIntervals: {
+          securityStats: settingsMap.refresh_interval_security_stats || 30000, // 30 seconds
+          auditLogs: settingsMap.refresh_interval_audit_logs || 60000, // 1 minute
+          sessions: settingsMap.refresh_interval_sessions || 45000, // 45 seconds
+          healthData: settingsMap.refresh_interval_health || 15000, // 15 seconds
+          circuitBreaker: settingsMap.refresh_interval_circuit_breaker || 10000, // 10 seconds
+          databaseSecurity: settingsMap.refresh_interval_database || 20000, // 20 seconds
+          threats: settingsMap.refresh_interval_threats || 5000, // 5 seconds
+          services: settingsMap.refresh_interval_services || 30000, // 30 seconds
+          apiHealth: settingsMap.refresh_interval_api_health || 60000, // 1 minute
+          imageGeneration: settingsMap.refresh_interval_image_generation || 5000 // 5 seconds
+        },
+        securityScoreThresholds: {
+          excellent: settingsMap.security_score_excellent || 80,
+          good: settingsMap.security_score_good || 60,
+          needsImprovement: settingsMap.security_score_needs_improvement || 40,
+          critical: settingsMap.security_score_critical || 0
+        },
+        badgeColors: {
+          excellent: settingsMap.badge_color_excellent || 'text-green-600 dark:text-green-400',
+          good: settingsMap.badge_color_good || 'text-yellow-600 dark:text-yellow-400',
+          needsImprovement: settingsMap.badge_color_needs_improvement || 'text-orange-600 dark:text-orange-400',
+          critical: settingsMap.badge_color_critical || 'text-red-600 dark:text-red-400'
+        },
+        serviceCategories: {
+          critical: settingsMap.service_categories_critical || ['anthropic', 'gemini', 'stripe', 'perplexity'],
+          auxiliary: settingsMap.service_categories_auxiliary || ['perenual', 'gbif', 'mapbox', 'visual_crossing', 'huggingface', 'runware', 'firecrawl']
+        },
+        lastUpdated: new Date().toISOString()
+      };
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching admin config:", error);
+      res.status(500).json({ message: "Failed to fetch admin configuration" });
+    }
+  });
+
+  // Update admin configuration
+  app.put('/api/admin/config', requireAdmin, async (req: Request, res) => {
+    try {
+      const user = await storage.getUser(getUserId(req as AuthenticatedRequest));
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { refreshIntervals, securityScoreThresholds, badgeColors, serviceCategories } = req.body;
+      
+      // Update settings in storage
+      const adminUserId = getUserId(req as AuthenticatedRequest);
+      const updates = [];
+      
+      if (refreshIntervals) {
+        for (const [key, value] of Object.entries(refreshIntervals)) {
+          if (typeof value === 'number' && value >= 1000 && value <= 300000) { // 1s to 5min
+            updates.push(storage.updateSecuritySetting(`refresh_interval_${key}`, value, adminUserId));
+          }
+        }
+      }
+      
+      if (securityScoreThresholds) {
+        for (const [key, value] of Object.entries(securityScoreThresholds)) {
+          if (typeof value === 'number' && value >= 0 && value <= 100) {
+            updates.push(storage.updateSecuritySetting(`security_score_${key}`, value, adminUserId));
+          }
+        }
+      }
+      
+      if (badgeColors) {
+        for (const [key, value] of Object.entries(badgeColors)) {
+          if (typeof value === 'string' && value.length > 0) {
+            updates.push(storage.updateSecuritySetting(`badge_color_${key}`, value, adminUserId));
+          }
+        }
+      }
+      
+      if (serviceCategories) {
+        for (const [key, value] of Object.entries(serviceCategories)) {
+          if (Array.isArray(value)) {
+            updates.push(storage.updateSecuritySetting(`service_categories_${key}`, value, adminUserId));
+          }
+        }
+      }
+      
+      // Execute all updates
+      await Promise.all(updates);
+      
+      // Log the configuration change
+      await storage.createSecurityAuditLog({
+        userId: adminUserId,
+        eventType: 'configuration_changed',
+        eventDescription: `Admin updated configuration settings`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        severity: 'info',
+        success: true,
+        metadata: { updatedSettings: Object.keys(req.body) }
+      });
+      
+      res.json({ message: "Configuration updated successfully" });
+    } catch (error) {
+      console.error("Error updating admin config:", error);
+      res.status(500).json({ message: "Failed to update admin configuration" });
+    }
+  });
   
   // Get security recommendations
   app.get('/api/admin/security/recommendations', requireAdmin, async (req: Request, res) => {

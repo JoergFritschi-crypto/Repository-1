@@ -202,6 +202,38 @@ interface ServiceConfiguration {
   metadata?: any;
 }
 
+interface AdminConfig {
+  refreshIntervals: {
+    securityStats: number;
+    auditLogs: number;
+    sessions: number;
+    healthData: number;
+    circuitBreaker: number;
+    databaseSecurity: number;
+    threats: number;
+    services: number;
+    apiHealth: number;
+    imageGeneration: number;
+  };
+  securityScoreThresholds: {
+    excellent: number;
+    good: number;
+    needsImprovement: number;
+    critical: number;
+  };
+  badgeColors: {
+    excellent: string;
+    good: string;
+    needsImprovement: string;
+    critical: string;
+  };
+  serviceCategories: {
+    critical: string[];
+    auxiliary: string[];
+  };
+  lastUpdated: string;
+}
+
 export function SecuritySettings() {
   const [activeTab, setActiveTab] = useState('overview');
   const [auditLogFilters, setAuditLogFilters] = useState({
@@ -214,10 +246,17 @@ export function SecuritySettings() {
   const [sessionFilter, setSessionFilter] = useState('');
   const [ipControlType, setIpControlType] = useState<'all' | 'block' | 'allow'>('all');
 
-  // Fetch security statistics
+  // Fetch admin configuration for dynamic settings
+  const { data: adminConfig, isLoading: configLoading } = useQuery<AdminConfig>({
+    queryKey: ['/api/admin/config'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false
+  });
+
+  // Fetch security statistics with dynamic refresh interval
   const { data: stats, isLoading: statsLoading } = useQuery<SecurityStats>({
     queryKey: ['/api/admin/security/stats'],
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: adminConfig?.refreshIntervals.securityStats || 30000
   });
 
   // Fetch audit logs
@@ -282,34 +321,34 @@ export function SecuritySettings() {
     queryKey: ['/api/admin/security/recommendations']
   });
 
-  // Fetch enhanced health data
+  // Fetch enhanced health data with dynamic refresh interval
   const { data: healthData, isLoading: healthLoading } = useQuery<EnhancedHealthData>({
     queryKey: ['/api/admin/security/health'],
-    refetchInterval: 15000 // Refresh every 15 seconds
+    refetchInterval: adminConfig?.refreshIntervals.healthData || 15000
   });
 
-  // Fetch circuit breaker status
+  // Fetch circuit breaker status with dynamic refresh interval
   const { data: circuitBreakerStatus, isLoading: circuitBreakerLoading } = useQuery<CircuitBreakerStatus>({
     queryKey: ['/api/admin/security/circuit-breaker'],
-    refetchInterval: 10000 // Refresh every 10 seconds
+    refetchInterval: adminConfig?.refreshIntervals.circuitBreaker || 10000
   });
 
-  // Fetch database security status
+  // Fetch database security status with dynamic refresh interval
   const { data: databaseSecurity, isLoading: databaseSecurityLoading } = useQuery<DatabaseSecurityStatus>({
     queryKey: ['/api/admin/security/database-status'],
-    refetchInterval: 20000 // Refresh every 20 seconds
+    refetchInterval: adminConfig?.refreshIntervals.databaseSecurity || 20000
   });
 
-  // Fetch real-time threats
+  // Fetch real-time threats with dynamic refresh interval
   const { data: threats, isLoading: threatsLoading } = useQuery<ThreatDetection[]>({
     queryKey: ['/api/admin/security/threats'],
-    refetchInterval: 5000 // Refresh every 5 seconds for real-time monitoring
+    refetchInterval: adminConfig?.refreshIntervals.threats || 5000
   });
 
-  // Fetch service configuration and status
+  // Fetch service configuration and status with dynamic refresh interval
   const { data: services, isLoading: servicesLoading } = useQuery<ServiceConfiguration[]>({
     queryKey: ['/api/admin/security/services'],
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: adminConfig?.refreshIntervals.services || 30000
   });
 
   // Mutations
@@ -427,17 +466,54 @@ export function SecuritySettings() {
   });
 
   const getSecurityScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
-    if (score >= 40) return 'text-orange-600 dark:text-orange-400';
-    return 'text-red-600 dark:text-red-400';
+    if (!adminConfig) {
+      // Fallback to default colors
+      if (score >= 80) return 'text-green-600 dark:text-green-400';
+      if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
+      if (score >= 40) return 'text-orange-600 dark:text-orange-400';
+      return 'text-red-600 dark:text-red-400';
+    }
+    
+    const thresholds = adminConfig.securityScoreThresholds;
+    const colors = adminConfig.badgeColors;
+    
+    if (score >= thresholds.excellent) return colors.excellent;
+    if (score >= thresholds.good) return colors.good;
+    if (score >= thresholds.needsImprovement) return colors.needsImprovement;
+    return colors.critical;
   };
 
   const getSecurityScoreIcon = (score: number) => {
-    if (score >= 80) return <ShieldCheck className="h-8 w-8" />;
-    if (score >= 60) return <Shield className="h-8 w-8" />;
-    if (score >= 40) return <ShieldAlert className="h-8 w-8" />;
+    if (!adminConfig) {
+      // Fallback to default thresholds
+      if (score >= 80) return <ShieldCheck className="h-8 w-8" />;
+      if (score >= 60) return <Shield className="h-8 w-8" />;
+      if (score >= 40) return <ShieldAlert className="h-8 w-8" />;
+      return <ShieldOff className="h-8 w-8" />;
+    }
+    
+    const thresholds = adminConfig.securityScoreThresholds;
+    
+    if (score >= thresholds.excellent) return <ShieldCheck className="h-8 w-8" />;
+    if (score >= thresholds.good) return <Shield className="h-8 w-8" />;
+    if (score >= thresholds.needsImprovement) return <ShieldAlert className="h-8 w-8" />;
     return <ShieldOff className="h-8 w-8" />;
+  };
+
+  const getSecurityScoreText = (score: number) => {
+    if (!adminConfig) {
+      // Fallback to default text
+      return score >= 80 ? 'Excellent' : 
+             score >= 60 ? 'Good' :
+             score >= 40 ? 'Needs Improvement' : 'Critical';
+    }
+    
+    const thresholds = adminConfig.securityScoreThresholds;
+    
+    if (score >= thresholds.excellent) return 'Excellent';
+    if (score >= thresholds.good) return 'Good';
+    if (score >= thresholds.needsImprovement) return 'Needs Improvement';
+    return 'Critical';
   };
 
   const getSeverityBadgeColor = (severity: string) => {
@@ -449,10 +525,13 @@ export function SecuritySettings() {
     }
   };
 
-  if (statsLoading) {
+  if (statsLoading || configLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <span className="ml-3 text-muted-foreground">
+          Loading {configLoading ? 'configuration' : 'security data'}...
+        </span>
       </div>
     );
   }
@@ -475,9 +554,7 @@ export function SecuritySettings() {
               {stats?.securityScore || 0}/100
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {(stats?.securityScore ?? 0) >= 80 ? 'Excellent' : 
-               (stats?.securityScore ?? 0) >= 60 ? 'Good' :
-               (stats?.securityScore ?? 0) >= 40 ? 'Needs Improvement' : 'Critical'}
+              {getSecurityScoreText(stats?.securityScore || 0)}
             </p>
           </CardContent>
         </Card>
