@@ -141,19 +141,35 @@ export class SupabaseHttpStorage implements IStorage {
       const replitId = userData.id; // This is the Replit ID
       
       // First check if user exists by replit_id
-      const { data: existingUser, error: fetchError } = await this.supabase
+      let { data: existingUser, error: fetchError } = await this.supabase
         .from('profiles')
         .select('*')
         .eq('replit_id', replitId)
         .single();
 
+      // If not found by replit_id, try to find by email
+      if ((!existingUser || fetchError?.code === 'PGRST116') && userData.email) {
+        console.log(`User not found by replit_id (${replitId}), checking by email: ${userData.email}`);
+        const { data: userByEmail, error: emailError } = await this.supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', userData.email)
+          .single();
+        
+        if (userByEmail && !emailError) {
+          existingUser = userByEmail;
+          fetchError = null;
+          console.log(`Found existing user by email (${userData.email}), will update with replit_id: ${replitId}`);
+        }
+      }
+
       let dbData: any;
       let result: any;
       
       if (existingUser && !fetchError) {
-        // User exists, update with the existing UUID id
+        // User exists, update with the existing UUID id and ensure replit_id is set
         dbData = {
-          replit_id: replitId,
+          replit_id: replitId, // Always update the replit_id
           updated_at: new Date().toISOString()
         };
         
@@ -179,6 +195,7 @@ export class SupabaseHttpStorage implements IStorage {
           
         if (error) throw error;
         result = data;
+        console.log(`Updated existing user: ${result.id}, firstName: ${result.first_name}, lastName: ${result.last_name}`);
       } else {
         // New user, generate a UUID for id
         dbData = {
@@ -209,6 +226,7 @@ export class SupabaseHttpStorage implements IStorage {
           
         if (error) throw error;
         result = data;
+        console.log(`Created new user: ${result.id}, firstName: ${result.first_name}, lastName: ${result.last_name}`);
       }
       
       return this.mapDbUserToUser(result);

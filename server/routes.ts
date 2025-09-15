@@ -282,13 +282,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const newUser = await storage.upsertUser({
             id: userId,
             email: sessionUser.claims.email || '',
-            username: sessionUser.claims.sub || userId,
             isAdmin: sessionUser.claims.is_admin === true || sessionUser.claims.email === 'joerg.fritschi@hin.ch', // Make you admin
             firstName: sessionUser.claims.first_name || sessionUser.claims.given_name || null,
             lastName: sessionUser.claims.last_name || sessionUser.claims.family_name || null,
-            profilePicture: sessionUser.claims.profile || sessionUser.claims.picture || null,
+            profileImageUrl: sessionUser.claims.profile || sessionUser.claims.picture || null,
             userTier: 'free',
-            premiumUntil: null,
+            designCredits: 1,
           });
           console.log('✅ [AUTH] User upserted in database:', newUser.id);
           return res.json(newUser);
