@@ -5340,6 +5340,172 @@ The goal is photorealistic enhancement while preserving exact spatial positionin
     }
   });
 
+  // Alternative test endpoint that accepts service in body (for frontend compatibility)
+  app.post('/api/admin/api-keys/test', requireAdmin, async (req: Request, res) => {
+    try {
+      const { service } = req.body;
+      
+      if (!service) {
+        return res.status(400).json({ message: "Service name is required" });
+      }
+      
+      // Run a simple test for the specific service
+      const serviceTests = apiMonitoring.services.find(s => s.name === service);
+      if (!serviceTests) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+
+      try {
+        const result = await serviceTests.testFunction();
+        res.json({ 
+          success: result.status === 'healthy',
+          valid: result.status === 'healthy', 
+          status: result.status,
+          message: result.errorMessage || 'Key is valid' 
+        });
+      } catch (error) {
+        res.json({ 
+          success: false,
+          valid: false, 
+          status: 'invalid',
+          message: (error as Error).message 
+        });
+      }
+    } catch (error) {
+      console.error(`Error testing API key for ${req.body.service}:`, error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to test API key",
+        error: (error as Error).message
+      });
+    }
+  });
+
+  app.post('/api/admin/api-keys/update', requireAdmin, async (req: Request, res) => {
+    try {
+      const { service, keyName, value } = req.body;
+
+      if (!service || !keyName) {
+        return res.status(400).json({ message: "Service and key name are required" });
+      }
+
+      // Map service names to environment variable names
+      const envVarMap: Record<string, string[]> = {
+        anthropic: ['ANTHROPIC_API_KEY'],
+        gemini: ['GEMINI_API_KEY'],
+        stripe: ['STRIPE_SECRET_KEY', 'VITE_STRIPE_PUBLIC_KEY'],
+        perplexity: ['PERPLEXITY_API_KEY'],
+        perenual: ['PERENUAL_API_KEY'],
+        gbif: ['GBIF_EMAIL', 'GBIF_PASSWORD'],
+        mapbox: ['MAPBOX_API_KEY'],
+        visual_crossing: ['VISUAL_CROSSING_API_KEY'],
+        huggingface: ['HUGGINGFACE_API_KEY'],
+        runware: ['RUNWARE_API_KEY'],
+        firecrawl: ['FIRECRAWL_API_KEY']
+      };
+
+      // Validate service name
+      if (!envVarMap[service.toLowerCase()]) {
+        return res.status(400).json({ message: `Unknown service: ${service}` });
+      }
+
+      // Update the environment variable
+      // Note: This only updates the current process environment
+      // For persistence, you'd need to update a secrets management system
+      process.env[keyName] = value;
+
+      // Re-initialize the service if needed
+      // This is important for services that cache their API keys
+      switch (service.toLowerCase()) {
+        case 'anthropic':
+          if (value && !anthropicAI) {
+            anthropicAI = new AnthropicAI(value);
+          }
+          break;
+        case 'gemini':
+          if (value && !geminiAI) {
+            geminiAI = new GeminiAI(value);
+          }
+          break;
+        case 'perplexity':
+          if (value && !perplexityAI) {
+            perplexityAI = new PerplexityAI(value);
+          }
+          break;
+        case 'stripe':
+          if (value && keyName === 'STRIPE_SECRET_KEY' && !stripe) {
+            stripe = new Stripe(value, {
+              apiVersion: "2025-08-27.basil",
+            });
+          }
+          break;
+        case 'perenual':
+          if (value && !perenualAPI) {
+            perenualAPI = new PerenualAPI(value);
+          }
+          break;
+        case 'mapbox':
+          if (value && !mapboxAPI) {
+            mapboxAPI = new MapboxAPI(value);
+          }
+          break;
+        case 'huggingface':
+          if (value && !huggingFaceAPI) {
+            huggingFaceAPI = new HuggingFaceAPI(value);
+          }
+          break;
+        case 'runware':
+          if (value && !runwareAPI) {
+            runwareAPI = new RunwareAPI(value);
+          }
+          break;
+        case 'firecrawl':
+          if (value && !fireCrawlAPI) {
+            fireCrawlAPI = new FireCrawlAPI(value, process.env.PERPLEXITY_API_KEY);
+          }
+          break;
+        case 'gbif':
+          if (process.env.GBIF_EMAIL && process.env.GBIF_PASSWORD && !gbifAPI) {
+            gbifAPI = new GBIFAPI(process.env.GBIF_EMAIL, process.env.GBIF_PASSWORD);
+          }
+          break;
+      }
+
+      // Log the update for audit trail
+      const authReq = req as AuthenticatedRequest;
+      const userId = getUserId(authReq);
+      
+      await storage.createSecurityAuditLog({
+        userId,
+        eventType: 'admin_action',
+        eventDescription: `Updated API key for service: ${service}`,
+        ipAddress: req.ip || 'unknown',
+        userAgent: req.headers['user-agent'] || 'unknown',
+        metadata: { 
+          service, 
+          keyName,
+          // Don't log the actual key value for security
+          keyLength: value ? value.length : 0 
+        },
+        severity: 'info',
+        success: true
+      });
+
+      res.json({ 
+        success: true,
+        service,
+        message: `API key for ${service} updated successfully`
+      });
+    } catch (error) {
+      console.error("Error updating API key:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to update API key",
+        error: (error as Error).message 
+      });
+    }
+  });
+
   // Set user as admin - secured endpoint for bootstrap only
   app.post('/api/admin/make-admin', requireAdmin, async (req: Request, res) => {
     try {

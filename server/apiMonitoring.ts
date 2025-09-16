@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { apiHealthChecks, apiUsageStats, apiAlerts } from "@shared/schema";
 import { eq, and, gte, sql } from "drizzle-orm";
+import { fallbackStorage } from "./utils/fallbackStorage";
 
 interface HealthCheckResult {
   service: string;
@@ -20,6 +21,11 @@ interface ServiceEndpoint {
 
 export class APIMonitoringService {
   private services: ServiceEndpoint[] = [];
+  private healthCache = new Map<string, HealthCheckResult>();
+  private usageCache = new Map<string, any>();
+  private lastHealthCheck: Date | null = null;
+  private readonly HEALTH_CACHE_TTL = 60 * 1000; // 1 minute
+  private readonly USAGE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
     this.initializeServices();
@@ -626,7 +632,7 @@ export class APIMonitoringService {
     }
   }
 
-  // Run health checks for all services
+  // Run health checks for all services with resilient storage
   async runHealthChecks(): Promise<HealthCheckResult[]> {
     const results: HealthCheckResult[] = [];
     
@@ -634,44 +640,59 @@ export class APIMonitoringService {
       try {
         const result = await service.testFunction();
         
-        // Save to database
-        await db.insert(apiHealthChecks).values({
-          service: result.service,
-          status: result.status,
-          responseTime: result.responseTime,
-          errorMessage: result.errorMessage,
-          quotaUsed: result.quotaUsed,
-          quotaLimit: result.quotaLimit,
-          metadata: result.metadata,
-          lastChecked: new Date()
-        });
+        // Cache the result immediately
+        this.healthCache.set(service.name, result);
         
-        // Check alerts
-        await this.checkAlerts(result);
+        // Try to save to database (don't fail if DB is down)
+        try {
+          await db.insert(apiHealthChecks).values({
+            service: result.service,
+            status: result.status,
+            responseTime: result.responseTime,
+            errorMessage: result.errorMessage,
+            quotaUsed: result.quotaUsed,
+            quotaLimit: result.quotaLimit,
+            metadata: result.metadata,
+            lastChecked: new Date()
+          });
+          
+          // Check alerts only if DB is available
+          await this.checkAlerts(result);
+        } catch (dbError) {
+          console.warn(`Failed to store health check in DB for ${service.name}:`, dbError.message);
+        }
         
         results.push(result);
       } catch (error) {
         console.error(`Health check failed for ${service.name}:`, error);
-        results.push({
+        const errorResult = {
           service: service.name,
-          status: 'down',
+          status: 'down' as const,
           errorMessage: error.message
-        });
+        };
+        
+        // Cache the error result
+        this.healthCache.set(service.name, errorResult);
+        results.push(errorResult);
       }
     }
+    
+    // Update last health check time
+    this.lastHealthCheck = new Date();
     
     return results;
   }
 
   // Check and trigger alerts based on health check results
   private async checkAlerts(result: HealthCheckResult) {
-    const alerts = await db
-      .select()
-      .from(apiAlerts)
-      .where(and(
-        eq(apiAlerts.service, result.service),
-        eq(apiAlerts.isActive, true)
-      ));
+    try {
+      const alerts = await db
+        .select()
+        .from(apiAlerts)
+        .where(and(
+          eq(apiAlerts.service, result.service),
+          eq(apiAlerts.isActive, true)
+        ));
 
     for (const alert of alerts) {
       let shouldTrigger = false;
@@ -704,59 +725,130 @@ export class APIMonitoringService {
         console.warn(`Alert triggered: ${alert.service} - ${alert.alertType}`);
       }
     }
+    } catch (error) {
+      console.warn('Failed to check alerts:', error.message);
+      // Continue execution - don't throw
+    }
   }
 
-  // Get latest health status for all services
+  // Get latest health status for all services with resilient fallback
   async getHealthStatus() {
     const services = this.services.map(s => s.name);
     const latestChecks = [];
     
-    for (const service of services) {
-      const [latest] = await db
-        .select()
-        .from(apiHealthChecks)
-        .where(eq(apiHealthChecks.service, service))
-        .orderBy(sql`${apiHealthChecks.lastChecked} DESC`)
-        .limit(1);
+    try {
+      // Try to get from database
+      for (const service of services) {
+        const [latest] = await db
+          .select()
+          .from(apiHealthChecks)
+          .where(eq(apiHealthChecks.service, service))
+          .orderBy(sql`${apiHealthChecks.lastChecked} DESC`)
+          .limit(1);
+        
+        if (latest) {
+          latestChecks.push(latest);
+          // Cache the result
+          this.healthCache.set(service, {
+            service: latest.service,
+            status: latest.status as 'healthy' | 'degraded' | 'down',
+            responseTime: latest.responseTime || undefined,
+            errorMessage: latest.errorMessage || undefined,
+            quotaUsed: latest.quotaUsed || undefined,
+            quotaLimit: latest.quotaLimit || undefined,
+            metadata: latest.metadata || undefined
+          });
+        } else {
+          latestChecks.push({
+            service,
+            status: 'unknown',
+            lastChecked: null
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Database unavailable for health status, using cache/defaults:', error.message);
       
-      if (latest) {
-        latestChecks.push(latest);
-      } else {
-        latestChecks.push({
-          service,
-          status: 'unknown',
-          lastChecked: null
-        });
+      // Fallback to cached values or defaults
+      for (const service of services) {
+        const cached = this.healthCache.get(service);
+        if (cached) {
+          latestChecks.push({
+            service: cached.service,
+            status: cached.status,
+            lastChecked: this.lastHealthCheck,
+            responseTime: cached.responseTime,
+            errorMessage: cached.errorMessage,
+            quotaUsed: cached.quotaUsed,
+            quotaLimit: cached.quotaLimit
+          });
+        } else {
+          // Return default unknown status
+          latestChecks.push({
+            service,
+            status: 'unknown',
+            lastChecked: null,
+            errorMessage: 'No health data available'
+          });
+        }
       }
     }
     
     return latestChecks;
   }
 
-  // Get usage statistics for a specific time period
+  // Get usage statistics for a specific time period with resilient fallback
   async getUsageStats(startDate: Date, endDate?: Date) {
-    const query = endDate
-      ? and(
-          gte(apiUsageStats.date, startDate),
-          sql`${apiUsageStats.date} <= ${endDate}`
-        )
-      : gte(apiUsageStats.date, startDate);
+    const cacheKey = `usage:${startDate.toISOString()}:${endDate?.toISOString() || 'now'}`;
     
-    const stats = await db
-      .select({
-        service: apiUsageStats.service,
-        totalRequests: sql`SUM(${apiUsageStats.requestCount})`,
-        totalTokens: sql`SUM(${apiUsageStats.tokensUsed})`,
-        totalCost: sql`SUM(${apiUsageStats.cost})`
-      })
-      .from(apiUsageStats)
-      .where(query)
-      .groupBy(apiUsageStats.service);
-    
-    return stats;
+    try {
+      const query = endDate
+        ? and(
+            gte(apiUsageStats.date, startDate),
+            sql`${apiUsageStats.date} <= ${endDate}`
+          )
+        : gte(apiUsageStats.date, startDate);
+      
+      const stats = await db
+        .select({
+          service: apiUsageStats.service,
+          totalRequests: sql`SUM(${apiUsageStats.requestCount})`,
+          totalTokens: sql`SUM(${apiUsageStats.tokensUsed})`,
+          totalCost: sql`SUM(${apiUsageStats.cost})`
+        })
+        .from(apiUsageStats)
+        .where(query)
+        .groupBy(apiUsageStats.service);
+      
+      // Cache the result
+      this.usageCache.set(cacheKey, {
+        data: stats,
+        timestamp: Date.now()
+      });
+      
+      return stats;
+    } catch (error) {
+      console.warn('Database unavailable for usage stats, using cache/defaults:', error.message);
+      
+      // Check if we have cached data
+      const cached = this.usageCache.get(cacheKey);
+      if (cached && (Date.now() - cached.timestamp) < this.USAGE_CACHE_TTL) {
+        console.log('Returning cached usage stats');
+        return cached.data;
+      }
+      
+      // Return empty stats for all services
+      const services = this.services.map(s => s.name);
+      return services.map(service => ({
+        service,
+        totalRequests: 0,
+        totalTokens: 0,
+        totalCost: 0
+      }));
+    }
   }
 
-  // Record API usage
+  // Record API usage with resilient storage
   async recordUsage(data: {
     service: string;
     endpoint?: string;
@@ -764,14 +856,29 @@ export class APIMonitoringService {
     tokensUsed?: number;
     cost?: number;
   }) {
-    await db.insert(apiUsageStats).values({
-      service: data.service,
-      endpoint: data.endpoint,
-      userId: data.userId,
-      requestCount: 1,
-      tokensUsed: data.tokensUsed,
-      cost: data.cost?.toString(),
-      date: new Date()
+    try {
+      await db.insert(apiUsageStats).values({
+        service: data.service,
+        endpoint: data.endpoint,
+        userId: data.userId,
+        requestCount: 1,
+        tokensUsed: data.tokensUsed,
+        cost: data.cost?.toString(),
+        date: new Date()
+      });
+    } catch (error) {
+      console.warn('Failed to record API usage in database:', error.message);
+      // Continue execution - don't throw
+    }
+    
+    // Update usage cache even if DB fails
+    const cacheKey = `current:${data.service}`;
+    const existing = this.usageCache.get(cacheKey) || { count: 0, cost: 0, tokens: 0 };
+    this.usageCache.set(cacheKey, {
+      count: existing.count + 1,
+      cost: existing.cost + (data.cost || 0),
+      tokens: existing.tokens + (data.tokensUsed || 0),
+      timestamp: Date.now()
     });
   }
 

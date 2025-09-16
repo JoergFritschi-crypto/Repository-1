@@ -267,6 +267,7 @@ export default function APIManagement() {
     const allServices = [...adminConfig.serviceCategories.critical, ...adminConfig.serviceCategories.auxiliary];
     return allServices.map(serviceName => ({
       ...getServiceInfo(serviceName, adminConfig.serviceCategories.critical.includes(serviceName) ? 'critical' : 'auxiliary'),
+      serviceName: serviceName, // Add the actual service name for backend communication
       status: getServiceStatus(serviceName)
     }));
   };
@@ -366,7 +367,7 @@ export default function APIManagement() {
             getAllServices()
               .filter(service => service.category === 'critical')
               .map(service => {
-                const serviceKey = service.name.toLowerCase().replace(/\s+/g, '_');
+                const serviceKey = service.serviceName; // Use the actual service name for backend communication
                 return (
                   <ServiceCard
                     key={serviceKey}
@@ -375,7 +376,7 @@ export default function APIManagement() {
                     status={service.status || 'unknown'}
                     keysStatus={service.requiredKeys.map(key => ({
                       name: key,
-                      ...getKeyStatus(serviceKey, key)
+                      ...getKeyStatus(service.serviceName, key)
                     }))}
                     showKeys={showKeys}
                     keyValues={keyValues}
@@ -401,7 +402,7 @@ export default function APIManagement() {
             getAllServices()
               .filter(service => service.category === 'auxiliary')
               .map(service => {
-                const serviceKey = service.name.toLowerCase().replace(/\s+/g, '_');
+                const serviceKey = service.serviceName; // Use the actual service name for backend communication
                 return (
                   <ServiceCard
                     key={serviceKey}
@@ -410,7 +411,7 @@ export default function APIManagement() {
                     status={service.status || 'unknown'}
                     keysStatus={service.requiredKeys.map(key => ({
                       name: key,
-                      ...getKeyStatus(serviceKey, key)
+                      ...getKeyStatus(service.serviceName, key)
                     }))}
                     showKeys={showKeys}
                     keyValues={keyValues}
