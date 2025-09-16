@@ -9,10 +9,10 @@ jobs:
       - name: Install psql
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Connectivity/auth check (pooled, IPv4)
+      - name: Connectivity/auth check (pooled)
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           echo -n "$PGPASSWORD" | wc -c
-          psql -v ON_ERROR_STOP=1 -4 "postgresql://postgres:${PGPASSWORD}@db.uytzrsaagqzjhnmgbslq.supabase.co:6543/postgres?sslmode=require" \
+          psql -v ON_ERROR_STOP=1 "postgresql://postgres:${PGPASSWORD}@db.uytzrsaagqzjhnmgbslq.supabase.co:6543/postgres?sslmode=require" \
             -c "select now(), current_user, inet_client_addr();"
