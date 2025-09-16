@@ -1,0 +1,172 @@
+-- Secure Functions Migration
+-- Fixes Function Search Path vulnerabilities identified by Supabase Security Advisor
+-- This migration creates/updates functions with proper search_path settings to prevent SQL injection
+
+-- Drop existing functions if they exist (to ensure clean state)
+DROP FUNCTION IF EXISTS public.update_updated_at() CASCADE;
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+
+-- Create secure update_updated_at function
+-- This function automatically updates the updated_at column when a row is modified
+CREATE OR REPLACE FUNCTION public.update_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'pg_catalog', 'public'
+AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+-- Create secure handle_new_user function
+-- This function is called when a new user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'pg_catalog', 'public'
+AS $$
+BEGIN
+    -- Insert user into public.users table with default values
+    INSERT INTO public.users (
+        id,
+        email,
+        first_name,
+        last_name,
+        created_at,
+        updated_at
+    ) VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
+        COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (id) DO UPDATE
+    SET 
+        email = EXCLUDED.email,
+        first_name = COALESCE(EXCLUDED.first_name, public.users.first_name),
+        last_name = COALESCE(EXCLUDED.last_name, public.users.last_name),
+        updated_at = CURRENT_TIMESTAMP;
+    
+    RETURN NEW;
+END;
+$$;
+
+-- Create triggers for all tables with updated_at columns
+-- This ensures updated_at is automatically maintained
+
+-- Drop existing triggers to avoid conflicts
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
+DROP TRIGGER IF EXISTS update_gardens_updated_at ON public.gardens;
+DROP TRIGGER IF EXISTS update_plants_updated_at ON public.plants;
+DROP TRIGGER IF EXISTS update_plant_collections_updated_at ON public.plant_collections;
+DROP TRIGGER IF EXISTS update_garden_plants_updated_at ON public.garden_plants;
+DROP TRIGGER IF EXISTS update_plant_doctor_sessions_updated_at ON public.plant_doctor_sessions;
+DROP TRIGGER IF EXISTS update_api_usage_stats_updated_at ON public.api_usage_stats;
+DROP TRIGGER IF EXISTS update_api_alerts_updated_at ON public.api_alerts;
+DROP TRIGGER IF EXISTS update_failed_login_attempts_updated_at ON public.failed_login_attempts;
+DROP TRIGGER IF EXISTS update_ip_access_control_updated_at ON public.ip_access_control;
+DROP TRIGGER IF EXISTS update_rate_limit_violations_updated_at ON public.rate_limit_violations;
+DROP TRIGGER IF EXISTS update_scrape_requests_updated_at ON public.scrape_requests;
+DROP TRIGGER IF EXISTS update_security_audit_logs_updated_at ON public.security_audit_logs;
+DROP TRIGGER IF EXISTS update_security_recommendations_updated_at ON public.security_recommendations;
+DROP TRIGGER IF EXISTS update_security_settings_updated_at ON public.security_settings;
+DROP TRIGGER IF EXISTS update_tasks_updated_at ON public.tasks;
+
+-- Create triggers for tables with updated_at columns
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON public.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_gardens_updated_at
+    BEFORE UPDATE ON public.gardens
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_plants_updated_at
+    BEFORE UPDATE ON public.plants
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_plant_collections_updated_at
+    BEFORE UPDATE ON public.plant_collections
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_garden_plants_updated_at
+    BEFORE UPDATE ON public.garden_plants
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_plant_doctor_sessions_updated_at
+    BEFORE UPDATE ON public.plant_doctor_sessions
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_api_usage_stats_updated_at
+    BEFORE UPDATE ON public.api_usage_stats
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_api_alerts_updated_at
+    BEFORE UPDATE ON public.api_alerts
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_failed_login_attempts_updated_at
+    BEFORE UPDATE ON public.failed_login_attempts
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_ip_access_control_updated_at
+    BEFORE UPDATE ON public.ip_access_control
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_rate_limit_violations_updated_at
+    BEFORE UPDATE ON public.rate_limit_violations
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_scrape_requests_updated_at
+    BEFORE UPDATE ON public.scrape_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_security_audit_logs_updated_at
+    BEFORE UPDATE ON public.security_audit_logs
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_security_recommendations_updated_at
+    BEFORE UPDATE ON public.security_recommendations
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_security_settings_updated_at
+    BEFORE UPDATE ON public.security_settings
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_tasks_updated_at
+    BEFORE UPDATE ON public.tasks
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+
+-- Grant necessary permissions
+GRANT EXECUTE ON FUNCTION public.update_updated_at() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO authenticated, service_role;
+
+-- Output confirmation
+DO $$
+BEGIN
+    RAISE NOTICE 'Security functions migration completed successfully';
+    RAISE NOTICE '- update_updated_at() function secured with search_path';
+    RAISE NOTICE '- handle_new_user() function secured with search_path';
+    RAISE NOTICE '- All updated_at triggers created for tables';
+END $$;
