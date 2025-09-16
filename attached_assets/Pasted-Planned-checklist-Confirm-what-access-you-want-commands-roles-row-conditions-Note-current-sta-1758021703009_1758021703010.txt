@@ -1,0 +1,35 @@
+Planned checklist:
+
+Confirm what access you want (commands, roles, row conditions).
+Note current state: RLS is disabled on public.security_recommendations.
+Propose policy patterns and SQL.
+After you confirm, I’ll enable RLS and create the policy.
+I see public.security_recommendations exists and RLS is currently disabled. Before creating a policy, we must enable RLS. What behavior do you want? Please specify:
+
+Which commands: SELECT, INSERT, UPDATE, DELETE
+Which roles: anon, authenticated
+Row condition: e.g., admin-only, public read, or “users can dismiss and only see their own dismissed rows,” etc.
+Common options you can choose from:
+
+Public read for everyone:
+SELECT TO anon, authenticated USING (true)
+Admin-only full access (JWT claim user_role = 'admin'):
+SELECT/INSERT/UPDATE/DELETE TO authenticated USING ((auth.jwt() ->> 'user_role') = 'admin')
+Allow authenticated users to dismiss items and mark who dismissed them:
+UPDATE TO authenticated USING (true) WITH CHECK (dismissed_by = (SELECT auth.uid()))
+Only allow a user to update rows they dismissed:
+UPDATE TO authenticated USING (dismissed_by = (SELECT auth.uid())) WITH CHECK (dismissed_by = (SELECT auth.uid()))
+If you confirm one of these (or describe your own), I’ll apply it. For example, to enable RLS and allow public read plus admin-only write, I would run:
+
+Enable RLS: ALTER TABLE public.security_recommendations ENABLE ROW LEVEL SECURITY;
+
+Public read: CREATE POLICY "Security recs public read" ON public.security_recommendations FOR SELECT TO anon, authenticated USING (true);
+
+Admin-only write: CREATE POLICY "Security recs admin write" ON public.security_recommendations FOR INSERT TO authenticated WITH CHECK ((auth.jwt() ->> 'user_role') = 'admin');
+
+CREATE POLICY "Security recs admin update" ON public.security_recommendations FOR UPDATE TO authenticated USING ((auth.jwt() ->> 'user_role') = 'admin') WITH CHECK ((auth.jwt() ->> 'user_role') = 'admin');
+
+CREATE POLICY "Security recs admin delete" ON public.security_recommendations FOR DELETE TO authenticated USING ((auth.jwt() ->> 'user_role') = 'admin');
+
+Confirm your desired behavior and I’ll create the exact policy statements.
+
