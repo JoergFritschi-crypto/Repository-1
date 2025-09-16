@@ -8,28 +8,30 @@ DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 
 -- Create secure update_updated_at function
 -- This function automatically updates the updated_at column when a row is modified
+-- Uses empty search_path and fully qualified identifiers per Supabase security best practices
 CREATE OR REPLACE FUNCTION public.update_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = 'pg_catalog', 'public'
+SET search_path = ''
 AS $$
 BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
+    NEW.updated_at := now();
     RETURN NEW;
 END;
 $$;
 
 -- Create secure handle_new_user function
 -- This function is called when a new user signs up
+-- Uses empty search_path and fully qualified identifiers per Supabase security best practices
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = 'pg_catalog', 'public'
+SET search_path = ''
 AS $$
 BEGIN
-    -- Insert user into public.users table with default values
+    -- Insert user into public.users table with default values, fully qualified
     INSERT INTO public.users (
         id,
         email,
@@ -42,15 +44,15 @@ BEGIN
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
         COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP
+        now(),
+        now()
     )
     ON CONFLICT (id) DO UPDATE
     SET 
         email = EXCLUDED.email,
         first_name = COALESCE(EXCLUDED.first_name, public.users.first_name),
         last_name = COALESCE(EXCLUDED.last_name, public.users.last_name),
-        updated_at = CURRENT_TIMESTAMP;
+        updated_at = now();
     
     RETURN NEW;
 END;
