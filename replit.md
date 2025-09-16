@@ -6,6 +6,13 @@ GardenScape Pro is a full-stack web application designed for ornamental garden d
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Recent Updates (September 16, 2025)
+- **CI/CD Pipeline**: Created comprehensive GitHub Actions workflows for database testing and migration validation
+- **Repository Structure**: Organized database migrations in Supabase format with proper naming conventions
+- **Security Improvements**: All RLS policies enabled, SQL functions secured with search_path protection
+- **Performance Optimization**: Removed only truly unused indexes while preserving constraint-backed ones
+- **Documentation**: Added README_WORKFLOWS.md with detailed CI/CD usage instructions
+
 ## System Architecture
 
 ### Frontend Architecture
