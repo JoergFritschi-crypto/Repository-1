@@ -75,12 +75,12 @@ export class APIMonitoringService {
                 errorMessage: error
               };
             }
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'anthropic',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: error.message || 'Connection failed' || 'Connection failed'
             };
           }
         }
@@ -151,7 +151,7 @@ export class APIMonitoringService {
                 errorMessage: `Status ${response.status}: ${errorDetails}`
               };
             }
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'perplexity',
               status: 'down',
@@ -208,12 +208,12 @@ export class APIMonitoringService {
                 errorMessage: `Status ${response.status}: ${errorDetails}`
               };
             }
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'gemini',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: error.message || 'Connection failed'
             };
           }
         }
@@ -249,12 +249,12 @@ export class APIMonitoringService {
                 errorMessage: `Status: ${response.status}`
               };
             }
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'perenual',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: error.message || 'Connection failed'
             };
           }
         }
@@ -284,12 +284,12 @@ export class APIMonitoringService {
               responseTime,
               errorMessage: !response.ok ? `Status: ${response.status}` : undefined
             };
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'gbif',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: error.message || 'Connection failed'
             };
           }
         }
@@ -315,12 +315,12 @@ export class APIMonitoringService {
               responseTime,
               errorMessage: !response.ok ? `Status: ${response.status}` : undefined
             };
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'mapbox',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: error.message || 'Connection failed'
             };
           }
         }
@@ -346,12 +346,12 @@ export class APIMonitoringService {
               responseTime,
               errorMessage: !response.ok ? `Status: ${response.status}` : undefined
             };
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'visual_crossing',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: error.message || 'Connection failed'
             };
           }
         }
@@ -409,7 +409,7 @@ export class APIMonitoringService {
                 errorMessage: `Status ${response.status}: ${errorDetails}`
               };
             }
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'huggingface',
               status: 'down',
@@ -478,7 +478,7 @@ export class APIMonitoringService {
                   service: 'runware',
                   status: 'degraded',
                   responseTime,
-                  errorMessage: error.message || 'Service issue'
+                  errorMessage: error.message || 'Connection failed' || 'Service issue'
                 };
               }
             }
@@ -522,7 +522,7 @@ export class APIMonitoringService {
               responseTime,
               errorMessage: `Status ${response.status}: ${errorDetails}`
             };
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'runware',
               status: 'down',
@@ -586,7 +586,7 @@ export class APIMonitoringService {
                 errorMessage: `Status ${response.status}: ${errorText}`
               };
             }
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'firecrawl',
               status: 'down',
@@ -619,12 +619,12 @@ export class APIMonitoringService {
               responseTime,
               errorMessage: !response.ok ? `Status: ${response.status}` : undefined
             };
-          } catch (error) {
+          } catch (error: any) {
             return {
               service: 'stripe',
               status: 'down',
               responseTime: Date.now() - startTime,
-              errorMessage: error.message
+              errorMessage: error.message || 'Connection failed'
             };
           }
         }
@@ -632,18 +632,35 @@ export class APIMonitoringService {
     }
   }
 
-  // Run health checks for all services with resilient storage
+  // Run health checks for all services without database dependency
   async runHealthChecks(): Promise<HealthCheckResult[]> {
     const results: HealthCheckResult[] = [];
+    const serviceConfig = this.getServiceConfiguration();
     
     for (const service of this.services) {
       try {
+        const config = serviceConfig[service.name as keyof typeof serviceConfig];
+        
+        // Skip if service is not configured (no API key)
+        if (!config?.enabled) {
+          const notConfiguredResult: HealthCheckResult = {
+            service: service.name,
+            status: 'down',
+            errorMessage: 'API key not configured'
+          };
+          
+          this.healthCache.set(service.name, notConfiguredResult);
+          results.push(notConfiguredResult);
+          continue;
+        }
+        
+        console.log(`🔍 Testing ${service.name} service...`);
         const result = await service.testFunction();
         
         // Cache the result immediately
         this.healthCache.set(service.name, result);
         
-        // Try to save to database (don't fail if DB is down)
+        // Try to save to database if available (optional, don't fail if DB is down)
         try {
           await db.insert(apiHealthChecks).values({
             service: result.service,
@@ -659,16 +676,18 @@ export class APIMonitoringService {
           // Check alerts only if DB is available
           await this.checkAlerts(result);
         } catch (dbError) {
-          console.warn(`Failed to store health check in DB for ${service.name}:`, dbError.message);
+          // DB save failed but health check worked - continue silently
+          console.log(`📝 Health check for ${service.name}: ${result.status} (DB save failed)`);
         }
         
+        console.log(`✅ ${service.name}: ${result.status} (${result.responseTime}ms)`);
         results.push(result);
-      } catch (error) {
-        console.error(`Health check failed for ${service.name}:`, error);
-        const errorResult = {
+      } catch (error: any) {
+        console.error(`❌ Error checking health for ${service.name}:`, error);
+        const errorResult: HealthCheckResult = {
           service: service.name,
-          status: 'down' as const,
-          errorMessage: error.message
+          status: 'down',
+          errorMessage: error.message || 'Connection failed'
         };
         
         // Cache the error result
@@ -680,6 +699,7 @@ export class APIMonitoringService {
     // Update last health check time
     this.lastHealthCheck = new Date();
     
+    console.log(`🏥 Health check completed: ${results.filter(r => r.status === 'healthy').length}/${results.length} services healthy`);
     return results;
   }
 
@@ -725,76 +745,103 @@ export class APIMonitoringService {
         console.warn(`Alert triggered: ${alert.service} - ${alert.alertType}`);
       }
     }
-    } catch (error) {
-      console.warn('Failed to check alerts:', error.message);
+    } catch (error: any) {
+      console.warn('Failed to check alerts:', error.message || 'Unknown error');
       // Continue execution - don't throw
     }
   }
 
-  // Get latest health status for all services with resilient fallback
+  // Get latest health status for all services with database-free operation
   async getHealthStatus() {
     const services = this.services.map(s => s.name);
-    const latestChecks = [];
+    const serviceConfig = this.getServiceConfiguration();
     
-    try {
-      // Try to get from database
-      for (const service of services) {
-        const [latest] = await db
-          .select()
-          .from(apiHealthChecks)
-          .where(eq(apiHealthChecks.service, service))
-          .orderBy(sql`${apiHealthChecks.lastChecked} DESC`)
-          .limit(1);
-        
-        if (latest) {
-          latestChecks.push(latest);
-          // Cache the result
-          this.healthCache.set(service, {
-            service: latest.service,
-            status: latest.status as 'healthy' | 'degraded' | 'down',
-            responseTime: latest.responseTime || undefined,
-            errorMessage: latest.errorMessage || undefined,
-            quotaUsed: latest.quotaUsed || undefined,
-            quotaLimit: latest.quotaLimit || undefined,
-            metadata: latest.metadata || undefined
-          });
-        } else {
-          latestChecks.push({
-            service,
-            status: 'unknown',
-            lastChecked: null
-          });
-        }
+    // Check if we need fresh health checks (cache older than TTL or empty)
+    const needsFreshCheck = !this.lastHealthCheck || 
+      (Date.now() - this.lastHealthCheck.getTime()) > this.HEALTH_CACHE_TTL;
+    
+    if (needsFreshCheck || this.healthCache.size === 0) {
+      console.log('🔄 Running fresh health checks (cache expired or empty)');
+      try {
+        await this.runHealthChecks();
+      } catch (error: any) {
+        console.warn('Failed to run health checks:', error.message);
       }
-    } catch (error) {
-      console.warn('Database unavailable for health status, using cache/defaults:', error.message);
+    }
+    
+    // Build service status array
+    const serviceStatuses = [];
+    let healthyCount = 0;
+    let totalConfigured = 0;
+    
+    for (const serviceName of services) {
+      const config = serviceConfig[serviceName as keyof typeof serviceConfig];
+      const cached = this.healthCache.get(serviceName);
       
-      // Fallback to cached values or defaults
-      for (const service of services) {
-        const cached = this.healthCache.get(service);
+      if (!config?.enabled) {
+        // Service not configured (no API key)
+        serviceStatuses.push({
+          service: serviceName,
+          status: 'not_configured',
+          lastChecked: null,
+          errorMessage: 'API key not configured',
+          configured: false
+        });
+      } else {
+        totalConfigured++;
+        
         if (cached) {
-          latestChecks.push({
+          serviceStatuses.push({
             service: cached.service,
             status: cached.status,
             lastChecked: this.lastHealthCheck,
             responseTime: cached.responseTime,
             errorMessage: cached.errorMessage,
             quotaUsed: cached.quotaUsed,
-            quotaLimit: cached.quotaLimit
+            quotaLimit: cached.quotaLimit,
+            metadata: cached.metadata,
+            configured: true
           });
+          
+          if (cached.status === 'healthy') {
+            healthyCount++;
+          }
         } else {
-          // Return default unknown status
-          latestChecks.push({
-            service,
+          // Service configured but no health data yet
+          serviceStatuses.push({
+            service: serviceName,
             status: 'unknown',
             lastChecked: null,
-            errorMessage: 'No health data available'
+            errorMessage: 'Health check pending',
+            configured: true
           });
         }
       }
     }
     
-    return latestChecks;
+    // Calculate overall health
+    let overallHealth = 'healthy';
+    const totalServices = services.length;
+    const configuredHealthyRatio = totalConfigured > 0 ? healthyCount / totalConfigured : 0;
+    
+    if (configuredHealthyRatio === 0 && totalConfigured > 0) {
+      overallHealth = 'critical';
+    } else if (configuredHealthyRatio < 0.7) {
+      overallHealth = 'degraded';
+    }
+    
+    // Return format expected by frontend
+    return {
+      services: serviceStatuses.reduce((acc, service) => {
+        (acc as any)[service.service] = service;
+        return acc;
+      }, {}),
+      overallHealth,
+      activeServices: healthyCount,
+      totalServices,
+      configuredServices: totalConfigured,
+      lastUpdated: this.lastHealthCheck?.toISOString() || null
+    };
   }
 
   // Get usage statistics for a specific time period with resilient fallback
@@ -827,8 +874,8 @@ export class APIMonitoringService {
       });
       
       return stats;
-    } catch (error) {
-      console.warn('Database unavailable for usage stats, using cache/defaults:', error.message);
+    } catch (error: any) {
+      console.warn('Database unavailable for usage stats, using cache/defaults:', error.message || 'Unknown error');
       
       // Check if we have cached data
       const cached = this.usageCache.get(cacheKey);
@@ -866,8 +913,8 @@ export class APIMonitoringService {
         cost: data.cost?.toString(),
         date: new Date()
       });
-    } catch (error) {
-      console.warn('Failed to record API usage in database:', error.message);
+    } catch (error: any) {
+      console.warn('Failed to record API usage in database:', error.message || 'Unknown error');
       // Continue execution - don't throw
     }
     
