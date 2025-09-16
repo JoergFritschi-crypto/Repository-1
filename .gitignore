@@ -1,16 +1,202 @@
-node_modules
-dist
-.DS_Store
-server/public
+# Dependencies
+node_modules/
+bower_components/
+jspm_packages/
+
+# Build outputs
+dist/
+build/
+out/
+*.dist
+*.map
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.turbo/
+client/dist/
+server/dist/
+server/public/
 vite.config.ts.*
-*.tar.gz
 
 # Environment variables - NEVER commit these!
 .env
 .env.local
-.env.*.local
-.env.production
-.env.development
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+*.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+/database/
+/db/
+*.sql.backup
+*.sql.dump
+pg_data/
+postgres-data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+.npm/
+.pnpm-debug.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# IDE and editor specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.iml
+.fleet/
+
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+*.d.ts.map
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+desktop.ini
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+.tmp/
+
+# Session data
+sessions/
+session-store/
+*.session
+
+# Uploads (if not tracked)
+uploads/
+public/uploads/
+
+# Cache
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# Certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Supabase
+.branches
+.temp
+**/supabase/.branches
+**/supabase/.temp
+
+# Vault files (sensitive data)
+vault/
+
+# Generated files (development artifacts)
+public/composite-gardens/
+public/inpainted-gardens/
+public/plant-sprites/
+public/generated-icons/
+public/generated-images/
+public/generated/
+client/public/composite-gardens/
+client/public/inpainted-gardens/
+client/public/plant-sprites/
+client/public/generated-icons/
+client/public/generated-images/
+
+# Attached assets (user uploads)
+attached_assets/
+
+# Replit specific
+.replit
+.replit.nix
+replit.nix
+.config/
+.upm/
+.local/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
 
 # Security audit reports (may contain sensitive findings)
 *_AUDIT_*.md
+
+# Test and debug files
+test-*.js
+test-*.ts
+test-*.md
+*.test.js
+*.test.ts
+bug_report_*.png
+*-debug.png
+*-attempt.png
+*-screenshot.png
+navigation_*.png
+landing-*.png
+garden-*.png
+
+# Miscellaneous
+.history/
+.vscode-test/
+*.vsix
+*.code-workspace
+.vercel
+.netlify

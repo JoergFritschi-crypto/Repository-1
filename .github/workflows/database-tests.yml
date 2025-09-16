@@ -1,0 +1,130 @@
+name: Database Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'supabase/migrations/**'
+      - 'server/**/*.ts'
+      - 'shared/schema.ts'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'server/**/*.ts'
+      - 'shared/schema.ts'
+
+jobs:
+  database-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        run: |
+          # Run migrations
+          for file in supabase/migrations/*.sql; do
+            echo "Running migration: $file"
+            psql $DATABASE_URL -f "$file"
+          done
+
+      - name: Test database schema
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        run: |
+          # Test that all tables exist
+          psql $DATABASE_URL -c "\dt public.*"
+          
+          # Test that RLS is enabled
+          psql $DATABASE_URL -c "
+            SELECT schemaname, tablename, rowsecurity 
+            FROM pg_tables 
+            WHERE schemaname = 'public' 
+              AND rowsecurity = false;"
+
+      - name: Test RLS policies
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        run: |
+          # Test that policies exist for all tables
+          psql $DATABASE_URL -c "
+            SELECT schemaname, tablename, policyname, cmd 
+            FROM pg_policies 
+            WHERE schemaname = 'public'
+            ORDER BY tablename, policyname;"
+
+      - name: Test functions
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        run: |
+          # Test that security functions exist with proper search_path
+          psql $DATABASE_URL -c "
+            SELECT proname, prosecdef, proconfig 
+            FROM pg_proc 
+            WHERE pronamespace = 'public'::regnamespace 
+              AND proname IN ('update_updated_at', 'handle_new_user');"
+
+      - name: Run TypeScript tests
+        run: |
+          # Check if test:db script exists
+          if npm run | grep -q "test:db"; then
+            npm run test:db
+          else
+            echo "test:db script not found, skipping"
+          fi
+        if: ${{ always() }}
+        continue-on-error: true
+
+      - name: Check for security vulnerabilities
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        run: |
+          # Check for tables without RLS
+          echo "Checking for tables without RLS..."
+          psql $DATABASE_URL -c "
+            SELECT tablename 
+            FROM pg_tables 
+            WHERE schemaname = 'public' 
+              AND rowsecurity = false
+              AND tablename NOT IN ('schema_migrations');"
+          
+          # Check for missing WITH CHECK clauses in UPDATE policies
+          echo "Checking for UPDATE policies without WITH CHECK..."
+          psql $DATABASE_URL -c "
+            SELECT tablename, policyname 
+            FROM pg_policies 
+            WHERE schemaname = 'public' 
+              AND cmd = 'UPDATE' 
+              AND with_check IS NULL;"

@@ -1,0 +1,81 @@
+name: Lint and Type Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type checking
+        run: npm run check
+
+      - name: Check for security issues in dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Check for unused dependencies
+        run: npx depcheck --ignores="@types/*,typescript,vite,tsx"
+        continue-on-error: true
+
+      - name: Validate package.json
+        run: npx package-json-validator
+
+      - name: Check for large files
+        run: |
+          echo "Checking for files larger than 1MB..."
+          find . -type f -size +1M ! -path "./node_modules/*" ! -path "./.git/*" ! -path "./dist/*" -exec ls -lh {} \;
+
+      - name: Validate SQL migrations
+        run: |
+          echo "Checking SQL migration files..."
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              echo "Validating: $file"
+              # Check for basic SQL syntax issues
+              if ! grep -q ";" "$file"; then
+                echo "Warning: $file might be missing semicolons"
+              fi
+              # Check for DROP statements without IF EXISTS
+              if grep -q "DROP" "$file" && ! grep -q "IF EXISTS" "$file"; then
+                echo "Warning: $file has DROP statements without IF EXISTS"
+              fi
+            fi
+          done
+
+      - name: Check environment variables usage
+        run: |
+          echo "Checking for hardcoded secrets..."
+          # Check for potential hardcoded secrets
+          grep -r "api_key\|api_secret\|password\|token" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --exclude-dir=node_modules --exclude-dir=dist | grep -v "process.env" | grep -v "import.meta.env" || true
+
+      - name: Generate dependency report
+        run: |
+          echo "## Dependency Report" > dependency-report.md
+          echo "" >> dependency-report.md
+          echo "### Production Dependencies" >> dependency-report.md
+          npm list --prod --depth=0 >> dependency-report.md 2>&1 || true
+          echo "" >> dependency-report.md
+          echo "### Development Dependencies" >> dependency-report.md
+          npm list --dev --depth=0 >> dependency-report.md 2>&1 || true
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-report
+          path: dependency-report.md

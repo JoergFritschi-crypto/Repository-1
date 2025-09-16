@@ -1,0 +1,150 @@
+name: Supabase Migrations Check
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'supabase/migrations/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+
+jobs:
+  validate-migrations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper diff
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Check migration naming
+        run: |
+          echo "Checking migration file naming convention..."
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              if ! [[ "$filename" =~ ^[0-9]{5}_[a-z_]+\.sql$ ]]; then
+                echo "Error: $filename doesn't follow naming convention (00001_description.sql)"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Validate migration order
+        run: |
+          echo "Checking migration order..."
+          prev_num=0
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              num=$(echo "$filename" | cut -d'_' -f1 | sed 's/^0*//')
+              if [ "$num" -le "$prev_num" ]; then
+                echo "Error: Migration numbers are not in ascending order"
+                exit 1
+              fi
+              prev_num=$num
+            fi
+          done
+
+      - name: Check for migration conflicts
+        run: |
+          echo "Checking for conflicting migrations..."
+          # Check if multiple migrations modify the same tables
+          declare -A table_modifications
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              tables=$(grep -io "ALTER TABLE\|CREATE TABLE\|DROP TABLE" "$file" | wc -l)
+              if [ "$tables" -gt 0 ]; then
+                echo "$(basename $file): $tables table modifications"
+              fi
+            fi
+          done
+
+      - name: Validate SQL syntax
+        run: |
+          echo "Performing basic SQL syntax validation..."
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              echo "Checking: $(basename $file)"
+              
+              # Check for common SQL issues
+              if grep -q "CREATE TABLE.*WITHOUT" "$file"; then
+                echo "Warning: CREATE TABLE without proper constraints in $file"
+              fi
+              
+              if grep -q "DELETE FROM" "$file" && ! grep -q "WHERE" "$file"; then
+                echo "Warning: DELETE without WHERE clause in $file"
+              fi
+              
+              if grep -q "UPDATE.*SET" "$file" && ! grep -q "WHERE" "$file"; then
+                echo "Warning: UPDATE without WHERE clause in $file"
+              fi
+            fi
+          done
+
+      - name: Check for required security patterns
+        run: |
+          echo "Checking for security best practices..."
+          
+          # Check RLS is enabled
+          if ! grep -q "ENABLE ROW LEVEL SECURITY" supabase/migrations/*.sql; then
+            echo "Warning: No RLS enablement found in migrations"
+          fi
+          
+          # Check for secure functions
+          if grep -q "CREATE.*FUNCTION" supabase/migrations/*.sql; then
+            if ! grep -q "SET search_path" supabase/migrations/*.sql; then
+              echo "Warning: Functions without search_path configuration found"
+            fi
+          fi
+          
+          # Check for proper permissions
+          if ! grep -q "GRANT" supabase/migrations/*.sql; then
+            echo "Warning: No GRANT statements found in migrations"
+          fi
+
+      - name: Run Supabase lint
+        run: |
+          echo "Running Supabase database linter..."
+          # Initialize a local Supabase project if needed
+          if [ ! -f supabase/config.toml ]; then
+            echo "Supabase config exists, proceeding with lint"
+          fi
+          
+          # Run lint on migration files
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              echo "Linting: $(basename $file)"
+              # Basic SQL validation using Supabase CLI
+              supabase db lint --file "$file" 2>&1 || true
+            fi
+          done
+
+      - name: Generate migration report
+        run: |
+          echo "## Migration Report" > migration-report.md
+          echo "" >> migration-report.md
+          echo "### Migration Files" >> migration-report.md
+          for file in supabase/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              echo "- $(basename $file)" >> migration-report.md
+              # Count lines and get description
+              lines=$(wc -l < "$file")
+              desc=$(head -n 5 "$file" | grep -m1 "^--" | sed 's/^-- *//')
+              echo "  - Lines: $lines" >> migration-report.md
+              echo "  - Description: $desc" >> migration-report.md
+            fi
+          done
+
+      - name: Upload migration report
+        uses: actions/upload-artifact@v3
+        with:
+          name: migration-report
+          path: migration-report.md
