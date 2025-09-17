@@ -64,7 +64,8 @@ const getServiceInfo = (serviceName: string, category: 'critical' | 'auxiliary')
     visual_crossing: 'Visual Crossing Weather',
     huggingface: 'HuggingFace AI',
     runware: 'Runware Images',
-    firecrawl: 'FireCrawl Web'
+    firecrawl: 'FireCrawl Web',
+    github: 'GitHub'
   };
   
   const endpoints: Record<string, string> = {
@@ -78,7 +79,8 @@ const getServiceInfo = (serviceName: string, category: 'critical' | 'auxiliary')
     visual_crossing: 'https://weather.visualcrossing.com',
     huggingface: 'https://api-inference.huggingface.co',
     runware: 'https://api.runware.ai',
-    firecrawl: 'https://api.firecrawl.dev'
+    firecrawl: 'https://api.firecrawl.dev',
+    github: 'https://api.github.com'
   };
   
   const docs: Record<string, string> = {
@@ -92,7 +94,8 @@ const getServiceInfo = (serviceName: string, category: 'critical' | 'auxiliary')
     visual_crossing: 'https://www.visualcrossing.com/resources/documentation',
     huggingface: 'https://huggingface.co/docs/api-inference',
     runware: 'https://docs.runware.ai',
-    firecrawl: 'https://docs.firecrawl.dev'
+    firecrawl: 'https://docs.firecrawl.dev',
+    github: 'https://docs.github.com/en/rest'
   };
   
   const requiredKeys: Record<string, string[]> = {
@@ -106,7 +109,8 @@ const getServiceInfo = (serviceName: string, category: 'critical' | 'auxiliary')
     visual_crossing: ['VISUAL_CROSSING_API_KEY'],
     huggingface: ['HUGGINGFACE_API_KEY'],
     runware: ['RUNWARE_API_KEY'],
-    firecrawl: ['FIRECRAWL_API_KEY']
+    firecrawl: ['FIRECRAWL_API_KEY'],
+    github: ['REPLIT_CONNECTORS_HOSTNAME', 'REPL_IDENTITY|WEB_REPL_RENEWAL']
   };
   
   return {

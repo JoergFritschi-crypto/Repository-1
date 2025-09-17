@@ -598,6 +598,129 @@ export class APIMonitoringService {
       });
     }
 
+    // GitHub API Health Check (using Replit connection)
+    if (process.env.REPLIT_CONNECTORS_HOSTNAME && (process.env.REPL_IDENTITY || process.env.WEB_REPL_RENEWAL)) {
+      this.services.push({
+        name: 'github',
+        criticalService: true,
+        testFunction: async () => {
+          const startTime = Date.now();
+          try {
+            // Get access token from Replit connector
+            const xReplitToken = process.env.REPL_IDENTITY 
+              ? 'repl ' + process.env.REPL_IDENTITY 
+              : process.env.WEB_REPL_RENEWAL 
+              ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+              : null;
+
+            if (!xReplitToken) {
+              return {
+                service: 'github',
+                status: 'down',
+                responseTime: Date.now() - startTime,
+                errorMessage: 'X_REPLIT_TOKEN not found for repl/depl'
+              };
+            }
+
+            // Fetch connection settings
+            const connectionResponse = await fetch(
+              'https://' + process.env.REPLIT_CONNECTORS_HOSTNAME + '/api/v2/connection?include_secrets=true&connector_names=github',
+              {
+                headers: {
+                  'Accept': 'application/json',
+                  'X_REPLIT_TOKEN': xReplitToken
+                }
+              }
+            );
+
+            if (!connectionResponse.ok) {
+              return {
+                service: 'github',
+                status: 'down',
+                responseTime: Date.now() - startTime,
+                errorMessage: `Connection API error: ${connectionResponse.status}`
+              };
+            }
+
+            const connectionData = await connectionResponse.json();
+            const connectionSettings = connectionData.items?.[0];
+            const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
+
+            if (!connectionSettings || !accessToken) {
+              return {
+                service: 'github',
+                status: 'down',
+                responseTime: Date.now() - startTime,
+                errorMessage: 'GitHub not connected or access token missing'
+              };
+            }
+
+            // Test GitHub API with the access token
+            const githubResponse = await fetch('https://api.github.com/user', {
+              headers: {
+                'Authorization': `token ${accessToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'GardenScape-Pro-API-Monitor'
+              }
+            });
+
+            const responseTime = Date.now() - startTime;
+
+            if (githubResponse.ok) {
+              const userData = await githubResponse.json();
+              
+              // Extract rate limit info from headers
+              const rateLimitRemaining = githubResponse.headers.get('x-ratelimit-remaining');
+              const rateLimitLimit = githubResponse.headers.get('x-ratelimit-limit');
+              
+              return {
+                service: 'github',
+                status: 'healthy',
+                responseTime,
+                quotaUsed: rateLimitLimit && rateLimitRemaining ? parseInt(rateLimitLimit) - parseInt(rateLimitRemaining) : undefined,
+                quotaLimit: rateLimitLimit ? parseInt(rateLimitLimit) : undefined,
+                metadata: { 
+                  username: userData.login,
+                  type: userData.type,
+                  scopes: githubResponse.headers.get('x-oauth-scopes')?.split(', ') || []
+                }
+              };
+            } else if (githubResponse.status === 401) {
+              return {
+                service: 'github',
+                status: 'down',
+                responseTime,
+                errorMessage: 'GitHub access token is invalid or expired'
+              };
+            } else if (githubResponse.status === 403) {
+              const errorData = await githubResponse.json().catch(() => null);
+              return {
+                service: 'github',
+                status: 'degraded',
+                responseTime,
+                errorMessage: errorData?.message || 'GitHub API rate limit exceeded'
+              };
+            } else {
+              const errorText = await githubResponse.text();
+              return {
+                service: 'github',
+                status: 'down',
+                responseTime,
+                errorMessage: `GitHub API error ${githubResponse.status}: ${errorText}`
+              };
+            }
+          } catch (error: any) {
+            return {
+              service: 'github',
+              status: 'down',
+              responseTime: Date.now() - startTime,
+              errorMessage: `Connection failed: ${error.message}`
+            };
+          }
+        }
+      });
+    }
+
     // Stripe API Health Check
     if (process.env.STRIPE_SECRET_KEY) {
       this.services.push({
@@ -986,6 +1109,11 @@ export class APIMonitoringService {
         enabled: !!process.env.FIRECRAWL_API_KEY,
         critical: false,
         purpose: 'Web scraping and crawling for plant data'
+      },
+      github: {
+        enabled: !!(process.env.REPLIT_CONNECTORS_HOSTNAME && (process.env.REPL_IDENTITY || process.env.WEB_REPL_RENEWAL)),
+        critical: true,
+        purpose: 'Version control and repository management'
       }
     };
   }
